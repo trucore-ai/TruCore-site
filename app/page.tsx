@@ -94,9 +94,11 @@ export default function Home() {
                   className="h-auto w-full object-cover"
                   style={{
                     WebkitMaskImage:
-                      "radial-gradient(ellipse 135% 118% at 50% 50%, black 56%, transparent 100%)",
+                      "linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)",
+                    WebkitMaskComposite: "source-in",
                     maskImage:
-                      "radial-gradient(ellipse 135% 118% at 50% 50%, black 56%, transparent 100%)",
+                      "linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)",
+                    maskComposite: "intersect",
                   }}
                   priority
                 />

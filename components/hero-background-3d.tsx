@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
-import { BufferAttribute, Group, Mesh } from "three";
+import { Group, Mesh } from "three";
 
 function mulberry32(seed: number) {
   return function () {
@@ -35,19 +35,18 @@ type ShapeSeed = {
 
 function LatticeTunnel({ pointer }: { pointer: MutableRefObject<PointerTarget> }) {
   const groupRef = useRef<Group>(null);
-  const layerRefs = useRef<Array<Mesh | null>>([]);
-  const initialPositions = useRef<Float32Array[]>([]);
+  const layerRefs = useRef<Array<Group | null>>([]);
   const timeRef = useRef(0);
 
   const layers = useMemo(() => {
-    return Array.from({ length: 7 }, (_, index) => {
-      const depth = index / 6;
+    return Array.from({ length: 8 }, (_, index) => {
+      const depth = index / 7;
 
       return {
-        z: -0.5 - index * 0.56,
-        scale: 1 - index * 0.1,
-        color: index % 4 === 0 ? "#d86c08" : "#5cbcfb",
-        opacity: index % 4 === 0 ? 0.1 - depth * 0.04 : 0.22 - depth * 0.11,
+        z: -0.35 - index * 0.92,
+        scale: 1 - index * 0.09,
+        color: index % 5 === 0 ? "#d86c08" : "#5cbcfb",
+        opacity: index % 5 === 0 ? 0.17 - depth * 0.05 : 0.28 - depth * 0.13,
       };
     });
   }, []);
@@ -70,60 +69,56 @@ function LatticeTunnel({ pointer }: { pointer: MutableRefObject<PointerTarget> }
     timeRef.current += delta;
     const t = timeRef.current;
 
-    layerRefs.current.forEach((layerMesh, layerIndex) => {
-      if (!layerMesh) {
+    layerRefs.current.forEach((layerGroup, layerIndex) => {
+      if (!layerGroup) {
         return;
       }
 
-      const positionAttribute = layerMesh.geometry.attributes.position as BufferAttribute;
-
-      if (!initialPositions.current[layerIndex]) {
-        initialPositions.current[layerIndex] = positionAttribute.array.slice() as Float32Array;
-      }
-
-      const sourcePositions = initialPositions.current[layerIndex];
-      const targetPositions = positionAttribute.array as Float32Array;
       const depth = 1 - layerIndex / layers.length;
+      const bob = Math.sin(t * 0.9 + layerIndex * 0.7) * 0.03 * depth;
+      const sway = Math.cos(t * 0.75 + layerIndex * 0.45) * 0.025 * depth;
 
-      for (let index = 0; index < targetPositions.length; index += 3) {
-        const x = sourcePositions[index];
-        const y = sourcePositions[index + 1];
-
-        const wave =
-          Math.sin(x * 1.35 + t * 0.95 + layerIndex * 0.55) * 0.055 +
-          Math.cos(y * 1.8 - t * 0.72 + layerIndex * 0.4) * 0.035;
-
-        const pull = (pointer.current.x * x * 0.03 + pointer.current.y * y * 0.02) * depth;
-        targetPositions[index + 2] = wave + pull;
-      }
-
-      layerMesh.position.x += (pointer.current.x * 0.2 * depth - layerMesh.position.x) * 0.06;
-      layerMesh.position.y += (pointer.current.y * 0.14 * depth - layerMesh.position.y) * 0.06;
-      layerMesh.rotation.z += (pointer.current.x * 0.065 * (depth + 0.15) - layerMesh.rotation.z) * 0.07;
-      positionAttribute.needsUpdate = true;
+      layerGroup.position.x += (pointer.current.x * 0.2 * depth + sway - layerGroup.position.x) * 0.06;
+      layerGroup.position.y += (pointer.current.y * 0.12 * depth + bob - layerGroup.position.y) * 0.06;
+      layerGroup.rotation.z += (pointer.current.x * 0.045 * (depth + 0.15) - layerGroup.rotation.z) * 0.06;
+      layerGroup.rotation.y += (pointer.current.x * 0.06 * depth - layerGroup.rotation.y) * 0.05;
     });
   });
 
   return (
     <group ref={groupRef}>
       {layers.map((layer, index) => (
-        <mesh
+        <group
           key={index}
-          ref={(mesh) => {
-            layerRefs.current[index] = mesh;
+          ref={(layerGroup) => {
+            layerRefs.current[index] = layerGroup;
           }}
           position={[0, 0, layer.z]}
           scale={layer.scale}
         >
-          <planeGeometry args={[12.2, 6.9, 16, 8]} />
-          <meshBasicMaterial
-            color={layer.color}
-            wireframe
-            wireframeLinewidth={2}
-            transparent
-            opacity={layer.opacity}
-          />
-        </mesh>
+          <mesh>
+            <boxGeometry args={[11.8, 6.6, 0.14, 1, 1, 1]} />
+            <meshBasicMaterial
+              color={layer.color}
+              wireframe
+              wireframeLinewidth={2}
+              transparent
+              opacity={layer.opacity}
+            />
+          </mesh>
+          {index % 2 === 0 && (
+            <mesh scale={[0.76, 0.76, 1]}>
+              <boxGeometry args={[11.8, 6.6, 0.08, 1, 1, 1]} />
+              <meshBasicMaterial
+                color={layer.color}
+                wireframe
+                wireframeLinewidth={2}
+                transparent
+                opacity={Math.max(layer.opacity * 0.58, 0.03)}
+              />
+            </mesh>
+          )}
+        </group>
       ))}
     </group>
   );
