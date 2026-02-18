@@ -37,7 +37,7 @@ export default function TwitterImage() {
           </div>
         </div>
 
-        <div style={{ fontSize: 24, color: "#ffb347" }}>trucore.xyz</div>
+        <div style={{ fontSize: 24, color: "#f08a1f" }}>trucore.xyz</div>
       </div>
     ),
     {

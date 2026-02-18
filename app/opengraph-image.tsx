@@ -52,7 +52,7 @@ export default function OpenGraphImage() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            color: "#ffb347",
+            color: "#f08a1f",
             fontSize: 24,
             fontWeight: 500,
           }}

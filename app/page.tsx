@@ -84,15 +84,21 @@ export default function Home() {
               ))}
             </ul>
 
-            <div className="mt-8 overflow-hidden rounded-xl border border-white/10 bg-neutral-950/45">
-              <Image
-                src="/images/trucore-banner.png"
-                alt="TruCore banner"
-                width={1600}
-                height={560}
-                className="h-auto w-full object-cover"
-                priority
-              />
+            <div className="mt-8 mx-auto max-w-4xl">
+              <div className="relative overflow-hidden rounded-xl border border-white/10 bg-neutral-950/45">
+                <Image
+                  src="/images/trucore-banner.png"
+                  alt="TruCore banner"
+                  width={1600}
+                  height={560}
+                  className="h-auto w-full object-cover"
+                  priority
+                />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_46%,rgba(5,10,20,0.82)_100%)]"
+                />
+              </div>
             </div>
           </div>
         </div>
