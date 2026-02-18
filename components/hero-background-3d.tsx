@@ -40,14 +40,14 @@ function LatticeTunnel({ pointer }: { pointer: MutableRefObject<PointerTarget> }
   const timeRef = useRef(0);
 
   const layers = useMemo(() => {
-    return Array.from({ length: 10 }, (_, index) => {
-      const depth = index / 9;
+    return Array.from({ length: 7 }, (_, index) => {
+      const depth = index / 6;
 
       return {
-        z: -0.45 - index * 0.42,
-        scale: 1 - index * 0.07,
+        z: -0.5 - index * 0.56,
+        scale: 1 - index * 0.1,
         color: index % 4 === 0 ? "#d86c08" : "#5cbcfb",
-        opacity: index % 4 === 0 ? 0.065 - depth * 0.03 : 0.16 - depth * 0.09,
+        opacity: index % 4 === 0 ? 0.1 - depth * 0.04 : 0.22 - depth * 0.11,
       };
     });
   }, []);
@@ -115,8 +115,14 @@ function LatticeTunnel({ pointer }: { pointer: MutableRefObject<PointerTarget> }
           position={[0, 0, layer.z]}
           scale={layer.scale}
         >
-          <planeGeometry args={[11.8, 6.6, 44, 24]} />
-          <meshBasicMaterial color={layer.color} wireframe transparent opacity={layer.opacity} />
+          <planeGeometry args={[12.2, 6.9, 16, 8]} />
+          <meshBasicMaterial
+            color={layer.color}
+            wireframe
+            wireframeLinewidth={2}
+            transparent
+            opacity={layer.opacity}
+          />
         </mesh>
       ))}
     </group>

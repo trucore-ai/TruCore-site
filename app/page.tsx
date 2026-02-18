@@ -92,11 +92,13 @@ export default function Home() {
                   width={1600}
                   height={560}
                   className="h-auto w-full object-cover"
+                  style={{
+                    WebkitMaskImage:
+                      "radial-gradient(ellipse 135% 118% at 50% 50%, black 56%, transparent 100%)",
+                    maskImage:
+                      "radial-gradient(ellipse 135% 118% at 50% 50%, black 56%, transparent 100%)",
+                  }}
                   priority
-                />
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_46%,rgba(5,10,20,0.82)_100%)]"
                 />
               </div>
             </div>
