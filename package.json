@@ -2,9 +2,7 @@
   "name": "trucore-site",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": ">=20.19.0 <24"
-  },
+  "engines": { "node": "20.x" },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
