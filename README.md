@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TruCore Site
 
-## Getting Started
+Launch-ready marketing site for TruCore: trust-first, AI-native financial infrastructure.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 (App Router, TypeScript)
+- Tailwind CSS
+- React Three Fiber for subtle hero background motion
+
+## Local Development
+
+### 1) Node.js Version
+
+Use Node.js `20.19+` or `22.13+` (recommended: Node 22 LTS).
+
+### 2) Install Dependencies
+
+```bash
+npm install
+```
+
+### 3) Start Dev Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4) Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm run start
+```
 
-## Learn More
+## Quality Checks
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Build Output Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Main route: `/`
+- Generated social preview routes:
+  - `/opengraph-image`
+  - `/twitter-image`
+- Favicon: `/favicon.ico`
 
-## Deploy on Vercel
+## Vercel Deployment Checklist
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 1) Import Repo
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Go to Vercel dashboard.
+2. Click **Add New → Project**.
+3. Import `trucore-ai/TruCore-site`.
+4. Keep framework preset as **Next.js**.
+5. Deploy from `main` branch.
+
+### 2) Environment Variables
+
+No required environment variables for current frontend-only release.
+
+### 3) Add Domains
+
+In Vercel project settings, add both:
+
+- `trucore.xyz`
+- `www.trucore.xyz`
+
+### 4) Namecheap DNS
+
+Create/update these DNS records:
+
+- `A` record: host `@` → `76.76.21.21`
+- `CNAME` record: host `www` → `cname.vercel-dns.com`
+
+### 5) HTTPS + Redirects
+
+- Vercel will provision HTTPS certificates automatically for both domains.
+- This repo includes host redirect config to make `www.trucore.xyz` redirect to `trucore.xyz`.
+- In Vercel domains UI, verify `trucore.xyz` is marked as **Primary**.
+
+### 6) Final Verification
+
+- Vercel build log is green on latest `main` commit.
+- `https://trucore.xyz` loads successfully.
+- `https://www.trucore.xyz` redirects to `https://trucore.xyz`.
+- OG/Twitter images resolve:
+  - `https://trucore.xyz/opengraph-image`
+  - `https://trucore.xyz/twitter-image`

@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.trucore.xyz"
+        }
+      ],
+      "destination": "https://trucore.xyz/:path*",
+      "permanent": true
+    }
+  ]
+}

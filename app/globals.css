@@ -1,26 +1,106 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply min-h-screen bg-neutral-950 text-slate-100 font-sans;
+  background-image: linear-gradient(180deg, #0b1220 0%, #050a14 100%);
+}
+
+::selection {
+  @apply bg-primary-300/40 text-primary-50;
+}
+
+:focus-visible {
+  @apply outline-none ring-2 ring-accent-500 ring-offset-2 ring-offset-neutral-950;
+}
+
+.tilt-wrapper {
+  transform-style: preserve-3d;
+}
+
+.tilt-inner {
+  transform-style: preserve-3d;
+  transition: box-shadow 180ms ease;
+  transform: perspective(var(--tilt-perspective)) rotateX(var(--tilt-rx)) rotateY(var(--tilt-ry));
+  will-change: transform;
+}
+
+.tilt-wrapper:hover .tilt-inner {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+}
+
+.fade-in-up {
+  animation: fadeInUp 520ms ease-out both;
+  animation-delay: var(--fade-delay, 0ms);
+}
+
+.fade-delay-1 {
+  --fade-delay: 70ms;
+}
+
+.fade-delay-2 {
+  --fade-delay: 140ms;
+}
+
+.fade-delay-3 {
+  --fade-delay: 210ms;
+}
+
+.fade-delay-4 {
+  --fade-delay: 280ms;
+}
+
+.fade-delay-5 {
+  --fade-delay: 350ms;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.depth-scene {
+  transform-style: preserve-3d;
+}
+
+.depth-icon {
+  transform: translateZ(26px);
+}
+
+.depth-title {
+  transform: translateZ(16px);
+}
+
+.depth-body {
+  transform: translateZ(8px);
+}
+
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  .fade-in-up,
+  .tilt-inner,
+  .depth-icon,
+  .depth-title,
+  .depth-body {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
 }
