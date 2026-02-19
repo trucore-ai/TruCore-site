@@ -51,11 +51,11 @@ const GRID_VERT = `
     for (int i = 0; i < ${NUM_BALLS}; i++) {
       vec3 d = uBalls[i] - wPos.xyz;
       float dist = length(d);
-      float r = uRadii[i] * 5.5;
+      float r = uRadii[i] * 7.0;
       if (dist < r && dist > 0.001) {
         float t = 1.0 - dist / r;
         float s = t * t * t;
-        wPos.xyz += normalize(d) * s * uRadii[i] * 2.8;
+        wPos.xyz += normalize(d) * s * uRadii[i] * 3.8;
         warp += s;
       }
     }
@@ -256,7 +256,7 @@ function makeShapeMat(color: string, opacity: number, isFront: boolean): ShaderM
 }
 
 type BallKind = "sphere" | "octa" | "icosa";
-const KINDS: BallKind[] = ["sphere", "sphere", "octa", "sphere", "icosa", "sphere", "sphere", "octa"];
+const KINDS: BallKind[] = ["sphere", "sphere", "sphere", "sphere", "sphere", "sphere", "sphere", "sphere"];
 
 function BouncingBalls({
   pointer,
@@ -281,7 +281,7 @@ function BouncingBalls({
         vy: (rand() - 0.5) * 2.4,
         vz: (rand() - 0.5) * 1.8,
         radius: r,
-        color: accent ? "#d86c08" : "#00d4ff",
+        color: accent ? "#f09428" : "#1e90ff",
         opacity: 0.22 + rand() * 0.18,
         kind: KINDS[i % KINDS.length] as BallKind,
         rotSpeed: 0.15 + rand() * 0.45,
@@ -306,9 +306,10 @@ function BouncingBalls({
     }));
   }, [defs, ballsRef]);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     const dt = Math.min(delta, 0.05);
     const balls = ballsRef.current;
+    const elapsed = state.clock.elapsedTime;
 
     defs.forEach((def, i) => {
       const b = balls[i];
@@ -316,22 +317,107 @@ function BouncingBalls({
       const back = backsRef.current[i];
       if (!b || !front) return;
 
+      // Integrate position
       b.px += b.vx * dt;
       b.py += b.vy * dt;
       b.pz += b.vz * dt;
 
+      // Spring membrane wall physics
+      const SPRING_K = 22.0;
+      const SPRING_DAMP = 3.5;
+      const MAX_PEN = 1.2;
+      const DEFLECT = 0.6;
+
       const bw = HW - b.radius;
       const bh = HH - b.radius;
-      if (b.px > bw) { b.px = bw; b.vx *= -1; }
-      if (b.px < -bw) { b.px = -bw; b.vx *= -1; }
-      if (b.py > bh) { b.py = bh; b.vy *= -1; }
-      if (b.py < -bh) { b.py = -bh; b.vy *= -1; }
-      if (b.pz > -0.5) { b.pz = -0.5; b.vz *= -1; }
-      if (b.pz < -(ROOM_D - 0.5)) { b.pz = -(ROOM_D - 0.5); b.vz *= -1; }
+      const zMax = -0.5;
+      const zMin = -(ROOM_D - 0.5);
+
+      let pen: number;
+
+      // Right wall – ball pushes into grid, decelerates, grid springs it back
+      pen = b.px - bw;
+      if (pen > 0) {
+        b.vx -= SPRING_K * pen * dt;
+        b.vx *= Math.max(0, 1 - SPRING_DAMP * dt);
+        b.vy += DEFLECT * pen * dt * Math.sin(elapsed * 1.3 + i * 5.7);
+        b.vz += DEFLECT * pen * dt * Math.cos(elapsed * 1.7 + i * 3.3);
+        if (pen > MAX_PEN) b.px = bw + MAX_PEN;
+      }
+
+      // Left wall
+      pen = -bw - b.px;
+      if (pen > 0) {
+        b.vx += SPRING_K * pen * dt;
+        b.vx *= Math.max(0, 1 - SPRING_DAMP * dt);
+        b.vy += DEFLECT * pen * dt * Math.sin(elapsed * 1.1 + i * 4.3);
+        b.vz += DEFLECT * pen * dt * Math.cos(elapsed * 1.5 + i * 6.1);
+        if (pen > MAX_PEN) b.px = -bw - MAX_PEN;
+      }
+
+      // Top wall
+      pen = b.py - bh;
+      if (pen > 0) {
+        b.vy -= SPRING_K * pen * dt;
+        b.vy *= Math.max(0, 1 - SPRING_DAMP * dt);
+        b.vx += DEFLECT * pen * dt * Math.sin(elapsed * 1.4 + i * 7.1);
+        b.vz += DEFLECT * pen * dt * Math.cos(elapsed * 0.9 + i * 2.9);
+        if (pen > MAX_PEN) b.py = bh + MAX_PEN;
+      }
+
+      // Bottom wall
+      pen = -bh - b.py;
+      if (pen > 0) {
+        b.vy += SPRING_K * pen * dt;
+        b.vy *= Math.max(0, 1 - SPRING_DAMP * dt);
+        b.vx += DEFLECT * pen * dt * Math.sin(elapsed * 1.2 + i * 3.7);
+        b.vz += DEFLECT * pen * dt * Math.cos(elapsed * 1.8 + i * 5.3);
+        if (pen > MAX_PEN) b.py = -bh - MAX_PEN;
+      }
+
+      // Front wall
+      pen = b.pz - zMax;
+      if (pen > 0) {
+        b.vz -= SPRING_K * pen * dt;
+        b.vz *= Math.max(0, 1 - SPRING_DAMP * dt);
+        b.vx += DEFLECT * pen * dt * Math.sin(elapsed * 0.8 + i * 4.1);
+        b.vy += DEFLECT * pen * dt * Math.cos(elapsed * 1.6 + i * 2.3);
+        if (pen > MAX_PEN) b.pz = zMax + MAX_PEN;
+      }
+
+      // Back wall
+      pen = zMin - b.pz;
+      if (pen > 0) {
+        b.vz += SPRING_K * pen * dt;
+        b.vz *= Math.max(0, 1 - SPRING_DAMP * dt);
+        b.vx += DEFLECT * pen * dt * Math.sin(elapsed * 1.0 + i * 6.7);
+        b.vy += DEFLECT * pen * dt * Math.cos(elapsed * 1.4 + i * 3.9);
+        if (pen > MAX_PEN) b.pz = zMin - MAX_PEN;
+      }
+
+      // Mouse gravitational pull — attract balls toward pointer in world space
+      const GRAV_STRENGTH = 12.0;
+      const GRAV_RADIUS = 8.0;
+      const mouseWorldX = pointer.current.x * HW * 0.9;
+      const mouseWorldY = pointer.current.y * HH * 0.9;
+      const mdx = mouseWorldX - b.px;
+      const mdy = mouseWorldY - b.py;
+      const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+      if (mDist > 0.1 && mDist < GRAV_RADIUS) {
+        const falloff = 1.0 - mDist / GRAV_RADIUS;
+        const force = GRAV_STRENGTH * falloff * falloff * dt;
+        b.vx += (mdx / mDist) * force;
+        b.vy += (mdy / mDist) * force;
+      }
+
+      // Gentle drag to keep things stable
+      b.vx *= 1 - 0.3 * dt;
+      b.vy *= 1 - 0.3 * dt;
+      b.vz *= 1 - 0.3 * dt;
 
       const df = (Math.abs(b.pz) + 1) / ROOM_D;
-      const px = b.px + pointer.current.x * 0.3 * df;
-      const py = b.py + pointer.current.y * 0.2 * df;
+      const px = b.px;
+      const py = b.py;
 
       front.position.set(px, py, b.pz);
       front.rotation.x += dt * def.rotSpeed * 0.5;
@@ -353,18 +439,18 @@ function BouncingBalls({
             position={[d.px, d.py, d.pz]}
             material={materials[i].back}
           >
-            {d.kind === "sphere" && <sphereGeometry args={[d.radius, 28, 20]} />}
-            {d.kind === "octa" && <octahedronGeometry args={[d.radius, 2]} />}
-            {d.kind === "icosa" && <icosahedronGeometry args={[d.radius, 2]} />}
+            {d.kind === "sphere" && <sphereGeometry args={[d.radius, 64, 48]} />}
+            {d.kind === "octa" && <octahedronGeometry args={[d.radius, 6]} />}
+            {d.kind === "icosa" && <icosahedronGeometry args={[d.radius, 6]} />}
           </mesh>
           <mesh
             ref={(m) => { fronts.current[i] = m; }}
             position={[d.px, d.py, d.pz]}
             material={materials[i].front}
           >
-            {d.kind === "sphere" && <sphereGeometry args={[d.radius, 28, 20]} />}
-            {d.kind === "octa" && <octahedronGeometry args={[d.radius, 2]} />}
-            {d.kind === "icosa" && <icosahedronGeometry args={[d.radius, 2]} />}
+            {d.kind === "sphere" && <sphereGeometry args={[d.radius, 64, 48]} />}
+            {d.kind === "octa" && <octahedronGeometry args={[d.radius, 6]} />}
+            {d.kind === "icosa" && <icosahedronGeometry args={[d.radius, 6]} />}
           </mesh>
         </group>
       ))}

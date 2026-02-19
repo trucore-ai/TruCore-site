@@ -95,7 +95,7 @@ export default function RootLayout({
               </a>
               <nav
                 aria-label="Primary"
-                className="flex items-center gap-4 text-sm text-slate-300 sm:gap-6"
+                className="flex items-center gap-4 text-base text-slate-200 sm:gap-6"
               >
                 <a href="#hero" className="transition-colors hover:text-primary-200">
                   Home
@@ -128,7 +128,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
 
           <footer id="footer" className="border-t border-white/10 bg-neutral-900/30 backdrop-blur-sm">
-            <Container className="flex flex-col gap-5 py-8 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+            <Container className="flex flex-col gap-5 py-8 text-base text-slate-300 sm:flex-row sm:items-center sm:justify-between">
               <p>© {new Date().getFullYear()} TruCore. Built on trust and integrity.</p>
               <div className="flex flex-wrap items-center gap-4">
                 <a href="#" className="transition-colors hover:text-primary-200">
