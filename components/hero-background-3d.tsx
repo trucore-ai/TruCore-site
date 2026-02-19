@@ -4,6 +4,9 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
 import { Color, Group, Mesh } from "three";
 
+const MIN_Z = -5.6;
+const MAX_Z = -0.8;
+
 function mulberry32(seed: number) {
   return function () {
     let t = (seed += 0x6d2b79f5);
@@ -35,22 +38,20 @@ type ShapeSeed = {
 
 function LatticeTunnel({ pointer }: { pointer: MutableRefObject<PointerTarget> }) {
   const groupRef = useRef<Group>(null);
-  const layerRefs = useRef<Array<Group | null>>([]);
+  const layerRefs = useRef<Array<Mesh | null>>([]);
   const timeRef = useRef(0);
-  const frameWidth = 12;
-  const frameHeight = 6.7;
 
   const layers = useMemo(() => {
-    return Array.from({ length: 8 }, (_, index) => {
-      const depth = index / 7;
-      const frameThickness = 0.25 - depth * 0.19;
+    return Array.from({ length: 12 }, (_, index) => {
+      const t = index / 11;
 
       return {
-        z: -0.35 - index * 1.02,
-        scale: 1 - index * 0.09,
+        z: -0.2 - index * 0.78,
+        scale: 1 - t * 0.06,
         color: index % 5 === 0 ? "#d86c08" : "#5cbcfb",
-        opacity: index % 5 === 0 ? 0.26 - depth * 0.11 : 0.34 - depth * 0.18,
-        frameThickness: Math.max(frameThickness, 0.045),
+        opacity: 0.38 * (1 - t * 0.82),
+        lineWidth: 2.6 * (1 - t * 0.7),
+        segments: 6 as const,
       };
     });
   }, []);
@@ -62,61 +63,51 @@ function LatticeTunnel({ pointer }: { pointer: MutableRefObject<PointerTarget> }
       return;
     }
 
-    group.rotation.y += (pointer.current.x * 0.25 - group.rotation.y) * 0.09;
-    group.rotation.x += (-pointer.current.y * 0.16 - group.rotation.x) * 0.09;
+    group.rotation.y += (pointer.current.x * 0.2 - group.rotation.y) * 0.08;
+    group.rotation.x += (-pointer.current.y * 0.12 - group.rotation.x) * 0.08;
 
-    state.camera.position.x += (pointer.current.x * 0.46 - state.camera.position.x) * 0.07;
-    state.camera.position.y += (pointer.current.y * 0.3 - state.camera.position.y) * 0.07;
-    state.camera.position.z += (2.2 - state.camera.position.z) * 0.04;
-    state.camera.lookAt(0, 0, 0);
+    state.camera.position.x += (pointer.current.x * 0.4 - state.camera.position.x) * 0.06;
+    state.camera.position.y += (pointer.current.y * 0.26 - state.camera.position.y) * 0.06;
+    state.camera.position.z += (2.4 - state.camera.position.z) * 0.04;
+    state.camera.lookAt(0, 0, -2);
 
     timeRef.current += delta;
     const t = timeRef.current;
 
-    layerRefs.current.forEach((layerGroup, layerIndex) => {
-      if (!layerGroup) {
+    layerRefs.current.forEach((mesh, layerIndex) => {
+      if (!mesh) {
         return;
       }
 
       const depth = 1 - layerIndex / layers.length;
-      const bob = Math.sin(t * 0.9 + layerIndex * 0.7) * 0.032 * depth;
-      const sway = Math.cos(t * 0.75 + layerIndex * 0.45) * 0.027 * depth;
+      const bob = Math.sin(t * 0.7 + layerIndex * 0.6) * 0.02 * depth;
+      const sway = Math.cos(t * 0.55 + layerIndex * 0.4) * 0.018 * depth;
 
-      layerGroup.position.x += (pointer.current.x * 0.2 * depth + sway - layerGroup.position.x) * 0.06;
-      layerGroup.position.y += (pointer.current.y * 0.12 * depth + bob - layerGroup.position.y) * 0.06;
-      layerGroup.rotation.z += (pointer.current.x * 0.045 * (depth + 0.15) - layerGroup.rotation.z) * 0.06;
-      layerGroup.rotation.y += (pointer.current.x * 0.06 * depth - layerGroup.rotation.y) * 0.05;
+      mesh.position.x += (pointer.current.x * 0.15 * depth + sway - mesh.position.x) * 0.05;
+      mesh.position.y += (pointer.current.y * 0.1 * depth + bob - mesh.position.y) * 0.05;
     });
   });
 
   return (
     <group ref={groupRef}>
       {layers.map((layer, index) => (
-        <group
+        <mesh
           key={index}
-          ref={(layerGroup) => {
-            layerRefs.current[index] = layerGroup;
+          ref={(mesh) => {
+            layerRefs.current[index] = mesh;
           }}
           position={[0, 0, layer.z]}
           scale={layer.scale}
         >
-          <mesh position={[0, frameHeight / 2, 0]}>
-            <boxGeometry args={[frameWidth, layer.frameThickness, layer.frameThickness]} />
-            <meshBasicMaterial color={layer.color} transparent opacity={layer.opacity} />
-          </mesh>
-          <mesh position={[0, -frameHeight / 2, 0]}>
-            <boxGeometry args={[frameWidth, layer.frameThickness, layer.frameThickness]} />
-            <meshBasicMaterial color={layer.color} transparent opacity={layer.opacity} />
-          </mesh>
-          <mesh position={[-frameWidth / 2, 0, 0]}>
-            <boxGeometry args={[layer.frameThickness, frameHeight, layer.frameThickness]} />
-            <meshBasicMaterial color={layer.color} transparent opacity={layer.opacity} />
-          </mesh>
-          <mesh position={[frameWidth / 2, 0, 0]}>
-            <boxGeometry args={[layer.frameThickness, frameHeight, layer.frameThickness]} />
-            <meshBasicMaterial color={layer.color} transparent opacity={layer.opacity} />
-          </mesh>
-        </group>
+          <planeGeometry args={[12, 6.8, layer.segments, layer.segments]} />
+          <meshBasicMaterial
+            color={layer.color}
+            wireframe
+            wireframeLinewidth={layer.lineWidth}
+            transparent
+            opacity={Math.max(layer.opacity, 0.025)}
+          />
+        </mesh>
       ))}
     </group>
   );
@@ -170,16 +161,15 @@ function FloatingShapes({ pointer }: { pointer: MutableRefObject<PointerTarget> 
 
       const targetX = shape.x + orbitX + pointerX;
       const targetY = shape.y + orbitY + pointerY;
-      const targetZ = shape.z + Math.sin(t * shape.speed * 0.6 + shape.offset) * 0.22;
-      const depthScale = 0.58 + (targetZ + 5.6) / 5.2;
-      const targetScale = shape.baseScale * Math.min(Math.max(depthScale, 0.5), 1.08);
+      const targetZ = shape.z + Math.sin(t * shape.speed * 0.6 + shape.offset) * 0.55;
+      const zNorm = (targetZ - MIN_Z) / (MAX_Z - MIN_Z);
+      const depthScale = 0.28 + zNorm * 0.82;
+      const targetScale = shape.baseScale * Math.min(Math.max(depthScale, 0.22), 1.15);
 
       mesh.position.x += (targetX - mesh.position.x) * 0.085;
       mesh.position.y += (targetY - mesh.position.y) * 0.085;
       mesh.position.z += (targetZ - mesh.position.z) * 0.06;
-      mesh.scale.x += (targetScale - mesh.scale.x) * 0.12;
-      mesh.scale.y += (targetScale - mesh.scale.y) * 0.12;
-      mesh.scale.z += (targetScale - mesh.scale.z) * 0.12;
+      mesh.scale.setScalar(mesh.scale.x + (targetScale - mesh.scale.x) * 0.1);
 
       mesh.rotation.x += delta * (0.38 + shape.speed * 0.3);
       mesh.rotation.y += delta * (0.44 + shape.speed * 0.22);
