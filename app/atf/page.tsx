@@ -106,7 +106,7 @@ export default function ATFPage() {
           {/* CTAs */}
           <div className="mt-8 flex flex-wrap gap-4">
             <TrackedLink
-              href="/#waitlist?intent=design_partner"
+              href="/?intent=design_partner#waitlist"
               eventName="design_partner_apply_click"
               eventProps={{ location: "atf_hero" }}
               className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"

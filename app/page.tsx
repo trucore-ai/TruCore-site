@@ -6,6 +6,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Tilt } from "@/components/ui/tilt";
 import { WaitlistForm } from "@/components/waitlist-form";
+import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
 import { ScrollLink } from "@/components/scroll-link";
 import Image from "next/image";
 
@@ -307,6 +308,9 @@ export default function Home() {
           </div>
         </div>
       </Section>
+
+      {/* ── Design Partner CTA ── */}
+      <AtfDesignPartnerCta location="homepage_bottom" />
 
       {/* ── Waitlist ── */}
       <Section id="waitlist" className="border-t border-white/10 fade-in-up">
