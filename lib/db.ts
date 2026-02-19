@@ -7,16 +7,25 @@ import { neon } from "@neondatabase/serverless";
 function getSQL() {
   const url = process.env.POSTGRES_URL ?? process.env.DATABASE_URL;
   if (!url) {
-    throw new Error("POSTGRES_URL (or DATABASE_URL) is not configured");
+    throw new Error(
+      "POSTGRES_URL (or DATABASE_URL) is not configured. " +
+      "Add it to .env.local for local dev or to your Vercel environment variables for production."
+    );
   }
   return neon(url);
 }
 
+/** Cache flag so we only run CREATE TABLE once per cold start */
+let tableEnsured = false;
+
 /**
  * Ensure the waitlist_signups table exists.
- * Safe to call on every request — uses IF NOT EXISTS.
+ * Safe to call on every request. Uses IF NOT EXISTS and
+ * skips the DDL after the first successful run per process.
  */
 export async function ensureWaitlistTable() {
+  if (tableEnsured) return;
+
   const sql = getSQL();
   await sql`
     CREATE TABLE IF NOT EXISTS waitlist_signups (
@@ -30,6 +39,7 @@ export async function ensureWaitlistTable() {
       ip_hash       TEXT
     );
   `;
+  tableEnsured = true;
 }
 
 /**

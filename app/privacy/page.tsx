@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "TruCore privacy policy — how we handle data and respect your privacy.",
+    "TruCore privacy policy: how we handle data and respect your privacy.",
 };
 
 export default function PrivacyPage() {
@@ -39,8 +39,8 @@ export default function PrivacyPage() {
           <Card>
             <h2 className="text-3xl font-bold text-[#f0a050]">Analytics</h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
-              We use Vercel Web Analytics — a privacy-first, cookie-free
-              analytics service — to measure page views and understand how
+              We use Vercel Web Analytics, a privacy-first, cookie-free
+              analytics service, to measure page views and understand how
               visitors interact with the site. We also track a small number of
               custom events (e.g.&nbsp;waitlist sign-ups, button clicks) to
               improve the product experience.
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
               If you join our waitlist, we store the email address you provide
               along with an optional role and use-case description. We also
-              store a one-way hash of your IP address for abuse prevention —
+              store a one-way hash of your IP address for abuse prevention;
               the raw IP is never retained. This data is used solely for
               early-access communication and is never sold or shared.
             </p>

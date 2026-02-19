@@ -59,7 +59,7 @@ const atfFeatures = [
     icon: "PA",
     title: "Protocol allowlists",
     description:
-      "Agents can only interact with pre-approved contracts — no unauthorized protocol access.",
+      "Agents can only interact with pre-approved contracts. No unauthorized protocol access.",
   },
   {
     icon: "PZ",
@@ -170,7 +170,7 @@ export default function Home() {
           <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
             ATF is the enforcement layer between AI agents and on-chain execution.
             It applies deterministic policy checks to every transaction before
-            submission — constraining slippage, restricting protocol access, and
+            submission, constraining slippage, restricting protocol access, and
             producing cryptographic receipts for full auditability.
           </p>
         </div>
@@ -222,7 +222,7 @@ export default function Home() {
         <div className="mb-8 max-w-2xl">
           <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">The TruCore Vision</h2>
           <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
-            Agent Transaction Firewall is the first product — not the last. TruCore is building
+            Agent Transaction Firewall is the first product, not the last. TruCore is building
             the foundational security infrastructure that autonomous financial systems require
             to operate at scale.
           </p>

@@ -102,7 +102,7 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
 
     /* ---- emails (fire-and-forget, fail silently) ---- */
     if (isNew) {
-      // Do not await sequentially — fire both in parallel
+      // Do not await sequentially - fire both in parallel
       Promise.allSettled([
         sendAdminNotification({ email, role, useCase }),
         sendUserConfirmation(email),
@@ -117,11 +117,17 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
       message: "You're on the list. We'll share early-access updates soon.",
     };
   } catch (error) {
-    // Log generic error, no PII
-    console.error("[waitlist] Submission failed:", error instanceof Error ? error.message : "unknown");
+    const msg = error instanceof Error ? error.message : "unknown";
+    // Surface config errors so they can be debugged
+    const isConfigError = msg.includes("not configured");
+    console.error(
+      `[waitlist] Submission failed: ${isConfigError ? msg : "DB error (see server logs)"}`,
+    );
     return {
       ok: false,
-      message: "Something went wrong. Please try again shortly.",
+      message: isConfigError
+        ? "Waitlist is temporarily unavailable (server configuration issue)."
+        : "Something went wrong. Please try again shortly.",
     };
   }
 }

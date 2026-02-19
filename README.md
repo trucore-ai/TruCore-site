@@ -6,7 +6,7 @@ Launch-ready marketing site for TruCore: trust-first, AI-native financial infras
 
 - Next.js 16 (App Router, TypeScript)
 - Tailwind CSS
-- React Three Fiber for subtle hero background motion
+- Canvas 2D hero background with animated pulses
 
 ## Local Development
 

@@ -8,7 +8,7 @@ import { Section } from "@/components/ui/section";
 export const metadata: Metadata = {
   title: "Agent Transaction Firewall (ATF)",
   description:
-    "ATF is TruCore\u2019s flagship enforcement layer \u2014 deterministic policy checks, slippage constraints, protocol allowlists, and cryptographic receipts for every AI-agent transaction.",
+    "ATF is TruCore\u2019s flagship enforcement layer: deterministic policy checks, slippage constraints, protocol allowlists, and cryptographic receipts for every AI-agent transaction.",
 };
 
 const threatVectors = [
@@ -31,6 +31,10 @@ const threatVectors = [
   {
     threat: "Audit opacity",
     impact: "No verifiable trail of what was checked, approved, or rejected at execution time.",
+  },
+  {
+    threat: "Adversary and MEV exploitation",
+    impact: "MEV bots, sandwich attacks, and adversarial actors extract value from agent transactions that lack pre-flight protection and slippage enforcement.",
   },
 ];
 
@@ -70,7 +74,7 @@ export default function ATFPage() {
           <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
             The enforcement layer between AI agents and on-chain execution.
             ATF applies deterministic policy checks to every transaction before
-            submission — protecting capital, constraining behavior, and producing
+            submission, protecting capital, constraining behavior, and producing
             verifiable evidence of compliance.
           </p>
         </div>
@@ -83,7 +87,7 @@ export default function ATFPage() {
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
             Autonomous AI agents are executing financial transactions with
             increasing frequency and complexity. Current infrastructure assumes
-            human oversight at critical decision points — an assumption that
+            human oversight at critical decision points, an assumption that
             breaks down when agents operate independently at machine speed.
           </p>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -91,6 +95,22 @@ export default function ATFPage() {
             parameters, interact with unapproved protocols, and produce no
             auditable record of their behavior. The result is uncontrolled
             capital exposure and zero accountability.
+          </p>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            The core issue is that AI cannot be fully trusted. Models
+            hallucinate, drift, and behave unpredictably under novel conditions.
+            Capital preservation is uncertain when the system making decisions
+            has no hard-coded boundaries. Risk reduction requires an external
+            enforcement layer that constrains what agents can do before
+            transactions ever reach the chain.
+          </p>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            On-chain environments are adversarial by nature. MEV bots,
+            sandwich attacks, and front-runners actively exploit unprotected
+            transactions. Agents operating without pre-flight simulation,
+            slippage caps, and protocol allowlists are easy targets. ATF
+            provides the enforcement boundary that stands between autonomous
+            agents and these external threats.
           </p>
         </div>
       </Section>
@@ -149,16 +169,15 @@ export default function ATFPage() {
         </div>
 
         {/* Inline SVG diagram */}
-        <div className="mx-auto max-w-3xl overflow-x-auto rounded-xl border border-white/10 bg-neutral-900/60 p-6 sm:p-8">
+        <div className="mx-auto max-w-5xl overflow-x-auto rounded-xl border border-white/10 bg-neutral-900/60 p-6 sm:p-10">
           <svg
-            viewBox="0 0 680 520"
+            viewBox="0 0 820 700"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className="w-full"
             role="img"
             aria-label="ATF architecture diagram showing four layers: Policy Engine, Permit Gateway, Execution Validator, and Receipt Ledger"
           >
-            {/* Background subtle grid */}
             <defs>
               <linearGradient id="blueGlow" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#349de8" stopOpacity="0.12" />
@@ -178,60 +197,60 @@ export default function ATFPage() {
             </defs>
 
             {/* Agent (top) */}
-            <rect x="250" y="12" width="180" height="48" rx="8" fill="#162236" stroke="#8ed3ff" strokeWidth="1.5" />
-            <text x="340" y="42" textAnchor="middle" fill="#8ed3ff" fontSize="16" fontWeight="600" fontFamily="system-ui, sans-serif">
+            <rect x="280" y="16" width="260" height="64" rx="10" fill="#162236" stroke="#8ed3ff" strokeWidth="1.5" />
+            <text x="410" y="56" textAnchor="middle" fill="#8ed3ff" fontSize="22" fontWeight="600" fontFamily="system-ui, sans-serif">
               AI Agent
             </text>
 
             {/* Arrow down */}
-            <line x1="340" y1="60" x2="340" y2="98" stroke="#5cbcfb" strokeWidth="1.5" strokeDasharray="4 3" />
-            <polygon points="334,94 340,104 346,94" fill="#5cbcfb" />
+            <line x1="410" y1="80" x2="410" y2="126" stroke="#5cbcfb" strokeWidth="2" strokeDasharray="5 4" />
+            <polygon points="403,121 410,134 417,121" fill="#5cbcfb" />
 
             {/* Layer 1: Policy Engine */}
-            <rect x="90" y="106" width="500" height="68" rx="10" fill="url(#blueGlow)" stroke="#349de8" strokeWidth="1.5" />
-            <text x="340" y="134" textAnchor="middle" fill="#8ed3ff" fontSize="17" fontWeight="700" fontFamily="system-ui, sans-serif">
+            <rect x="60" y="140" width="700" height="90" rx="12" fill="url(#blueGlow)" stroke="#349de8" strokeWidth="1.5" />
+            <text x="410" y="178" textAnchor="middle" fill="#8ed3ff" fontSize="24" fontWeight="700" fontFamily="system-ui, sans-serif">
               Policy Engine
             </text>
-            <text x="340" y="158" textAnchor="middle" fill="#94a3b8" fontSize="13" fontFamily="system-ui, sans-serif">
+            <text x="410" y="210" textAnchor="middle" fill="#b0bec5" fontSize="17" fontFamily="system-ui, sans-serif">
               Evaluates intent against policy + threat model
             </text>
 
             {/* Arrow */}
-            <line x1="340" y1="174" x2="340" y2="204" stroke="#5cbcfb" strokeWidth="1.5" strokeDasharray="4 3" />
-            <polygon points="334,200 340,210 346,200" fill="#5cbcfb" />
+            <line x1="410" y1="230" x2="410" y2="272" stroke="#5cbcfb" strokeWidth="2" strokeDasharray="5 4" />
+            <polygon points="403,267 410,280 417,267" fill="#5cbcfb" />
 
             {/* Layer 2: Permit Gateway */}
-            <rect x="90" y="212" width="500" height="68" rx="10" fill="url(#blueGlow)" stroke="#349de8" strokeWidth="1.5" />
-            <text x="340" y="240" textAnchor="middle" fill="#8ed3ff" fontSize="17" fontWeight="700" fontFamily="system-ui, sans-serif">
+            <rect x="60" y="286" width="700" height="90" rx="12" fill="url(#blueGlow)" stroke="#349de8" strokeWidth="1.5" />
+            <text x="410" y="324" textAnchor="middle" fill="#8ed3ff" fontSize="24" fontWeight="700" fontFamily="system-ui, sans-serif">
               Permit Gateway
             </text>
-            <text x="340" y="264" textAnchor="middle" fill="#94a3b8" fontSize="13" fontFamily="system-ui, sans-serif">
-              Scoped authorization — TTL, nonce, domain separation
+            <text x="410" y="356" textAnchor="middle" fill="#b0bec5" fontSize="17" fontFamily="system-ui, sans-serif">
+              Scoped authorization: TTL, nonce, domain separation
             </text>
 
             {/* Arrow */}
-            <line x1="340" y1="280" x2="340" y2="310" stroke="#5cbcfb" strokeWidth="1.5" strokeDasharray="4 3" />
-            <polygon points="334,306 340,316 346,306" fill="#5cbcfb" />
+            <line x1="410" y1="376" x2="410" y2="418" stroke="#5cbcfb" strokeWidth="2" strokeDasharray="5 4" />
+            <polygon points="403,413 410,426 417,413" fill="#5cbcfb" />
 
             {/* Layer 3: Execution Validator */}
-            <rect x="90" y="318" width="500" height="68" rx="10" fill="url(#orangeGlow)" stroke="#f08a1f" strokeWidth="1.2" />
-            <text x="340" y="346" textAnchor="middle" fill="#f0a050" fontSize="17" fontWeight="700" fontFamily="system-ui, sans-serif">
+            <rect x="60" y="432" width="700" height="90" rx="12" fill="url(#orangeGlow)" stroke="#f08a1f" strokeWidth="1.2" />
+            <text x="410" y="470" textAnchor="middle" fill="#f0a050" fontSize="24" fontWeight="700" fontFamily="system-ui, sans-serif">
               Execution Validator
             </text>
-            <text x="340" y="370" textAnchor="middle" fill="#94a3b8" fontSize="13" fontFamily="system-ui, sans-serif">
+            <text x="410" y="502" textAnchor="middle" fill="#b0bec5" fontSize="17" fontFamily="system-ui, sans-serif">
               Allowlists, slippage bounds, spend caps, simulation
             </text>
 
             {/* Arrow */}
-            <line x1="340" y1="386" x2="340" y2="416" stroke="#5cbcfb" strokeWidth="1.5" strokeDasharray="4 3" />
-            <polygon points="334,412 340,422 346,412" fill="#5cbcfb" />
+            <line x1="410" y1="522" x2="410" y2="564" stroke="#5cbcfb" strokeWidth="2" strokeDasharray="5 4" />
+            <polygon points="403,559 410,572 417,559" fill="#5cbcfb" />
 
             {/* Layer 4: Receipt Ledger */}
-            <rect x="90" y="424" width="500" height="68" rx="10" fill="url(#blueGlow)" stroke="#349de8" strokeWidth="1.5" />
-            <text x="340" y="452" textAnchor="middle" fill="#8ed3ff" fontSize="17" fontWeight="700" fontFamily="system-ui, sans-serif">
+            <rect x="60" y="578" width="700" height="90" rx="12" fill="url(#blueGlow)" stroke="#349de8" strokeWidth="1.5" />
+            <text x="410" y="616" textAnchor="middle" fill="#8ed3ff" fontSize="24" fontWeight="700" fontFamily="system-ui, sans-serif">
               Receipt Ledger
             </text>
-            <text x="340" y="476" textAnchor="middle" fill="#94a3b8" fontSize="13" fontFamily="system-ui, sans-serif">
+            <text x="410" y="648" textAnchor="middle" fill="#b0bec5" fontSize="17" fontFamily="system-ui, sans-serif">
               Tamper-evident receipts for audit + incident response
             </text>
           </svg>
@@ -274,7 +293,7 @@ export default function ATFPage() {
             {
               step: 5,
               title: "Receipt emitted",
-              desc: "A cryptographic receipt is generated — hashes, policy ID, outcome — and stored.",
+              desc: "A cryptographic receipt is generated (hashes, policy ID, outcome) and stored.",
             },
           ].map((item) => (
             <li key={item.step}>
@@ -344,7 +363,7 @@ export default function ATFPage() {
           </h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
             A minimal, illustrative permit payload. Real permits are signed and
-            carry additional metadata — no secrets are shown here.
+            carry additional metadata. No secrets are shown here.
           </p>
         </div>
         <div className="mx-auto max-w-2xl overflow-x-auto rounded-xl border border-white/10 bg-neutral-900/80 p-6">

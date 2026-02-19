@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 export const metadata: Metadata = {
   title: "Terms of Use",
   description:
-    "TruCore terms of use — conditions for using the TruCore website.",
+    "TruCore terms of use: conditions for using the TruCore website.",
 };
 
 export default function TermsPage() {

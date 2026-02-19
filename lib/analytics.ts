@@ -14,6 +14,6 @@ export function trackEvent(
   try {
     track(name, props);
   } catch {
-    // Silently swallow — analytics must never break the UI.
+    // Silently swallow - analytics must never break the UI.
   }
 }

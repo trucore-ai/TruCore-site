@@ -47,7 +47,7 @@ async function sendEmail(params: SendEmailParams): Promise<boolean> {
 
 /**
  * Send the admin notification about a new waitlist signup.
- * No PII is logged — only email is included in the email body itself.
+ * No PII is logged. Only email is included in the email body itself.
  */
 export async function sendAdminNotification(params: {
   email: string;
@@ -81,7 +81,7 @@ export async function sendAdminNotification(params: {
 
 /**
  * Send a confirmation email to the user who signed up.
- * Minimal, trust-aligned — no marketing fluff.
+ * Minimal, trust-aligned. No marketing fluff.
  */
 export async function sendUserConfirmation(email: string): Promise<boolean> {
   const from = process.env.WAITLIST_FROM ?? "TruCore <hello@trucore.xyz>";
@@ -97,7 +97,7 @@ export async function sendUserConfirmation(email: string): Promise<boolean> {
           Thanks for your interest in TruCore. We're building trust-first infrastructure
           for autonomous finance, and you'll be among the first to get access.
         </p>
-        <p>We'll reach out when early access is available. No spam — ever.</p>
+        <p>We'll reach out when early access is available. No spam, ever.</p>
         <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;" />
         <p style="color: #666; font-size: 13px;">
           If you didn't sign up for this, you can safely ignore this email or contact

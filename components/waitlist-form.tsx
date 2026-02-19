@@ -45,7 +45,7 @@ export function WaitlistForm() {
 
   return (
     <form action={dispatch} className="space-y-4" noValidate>
-      {/* Honeypot — hidden from real users */}
+      {/* Honeypot - hidden from real users */}
       <div className="absolute left-[-9999px]" aria-hidden="true">
         <label htmlFor="wl-company">Company</label>
         <input
