@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Image from "next/image";
 import { Container } from "@/components/ui/container";
+import { HeroBackground3D } from "@/components/hero-background-3d";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -75,8 +76,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="flex min-h-screen flex-col">
-          <header className="border-b border-white/10 bg-neutral-900/70 backdrop-blur">
+        <HeroBackground3D />
+        <div className="relative z-10 flex min-h-screen flex-col">
+          <header className="border-b border-white/10 bg-neutral-900/50 backdrop-blur-md">
             <Container className="flex h-16 items-center justify-between">
               <a href="#hero" aria-label="TruCore home" className="flex items-center gap-3">
                 <Image
@@ -125,7 +127,7 @@ export default function RootLayout({
 
           <main className="flex-1">{children}</main>
 
-          <footer id="footer" className="border-t border-white/10">
+          <footer id="footer" className="border-t border-white/10 bg-neutral-900/30 backdrop-blur-sm">
             <Container className="flex flex-col gap-5 py-8 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
               <p>© {new Date().getFullYear()} TruCore. Built on trust and integrity.</p>
               <div className="flex flex-wrap items-center gap-4">

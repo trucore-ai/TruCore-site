@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
-import { HeroBackground3D } from "@/components/hero-background-3d";
 import { Section } from "@/components/ui/section";
 import { Tilt } from "@/components/ui/tilt";
 import { WaitlistForm } from "@/components/waitlist-form";
@@ -46,9 +45,7 @@ export default function Home() {
   return (
     <Container>
       <Section id="hero" className="fade-in-up">
-        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-neutral-900/80 p-8 sm:p-12">
-          <HeroBackground3D />
-
+        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-neutral-900/60 backdrop-blur-sm p-8 sm:p-12">
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-3">
               <Badge>Solana-native</Badge>
@@ -89,8 +86,8 @@ export default function Home() {
                 <Image
                   src="/images/trucore-banner.png"
                   alt="TruCore banner"
-                  width={1600}
-                  height={560}
+                  width={1536}
+                  height={1024}
                   className="h-auto w-full object-cover"
                   style={{
                     WebkitMaskImage:
