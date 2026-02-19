@@ -1,0 +1,9 @@
+# TruCore Security Contact
+# https://securitytxt.org/
+
+Contact: mailto:security@trucore.xyz
+Contact: https://x.com/TruCore_AI
+Expires: 2026-08-19T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://trucore.xyz/.well-known/security.txt
+Policy: https://trucore.xyz/security

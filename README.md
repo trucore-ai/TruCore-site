@@ -50,6 +50,48 @@ npm run build
   - `/twitter-image`
 - Favicon: `/favicon.ico`
 
+## Waitlist Setup
+
+### Vercel Postgres
+
+1. In Vercel dashboard, go to **Storage** → **Create** → **Postgres**.
+2. Name the database (e.g., `trucore-waitlist`) and confirm.
+3. Vercel auto-injects `POSTGRES_URL` (and related vars) into the project.
+4. The `waitlist_signups` table is auto-created on the first submission via `ensureWaitlistTable()`.
+
+### Resend (Email)
+
+1. Sign up at [resend.com](https://resend.com) and verify your domain (`trucore.xyz`).
+2. Create an API key with **Send** permission.
+3. Add these environment variables in **Vercel → Project Settings → Environment Variables**:
+
+| Variable | Value |
+| --- | --- |
+| `RESEND_API_KEY` | `re_xxxxxxxxxx` |
+| `WAITLIST_NOTIFY_TO` | `hello@trucore.xyz` |
+| `WAITLIST_FROM` | `TruCore <hello@trucore.xyz>` |
+
+### Run Locally
+
+```bash
+# Copy env vars (needs POSTGRES_URL + RESEND_API_KEY at minimum)
+cp .env.example .env.local
+
+npm install
+npm run dev
+```
+
+> **Tip:** If you don't have Postgres set up locally, submissions will fail but the UI will still render.
+> You can pull Vercel env vars locally with `vercel env pull .env.local`.
+
+### Verify in Production
+
+- Submit a test email on <https://trucore.xyz/#waitlist>.
+- Confirm the row appears in Vercel Postgres (Storage → Data tab).
+- Confirm admin + user emails arrive via Resend dashboard.
+
+---
+
 ## Vercel Deployment Checklist
 
 ### 1) Import Repo

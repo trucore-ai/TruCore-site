@@ -41,9 +41,58 @@ const trustPillars = [
   "Cryptographic receipts for verifiable operations",
 ];
 
+const atfFeatures = [
+  {
+    icon: "PB",
+    title: "Policy-bound execution",
+    description:
+      "Every agent transaction is validated against explicit policy rules before on-chain submission.",
+  },
+  {
+    icon: "SC",
+    title: "Slippage constraints",
+    description:
+      "Hard limits on price deviation protect capital from adverse execution and MEV extraction.",
+  },
+  {
+    icon: "PA",
+    title: "Protocol allowlists",
+    description:
+      "Agents can only interact with pre-approved contracts — no unauthorized protocol access.",
+  },
+  {
+    icon: "PZ",
+    title: "Permit-based authorization",
+    description:
+      "Scoped, time-bound permits grant agents minimal execution rights with explicit boundaries.",
+  },
+  {
+    icon: "CR",
+    title: "Cryptographic receipts",
+    description:
+      "Tamper-evident proof of every policy check, execution, and settlement for full auditability.",
+  },
+];
+
+const visionItems = [
+  {
+    title: "AI-native DeFi infrastructure",
+    description: "Purpose-built primitives for autonomous agents operating across decentralized financial protocols.",
+  },
+  {
+    title: "Stable asset tooling",
+    description: "Trust-verified instruments and guardrails for AI systems managing stable value representations.",
+  },
+  {
+    title: "Agent coordination layers",
+    description: "Secure multi-agent communication and settlement channels for complex financial workflows.",
+  },
+];
+
 export default function Home() {
   return (
     <Container>
+      {/* ── Hero ── */}
       <Section id="hero" className="fade-in-up">
         <div className="relative overflow-hidden rounded-xl border border-white/10 bg-neutral-900/75 backdrop-blur-md p-8 sm:p-12">
           <div className="relative z-10">
@@ -52,12 +101,14 @@ export default function Home() {
               <Badge>Zero-trust</Badge>
               <Badge>AI execution</Badge>
             </div>
-            <h1 className="mt-6 max-w-3xl text-6xl font-bold tracking-tight text-white sm:text-7xl">
-              Trust infrastructure for autonomous finance.
+            <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-7xl lg:text-8xl">
+              Security Infrastructure for Autonomous Finance
             </h1>
-            <p className="mt-5 max-w-2xl text-2xl leading-10 text-slate-200 sm:text-3xl">
-              TruCore is AI-native financial infrastructure that enforces policy before action,
-              keeps execution accountable, and protects capital by default.
+            <p className="mt-5 max-w-2xl text-3xl leading-[1.4] text-slate-200 sm:text-4xl">
+              TruCore builds trust layers for AI agents transacting on-chain.
+            </p>
+            <p className="mt-3 max-w-2xl text-xl leading-[1.5] text-primary-200/80">
+              Launching with Agent Transaction Firewall (ATF).
             </p>
             <Tilt maxTilt={4} perspective={1000} className="mt-8">
               <div className="depth-scene flex flex-col gap-3 sm:flex-row">
@@ -67,15 +118,15 @@ export default function Home() {
                   </Button>
                 </div>
                 <div className="depth-body">
-                  <Button href="#integrations" variant="secondary">
-                    Read the ATF Overview
+                  <Button href="/atf" variant="secondary">
+                    Explore ATF
                   </Button>
                 </div>
               </div>
             </Tilt>
-            <ul className="mt-8 grid gap-4 text-xl text-primary-50 sm:grid-cols-3">
+            <ul className="mt-8 grid gap-4 text-2xl text-primary-50 sm:grid-cols-3">
               {metrics.map((item) => (
-                <li key={item} className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-6 py-5">
+                <li key={item} className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-7 py-5">
                   {item}
                 </li>
               ))}
@@ -103,10 +154,45 @@ export default function Home() {
         </div>
       </Section>
 
-      <Section id="why-trucore" className="border-t border-white/10 fade-in-up fade-delay-1">
+      {/* ── Flagship Product: ATF ── */}
+      <Section id="atf" className="border-t border-white/10 fade-in-up fade-delay-1">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-white">Why TruCore</h2>
-          <p className="mt-4 text-2xl leading-10 text-slate-200">
+          <Badge className="mb-4">Flagship Product</Badge>
+          <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">
+            Agent Transaction Firewall (ATF)
+          </h2>
+          <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
+            ATF is the enforcement layer between AI agents and on-chain execution.
+            It applies deterministic policy checks to every transaction before
+            submission — constraining slippage, restricting protocol access, and
+            producing cryptographic receipts for full auditability.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {atfFeatures.map((feat) => (
+            <Tilt key={feat.title} maxTilt={5} perspective={1100} className="h-full">
+              <Card className="depth-scene h-full">
+                <div className="depth-icon mb-4 inline-flex h-14 w-14 items-center justify-center rounded-lg border border-primary-300/40 bg-primary-500/20 text-base font-bold tracking-wide text-primary-50">
+                  {feat.icon}
+                </div>
+                <h3 className="depth-title text-2xl font-bold text-[#e8944a]">{feat.title}</h3>
+                <p className="depth-body mt-3 text-xl leading-[1.5] text-slate-200">{feat.description}</p>
+              </Card>
+            </Tilt>
+          ))}
+        </div>
+        <div className="mt-6">
+          <Button href="/atf" variant="secondary">
+            Learn More →
+          </Button>
+        </div>
+      </Section>
+
+      {/* ── Why TruCore ── */}
+      <Section id="why-trucore" className="border-t border-white/10 fade-in-up fade-delay-2">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">Why TruCore</h2>
+          <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
             Trust-first controls and verifiable operations for AI systems handling financial decisions.
           </p>
         </div>
@@ -114,31 +200,52 @@ export default function Home() {
           {whyItems.map((item) => (
             <Tilt key={item.title} maxTilt={6} perspective={1100} className="h-full">
               <Card className="depth-scene h-full">
-                <div className="depth-icon mb-4 inline-flex h-14 w-14 items-center justify-center rounded-lg border border-primary-300/40 bg-primary-500/20 text-base font-bold tracking-wide text-primary-50">
+                <div className="depth-icon mb-4 inline-flex h-16 w-16 items-center justify-center rounded-lg border border-primary-300/40 bg-primary-500/20 text-lg font-bold tracking-wide text-primary-50">
                   {item.icon}
                 </div>
-                <h3 className="depth-title text-2xl font-bold text-white">{item.title}</h3>
-                <p className="depth-body mt-3 text-xl leading-9 text-slate-200">{item.description}</p>
+                <h3 className="depth-title text-3xl font-bold text-[#e8944a]">{item.title}</h3>
+                <p className="depth-body mt-3 text-2xl leading-[1.5] text-slate-200">{item.description}</p>
               </Card>
             </Tilt>
           ))}
         </div>
       </Section>
 
-      <Section id="trust-integrity" className="border-t border-white/10 fade-in-up fade-delay-2">
+      {/* ── The TruCore Vision ── */}
+      <Section id="vision" className="border-t border-white/10 fade-in-up fade-delay-3">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-white">Trust &amp; Integrity</h2>
-          <p className="mt-4 text-2xl leading-10 text-slate-200">
+          <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">The TruCore Vision</h2>
+          <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
+            Agent Transaction Firewall is the first product — not the last. TruCore is building
+            the foundational security infrastructure that autonomous financial systems require
+            to operate at scale.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {visionItems.map((item) => (
+            <Card key={item.title}>
+              <h3 className="text-2xl font-bold text-[#e8944a]">{item.title}</h3>
+              <p className="mt-3 text-xl leading-[1.5] text-slate-200">{item.description}</p>
+            </Card>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Trust & Integrity ── */}
+      <Section id="trust-integrity" className="border-t border-white/10 fade-in-up fade-delay-4">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">Trust &amp; Integrity</h2>
+          <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
             Security-grade principles govern every execution path from policy check to final settlement.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="md:col-span-2">
-            <ul className="grid gap-4 text-xl text-slate-100 sm:grid-cols-2">
+            <ul className="grid gap-4 text-2xl text-slate-100 sm:grid-cols-2">
               {trustPillars.map((pillar) => (
                 <li
                   key={pillar}
-                  className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-6 py-5"
+                  className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-7 py-5"
                 >
                   {pillar}
                 </li>
@@ -146,21 +253,22 @@ export default function Home() {
             </ul>
           </Card>
           <Card className="border-primary-300/25 bg-primary-500/10">
-            <p className="text-lg font-bold uppercase tracking-[0.14em] text-primary-100">
+            <p className="text-xl font-bold uppercase tracking-[0.14em] text-primary-100">
               Security Contact
             </p>
-            <p className="mt-3 text-xl text-slate-200">
+            <p className="mt-3 text-2xl text-slate-200">
               For responsible disclosure and security coordination, contact our team directly.
             </p>
-            <p className="mt-4 text-xl font-bold text-white">security@trucore.xyz</p>
+            <p className="mt-4 text-2xl font-bold text-white">security@trucore.xyz</p>
           </Card>
         </div>
       </Section>
 
-      <Section id="integrations" className="border-t border-white/10 fade-in-up fade-delay-3">
+      {/* ── V1 Integrations ── */}
+      <Section id="integrations" className="border-t border-white/10 fade-in-up fade-delay-5">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-white">V1 Integrations</h2>
-          <p className="mt-4 text-2xl leading-10 text-slate-200">
+          <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">V1 Integrations</h2>
+          <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
             Built with a Solana-first foundation and integrated with critical DeFi rails for execution.
           </p>
         </div>
@@ -169,8 +277,8 @@ export default function Home() {
             <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-lg border border-primary-300/40 text-sm font-semibold text-primary-100">
               S
             </div>
-            <h3 className="text-3xl font-bold text-white">Solana</h3>
-            <p className="mt-3 max-w-xl text-xl leading-9 text-slate-200">
+            <h3 className="text-4xl font-bold text-[#e8944a]">Solana</h3>
+            <p className="mt-3 max-w-xl text-2xl leading-[1.5] text-slate-200">
               Primary execution layer for low-latency policy-aware transactions, deterministic controls,
               and verifiable settlement pathways.
             </p>
@@ -180,8 +288,8 @@ export default function Home() {
               <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 text-sm font-semibold text-slate-200">
                 J
               </div>
-              <h3 className="text-2xl font-bold text-white">Jupiter</h3>
-              <p className="mt-3 text-xl leading-9 text-slate-200">
+              <h3 className="text-3xl font-bold text-[#e8944a]">Jupiter</h3>
+              <p className="mt-3 text-2xl leading-[1.5] text-slate-200">
                 Secondary integration for route intelligence and best-execution support.
               </p>
             </Card>
@@ -189,8 +297,8 @@ export default function Home() {
               <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 text-sm font-semibold text-slate-200">
                 L
               </div>
-              <h3 className="text-2xl font-bold text-white">Solend</h3>
-              <p className="mt-3 text-xl leading-9 text-slate-200">
+              <h3 className="text-3xl font-bold text-[#e8944a]">Solend</h3>
+              <p className="mt-3 text-2xl leading-[1.5] text-slate-200">
                 Secondary integration for lending and collateral-aware strategy primitives.
               </p>
             </Card>
@@ -198,10 +306,11 @@ export default function Home() {
         </div>
       </Section>
 
-      <Section id="waitlist" className="border-t border-white/10 fade-in-up fade-delay-4">
+      {/* ── Waitlist ── */}
+      <Section id="waitlist" className="border-t border-white/10 fade-in-up">
         <Card className="bg-accent-500/10 border-accent-500/30 p-8 sm:p-10">
-          <h2 className="text-4xl font-bold text-accent-300">Join the TruCore waitlist.</h2>
-          <p className="mt-4 max-w-2xl text-2xl leading-10 text-slate-100">
+          <h2 className="text-5xl font-bold text-accent-300">Join the TruCore waitlist.</h2>
+          <p className="mt-4 max-w-2xl text-3xl leading-[1.4] text-slate-100">
             Get early updates on integrity-first autonomous finance infrastructure.
           </p>
           <div className="mt-6 max-w-xl">

@@ -51,11 +51,11 @@ const GRID_VERT = `
     for (int i = 0; i < ${NUM_BALLS}; i++) {
       vec3 d = uBalls[i] - wPos.xyz;
       float dist = length(d);
-      float r = uRadii[i] * 2.5;
+      float r = uRadii[i] * 3.2;
       if (dist < r && dist > 0.001) {
         float t = 1.0 - dist / r;
-        float s = t * t * t * t;
-        wPos.xyz -= normalize(d) * s * uRadii[i] * 1.2;
+        float s = t * t * t;
+        wPos.xyz -= normalize(d) * s * uRadii[i] * 1.5;
         warp += s;
       }
     }
@@ -323,9 +323,9 @@ function BouncingBalls({
       b.pz += b.vz * dt;
 
       // Spring membrane wall physics
-      const SPRING_K = 22.0;
-      const SPRING_DAMP = 3.5;
-      const MAX_PEN = 1.2;
+      const SPRING_K = 14.0;
+      const SPRING_DAMP = 2.5;
+      const MAX_PEN = 2.0;
       const DEFLECT = 0.6;
 
       const bw = HW - b.radius;

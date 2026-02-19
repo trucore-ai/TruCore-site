@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Image from "next/image";
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { HeroBackground3D } from "@/components/hero-background-3d";
 import "./globals.css";
@@ -89,38 +90,44 @@ export default function RootLayout({
                   className="h-9 w-9 rounded-sm object-contain"
                   priority
                 />
-                <span className="text-xl font-bold tracking-tight text-white">
+                <span className="text-2xl font-bold tracking-tight text-white">
                   TruCore
                 </span>
               </a>
               <nav
                 aria-label="Primary"
-                className="flex items-center gap-5 text-lg font-medium text-slate-100 sm:gap-7"
+                className="flex items-center gap-5 text-xl font-medium text-slate-100 sm:gap-8"
               >
-                <a href="#hero" className="transition-colors hover:text-primary-200">
+                <Link href="/#hero" className="transition-colors hover:text-primary-200">
                   Home
-                </a>
-                <a
-                  href="#why-trucore"
+                </Link>
+                <Link
+                  href="/atf"
+                  className="transition-colors hover:text-primary-200"
+                >
+                  ATF
+                </Link>
+                <Link
+                  href="/#why-trucore"
                   className="transition-colors hover:text-primary-200"
                 >
                   Why TruCore
-                </a>
-                <a
-                  href="#trust-integrity"
+                </Link>
+                <Link
+                  href="/#trust-integrity"
                   className="transition-colors hover:text-primary-200"
                 >
                   Trust
-                </a>
-                <a
-                  href="#integrations"
+                </Link>
+                <Link
+                  href="/#integrations"
                   className="transition-colors hover:text-primary-200"
                 >
                   Integrations
-                </a>
-                <a href="#waitlist" className="transition-colors hover:text-accent-400">
+                </Link>
+                <Link href="/#waitlist" className="transition-colors hover:text-accent-400">
                   Waitlist
-                </a>
+                </Link>
               </nav>
             </Container>
           </header>
@@ -128,19 +135,46 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
 
           <footer id="footer" className="border-t border-white/10 bg-neutral-900/30 backdrop-blur-sm">
-            <Container className="flex flex-col gap-5 py-8 text-lg text-slate-200 sm:flex-row sm:items-center sm:justify-between">
-              <p>© {new Date().getFullYear()} TruCore. Built on trust and integrity.</p>
-              <div className="flex flex-wrap items-center gap-4">
-                <a href="#" className="transition-colors hover:text-primary-200">
-                  X
-                </a>
-                <a href="#" className="transition-colors hover:text-primary-200">
-                  GitHub
-                </a>
-                <a href="#" className="transition-colors hover:text-primary-200">
-                  Email
-                </a>
-                <span className="text-primary-100">security@trucore.xyz</span>
+            <Container className="flex flex-col gap-6 py-8 text-xl text-slate-200">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <p>© {new Date().getFullYear()} TruCore. Built on trust and integrity.</p>
+                <div className="flex flex-wrap items-center gap-4">
+                  <a href="https://x.com/TruCore_AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-200">
+                    X
+                  </a>
+                  <a href="https://github.com/TruCore-AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-200">
+                    GitHub
+                  </a>
+                </div>
+              </div>
+              <div className="flex flex-col gap-4 border-t border-white/10 pt-5 text-lg sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Products</p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Link href="/atf" className="transition-colors hover:text-primary-200">
+                      Agent Transaction Firewall (ATF)
+                    </Link>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Link href="/security" className="transition-colors hover:text-primary-200">
+                    Security
+                  </Link>
+                  <Link href="/privacy" className="transition-colors hover:text-primary-200">
+                    Privacy
+                  </Link>
+                  <Link href="/terms" className="transition-colors hover:text-primary-200">
+                    Terms
+                  </Link>
+                </div>
+                <div className="flex flex-wrap items-center gap-4">
+                  <a href="mailto:hello@trucore.xyz" className="transition-colors hover:text-primary-200">
+                    hello@trucore.xyz
+                  </a>
+                  <a href="mailto:security@trucore.xyz" className="transition-colors hover:text-primary-200">
+                    security@trucore.xyz
+                  </a>
+                </div>
               </div>
             </Container>
           </footer>
