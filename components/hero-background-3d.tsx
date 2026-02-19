@@ -51,11 +51,11 @@ const GRID_VERT = `
     for (int i = 0; i < ${NUM_BALLS}; i++) {
       vec3 d = uBalls[i] - wPos.xyz;
       float dist = length(d);
-      float r = uRadii[i] * 7.0;
+      float r = uRadii[i] * 2.5;
       if (dist < r && dist > 0.001) {
         float t = 1.0 - dist / r;
-        float s = t * t * t;
-        wPos.xyz -= normalize(d) * s * uRadii[i] * 3.8;
+        float s = t * t * t * t;
+        wPos.xyz -= normalize(d) * s * uRadii[i] * 1.2;
         warp += s;
       }
     }
@@ -281,7 +281,7 @@ function BouncingBalls({
         vy: (rand() - 0.5) * 2.4,
         vz: (rand() - 0.5) * 1.8,
         radius: r,
-        color: accent ? "#f09428" : "#1e90ff",
+        color: accent ? "#ff9f2e" : "#1e90ff",
         opacity: 0.22 + rand() * 0.18,
         kind: KINDS[i % KINDS.length] as BallKind,
         rotSpeed: 0.15 + rand() * 0.45,
@@ -396,8 +396,8 @@ function BouncingBalls({
       }
 
       // Mouse gravitational pull — attract balls toward pointer in world space
-      const GRAV_STRENGTH = 12.0;
-      const GRAV_RADIUS = 8.0;
+      const GRAV_STRENGTH = 3.0;
+      const GRAV_RADIUS = 6.0;
       const mouseWorldX = pointer.current.x * HW * 0.9;
       const mouseWorldY = pointer.current.y * HH * 0.9;
       const mdx = mouseWorldX - b.px;
