@@ -149,10 +149,10 @@ export default function SecurityPage() {
             <p className="mt-2 text-xl text-slate-300">
               General inquiries:{" "}
               <a
-                href="mailto:hello@trucore.xyz"
+                href="mailto:info@trucore.xyz"
                 className="font-semibold text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
               >
-                hello@trucore.xyz
+                info@trucore.xyz
               </a>
             </p>
           </div>

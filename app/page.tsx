@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -5,7 +6,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Tilt } from "@/components/ui/tilt";
 import { WaitlistForm } from "@/components/waitlist-form";
-import { TrackedLink } from "@/components/tracked-link";
+import { ScrollLink } from "@/components/scroll-link";
 import Image from "next/image";
 
 const metrics = [
@@ -111,25 +112,20 @@ export default function Home() {
             <p className="mt-3 max-w-2xl text-xl leading-[1.5] text-primary-200/80">
               Launching with Agent Transaction Firewall (ATF).
             </p>
-            <Tilt maxTilt={4} perspective={1000} className="mt-8">
-              <div className="depth-scene flex flex-col gap-3 sm:flex-row">
-                <div className="depth-title">
-                  <Button href="#waitlist" variant="primary">
-                    Request Early Access
-                  </Button>
-                </div>
-                <div className="depth-body">
-                  <TrackedLink
-                    href="/atf"
-                    className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors border border-primary-300/40 bg-primary-500/10 text-primary-100 hover:border-primary-300/70 hover:bg-primary-500/20"
-                    eventName="cta_click"
-                    eventProps={{ target: "atf", location: "hero" }}
-                  >
-                    Explore ATF
-                  </TrackedLink>
-                </div>
-              </div>
-            </Tilt>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <ScrollLink
+                targetId="waitlist"
+                className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"
+              >
+                Join the ATF Waitlist
+              </ScrollLink>
+              <a
+                href="/atf"
+                className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors border border-primary-300/40 bg-primary-500/10 text-primary-100 hover:border-primary-300/70 hover:bg-primary-500/20"
+              >
+                Explore ATF
+              </a>
+            </div>
             <ul className="mt-8 grid gap-4 text-2xl text-primary-50 sm:grid-cols-3">
               {metrics.map((item) => (
                 <li key={item} className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-7 py-5">
@@ -315,12 +311,14 @@ export default function Home() {
       {/* ── Waitlist ── */}
       <Section id="waitlist" className="border-t border-white/10 fade-in-up">
         <Card className="bg-accent-500/10 border-accent-500/30 p-8 sm:p-10">
-          <h2 className="text-5xl font-bold text-accent-300">Join the TruCore waitlist.</h2>
+          <h2 className="text-5xl font-bold text-accent-300">Join the ATF Waitlist</h2>
           <p className="mt-4 max-w-2xl text-3xl leading-[1.4] text-slate-100">
-            Get early updates on integrity-first autonomous finance infrastructure.
+            Be first to access the Agent Transaction Firewall — TruCore’s trust-first enforcement layer for autonomous finance.
           </p>
           <div className="mt-6 max-w-xl">
-            <WaitlistForm />
+            <Suspense fallback={null}>
+              <WaitlistForm />
+            </Suspense>
           </div>
         </Card>
       </Section>

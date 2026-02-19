@@ -65,12 +65,20 @@ export default function PrivacyPage() {
               early-access communication and is never sold or shared.
             </p>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
+              If you apply as a design partner, we additionally collect your
+              project or company name, integration interests (e.g. Jupiter,
+              Solend), expected transaction volume range, and current build
+              stage. These fields help us prioritize outreach and are stored
+              alongside your waitlist record under the same policies described
+              above.
+            </p>
+            <p className="mt-3 text-xl leading-[1.6] text-slate-200">
               To request deletion of your waitlist data, email{" "}
               <a
-                href="mailto:hello@trucore.xyz"
+                href="mailto:info@trucore.xyz"
                 className="font-semibold text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
               >
-                hello@trucore.xyz
+                info@trucore.xyz
               </a>
               .
             </p>
@@ -83,10 +91,10 @@ export default function PrivacyPage() {
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
               If you would like your data removed, contact us at{" "}
               <a
-                href="mailto:hello@trucore.xyz"
+                href="mailto:info@trucore.xyz"
                 className="font-semibold text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
               >
-                hello@trucore.xyz
+                info@trucore.xyz
               </a>{" "}
               and we will process your request promptly.
             </p>

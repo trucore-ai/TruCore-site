@@ -68,8 +68,8 @@ npm run build
 | Variable | Value |
 | --- | --- |
 | `RESEND_API_KEY` | `re_xxxxxxxxxx` |
-| `WAITLIST_NOTIFY_TO` | `hello@trucore.xyz` |
-| `WAITLIST_FROM` | `TruCore <hello@trucore.xyz>` |
+| `WAITLIST_NOTIFY_TO` | `info@trucore.xyz` |
+| `WAITLIST_FROM` | `TruCore <info@trucore.xyz>` |
 
 ### Run Locally
 

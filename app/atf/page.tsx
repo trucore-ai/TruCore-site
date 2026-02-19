@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
+import { AtfDesignedFor } from "@/components/atf-designed-for";
+import { AtfV1Scope } from "@/components/atf-v1-scope";
+import { AtfRoadmap } from "@/components/atf-roadmap";
+import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
+import { TrackedLink } from "@/components/tracked-link";
 
 export const metadata: Metadata = {
   title: "Agent Transaction Firewall (ATF)",
@@ -64,7 +68,7 @@ const architectureLayers = [
 export default function ATFPage() {
   return (
     <Container>
-      {/* ── Header ── */}
+      {/* ── Hero ── */}
       <Section className="fade-in-up">
         <div className="max-w-3xl">
           <Badge className="mb-4">Flagship Product</Badge>
@@ -72,16 +76,93 @@ export default function ATFPage() {
             Agent Transaction Firewall
           </h1>
           <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
-            The enforcement layer between AI agents and on-chain execution.
-            ATF applies deterministic policy checks to every transaction before
-            submission, protecting capital, constraining behavior, and producing
-            verifiable evidence of compliance.
+            A policy + permit layer that constrains what AI agents can do on
+            Solana before any transaction executes.
           </p>
+
+          {/* Instant comprehension strip */}
+          <ul className="mt-6 space-y-2 text-lg text-slate-300 sm:text-xl">
+            <li className="flex items-start gap-3">
+              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
+              Prevents unbounded execution
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
+              Enforces spend limits, allowlists, and slippage bounds
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
+              Emits verifiable receipts for every action
+            </li>
+          </ul>
+
+          {/* V1 scope pills */}
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Badge>V1: Solana</Badge>
+            <Badge>Jupiter (swaps)</Badge>
+            <Badge>Solend (lending)</Badge>
+          </div>
+
+          {/* CTAs */}
+          <div className="mt-8 flex flex-wrap gap-4">
+            <TrackedLink
+              href="/#waitlist?intent=design_partner"
+              eventName="design_partner_apply_click"
+              eventProps={{ location: "atf_hero" }}
+              className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"
+            >
+              Apply as Design Partner
+            </TrackedLink>
+            <TrackedLink
+              href="/atf/how-it-works"
+              eventName="cta_click"
+              eventProps={{ target: "how_it_works", location: "atf_hero" }}
+              className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+            >
+              How It Works &rarr;
+            </TrackedLink>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── What ATF Enforces ── */}
+      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+            What ATF Enforces
+          </h2>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              title: "Spend Caps",
+              desc: "Max SOL or token spend per tx and per window.",
+            },
+            {
+              title: "Protocol Allowlist",
+              desc: "Only Jupiter and Solend actions allowed in V1.",
+            },
+            {
+              title: "Slippage Bounds",
+              desc: "Hard max slippage and minimum-out checks.",
+            },
+            {
+              title: "TTL + Nonce",
+              desc: "Permits expire fast and cannot be replayed.",
+            },
+          ].map((item) => (
+            <Card key={item.title} className="border-primary-300/25 bg-primary-500/10">
+              <h3 className="text-xl font-bold text-[#e8944a]">{item.title}</h3>
+              <p className="mt-2 text-lg leading-[1.5] text-slate-200">
+                {item.desc}
+              </p>
+            </Card>
+          ))}
         </div>
       </Section>
 
       {/* ── Problem Statement ── */}
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section className="border-t border-white/10 fade-in-up fade-delay-2">
         <div className="mb-8 max-w-2xl">
           <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">The Problem</h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -389,21 +470,17 @@ export default function ATFPage() {
         </div>
       </Section>
 
-      {/* ── CTA ── */}
-      <Section className="border-t border-white/10 fade-in-up">
-        <Card className="bg-accent-500/10 border-accent-500/30 p-8 sm:p-10">
-          <h2 className="text-4xl font-bold text-accent-300">Join Early Builders</h2>
-          <p className="mt-4 max-w-2xl text-2xl leading-[1.4] text-slate-100">
-            Request early access to ATF and help shape the enforcement layer for
-            autonomous finance.
-          </p>
-          <div className="mt-6">
-            <Button href="/#waitlist" variant="primary">
-              Request Early Access
-            </Button>
-          </div>
-        </Card>
-      </Section>
+      {/* ── Designed For ── */}
+      <AtfDesignedFor />
+
+      {/* ── V1 Scope ── */}
+      <AtfV1Scope />
+
+      {/* ── Roadmap ── */}
+      <AtfRoadmap />
+
+      {/* ── Design Partner CTA ── */}
+      <AtfDesignPartnerCta />
     </Container>
   );
 }

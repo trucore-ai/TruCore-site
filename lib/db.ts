@@ -22,6 +22,7 @@ let tableEnsured = false;
  * Ensure the waitlist_signups table exists.
  * Safe to call on every request. Uses IF NOT EXISTS and
  * skips the DDL after the first successful run per process.
+ * Also runs safe ALTER TABLE for design-partner columns.
  */
 export async function ensureWaitlistTable() {
   if (tableEnsured) return;
@@ -39,6 +40,14 @@ export async function ensureWaitlistTable() {
       ip_hash       TEXT
     );
   `;
+
+  /* ---- Design-partner columns (safe, nullable) ---- */
+  await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS intent TEXT;`;
+  await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS project_name TEXT;`;
+  await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS integrations_interest TEXT[];`;
+  await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS tx_volume_bucket TEXT;`;
+  await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS build_stage TEXT;`;
+
   tableEnsured = true;
 }
 
@@ -53,17 +62,30 @@ export async function upsertWaitlistSignup(params: {
   source: string;
   userAgent: string | null;
   ipHash: string | null;
+  intent: string | null;
+  projectName: string | null;
+  integrationsInterest: string[] | null;
+  txVolumeBucket: string | null;
+  buildStage: string | null;
 }): Promise<{ isNew: boolean }> {
   const sql = getSQL();
   const rows = await sql`
-    INSERT INTO waitlist_signups (email, role, use_case, source, user_agent, ip_hash)
+    INSERT INTO waitlist_signups (
+      email, role, use_case, source, user_agent, ip_hash,
+      intent, project_name, integrations_interest, tx_volume_bucket, build_stage
+    )
     VALUES (
       ${params.email.toLowerCase()},
       ${params.role},
       ${params.useCase},
       ${params.source},
       ${params.userAgent},
-      ${params.ipHash}
+      ${params.ipHash},
+      ${params.intent},
+      ${params.projectName},
+      ${params.integrationsInterest},
+      ${params.txVolumeBucket},
+      ${params.buildStage}
     )
     ON CONFLICT (email) DO NOTHING
     RETURNING id;

@@ -6,46 +6,51 @@ import { useEffect, useRef, useCallback } from "react";
 
 /** A single ray that travels from the edge toward the centre vanishing point */
 interface Ray {
-  /* Spawn position (on the edge) */
   startX: number;
   startY: number;
-  /* Vanishing-point target (centre of screen) */
   targetX: number;
   targetY: number;
-  /* Normalised direction toward centre */
   dirX: number;
   dirY: number;
-  /* Perpendicular (for sine displacement) */
   perpX: number;
   perpY: number;
 
   age: number;
   lifetime: number;
 
-  /* Visual style */
-  headSize: number;       // base head radius at spawn
-  trailWidth: number;     // base lineWidth
+  headSize: number;
+  trailWidth: number;       // base lineWidth at the edge
   isOrange: boolean;
 
-  /* Sine-pulse schedule: { startT, cycleLen } — each is one full sine cycle */
   pulseCycles: { startT: number; cycleLen: number }[];
-  sinAmp: number;         // perpendicular amplitude in px
+  sinAmp: number;
 
-  /* Trail variety */
-  trailLen: number;       // how many trail points to keep
-  hasSparks: boolean;     // emits sparks?
-  hasSparkleTrail: boolean; // leaves shimmering dots behind?
-  trail: { x: number; y: number; alpha: number }[];
+  trailLen: number;          // short trail (6-18 pts)
+  trail: { x: number; y: number }[];
 
-  /* Sparkle trail (persistent glitter left behind) */
-  sparkles: { x: number; y: number; birth: number; lifetime: number; size: number }[];
+  /* Dust trail config — every ray gets one, with varying density & speed */
+  dustRate: number;          // 0-1 chance per frame to drop a dust particle
+  dustSpeedMult: number;     // multiplier on initial scatter velocity
+  dustLifetimeMult: number;  // multiplier on dust lifetime
 
-  speed: number;          // total dist / lifetime frames
+  speed: number;
   totalDist: number;
 
-  /* Accumulated mouse-gravity offset */
   gravX: number;
   gravY: number;
+}
+
+/** Free-floating dust mote that drifts toward mouse */
+interface Dust {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  age: number;
+  lifetime: number;
+  size: number;       // radius
+  alpha0: number;     // starting alpha
+  isOrange: boolean;
 }
 
 interface Spark {
@@ -75,6 +80,8 @@ const MIN_LIFETIME = 3_000;
 const MAX_LIFETIME = 7_000;
 const SPARK_LIFETIME = 420;
 const MAX_RAYS = 30;
+const MAX_DUST = 600;          // global dust particle cap
+const DUST_MOUSE_STRENGTH = 0.000025; // gravity pull toward mouse (gentle)
 
 export function HeroBackgroundPulses() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -82,6 +89,7 @@ export function HeroBackgroundPulses() {
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
 
   const raysRef = useRef<Ray[]>([]);
+  const dustRef = useRef<Dust[]>([]);
   const sparksRef = useRef<Spark[]>([]);
   const nextSpawnRef = useRef<number>(0);
   const randRef = useRef(mulberry32(42));
@@ -98,87 +106,63 @@ export function HeroBackgroundPulses() {
 
       const rand = randRef.current;
 
-      /* Vanishing point — centre of screen with slight jitter */
       const vpX = w * (0.48 + rand() * 0.04);
       const vpY = h * (0.42 + rand() * 0.06);
 
-      /* Spawn on a random edge */
       let sx: number, sy: number;
       const edge = rand();
-      if (edge < 0.25) {            // top
-        sx = rand() * w; sy = -12;
-      } else if (edge < 0.5) {      // bottom
-        sx = rand() * w; sy = h + 12;
-      } else if (edge < 0.75) {     // left
-        sx = -12; sy = rand() * h;
-      } else {                       // right
-        sx = w + 12; sy = rand() * h;
-      }
+      if (edge < 0.25) { sx = rand() * w; sy = -12; }
+      else if (edge < 0.5) { sx = rand() * w; sy = h + 12; }
+      else if (edge < 0.75) { sx = -12; sy = rand() * h; }
+      else { sx = w + 12; sy = rand() * h; }
 
       const dx = vpX - sx;
       const dy = vpY - sy;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const dirX = dx / dist;
       const dirY = dy / dist;
-
-      /* Perpendicular */
       const perpX = -dirY;
       const perpY = dirX;
 
-      /* Lifetime & speed — ray travels ~85-100% of dist to centre */
       const lifetime = MIN_LIFETIME + rand() * (MAX_LIFETIME - MIN_LIFETIME);
       const travelFrac = 0.85 + rand() * 0.15;
       const speed = (dist * travelFrac) / (lifetime / 16.67);
 
-      /* 1-3 sine-pulse cycles, scattered along the ray — mostly short periods */
-      const numCycles = 1 + Math.floor(rand() * 3); // 1, 2, or 3
+      const numCycles = 1 + Math.floor(rand() * 3);
       const pulseCycles: { startT: number; cycleLen: number }[] = [];
       for (let c = 0; c < numCycles; c++) {
-        const startT = 0.05 + rand() * 0.7;   // normalised time [0..1]
-        const cycleLen = 0.015 + rand() * 0.035; // shorter periods (was 0.04-0.12, now 0.015-0.05)
+        const startT = 0.05 + rand() * 0.7;
+        const cycleLen = 0.015 + rand() * 0.035;
         pulseCycles.push({ startT, cycleLen });
       }
       pulseCycles.sort((a, b) => a.startT - b.startT);
 
-      const sinAmp = 3 + rand() * 12; // 3-15 px
+      const sinAmp = 3 + rand() * 12;
+      const headSize = 4 + rand() * 14;
 
-      /* Head size variety */
-      const headSize = 4 + rand() * 14; // 4-18
+      /* Thicker base width at edge — will taper to near-zero at centre */
+      const trailWidth = 2 + rand() * 6;  // 2-8
 
-      /* Trail variety — thicker at edges, perspective will thin them toward centre */
-      const trailWidth = 1.5 + rand() * 5.5; // 1.5 - 7.0 (base width at edge)
-      const trailLen = 15 + Math.floor(rand() * 35); // 15-50
+      /* Short trails */
+      const trailLen = 6 + Math.floor(rand() * 12); // 6-18
 
-      /* Style flags — most rays sparkle, only ~10% are solid */
-      const styleRoll = rand();
-      const hasSparks = styleRoll < 0.55;        // 55% emit sparks
-      const hasSparkleTrail = styleRoll < 0.90;  // 90% leave sparkle trail (only bottom 10% solid)
+      /* Dust trail variation per ray */
+      const dustRate = 0.15 + rand() * 0.55;          // 0.15-0.70 chance/frame
+      const dustSpeedMult = 0.3 + rand() * 1.4;       // scatter speed multiplier
+      const dustLifetimeMult = 0.5 + rand() * 2.0;    // lifetime multiplier
 
       const ray: Ray = {
-        startX: sx,
-        startY: sy,
-        targetX: vpX,
-        targetY: vpY,
-        dirX,
-        dirY,
-        perpX,
-        perpY,
-        age: 0,
-        lifetime,
-        headSize,
-        trailWidth,
+        startX: sx, startY: sy,
+        targetX: vpX, targetY: vpY,
+        dirX, dirY, perpX, perpY,
+        age: 0, lifetime, headSize, trailWidth,
         isOrange: rand() < 0.15,
-        pulseCycles,
-        sinAmp,
+        pulseCycles, sinAmp,
         trailLen,
-        hasSparks,
-        hasSparkleTrail,
         trail: [],
-        sparkles: [],
-        speed,
-        totalDist: dist * travelFrac,
-        gravX: 0,
-        gravY: 0,
+        dustRate, dustSpeedMult, dustLifetimeMult,
+        speed, totalDist: dist * travelFrac,
+        gravX: 0, gravY: 0,
       };
       raysRef.current.push(ray);
     },
@@ -188,79 +172,59 @@ export function HeroBackgroundPulses() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    /* ── Reduced motion ── */
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reducedMotion = mq.matches;
-    const onMqChange = (e: MediaQueryListEvent) => {
-      reducedMotion = e.matches;
-    };
+    const onMqChange = (e: MediaQueryListEvent) => { reducedMotion = e.matches; };
     mq.addEventListener("change", onMqChange);
 
-    /* ── Resize handler ── */
     let dw = 0;
     let dh = 0;
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const rect = canvas.getBoundingClientRect();
-      dw = rect.width;
-      dh = rect.height;
-      canvas.width = dw * dpr;
-      canvas.height = dh * dpr;
+      dw = rect.width; dh = rect.height;
+      canvas.width = dw * dpr; canvas.height = dh * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     window.addEventListener("resize", resize);
 
-    /* ── Mouse ── */
     const onMouse = (e: MouseEvent) => {
       mouseRef.current.x = e.clientX / window.innerWidth;
       mouseRef.current.y = e.clientY / window.innerHeight;
     };
     window.addEventListener("mousemove", onMouse, { passive: true });
 
-    /* ── Visibility ── */
     let hidden = false;
-    const onVis = () => {
-      hidden = document.hidden;
-    };
+    const onVis = () => { hidden = document.hidden; };
     document.addEventListener("visibilitychange", onVis);
 
-    /* ── Init scheduling ── */
     const now = performance.now();
     nextSpawnRef.current = now + 200 + randRef.current() * 500;
 
     /* ── Helpers ── */
 
-    /**
-     * Compute perpendicular sine displacement for a ray at a given progress.
-     * Returns 0 when between pulse cycles (straight sections).
-     */
     const getSineOffset = (ray: Ray, progress: number): number => {
       for (const pc of ray.pulseCycles) {
         const end = pc.startT + pc.cycleLen;
         if (progress >= pc.startT && progress <= end) {
-          const local = (progress - pc.startT) / pc.cycleLen; // 0..1 within cycle
+          const local = (progress - pc.startT) / pc.cycleLen;
           return ray.sinAmp * Math.sin(local * Math.PI * 2);
         }
       }
       return 0;
     };
 
-    /** Perspective scale: 1 at edge, shrinks toward 0 at centre */
-    const perspectiveScale = (progress: number): number => {
-      return Math.max(0.04, 1 - progress * 0.92);
-    };
+    const perspectiveScale = (progress: number): number =>
+      Math.max(0.04, 1 - progress * 0.92);
 
-    /** Thickness taper — stronger falloff so rays are clearly thicker at edges */
-    const thicknessTaper = (progress: number): number => {
-      return Math.max(0.06, Math.pow(1 - progress, 1.6));
-    };
+    /** Strong thickness taper: thick at edge → hairline at centre */
+    const thicknessTaper = (progress: number): number =>
+      Math.max(0.05, Math.pow(1 - progress, 2.2));
 
-    /** Brightness dims as ray approaches centre */
     const perspectiveAlpha = (progress: number): number => {
       const fadeIn = Math.min(progress * 6, 1);
       const fadeDeep = 1 - Math.pow(progress, 1.8);
@@ -273,19 +237,12 @@ export function HeroBackgroundPulses() {
       if (alpha < 0.005) return;
 
       const scale = perspectiveScale(progress);
-
-      /* Current position along ray (includes accumulated gravity offset) */
       const traveled = r.speed * (r.age / 16.67);
       const baseX = r.startX + r.dirX * traveled + r.gravX;
       const baseY = r.startY + r.dirY * traveled + r.gravY;
-
-      /* Sine displacement */
       const sinOff = getSineOffset(r, progress);
-
-      /* Camera parallax */
       const yaw = (mouseRef.current.x - 0.5) * 12;
       const pitch = (mouseRef.current.y - 0.5) * 6;
-
       const px = baseX + sinOff * r.perpX + yaw * progress;
       const py = baseY + sinOff * r.perpY + pitch * progress;
 
@@ -294,33 +251,28 @@ export function HeroBackgroundPulses() {
 
       ctx.globalCompositeOperation = "lighter";
 
-      /* ── Trail ── */
+      /* ── Trail — drawn as individual dots/dashes, not a solid line ── */
       if (r.trail.length > 1) {
-        ctx.beginPath();
-        const t0 = r.trail[0];
-        ctx.moveTo(t0.x, t0.y);
-        for (let i = 1; i < r.trail.length; i++) {
-          ctx.lineTo(r.trail[i].x, r.trail[i].y);
+        for (let i = 0; i < r.trail.length - 1; i++) {
+          const t = r.trail[i];
+          const tn = r.trail[i + 1];
+          const frac = i / r.trail.length;          // 0=newest, 1=oldest
+          const segAlpha = alpha * (1 - frac * 0.9); // fade along trail
+          if (segAlpha < 0.01) continue;
+
+          /* Width tapers along the trail too */
+          const segW = Math.max(0.2, tw * (1 - frac * 0.7));
+
+          ctx.beginPath();
+          ctx.moveTo(t.x, t.y);
+          ctx.lineTo(tn.x, tn.y);
+          ctx.lineWidth = segW;
+          ctx.lineCap = "round";
+          ctx.strokeStyle = r.isOrange
+            ? `rgba(240, 158, 60, ${segAlpha * 0.5})`
+            : `rgba(100, 185, 255, ${segAlpha * 0.5})`;
+          ctx.stroke();
         }
-        /* Outer trail stroke */
-        ctx.lineWidth = Math.max(0.3, tw);
-        ctx.lineCap = "round";
-        ctx.strokeStyle = r.isOrange
-          ? `rgba(240, 158, 60, ${alpha * 0.45})`
-          : `rgba(100, 185, 255, ${alpha * 0.45})`;
-        ctx.shadowColor = r.isOrange
-          ? "rgba(240, 138, 31, 0.5)"
-          : "rgba(80, 170, 255, 0.5)";
-        ctx.shadowBlur = headR * 0.5 * scale;
-        ctx.stroke();
-
-        /* Inner bright core filament */
-        ctx.lineWidth = Math.max(0.15, tw * 0.3);
-        ctx.strokeStyle = r.isOrange
-          ? `rgba(255, 220, 160, ${alpha * 0.65})`
-          : `rgba(200, 235, 255, ${alpha * 0.65})`;
-        ctx.stroke();
-
         ctx.shadowBlur = 0;
       }
 
@@ -341,7 +293,6 @@ export function HeroBackgroundPulses() {
         ctx.arc(px, py, headR, 0, Math.PI * 2);
         ctx.fill();
 
-        /* Bright white core */
         const coreR = headR * 0.25;
         if (coreR > 0.2) {
           const coreGrad = ctx.createRadialGradient(px, py, 0, px, py, coreR);
@@ -354,57 +305,42 @@ export function HeroBackgroundPulses() {
         }
       }
 
-      /* ── Sparkle trail (persistent glitter dots left behind) ── */
-      if (r.hasSparkleTrail && r.trail.length > 0) {
-        for (const sp of r.sparkles) {
-          const spAge = r.age - sp.birth;
-          if (spAge > sp.lifetime) continue;
-          const spAlpha = alpha * 0.6 * (1 - spAge / sp.lifetime);
-          if (spAlpha < 0.01) continue;
-          const spR = sp.size * scale * (1 - spAge / sp.lifetime * 0.5);
-          const spGrad = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, spR);
-          spGrad.addColorStop(0, `rgba(255, 255, 255, ${spAlpha})`);
-          spGrad.addColorStop(1, `rgba(142, 211, 255, 0)`);
-          ctx.fillStyle = spGrad;
-          ctx.beginPath();
-          ctx.arc(sp.x, sp.y, spR, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
       ctx.globalCompositeOperation = "source-over";
 
       /* Record trail point */
-      r.trail.unshift({ x: px, y: py, alpha: 1 });
+      r.trail.unshift({ x: px, y: py });
       if (r.trail.length > r.trailLen) r.trail.length = r.trailLen;
-      for (let i = 0; i < r.trail.length; i++) {
-        r.trail[i].alpha *= 0.88;
-      }
+    };
 
-      /* Maybe drop a sparkle — higher drop rate for denser glitter */
-      if (r.hasSparkleTrail && randRef.current() < 0.4) {
-        r.sparkles.push({
-          x: px + (randRef.current() - 0.5) * 3,
-          y: py + (randRef.current() - 0.5) * 3,
-          birth: r.age,
-          lifetime: 600 + randRef.current() * 1200,
-          size: 0.6 + randRef.current() * 1.8,
-        });
+    const drawDust = (d: Dust) => {
+      const progress = d.age / d.lifetime;
+      const a = d.alpha0 * (1 - progress);
+      if (a < 0.01) return;
+      const sz = d.size * (1 - progress * 0.4);
+      ctx.globalCompositeOperation = "lighter";
+      const grad = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, sz);
+      if (d.isOrange) {
+        grad.addColorStop(0, `rgba(255, 200, 120, ${a})`);
+        grad.addColorStop(1, `rgba(240, 138, 31, 0)`);
+      } else {
+        grad.addColorStop(0, `rgba(200, 230, 255, ${a})`);
+        grad.addColorStop(1, `rgba(100, 180, 255, 0)`);
       }
-      /* Trim old sparkles */
-      if (r.sparkles.length > 90) {
-        r.sparkles.splice(0, r.sparkles.length - 90);
-      }
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, sz, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalCompositeOperation = "source-over";
     };
 
     const drawSpark = (s: Spark) => {
       const progress = s.age / s.lifetime;
-      const alpha = s.alpha * (1 - progress);
-      if (alpha < 0.01) return;
+      const a = s.alpha * (1 - progress);
+      if (a < 0.01) return;
       const r = 1.4 * (1 - progress * 0.5);
       ctx.globalCompositeOperation = "lighter";
       const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r);
-      grad.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+      grad.addColorStop(0, `rgba(255, 255, 255, ${a})`);
       grad.addColorStop(1, `rgba(142, 211, 255, 0)`);
       ctx.fillStyle = grad;
       ctx.beginPath();
@@ -419,7 +355,6 @@ export function HeroBackgroundPulses() {
       bg.addColorStop(1, "#050a14");
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, dw, dh);
-
       const cx = dw * 0.5;
       const cy = dh * 0.4;
       const r = Math.min(dw, dh) * 0.45;
@@ -435,7 +370,6 @@ export function HeroBackgroundPulses() {
 
     const loop = (time: number) => {
       animRef.current = requestAnimationFrame(loop);
-
       if (hidden) return;
 
       const dt = Math.min(time - lastTime, 50);
@@ -443,19 +377,15 @@ export function HeroBackgroundPulses() {
 
       ctx.clearRect(0, 0, dw, dh);
 
-      if (reducedMotion) {
-        drawStaticBackground();
-        return;
-      }
+      if (reducedMotion) { drawStaticBackground(); return; }
 
-      /* Background gradient */
+      /* Background */
       const bg = ctx.createLinearGradient(0, 0, 0, dh);
       bg.addColorStop(0, "#0b1220");
       bg.addColorStop(1, "#050a14");
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, dw, dh);
 
-      /* Subtle ambient glow at vanishing point */
       const ambCx = dw * 0.5 + (mouseRef.current.x - 0.5) * 30;
       const ambCy = dh * 0.42 + (mouseRef.current.y - 0.5) * 15;
       const ambR = Math.min(dw, dh) * 0.38;
@@ -472,74 +402,108 @@ export function HeroBackgroundPulses() {
         scheduleNext(time);
       }
 
-      /* Update & draw rays */
-      /* Mouse position in canvas coords */
+      /* Mouse in canvas coords */
       const mxCanvas = mouseRef.current.x * dw;
       const myCanvas = mouseRef.current.y * dh;
+      const rand = randRef.current;
 
+      /* ── Update & draw rays ── */
       const rays = raysRef.current;
       for (let i = rays.length - 1; i >= 0; i--) {
         const r = rays[i];
         r.age += dt;
-        if (r.age >= r.lifetime) {
-          rays.splice(i, 1);
-          continue;
-        }
+        if (r.age >= r.lifetime) { rays.splice(i, 1); continue; }
 
-        /* ── Mouse gravity: gentle attraction toward pointer ── */
+        /* Ray mouse gravity (subtle curve) */
         const traveled = r.speed * (r.age / 16.67);
         const curX = r.startX + r.dirX * traveled + r.gravX;
         const curY = r.startY + r.dirY * traveled + r.gravY;
         const gmx = mxCanvas - curX;
         const gmy = myCanvas - curY;
         const gDist = Math.sqrt(gmx * gmx + gmy * gmy) || 1;
-        /* Strength: subtle pull that falls off with distance, scales with dt */
-        const gStrength = Math.min(0.12, 800 / (gDist * gDist)) * (dt / 16.67);
-        r.gravX += gmx * gStrength;
-        r.gravY += gmy * gStrength;
-        /* Dampen so it doesn't spiral — cap total offset */
+        const gStr = Math.min(0.12, 800 / (gDist * gDist)) * (dt / 16.67);
+        r.gravX += gmx * gStr;
+        r.gravY += gmy * gStr;
         const maxOff = 60;
         const curOff = Math.sqrt(r.gravX * r.gravX + r.gravY * r.gravY);
-        if (curOff > maxOff) {
-          r.gravX *= maxOff / curOff;
-          r.gravY *= maxOff / curOff;
-        }
+        if (curOff > maxOff) { r.gravX *= maxOff / curOff; r.gravY *= maxOff / curOff; }
 
         drawRay(r);
 
-        /* Maybe spawn spark (only for spark-enabled rays) */
-        if (r.hasSparks) {
-          const progress = r.age / r.lifetime;
-          const pAlpha = perspectiveAlpha(progress);
-          if (randRef.current() < 0.15 * (dt / 16.67) && pAlpha > 0.15) {
-            const rand = randRef.current;
-            const traveled = r.speed * (r.age / 16.67);
-            const bx = r.startX + r.dirX * traveled + r.gravX;
-            const by = r.startY + r.dirY * traveled + r.gravY;
-            sparksRef.current.push({
-              x: bx,
-              y: by,
-              vx: (rand() - 0.5) * 2.5,
-              vy: (rand() - 0.5) * 2.5,
-              age: 0,
-              lifetime: SPARK_LIFETIME * (0.4 + rand() * 0.6),
-              alpha: 0.3 + rand() * 0.5,
-            });
-          }
+        /* ── Spawn dust motes behind the pulse ── */
+        const progress = r.age / r.lifetime;
+        const pAlpha = perspectiveAlpha(progress);
+        /* Fade dust spawn as ray approaches centre — almost none past 70% */
+        const dustFade = progress < 0.35 ? 1 : Math.max(0, 1 - Math.pow((progress - 0.35) / 0.45, 1.8));
+        if (pAlpha > 0.05 && dustRef.current.length < MAX_DUST && rand() < r.dustRate * dustFade * (dt / 16.67)) {
+          /* Spawn dust BEHIND the head along the ray's reverse direction */
+          const headX = r.startX + r.dirX * traveled + r.gravX;
+          const headY = r.startY + r.dirY * traveled + r.gravY;
+          const behindDist = 8 + rand() * 20; // 8-28px behind the head
+          const bx = headX - r.dirX * behindDist + (rand() - 0.5) * 3;
+          const by = headY - r.dirY * behindDist + (rand() - 0.5) * 3;
+          /* Initial velocity mostly along trailing direction (behind pulse) */
+          const trailVx = -r.dirX * (0.3 + rand() * 0.8) * r.dustSpeedMult + (rand() - 0.5) * 0.3;
+          const trailVy = -r.dirY * (0.3 + rand() * 0.8) * r.dustSpeedMult + (rand() - 0.5) * 0.3;
+          dustRef.current.push({
+            x: bx,
+            y: by,
+            vx: trailVx,
+            vy: trailVy,
+            age: 0,
+            lifetime: (800 + rand() * 2500) * r.dustLifetimeMult,
+            size: 0.4 + rand() * 1.6,
+            alpha0: 0.15 + rand() * 0.35,
+            isOrange: r.isOrange,
+          });
+        }
+
+        /* Also spawn occasional sparks */
+        if (rand() < 0.08 * (dt / 16.67) && pAlpha > 0.15) {
+          sparksRef.current.push({
+            x: curX, y: curY,
+            vx: (rand() - 0.5) * 2.5,
+            vy: (rand() - 0.5) * 2.5,
+            age: 0,
+            lifetime: SPARK_LIFETIME * (0.4 + rand() * 0.6),
+            alpha: 0.3 + rand() * 0.5,
+          });
         }
       }
 
-      /* Update & draw sparks */
+      /* ── Update & draw dust (mouse-attracted) ── */
+      const dusts = dustRef.current;
+      for (let i = dusts.length - 1; i >= 0; i--) {
+        const d = dusts[i];
+        d.age += dt;
+        if (d.age >= d.lifetime) { dusts.splice(i, 1); continue; }
+
+        /* Gravity toward mouse pointer */
+        const dmx = mxCanvas - d.x;
+        const dmy = myCanvas - d.y;
+        const dDist = Math.sqrt(dmx * dmx + dmy * dmy) || 1;
+        const pull = DUST_MOUSE_STRENGTH * dt;
+        d.vx += (dmx / dDist) * pull * Math.min(200, dDist);
+        d.vy += (dmy / dDist) * pull * Math.min(200, dDist);
+
+        /* Damping so dust doesn't accelerate infinitely */
+        d.vx *= 0.995;
+        d.vy *= 0.995;
+
+        d.x += d.vx * (dt / 16.67);
+        d.y += d.vy * (dt / 16.67);
+
+        drawDust(d);
+      }
+
+      /* ── Update & draw sparks ── */
       const sparks = sparksRef.current;
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];
         s.age += dt;
         s.x += s.vx * (dt / 16.67);
         s.y += s.vy * (dt / 16.67);
-        if (s.age >= s.lifetime) {
-          sparks.splice(i, 1);
-          continue;
-        }
+        if (s.age >= s.lifetime) { sparks.splice(i, 1); continue; }
         drawSpark(s);
       }
     };

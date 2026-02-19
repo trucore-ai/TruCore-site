@@ -10,15 +10,26 @@ import { sendAdminNotification, sendUserConfirmation } from "@/lib/email";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VALID_ROLES = ["Builder", "Founder", "Researcher", "Security", "Other"] as const;
 const MAX_ROLE_LEN = 32;
-const MAX_USE_CASE_LEN = 200;
+const MAX_USE_CASE_LEN = 500;
 const COOLDOWN_SECONDS = 30;
 const COOLDOWN_COOKIE = "wl_ts";
 
+const VALID_INTEGRATIONS = ["jupiter", "solend"] as const;
+const VALID_TX_BUCKETS = ["lt_10k", "10k_100k", "100k_1m", "gt_1m"] as const;
+const VALID_BUILD_STAGES = ["idea", "prototype", "prod"] as const;
+const MAX_PROJECT_NAME_LEN = 80;
+const MIN_PROJECT_NAME_LEN = 2;
+const MAX_TX_BUCKET_LEN = 24;
+const MAX_BUILD_STAGE_LEN = 24;
+
 /* ---------- types ---------- */
+
+export type WaitlistIntent = "standard" | "design_partner";
 
 export type WaitlistResult = {
   ok: boolean;
   message: string;
+  intent?: WaitlistIntent;
 };
 
 /* ---------- action ---------- */
@@ -28,19 +39,34 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
   const honeypot = formData.get("company");
   if (honeypot && typeof honeypot === "string" && honeypot.length > 0) {
     // Silently accept to not reveal the trap
-    return { ok: true, message: "You're on the list. We'll share early-access updates soon." };
+    return { ok: true, message: "You're on the list. We'll share early-access updates soon.", intent: "standard" };
   }
 
-  /* ---- extract ---- */
+  /* ---- extract common fields ---- */
   const rawEmail = (formData.get("email") as string | null) ?? "";
   const rawRole = (formData.get("role") as string | null) ?? "";
   const rawUseCase = (formData.get("useCase") as string | null) ?? "";
+  const rawIntent = (formData.get("intent") as string | null) ?? "standard";
 
   const email = rawEmail.trim().toLowerCase();
   const role = rawRole.trim() || null;
   const useCase = rawUseCase.trim() || null;
+  const intent: WaitlistIntent = rawIntent === "design_partner" ? "design_partner" : "standard";
 
-  /* ---- validate ---- */
+  /* ---- extract design-partner fields ---- */
+  const rawProjectName = (formData.get("projectName") as string | null) ?? "";
+  const rawTxVolumeBucket = (formData.get("txVolumeBucket") as string | null) ?? "";
+  const rawBuildStage = (formData.get("buildStage") as string | null) ?? "";
+  const rawIntegrations = formData.getAll("integrationsInterest") as string[];
+
+  const projectName = rawProjectName.trim() || null;
+  const txVolumeBucket = rawTxVolumeBucket.trim() || null;
+  const buildStage = rawBuildStage.trim() || null;
+  const integrationsInterest = rawIntegrations
+    .map((v) => v.trim().toLowerCase())
+    .filter((v) => (VALID_INTEGRATIONS as readonly string[]).includes(v));
+
+  /* ---- validate common ---- */
   if (!email || !EMAIL_RE.test(email)) {
     return { ok: false, message: "Please enter a valid email address." };
   }
@@ -54,7 +80,32 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
   }
 
   if (useCase && useCase.length > MAX_USE_CASE_LEN) {
-    return { ok: false, message: "Use case must be under 200 characters." };
+    return { ok: false, message: "Use case must be under 500 characters." };
+  }
+
+  /* ---- validate design-partner specific ---- */
+  if (intent === "design_partner") {
+    if (!projectName || projectName.length < MIN_PROJECT_NAME_LEN) {
+      return { ok: false, message: "Please enter a project or company name (at least 2 characters)." };
+    }
+    if (projectName.length > MAX_PROJECT_NAME_LEN) {
+      return { ok: false, message: `Project name must be under ${MAX_PROJECT_NAME_LEN} characters.` };
+    }
+    if (integrationsInterest.length < 1) {
+      return { ok: false, message: "Please select at least one integration." };
+    }
+    if (!txVolumeBucket) {
+      return { ok: false, message: "Please select an expected transaction volume." };
+    }
+    if (txVolumeBucket.length > MAX_TX_BUCKET_LEN || !(VALID_TX_BUCKETS as readonly string[]).includes(txVolumeBucket)) {
+      return { ok: false, message: "Please select a valid transaction volume." };
+    }
+    if (!buildStage) {
+      return { ok: false, message: "Please select your current build stage." };
+    }
+    if (buildStage.length > MAX_BUILD_STAGE_LEN || !(VALID_BUILD_STAGES as readonly string[]).includes(buildStage)) {
+      return { ok: false, message: "Please select a valid build stage." };
+    }
   }
 
   /* ---- cooldown (cookie-based soft limit) ---- */
@@ -89,6 +140,11 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
       source: "homepage",
       userAgent,
       ipHash,
+      intent,
+      projectName: intent === "design_partner" ? projectName : null,
+      integrationsInterest: intent === "design_partner" && integrationsInterest.length > 0 ? integrationsInterest : null,
+      txVolumeBucket: intent === "design_partner" ? txVolumeBucket : null,
+      buildStage: intent === "design_partner" ? buildStage : null,
     });
 
     /* ---- set cooldown cookie ---- */
@@ -104,17 +160,32 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
     if (isNew) {
       // Do not await sequentially - fire both in parallel
       Promise.allSettled([
-        sendAdminNotification({ email, role, useCase }),
-        sendUserConfirmation(email),
+        sendAdminNotification({
+          email,
+          role,
+          useCase,
+          intent,
+          projectName: intent === "design_partner" ? projectName : null,
+          integrationsInterest: intent === "design_partner" ? integrationsInterest : null,
+          txVolumeBucket: intent === "design_partner" ? txVolumeBucket : null,
+          buildStage: intent === "design_partner" ? buildStage : null,
+        }),
+        sendUserConfirmation(email, intent),
       ]).catch(() => {
         // No PII in logs
         console.error("[waitlist] Email dispatch failed");
       });
     }
 
+    const successMessage =
+      intent === "design_partner"
+        ? "Application received. We'll follow up shortly."
+        : "You're on the list. We'll share early-access updates soon.";
+
     return {
       ok: true,
-      message: "You're on the list. We'll share early-access updates soon.",
+      message: successMessage,
+      intent,
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "unknown";

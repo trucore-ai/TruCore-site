@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, MouseEventHandler } from "react";
 
 type ButtonProps = {
   children: ReactNode;
@@ -7,6 +7,7 @@ type ButtonProps = {
   className?: string;
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
+  onClick?: MouseEventHandler<HTMLAnchorElement | HTMLButtonElement>;
 };
 
 const baseStyles =
@@ -25,20 +26,21 @@ export function Button({
   className = "",
   type = "button",
   disabled = false,
+  onClick,
 }: ButtonProps) {
   const disabledStyles = disabled ? "opacity-60 cursor-not-allowed" : "";
   const classes = `${baseStyles} ${variantStyles[variant]} ${disabledStyles} ${className}`.trim();
 
   if (href) {
     return (
-      <a href={href} className={classes}>
+      <a href={href} className={classes} onClick={onClick as MouseEventHandler<HTMLAnchorElement>}>
         {children}
       </a>
     );
   }
 
   return (
-    <button className={classes} type={type} disabled={disabled}>
+    <button className={classes} type={type} disabled={disabled} onClick={onClick as MouseEventHandler<HTMLButtonElement>}>
       {children}
     </button>
   );

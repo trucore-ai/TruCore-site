@@ -99,7 +99,7 @@ export default function RootLayout({
               </a>
               <nav
                 aria-label="Primary"
-                className="flex items-center gap-5 text-xl font-medium text-slate-100 sm:gap-8"
+                className="flex items-center gap-3 text-sm font-medium text-slate-100 sm:gap-5 sm:text-base md:gap-8 md:text-xl"
               >
                 <Link href="/#hero" className="transition-colors hover:text-primary-200">
                   Home
@@ -112,19 +112,19 @@ export default function RootLayout({
                 </Link>
                 <Link
                   href="/#why-trucore"
-                  className="transition-colors hover:text-primary-200"
+                  className="hidden sm:inline transition-colors hover:text-primary-200"
                 >
                   Why TruCore
                 </Link>
                 <Link
                   href="/#trust-integrity"
-                  className="transition-colors hover:text-primary-200"
+                  className="hidden sm:inline transition-colors hover:text-primary-200"
                 >
                   Trust
                 </Link>
                 <Link
                   href="/#integrations"
-                  className="transition-colors hover:text-primary-200"
+                  className="hidden md:inline transition-colors hover:text-primary-200"
                 >
                   Integrations
                 </Link>
@@ -171,8 +171,8 @@ export default function RootLayout({
                   </Link>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
-                  <a href="mailto:hello@trucore.xyz" className="transition-colors hover:text-primary-200">
-                    hello@trucore.xyz
+                  <a href="mailto:info@trucore.xyz" className="transition-colors hover:text-primary-200">
+                    info@trucore.xyz
                   </a>
                   <a href="mailto:security@trucore.xyz" className="transition-colors hover:text-primary-200">
                     security@trucore.xyz
