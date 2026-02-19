@@ -1,4 +1,9 @@
-"use client";
+#!/usr/bin/env python3
+"""One-shot script to write the hero-background-3d.tsx file."""
+
+NUM_BALLS = 8
+
+content = r'''"use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
@@ -497,3 +502,9 @@ export function HeroBackground3D() {
     </div>
   );
 }
+'''
+
+with open('/home/kontractkoder/repo/TruCore-site/components/hero-background-3d.tsx', 'w') as f:
+    f.write(content)
+
+print('done')

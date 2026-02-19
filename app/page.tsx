@@ -82,7 +82,7 @@ export default function Home() {
             </ul>
 
             <div className="mt-8 mx-auto max-w-4xl">
-              <div className="relative overflow-hidden rounded-xl border border-white/10 bg-neutral-950/45">
+              <div className="relative overflow-hidden rounded-xl">
                 <Image
                   src="/images/trucore-banner.png"
                   alt="TruCore banner"
@@ -91,11 +91,9 @@ export default function Home() {
                   className="h-auto w-full object-cover"
                   style={{
                     WebkitMaskImage:
-                      "linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)",
-                    WebkitMaskComposite: "source-in",
+                      "radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 72%)",
                     maskImage:
-                      "linear-gradient(to right, transparent 0%, black 14%, black 86%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%)",
-                    maskComposite: "intersect",
+                      "radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 72%)",
                   }}
                   priority
                 />
