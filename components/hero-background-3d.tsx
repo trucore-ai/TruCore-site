@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
-import { Group, Mesh } from "three";
+import { Color, Group, Mesh } from "three";
 
 function mulberry32(seed: number) {
   return function () {
@@ -24,7 +24,7 @@ type ShapeSeed = {
   x: number;
   y: number;
   z: number;
-  scale: number;
+  baseScale: number;
   speed: number;
   drift: number;
   offset: number;
@@ -37,16 +37,20 @@ function LatticeTunnel({ pointer }: { pointer: MutableRefObject<PointerTarget> }
   const groupRef = useRef<Group>(null);
   const layerRefs = useRef<Array<Group | null>>([]);
   const timeRef = useRef(0);
+  const frameWidth = 12;
+  const frameHeight = 6.7;
 
   const layers = useMemo(() => {
     return Array.from({ length: 8 }, (_, index) => {
       const depth = index / 7;
+      const frameThickness = 0.25 - depth * 0.19;
 
       return {
-        z: -0.35 - index * 0.92,
+        z: -0.35 - index * 1.02,
         scale: 1 - index * 0.09,
         color: index % 5 === 0 ? "#d86c08" : "#5cbcfb",
-        opacity: index % 5 === 0 ? 0.17 - depth * 0.05 : 0.28 - depth * 0.13,
+        opacity: index % 5 === 0 ? 0.26 - depth * 0.11 : 0.34 - depth * 0.18,
+        frameThickness: Math.max(frameThickness, 0.045),
       };
     });
   }, []);
@@ -75,8 +79,8 @@ function LatticeTunnel({ pointer }: { pointer: MutableRefObject<PointerTarget> }
       }
 
       const depth = 1 - layerIndex / layers.length;
-      const bob = Math.sin(t * 0.9 + layerIndex * 0.7) * 0.03 * depth;
-      const sway = Math.cos(t * 0.75 + layerIndex * 0.45) * 0.025 * depth;
+      const bob = Math.sin(t * 0.9 + layerIndex * 0.7) * 0.032 * depth;
+      const sway = Math.cos(t * 0.75 + layerIndex * 0.45) * 0.027 * depth;
 
       layerGroup.position.x += (pointer.current.x * 0.2 * depth + sway - layerGroup.position.x) * 0.06;
       layerGroup.position.y += (pointer.current.y * 0.12 * depth + bob - layerGroup.position.y) * 0.06;
@@ -96,28 +100,22 @@ function LatticeTunnel({ pointer }: { pointer: MutableRefObject<PointerTarget> }
           position={[0, 0, layer.z]}
           scale={layer.scale}
         >
-          <mesh>
-            <boxGeometry args={[11.8, 6.6, 0.14, 1, 1, 1]} />
-            <meshBasicMaterial
-              color={layer.color}
-              wireframe
-              wireframeLinewidth={2}
-              transparent
-              opacity={layer.opacity}
-            />
+          <mesh position={[0, frameHeight / 2, 0]}>
+            <boxGeometry args={[frameWidth, layer.frameThickness, layer.frameThickness]} />
+            <meshBasicMaterial color={layer.color} transparent opacity={layer.opacity} />
           </mesh>
-          {index % 2 === 0 && (
-            <mesh scale={[0.76, 0.76, 1]}>
-              <boxGeometry args={[11.8, 6.6, 0.08, 1, 1, 1]} />
-              <meshBasicMaterial
-                color={layer.color}
-                wireframe
-                wireframeLinewidth={2}
-                transparent
-                opacity={Math.max(layer.opacity * 0.58, 0.03)}
-              />
-            </mesh>
-          )}
+          <mesh position={[0, -frameHeight / 2, 0]}>
+            <boxGeometry args={[frameWidth, layer.frameThickness, layer.frameThickness]} />
+            <meshBasicMaterial color={layer.color} transparent opacity={layer.opacity} />
+          </mesh>
+          <mesh position={[-frameWidth / 2, 0, 0]}>
+            <boxGeometry args={[layer.frameThickness, frameHeight, layer.frameThickness]} />
+            <meshBasicMaterial color={layer.color} transparent opacity={layer.opacity} />
+          </mesh>
+          <mesh position={[frameWidth / 2, 0, 0]}>
+            <boxGeometry args={[layer.frameThickness, frameHeight, layer.frameThickness]} />
+            <meshBasicMaterial color={layer.color} transparent opacity={layer.opacity} />
+          </mesh>
         </group>
       ))}
     </group>
@@ -136,17 +134,19 @@ function FloatingShapes({ pointer }: { pointer: MutableRefObject<PointerTarget> 
 
     return Array.from({ length: COUNT }, (_, index) => {
       const kind = kinds[index % 3];
+      const colorValue = index % 5 === 0 ? orange : blue;
+      const tint = new Color(colorValue).offsetHSL((rand() - 0.5) * 0.02, (rand() - 0.5) * 0.08, (rand() - 0.5) * 0.07);
 
       return {
         x: (rand() - 0.5) * 12,
         y: (rand() - 0.5) * 6.6,
         z: -0.8 - rand() * 4.8,
-        scale: 0.05 + rand() * 0.18,
+        baseScale: 0.05 + rand() * 0.18,
         speed: 0.35 + rand() * 0.6,
         drift: 0.18 + rand() * 0.5,
         offset: rand() * Math.PI * 2,
         opacity: 0.2 + rand() * 0.24,
-        color: index % 5 === 0 ? orange : blue,
+        color: `#${tint.getHexString()}`,
         kind,
       };
     });
@@ -171,10 +171,15 @@ function FloatingShapes({ pointer }: { pointer: MutableRefObject<PointerTarget> 
       const targetX = shape.x + orbitX + pointerX;
       const targetY = shape.y + orbitY + pointerY;
       const targetZ = shape.z + Math.sin(t * shape.speed * 0.6 + shape.offset) * 0.22;
+      const depthScale = 0.58 + (targetZ + 5.6) / 5.2;
+      const targetScale = shape.baseScale * Math.min(Math.max(depthScale, 0.5), 1.08);
 
       mesh.position.x += (targetX - mesh.position.x) * 0.085;
       mesh.position.y += (targetY - mesh.position.y) * 0.085;
       mesh.position.z += (targetZ - mesh.position.z) * 0.06;
+      mesh.scale.x += (targetScale - mesh.scale.x) * 0.12;
+      mesh.scale.y += (targetScale - mesh.scale.y) * 0.12;
+      mesh.scale.z += (targetScale - mesh.scale.z) * 0.12;
 
       mesh.rotation.x += delta * (0.38 + shape.speed * 0.3);
       mesh.rotation.y += delta * (0.44 + shape.speed * 0.22);
@@ -191,9 +196,9 @@ function FloatingShapes({ pointer }: { pointer: MutableRefObject<PointerTarget> 
           }}
           position={[shape.x, shape.y, shape.z]}
         >
-          {shape.kind === "tetra" && <tetrahedronGeometry args={[shape.scale, 0]} />}
-          {shape.kind === "octa" && <octahedronGeometry args={[shape.scale, 0]} />}
-          {shape.kind === "icosa" && <icosahedronGeometry args={[shape.scale, 0]} />}
+          {shape.kind === "tetra" && <tetrahedronGeometry args={[1, 0]} />}
+          {shape.kind === "octa" && <octahedronGeometry args={[1, 0]} />}
+          {shape.kind === "icosa" && <icosahedronGeometry args={[1, 0]} />}
           <meshBasicMaterial color={shape.color} wireframe transparent opacity={shape.opacity} />
         </mesh>
       ))}
