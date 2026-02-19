@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Tilt } from "@/components/ui/tilt";
 import { WaitlistForm } from "@/components/waitlist-form";
+import { TrackedLink } from "@/components/tracked-link";
 import Image from "next/image";
 
 const metrics = [
@@ -118,9 +119,14 @@ export default function Home() {
                   </Button>
                 </div>
                 <div className="depth-body">
-                  <Button href="/atf" variant="secondary">
+                  <TrackedLink
+                    href="/atf"
+                    className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors border border-primary-300/40 bg-primary-500/10 text-primary-100 hover:border-primary-300/70 hover:bg-primary-500/20"
+                    eventName="cta_click"
+                    eventProps={{ target: "atf", location: "hero" }}
+                  >
                     Explore ATF
-                  </Button>
+                  </TrackedLink>
                 </div>
               </div>
             </Tilt>

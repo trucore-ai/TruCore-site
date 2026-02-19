@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useEffect } from "react";
 import { joinWaitlist, type WaitlistResult } from "@/app/actions/waitlist";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/analytics";
 
 const ROLES = ["Builder", "Founder", "Researcher", "Security", "Other"] as const;
 
@@ -20,6 +21,17 @@ async function formAction(
 
 export function WaitlistForm() {
   const [state, dispatch, isPending] = useActionState(formAction, initialState);
+  const formMetaRef = useRef({ roleSelected: false, hasUseCase: false });
+
+  useEffect(() => {
+    if (state.ok && state.message) {
+      trackEvent("waitlist_signup_success", {
+        source: "homepage",
+        roleSelected: formMetaRef.current.roleSelected,
+        hasUseCase: formMetaRef.current.hasUseCase,
+      });
+    }
+  }, [state.ok, state.message]);
 
   if (state.ok && state.message) {
     return (
@@ -73,6 +85,7 @@ export function WaitlistForm() {
           name="role"
           className={`${inputStyles} mt-1 appearance-none`}
           defaultValue=""
+          onChange={(e) => { formMetaRef.current.roleSelected = e.target.value !== ""; }}
         >
           <option value="">Select a role…</option>
           {ROLES.map((r) => (
@@ -95,6 +108,7 @@ export function WaitlistForm() {
           maxLength={200}
           placeholder="e.g. Automated treasury management"
           className={`${inputStyles} mt-1`}
+          onChange={(e) => { formMetaRef.current.hasUseCase = e.target.value.trim().length > 0; }}
         />
       </div>
 

@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import { Analytics } from "@vercel/analytics/react";
 import { Container } from "@/components/ui/container";
 import { HeroBackground3D } from "@/components/hero-background-3d";
+import { TrackedLink } from "@/components/tracked-link";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -77,6 +79,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Analytics />
         <HeroBackground3D />
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="border-b border-white/10 bg-neutral-900/50 backdrop-blur-md">
@@ -139,12 +142,12 @@ export default function RootLayout({
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <p>© {new Date().getFullYear()} TruCore. Built on trust and integrity.</p>
                 <div className="flex flex-wrap items-center gap-4">
-                  <a href="https://x.com/TruCore_AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-200">
+                  <TrackedLink href="https://x.com/TruCore_AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-200" eventName="outbound_click" eventProps={{ target: "x", location: "footer" }}>
                     X
-                  </a>
-                  <a href="https://github.com/TruCore-AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-200">
+                  </TrackedLink>
+                  <TrackedLink href="https://github.com/TruCore-AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-200" eventName="outbound_click" eventProps={{ target: "github", location: "footer" }}>
                     GitHub
-                  </a>
+                  </TrackedLink>
                 </div>
               </div>
               <div className="flex flex-col gap-4 border-t border-white/10 pt-5 text-lg sm:flex-row sm:items-start sm:justify-between">

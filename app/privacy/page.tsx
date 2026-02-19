@@ -39,9 +39,17 @@ export default function PrivacyPage() {
           <Card>
             <h2 className="text-3xl font-bold text-[#f0a050]">Analytics</h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
-              If analytics are enabled in the future, they will be
-              privacy-respecting and will not use invasive tracking or
-              fingerprinting.
+              We use Vercel Web Analytics — a privacy-first, cookie-free
+              analytics service — to measure page views and understand how
+              visitors interact with the site. We also track a small number of
+              custom events (e.g.&nbsp;waitlist sign-ups, button clicks) to
+              improve the product experience.
+            </p>
+            <p className="mt-3 text-xl leading-[1.6] text-slate-200">
+              These analytics <strong className="text-white">never</strong>{" "}
+              collect personally identifiable information. No emails, IP
+              addresses, or browser fingerprints are stored in analytics events.
+              We do not sell or share analytics data with any third party.
             </p>
           </Card>
 
