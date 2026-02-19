@@ -415,7 +415,6 @@ function BouncingBalls({
       b.vy *= 1 - 0.3 * dt;
       b.vz *= 1 - 0.3 * dt;
 
-      const df = (Math.abs(b.pz) + 1) / ROOM_D;
       const px = b.px;
       const py = b.py;
 

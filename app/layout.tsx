@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Analytics } from "@vercel/analytics/react";
 import { Container } from "@/components/ui/container";
-import { HeroBackground3D } from "@/components/hero-background-3d";
+import { HeroBackgroundPulses } from "@/components/hero-background-pulses";
 import { TrackedLink } from "@/components/tracked-link";
 import "./globals.css";
 
@@ -80,7 +80,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Analytics />
-        <HeroBackground3D />
+        <HeroBackgroundPulses />
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="border-b border-white/10 bg-neutral-900/50 backdrop-blur-md">
             <Container className="flex h-16 items-center justify-between">
