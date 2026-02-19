@@ -55,7 +55,7 @@ const GRID_VERT = `
       if (dist < r && dist > 0.001) {
         float t = 1.0 - dist / r;
         float s = t * t * t;
-        wPos.xyz += normalize(d) * s * uRadii[i] * 3.8;
+        wPos.xyz -= normalize(d) * s * uRadii[i] * 3.8;
         warp += s;
       }
     }

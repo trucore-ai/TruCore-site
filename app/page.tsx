@@ -52,10 +52,10 @@ export default function Home() {
               <Badge>Zero-trust</Badge>
               <Badge>AI execution</Badge>
             </div>
-            <h1 className="mt-6 max-w-3xl text-5xl font-bold tracking-tight text-white sm:text-6xl">
+            <h1 className="mt-6 max-w-3xl text-6xl font-bold tracking-tight text-white sm:text-7xl">
               Trust infrastructure for autonomous finance.
             </h1>
-            <p className="mt-5 max-w-2xl text-xl leading-9 text-slate-200 sm:text-2xl">
+            <p className="mt-5 max-w-2xl text-2xl leading-10 text-slate-200 sm:text-3xl">
               TruCore is AI-native financial infrastructure that enforces policy before action,
               keeps execution accountable, and protects capital by default.
             </p>
@@ -73,9 +73,9 @@ export default function Home() {
                 </div>
               </div>
             </Tilt>
-            <ul className="mt-8 grid gap-3 text-lg text-primary-50 sm:grid-cols-3">
+            <ul className="mt-8 grid gap-4 text-xl text-primary-50 sm:grid-cols-3">
               {metrics.map((item) => (
-                <li key={item} className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-5 py-4">
+                <li key={item} className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-6 py-5">
                   {item}
                 </li>
               ))}
@@ -105,8 +105,8 @@ export default function Home() {
 
       <Section id="why-trucore" className="border-t border-white/10 fade-in-up fade-delay-1">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-3xl font-bold tracking-tight text-white">Why TruCore</h2>
-          <p className="mt-3 text-xl text-slate-200">
+          <h2 className="text-4xl font-bold tracking-tight text-white">Why TruCore</h2>
+          <p className="mt-4 text-2xl leading-10 text-slate-200">
             Trust-first controls and verifiable operations for AI systems handling financial decisions.
           </p>
         </div>
@@ -114,11 +114,11 @@ export default function Home() {
           {whyItems.map((item) => (
             <Tilt key={item.title} maxTilt={6} perspective={1100} className="h-full">
               <Card className="depth-scene h-full">
-                <div className="depth-icon mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg border border-primary-300/40 bg-primary-500/20 text-sm font-bold tracking-wide text-primary-50">
+                <div className="depth-icon mb-4 inline-flex h-14 w-14 items-center justify-center rounded-lg border border-primary-300/40 bg-primary-500/20 text-base font-bold tracking-wide text-primary-50">
                   {item.icon}
                 </div>
-                <h3 className="depth-title text-xl font-bold text-white">{item.title}</h3>
-                <p className="depth-body mt-3 text-lg leading-8 text-slate-200">{item.description}</p>
+                <h3 className="depth-title text-2xl font-bold text-white">{item.title}</h3>
+                <p className="depth-body mt-3 text-xl leading-9 text-slate-200">{item.description}</p>
               </Card>
             </Tilt>
           ))}
@@ -127,18 +127,18 @@ export default function Home() {
 
       <Section id="trust-integrity" className="border-t border-white/10 fade-in-up fade-delay-2">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-3xl font-bold tracking-tight text-white">Trust &amp; Integrity</h2>
-          <p className="mt-3 text-xl text-slate-200">
+          <h2 className="text-4xl font-bold tracking-tight text-white">Trust &amp; Integrity</h2>
+          <p className="mt-4 text-2xl leading-10 text-slate-200">
             Security-grade principles govern every execution path from policy check to final settlement.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="md:col-span-2">
-            <ul className="grid gap-3 text-lg text-slate-100 sm:grid-cols-2">
+            <ul className="grid gap-4 text-xl text-slate-100 sm:grid-cols-2">
               {trustPillars.map((pillar) => (
                 <li
                   key={pillar}
-                  className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-5 py-4"
+                  className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-6 py-5"
                 >
                   {pillar}
                 </li>
@@ -146,21 +146,21 @@ export default function Home() {
             </ul>
           </Card>
           <Card className="border-primary-300/25 bg-primary-500/10">
-            <p className="text-base font-bold uppercase tracking-[0.14em] text-primary-100">
+            <p className="text-lg font-bold uppercase tracking-[0.14em] text-primary-100">
               Security Contact
             </p>
-            <p className="mt-3 text-lg text-slate-200">
+            <p className="mt-3 text-xl text-slate-200">
               For responsible disclosure and security coordination, contact our team directly.
             </p>
-            <p className="mt-4 text-lg font-bold text-white">security@trucore.xyz</p>
+            <p className="mt-4 text-xl font-bold text-white">security@trucore.xyz</p>
           </Card>
         </div>
       </Section>
 
       <Section id="integrations" className="border-t border-white/10 fade-in-up fade-delay-3">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-3xl font-bold tracking-tight text-white">V1 Integrations</h2>
-          <p className="mt-3 text-xl text-slate-200">
+          <h2 className="text-4xl font-bold tracking-tight text-white">V1 Integrations</h2>
+          <p className="mt-4 text-2xl leading-10 text-slate-200">
             Built with a Solana-first foundation and integrated with critical DeFi rails for execution.
           </p>
         </div>
@@ -169,8 +169,8 @@ export default function Home() {
             <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-lg border border-primary-300/40 text-sm font-semibold text-primary-100">
               S
             </div>
-            <h3 className="text-2xl font-bold text-white">Solana</h3>
-            <p className="mt-2 max-w-xl text-lg text-slate-200">
+            <h3 className="text-3xl font-bold text-white">Solana</h3>
+            <p className="mt-3 max-w-xl text-xl leading-9 text-slate-200">
               Primary execution layer for low-latency policy-aware transactions, deterministic controls,
               and verifiable settlement pathways.
             </p>
@@ -180,8 +180,8 @@ export default function Home() {
               <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 text-sm font-semibold text-slate-200">
                 J
               </div>
-              <h3 className="text-xl font-bold text-white">Jupiter</h3>
-              <p className="mt-2 text-lg text-slate-200">
+              <h3 className="text-2xl font-bold text-white">Jupiter</h3>
+              <p className="mt-3 text-xl leading-9 text-slate-200">
                 Secondary integration for route intelligence and best-execution support.
               </p>
             </Card>
@@ -189,8 +189,8 @@ export default function Home() {
               <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 text-sm font-semibold text-slate-200">
                 L
               </div>
-              <h3 className="text-xl font-bold text-white">Solend</h3>
-              <p className="mt-2 text-lg text-slate-200">
+              <h3 className="text-2xl font-bold text-white">Solend</h3>
+              <p className="mt-3 text-xl leading-9 text-slate-200">
                 Secondary integration for lending and collateral-aware strategy primitives.
               </p>
             </Card>
@@ -200,8 +200,8 @@ export default function Home() {
 
       <Section id="waitlist" className="border-t border-white/10 fade-in-up fade-delay-4">
         <Card className="bg-accent-500/10 border-accent-500/30 p-8 sm:p-10">
-          <h2 className="text-3xl font-bold text-accent-300">Join the TruCore waitlist.</h2>
-          <p className="mt-3 max-w-2xl text-lg text-slate-100">
+          <h2 className="text-4xl font-bold text-accent-300">Join the TruCore waitlist.</h2>
+          <p className="mt-4 max-w-2xl text-2xl leading-10 text-slate-100">
             Get early updates on integrity-first autonomous finance infrastructure.
           </p>
           <div className="mt-6 max-w-xl">

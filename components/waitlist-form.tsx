@@ -28,7 +28,7 @@ export function WaitlistForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3" noValidate>
-      <label htmlFor="waitlist-email" className="block text-sm font-medium text-primary-100">
+      <label htmlFor="waitlist-email" className="block text-lg font-medium text-primary-100">
         Email address
       </label>
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -45,7 +45,7 @@ export function WaitlistForm() {
             }
           }}
           placeholder="you@company.com"
-          className="h-11 w-full rounded-xl border border-white/15 bg-neutral-950/70 px-4 text-sm text-slate-100 placeholder:text-slate-400"
+          className="h-12 w-full rounded-xl border border-white/15 bg-neutral-950/70 px-5 text-lg text-slate-100 placeholder:text-slate-400"
           aria-invalid={Boolean(error)}
           aria-describedby="waitlist-status"
         />
@@ -54,7 +54,7 @@ export function WaitlistForm() {
         </Button>
       </div>
 
-      <p id="waitlist-status" role={error ? "alert" : "status"} className="text-sm">
+      <p id="waitlist-status" role={error ? "alert" : "status"} className="text-base">
         {error && <span className="text-red-300">{error}</span>}
         {!error && isSuccess && (
           <span className="text-primary-100">

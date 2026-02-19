@@ -10,7 +10,7 @@ type ButtonProps = {
 };
 
 const baseStyles =
-  "inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold transition-colors";
+  "inline-flex items-center justify-center rounded-xl px-6 py-3.5 text-lg font-semibold transition-colors";
 
 const variantStyles: Record<"primary" | "secondary", string> = {
   primary: "bg-accent-500 text-neutral-950 hover:bg-accent-400",
