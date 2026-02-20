@@ -92,6 +92,235 @@ npm run dev
 
 ---
 
+## Admin Triage Dashboard
+
+A lightweight, server-rendered page for reviewing and triaging waitlist signups (especially design partner applications). Includes pipeline status tracking, inline status updates, outreach email copy, and CSV export.
+
+### Authentication
+
+Admin access is protected by an HttpOnly cookie session. No credentials appear in URLs.
+
+1. Visit `/admin/login` and enter the `ADMIN_DASHBOARD_KEY`.
+2. On success, a secure HttpOnly cookie (`admin_session`) is set for 8 hours.
+3. Access `/admin/waitlist` with clean URLs (no query key).
+4. Click **Logout** (top-right) to clear the session and return to the home page.
+
+### URL Pattern
+
+```text
+/admin/waitlist?intent=design_partner&limit=50
+```
+
+### Query Parameters
+
+| Param | Values | Default |
+| --- | --- | --- |
+| `intent` | `all`, `standard`, `design_partner` | `all` |
+| `limit` | `25`, `50`, `100` | `50` |
+
+### Pipeline Status
+
+Each signup has a `status` field with one of: `new`, `contacted`, `qualified`, `closed`. Change status inline from the dashboard using the per-row dropdown and Save button.
+
+### CSV Export
+
+Click "Export Design Partners (CSV)" at the top of the dashboard. The download includes: `created_at`, `updated_at`, `email`, `status`, `project_name`, `integrations_interest`, `tx_volume_bucket`, `build_stage`, `role`, `source`, `admin_notes`.
+
+### Outreach Email Copy
+
+For design partner rows, a "Copy email" button copies a pre-filled outreach template to your clipboard. No email is sent automatically.
+
+### Admin Notes
+
+Each signup row has an expandable "Notes" column. Click the note preview (or "+ Add note") to open an inline textarea. Notes are capped at 2,000 characters and saved server-side. Notes are never exposed outside the admin dashboard.
+
+### Design Partner Dedupe
+
+If a design partner re-submits with the same email, the existing row is updated with the latest project details instead of being silently ignored. The original `created_at` is preserved and `updated_at` is refreshed. Standard waitlist submissions still ignore duplicates.
+
+### Rate Limiting
+
+Admin actions (status changes, note edits, CSV export) are rate-limited to 30 mutations per minute per session. This is an in-memory guard that resets on cold start.
+
+### Security
+
+- Admin key is never exposed in URLs, query params, or browser history.
+- The session cookie is HttpOnly (not accessible to client JS), Secure in production, and SameSite=Lax.
+- If the session is missing or invalid, the page returns a 404 (no hints).
+- Incorrect login attempts also return a 404.
+- Treat `ADMIN_DASHBOARD_KEY` like a password. Do not share it publicly or commit it to source control.
+- The page is server-rendered only. Client components handle clipboard and downloads only.
+
+### Security Headers (Stage 23)
+
+Every response includes strict security headers configured in `next.config.ts`:
+
+| Header | Value |
+| --- | --- |
+| Strict-Transport-Security | `max-age=63072000; includeSubDomains; preload` |
+| X-Frame-Options | `DENY` |
+| X-Content-Type-Options | `nosniff` |
+| Referrer-Policy | `strict-origin-when-cross-origin` |
+| Permissions-Policy | `camera=(), microphone=(), geolocation=()` |
+| Content-Security-Policy | Restricts sources to self + Vercel Analytics |
+
+Header values are defined in `lib/security-headers.ts` for easy auditing.
+
+### Admin Audit Log (Stage 23)
+
+All admin actions are recorded in the `admin_audit_log` Postgres table. Logged actions:
+
+| Action | When |
+| --- | --- |
+| `admin_login` | Successful login |
+| `admin_logout` | Logout |
+| `status_change` | Pipeline status changed (metadata: `{ to }`) |
+| `note_update` | Admin notes edited |
+| `csv_export` | Design partner CSV downloaded (metadata: `{ rowCount }`) |
+
+View the last 50 entries at `/admin/audit` (requires admin session). The log is read-only, no editing or deletion is supported. No secrets or raw cookies are ever stored.
+
+### CSP Reporting (Stage 24)
+
+A `Content-Security-Policy-Report-Only` header mirrors the enforce CSP and sends violation reports to `/api/csp-report` via the Reporting API. Both enforce and report-only headers coexist, so reports are collected without blocking anything.
+
+**What is stored** (in the `csp_reports` Postgres table):
+
+| Field | Description |
+| --- | --- |
+| `effective_directive` | The CSP directive that was violated |
+| `violated_directive` | The policy string that was violated |
+| `disposition` | `enforce` or `report` |
+| `document_origin` | Scheme + host only (query/hash stripped) |
+| `user_agent` | Truncated to 120 characters |
+
+Blocked URIs, source files, and full document URLs are never stored. Reports are rate-limited to 30/min per IP. View reports at `/admin/csp` (requires admin session).
+
+### Status Page (Stage 25)
+
+`/status` displays current operational status for Website, Waitlist API, and Admin Tools. Includes monitoring details, incident reporting instructions, and optional last-deploy commit SHA (from `VERCEL_GIT_COMMIT_SHA`).
+
+### Changelog (Stage 25)
+
+`/changelog` renders a chronological list of updates sourced from `lib/changelog.ts`. Entries include date, title, and bullet-point changes. Latest entries appear first.
+
+### Contact Page (Stage 25)
+
+`/contact` provides clear email routes (`info@trucore.xyz` for general, `security@trucore.xyz` for vulnerabilities), links to the responsible disclosure policy, and social channel buttons (X and GitHub).
+
+### ATF Primer (Stage 27)
+
+`/atf/primer` is a concise, technical primer covering the ATF problem space, model, V1 scope, hard invariants, threat model, and design partner program. Content is sourced from `lib/primer-content.ts` so the web page and downloadable PDF stay in sync.
+
+`/atf/primer/pdf` generates a formatted PDF using `pdf-lib` with `Cache-Control: public, max-age=86400`. No PII or user data is embedded in the document.
+
+Links to the primer appear in the ATF hero section and the site footer under Products.
+
+### Design Partner Scheduling (Stage 28)
+
+After a successful design partner application, the success UI offers a "Book a fit check" button linking to an external scheduling tool. The user confirmation email also includes the scheduling link plus a short intake questionnaire.
+
+**Setup:**
+
+1. Create a free scheduling link using [Calendly](https://calendly.com) (free tier) or [Google Calendar Appointment Schedule](https://support.google.com/calendar/answer/10729749).
+1. Add the env var in **Vercel > Project Settings > Environment Variables** (Production + Preview):
+
+| Variable | Value |
+| --- | --- |
+| `DESIGN_PARTNER_SCHEDULING_URL` | `https://calendly.com/your-link` (or Google equivalent) |
+
+1. For local development, add it to `.env.local`:
+
+```bash
+DESIGN_PARTNER_SCHEDULING_URL=https://calendly.com/your-link
+```
+
+**Behavior:**
+
+- If the env var is set, the success card shows a prominent "Book a fit check" button and the user email includes a clickable scheduling CTA.
+- If the env var is missing, the button is hidden and a fallback message ("Scheduling link unavailable. We'll email you.") is shown instead.
+- Admin notification emails include a "Suggested first reply" block with the scheduling link for quick operator outreach.
+
+### Design Partner Apply Page (Stage 29)
+
+`/atf/apply` is a dedicated, premium application page for the ATF Design Partner program. It includes contextual sections (who it's for, what you get, what happens next) and a focused form that submits through the same backend pipeline as the waitlist.
+
+All design partner CTAs across the site (ATF hero, primer page, CTA component) route to `/atf/apply`. The homepage waitlist (`/#waitlist`) remains available for general signups and still supports `?intent=design_partner` for backward compatibility with existing links.
+
+The apply form includes: email, project name, integrations, build stage, expected volume, optional role, and optional use case. Success state matches Stage 28 behavior (scheduling button when env var present).
+
+### Public Roadmap and Transparency Metrics (Stage 30)
+
+`/atf/roadmap` is a public roadmap for ATF with infrastructure-grade milestone tracking. Milestones are grouped by scope (`core`, `security`, `ecosystem`) and each item has a status badge:
+
+- `Completed` (green)
+- `In Progress` (orange)
+- `Planned` (neutral)
+
+No dates, promises, or speculative timelines are shown.
+
+`/atf` now includes:
+
+- A `View Full Roadmap` link that tracks `roadmap_view_click` with `{ location: "atf_page" }`
+- A `Transparency Metrics` section summarizing active controls (security headers, CSP logging, audit logging, health monitoring, and design partner program status)
+
+The footer `Products` column includes an `ATF Roadmap` link for persistent navigation.
+
+### Security Whitepaper Preview and Integrity Hash (Stage 31)
+
+`/atf/whitepaper` publishes a short security whitepaper preview for ATF. It focuses on what exists now: threat model, trust assumptions, enforcement model, receipt model, V1 scope, and design partner engagement.
+
+`/atf/whitepaper/pdf` generates a downloadable PDF using `pdf-lib` with `Cache-Control: public, max-age=86400`.
+
+`/atf/whitepaper/hash` returns a SHA-256 hash for the generated PDF:
+
+```json
+{ "sha256": "..." }
+```
+
+The whitepaper page displays this hash and includes a copy action so readers can verify document integrity.
+
+Navigation updates:
+
+- `/atf` hero includes a `Whitepaper (Preview)` CTA
+- Footer `Products` includes `ATF Whitepaper (Preview)`
+
+Analytics events:
+
+- `whitepaper_view_click` (location: `atf_page`)
+- `whitepaper_download_click` (location: `whitepaper_page`)
+- `whitepaper_hash_copy_click` (location: `whitepaper_page`)
+
+### Blog Engine MVP and RSS (Stage 32)
+
+`/blog` publishes short technical posts as static content sourced from `lib/blog.ts`.
+
+`/blog/[slug]` renders individual posts with sectioned body content, optional code blocks, and a design partner CTA linking to `/atf/apply`.
+
+`/blog/rss.xml` serves an RSS 2.0 feed (`Content-Type: application/rss+xml; charset=utf-8`) with the latest 20 posts and canonical post URLs (`https://trucore.xyz/blog/<slug>`).
+
+No CMS is required for this stage. Blog content is managed as typed TypeScript objects for fast edits and deterministic builds.
+
+Footer navigation includes a `Resources` column with a `Blog` link.
+
+### Health Endpoint (Stage 24)
+
+`GET /api/health` returns `{"ok":true,"ts":"..."}` with `Cache-Control: no-store`. No database checks, no secrets. Use with external uptime monitors (Checkly, UptimeRobot, etc.).
+
+### Error Boundaries (Stage 24)
+
+A global error boundary (`app/error.tsx`) catches unexpected runtime errors and shows a friendly reload page. Admin routes have a scoped error boundary (`app/admin/error.tsx`) with an admin-specific message and sign-in link.
+
+### Setup
+
+Add the following environment variable in **Vercel > Project Settings > Environment Variables** (Production):
+
+| Variable | Value |
+| --- | --- |
+| `ADMIN_DASHBOARD_KEY` | A long random string |
+
+---
+
 ## Vercel Deployment Checklist
 
 ### 1) Import Repo

@@ -59,13 +59,19 @@ export const metadata: Metadata = {
     images: ["/twitter-image"],
   },
   icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
+    icon: [
+      { url: "/favicon.png", sizes: "48x48", type: "image/png" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/favicon.png",
     apple: "/icon.png",
   },
   robots: {
     index: true,
     follow: true,
+  },
+  alternates: {
+    canonical: "https://trucore.xyz",
   },
 };
 
@@ -157,26 +163,63 @@ export default function RootLayout({
                     <Link href="/atf" className="transition-colors hover:text-primary-200">
                       Agent Transaction Firewall (ATF)
                     </Link>
+                    <Link href="/atf/primer" className="transition-colors hover:text-primary-200">
+                      ATF Primer
+                    </Link>
+                    <Link href="/atf/roadmap" className="transition-colors hover:text-primary-200">
+                      ATF Roadmap
+                    </Link>
+                    <Link href="/atf/whitepaper" className="transition-colors hover:text-primary-200">
+                      ATF Whitepaper (Preview)
+                    </Link>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-4">
-                  <Link href="/security" className="transition-colors hover:text-primary-200">
-                    Security
-                  </Link>
-                  <Link href="/privacy" className="transition-colors hover:text-primary-200">
-                    Privacy
-                  </Link>
-                  <Link href="/terms" className="transition-colors hover:text-primary-200">
-                    Terms
-                  </Link>
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Company</p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Link href="/status" className="transition-colors hover:text-primary-200">
+                      Status
+                    </Link>
+                    <Link href="/changelog" className="transition-colors hover:text-primary-200">
+                      Changelog
+                    </Link>
+                    <Link href="/contact" className="transition-colors hover:text-primary-200">
+                      Contact
+                    </Link>
+                  </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-4">
-                  <a href="mailto:info@trucore.xyz" className="transition-colors hover:text-primary-200">
-                    info@trucore.xyz
-                  </a>
-                  <a href="mailto:security@trucore.xyz" className="transition-colors hover:text-primary-200">
-                    security@trucore.xyz
-                  </a>
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Resources</p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Link href="/blog" className="transition-colors hover:text-primary-200">
+                      Blog
+                    </Link>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Legal</p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Link href="/security" className="transition-colors hover:text-primary-200">
+                      Security
+                    </Link>
+                    <Link href="/privacy" className="transition-colors hover:text-primary-200">
+                      Privacy
+                    </Link>
+                    <Link href="/terms" className="transition-colors hover:text-primary-200">
+                      Terms
+                    </Link>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Email</p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <a href="mailto:info@trucore.xyz" className="transition-colors hover:text-primary-200">
+                      info@trucore.xyz
+                    </a>
+                    <a href="mailto:security@trucore.xyz" className="transition-colors hover:text-primary-200">
+                      security@trucore.xyz
+                    </a>
+                  </div>
                 </div>
               </div>
             </Container>
