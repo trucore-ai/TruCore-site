@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
   title: "Permits",
@@ -19,7 +20,7 @@ export default function DocsPermitsPage() {
       </header>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-slate-100">Core permit fields</h2>
+        <HeadingAnchor id="core-permit-fields">Core permit fields</HeadingAnchor>
         <ul className="space-y-3 text-slate-300">
           <li>
             <span className="font-semibold text-slate-100">scope</span>, constrains what operation can run, such as
@@ -39,7 +40,7 @@ export default function DocsPermitsPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-slate-100">Example permit JSON</h2>
+        <HeadingAnchor id="example-permit-json">Example permit JSON</HeadingAnchor>
         <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
 {`{
   "permitId": "prm_01JXATF0ABC",
@@ -62,7 +63,7 @@ export default function DocsPermitsPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-slate-100">Replay protection</h2>
+        <HeadingAnchor id="replay-protection">Replay protection</HeadingAnchor>
         <p className="text-slate-300">
           Replay protection combines short TTL, single-use nonce tracking, and domain separation checks. If a permit
           is reused, expired, or presented in the wrong environment, validation fails and execution is denied.

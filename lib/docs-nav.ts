@@ -9,6 +9,9 @@ export type DocsNavSection = {
   items: DocsNavItem[];
 };
 
+export const DOCS_VERSION = "v0.1";
+export const LAST_UPDATED = "2026-02-20";
+
 export const sections: DocsNavSection[] = [
   {
     title: "Documentation",

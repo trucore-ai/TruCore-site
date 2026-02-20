@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { HeadingAnchor } from "@/components/heading-anchor";
 import { Card } from "@/components/ui/card";
 import { sections } from "@/lib/docs-nav";
 
@@ -39,7 +40,9 @@ export default function DocsHubPage() {
       </section>
 
       <section className="rounded-xl border border-white/10 bg-neutral-900/40 p-6">
-        <h2 className="text-2xl font-semibold text-slate-100">Ready to test ATF in your workflow?</h2>
+        <HeadingAnchor id="ready-to-test-atf-in-your-workflow">
+          Ready to test ATF in your workflow?
+        </HeadingAnchor>
         <p className="mt-2 text-slate-300">
           Apply to the design partner program to help shape policy and permit ergonomics for production teams.
         </p>

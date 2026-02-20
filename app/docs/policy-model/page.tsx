@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
   title: "Policy Model",
@@ -19,7 +20,7 @@ export default function DocsPolicyModelPage() {
       </header>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-slate-100">Policy primitives</h2>
+        <HeadingAnchor id="policy-primitives">Policy primitives</HeadingAnchor>
         <ul className="space-y-3 text-slate-300">
           <li>
             <span className="font-semibold text-slate-100">Allowlists</span>, limit execution to explicitly approved
@@ -41,7 +42,7 @@ export default function DocsPolicyModelPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-slate-100">Fail-closed behavior</h2>
+        <HeadingAnchor id="fail-closed-behavior">Fail-closed behavior</HeadingAnchor>
         <p className="text-slate-300">
           If any check is missing, malformed, expired, or non-compliant, ATF rejects the action. The default outcome
           is deny, not allow.
@@ -49,7 +50,7 @@ export default function DocsPolicyModelPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-slate-100">Example policy JSON</h2>
+        <HeadingAnchor id="example-policy-json">Example policy JSON</HeadingAnchor>
         <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
 {`{
   "policyId": "pol_live_treasury_v1",

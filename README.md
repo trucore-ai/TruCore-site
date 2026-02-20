@@ -339,6 +339,22 @@ Analytics:
 
 - `docs_view_click` with `{ location: "atf_page", target: "docs" }`
 
+### Docs Search, Version Badge, and Anchors (Stage 36)
+
+The docs layout now includes a lightweight client-side search input that matches docs titles, curated content snippets, and tags.
+
+Search behavior:
+
+- Keyboard-accessible dropdown results (up to 8)
+- Clear empty state when no pages match
+- Optional analytics event: `docs_search_select` with `{ href }` only
+
+Docs versioning is now visible in the header as `ATF Docs v0.1` plus `Updated 2026-02-20`.
+
+Major `h2` headings in the docs pages include hover-revealed copy-link anchors. Selecting the icon copies the full URL with hash.
+
+Optional analytics event: `docs_anchor_copy` with `{ id, href }`.
+
 ### Health Endpoint (Stage 24)
 
 `GET /api/health` returns `{"ok":true,"ts":"..."}` with `Cache-Control: no-store`. No database checks, no secrets. Use with external uptime monitors (Checkly, UptimeRobot, etc.).

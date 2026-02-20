@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
   title: "Quickstart",
@@ -18,7 +19,7 @@ export default function DocsQuickstartPage() {
       </header>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-slate-100">What you&apos;re building</h2>
+        <HeadingAnchor id="what-youre-building">What you&apos;re building</HeadingAnchor>
         <p className="text-slate-300">
           A fail-closed execution boundary where autonomous actions proceed only when policy checks and permit
           constraints pass.
@@ -26,7 +27,7 @@ export default function DocsQuickstartPage() {
       </section>
 
       <section className="space-y-6">
-        <h2 className="text-2xl font-semibold text-slate-100">Flow</h2>
+        <HeadingAnchor id="flow">Flow</HeadingAnchor>
 
         <div className="space-y-3">
           <h3 className="text-xl font-semibold text-slate-100">1. Define policy</h3>
