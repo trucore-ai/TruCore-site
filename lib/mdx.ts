@@ -19,10 +19,18 @@ export type BlogPostWithContent = BlogPostMeta & {
 
 function normalizeFrontmatter(slug: string, data: Record<string, unknown>): BlogPostMeta {
   const title = typeof data.title === "string" ? data.title : slug;
-  const date = typeof data.date === "string" ? data.date : new Date().toISOString().slice(0, 10);
-  const description = typeof data.description === "string" ? data.description : "";
+  const dateInput =
+    typeof data.date === "string" || data.date instanceof Date ? data.date : null;
+  const normalizedDate = dateInput ? new Date(dateInput) : null;
+  const date = normalizedDate && !Number.isNaN(normalizedDate.valueOf())
+    ? normalizedDate.toISOString().slice(0, 10)
+    : new Date().toISOString().slice(0, 10);
+  const description = typeof data.description === "string" ? data.description.trim() : "";
   const tags = Array.isArray(data.tags)
-    ? data.tags.filter((tag): tag is string => typeof tag === "string")
+    ? data.tags
+      .filter((tag): tag is string => typeof tag === "string")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0)
     : [];
 
   return {

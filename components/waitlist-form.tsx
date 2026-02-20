@@ -73,11 +73,52 @@ export function WaitlistForm() {
   }, [state.ok, state.message, state.intent]);
 
   if (state.ok && state.message) {
+    const isPartnerSuccess = state.intent === "design_partner";
+
     return (
-      <div className="rounded-xl border border-primary-300/30 bg-primary-500/10 px-6 py-5">
+      <div className="rounded-xl border border-primary-300/30 bg-primary-500/10 px-6 py-5 space-y-4">
         <p className="text-xl font-semibold text-primary-100">
-          &#10003; {state.message}
+          &#10003; {isPartnerSuccess ? "Application received" : state.message}
         </p>
+
+        {isPartnerSuccess && (
+          <>
+            <p className="text-lg text-slate-200">
+              Next: book a 15-minute fit check.
+            </p>
+
+            {state.schedulingUrl ? (
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <a
+                  href={state.schedulingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() =>
+                    trackEvent("design_partner_book_click", {
+                      location: "waitlist_success",
+                    })
+                  }
+                  className="inline-flex h-12 items-center justify-center rounded-xl bg-accent-500 px-6 text-lg font-semibold text-white shadow-md transition-all hover:bg-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-neutral-950"
+                >
+                  Book a fit check
+                </a>
+                <span className="text-sm text-slate-400">
+                  Prefer email?{" "}
+                  <a
+                    href="mailto:info@trucore.xyz"
+                    className="font-medium text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
+                  >
+                    Reply to your confirmation.
+                  </a>
+                </span>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400">
+                Scheduling link unavailable. We&apos;ll email you.
+              </p>
+            )}
+          </>
+        )}
       </div>
     );
   }

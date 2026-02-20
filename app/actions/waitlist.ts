@@ -30,6 +30,7 @@ export type WaitlistResult = {
   ok: boolean;
   message: string;
   intent?: WaitlistIntent;
+  schedulingUrl?: string;
 };
 
 /* ---------- action ---------- */
@@ -156,25 +157,27 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
       path: "/",
     });
 
-    /* ---- emails (fire-and-forget, fail silently) ---- */
+    /* ---- emails (fire-and-forget, never block success) ---- */
     if (isNew) {
-      // Do not await sequentially - fire both in parallel
-      Promise.allSettled([
-        sendAdminNotification({
-          email,
-          role,
-          useCase,
-          intent,
-          projectName: intent === "design_partner" ? projectName : null,
-          integrationsInterest: intent === "design_partner" ? integrationsInterest : null,
-          txVolumeBucket: intent === "design_partner" ? txVolumeBucket : null,
-          buildStage: intent === "design_partner" ? buildStage : null,
-        }),
-        sendUserConfirmation(email, intent),
-      ]).catch(() => {
-        // No PII in logs
-        console.error("[waitlist] Email dispatch failed");
-      });
+      try {
+        await Promise.allSettled([
+          sendAdminNotification({
+            email,
+            role,
+            useCase,
+            intent,
+            projectName: intent === "design_partner" ? projectName : null,
+            integrationsInterest: intent === "design_partner" ? integrationsInterest : null,
+            txVolumeBucket: intent === "design_partner" ? txVolumeBucket : null,
+            buildStage: intent === "design_partner" ? buildStage : null,
+          }),
+          sendUserConfirmation(email, intent),
+        ]);
+      } catch (err) {
+        // No PII in logs - only the error name/type
+        const errName = err instanceof Error ? err.name : "unknown";
+        console.error(`[waitlist] email_send_failed: ${errName}`);
+      }
     }
 
     const successMessage =
@@ -186,6 +189,10 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
       ok: true,
       message: successMessage,
       intent,
+      schedulingUrl:
+        intent === "design_partner"
+          ? (process.env.DESIGN_PARTNER_SCHEDULING_URL ?? undefined)
+          : undefined,
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "unknown";

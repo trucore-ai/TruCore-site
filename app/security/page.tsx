@@ -136,7 +136,7 @@ export default function SecurityPage() {
           </Card>
 
           {/* Contact */}
-          <div className="rounded-xl border border-white/10 bg-neutral-900/50 p-6 text-center">
+          <div className="rounded-xl border border-white/10 bg-neutral-900/50 p-6 text-center space-y-3">
             <p className="text-xl text-slate-300">
               Security inquiries:{" "}
               <a
@@ -146,7 +146,7 @@ export default function SecurityPage() {
                 security@trucore.xyz
               </a>
             </p>
-            <p className="mt-2 text-xl text-slate-300">
+            <p className="text-xl text-slate-300">
               General inquiries:{" "}
               <a
                 href="mailto:info@trucore.xyz"
@@ -154,6 +154,23 @@ export default function SecurityPage() {
               >
                 info@trucore.xyz
               </a>
+            </p>
+            <p className="text-sm text-slate-400">
+              You can also reach us via the{" "}
+              <a
+                href="/contact"
+                className="font-semibold text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
+              >
+                Contact
+              </a>{" "}
+              page or check system availability on the{" "}
+              <a
+                href="/status"
+                className="font-semibold text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
+              >
+                Status
+              </a>{" "}
+              page.
             </p>
           </div>
         </div>

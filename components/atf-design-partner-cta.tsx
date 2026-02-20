@@ -22,7 +22,7 @@ export function AtfDesignPartnerCta({ location = "atf_page" }: AtfDesignPartnerC
         </p>
         <div className="mt-6">
           <Link
-            href="/?intent=design_partner#waitlist"
+            href="/atf/apply"
             className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"
             onClick={() =>
               trackEvent("design_partner_apply_click", { location })

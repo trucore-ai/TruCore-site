@@ -5,6 +5,7 @@ interface SendEmailParams {
   from: string;
   subject: string;
   html: string;
+  replyTo?: string;
 }
 
 /**
@@ -30,6 +31,7 @@ async function sendEmail(params: SendEmailParams): Promise<boolean> {
         to: [params.to],
         subject: params.subject,
         html: params.html,
+        ...(params.replyTo ? { reply_to: params.replyTo } : {}),
       }),
     });
 
@@ -59,39 +61,49 @@ export async function sendAdminNotification(params: {
   txVolumeBucket?: string | null;
   buildStage?: string | null;
 }): Promise<boolean> {
-  const to = process.env.WAITLIST_NOTIFY_TO ?? "info@trucore.xyz";
+  // Always send admin notifications to info@trucore.xyz regardless of env config
+  const to = "info@trucore.xyz";
   const from = process.env.WAITLIST_FROM ?? "TruCore <info@trucore.xyz>";
 
   const isDesignPartner = params.intent === "design_partner";
+  const integrations = params.integrationsInterest?.join(", ") ?? "";
 
-  const roleLine = params.role ? `<p><strong>Role:</strong> ${escapeHtml(params.role)}</p>` : "";
-  const useCaseLine = params.useCase
-    ? `<p><strong>Use case:</strong> ${escapeHtml(params.useCase)}</p>`
-    : "";
-  const intentLine = params.intent
-    ? `<p><strong>Intent:</strong> ${escapeHtml(params.intent)}</p>`
-    : "";
-  const projectLine = params.projectName
-    ? `<p><strong>Project/Company:</strong> ${escapeHtml(params.projectName)}</p>`
-    : "";
-  const integrationsLine =
-    params.integrationsInterest && params.integrationsInterest.length > 0
-      ? `<p><strong>Integrations:</strong> ${escapeHtml(params.integrationsInterest.join(", "))}</p>`
-      : "";
-  const txLine = params.txVolumeBucket
-    ? `<p><strong>Tx Volume:</strong> ${escapeHtml(params.txVolumeBucket)}</p>`
-    : "";
-  const stageLine = params.buildStage
-    ? `<p><strong>Build Stage:</strong> ${escapeHtml(params.buildStage)}</p>`
-    : "";
-
+  /* ---- triage-friendly subject lines ---- */
   const subject = isDesignPartner
-    ? "New TruCore design partner application"
-    : "New TruCore waitlist signup";
+    ? `[TruCore][ATF][Design Partner] ${params.projectName ?? params.email} — ${integrations || "none"} — ${params.txVolumeBucket ?? "unknown"}`
+    : `[TruCore][Waitlist] ${params.email} — ${params.role ?? "no role"}`;
+
+  /* ---- scannable key/value body ---- */
+  const row = (label: string, value: string | null | undefined) =>
+    value ? `<tr><td style="padding:4px 12px 4px 0;color:#888;white-space:nowrap;">${label}</td><td style="padding:4px 0;">${escapeHtml(value)}</td></tr>` : "";
 
   const heading = isDesignPartner
     ? "New Design Partner Application"
     : "New Waitlist Signup";
+
+  /* ---- suggested first reply block (design partners only) ---- */
+  const schedulingUrl = process.env.DESIGN_PARTNER_SCHEDULING_URL ?? "";
+  const suggestedReplyBlock = isDesignPartner
+    ? `
+      <div style="margin-top:24px;padding:16px;background:#f8f4ef;border-left:4px solid #d86c08;border-radius:4px;">
+        <p style="margin:0 0 8px;font-weight:600;color:#d86c08;">Suggested first reply</p>
+        <div style="font-size:13px;color:#333;white-space:pre-line;line-height:1.6;">Hi ${escapeHtml(params.projectName ?? "there")},
+
+Thanks for applying to the TruCore ATF design partner program. I'd love to learn more about what you're building.
+
+Can you share a bit about:
+1. Your agent framework and signer setup
+2. Primary actions you're targeting (Jupiter, Solend, etc.)
+3. Key risk concerns (slippage, limits, allowlists, receipts)
+4. Target volume and automation cadence
+
+${schedulingUrl ? `Book a 15-min fit check here: ${schedulingUrl}` : ""}
+Looking forward to connecting.
+
+Best,
+TruCore Team</div>
+      </div>`
+    : "";
 
   return sendEmail({
     to,
@@ -100,14 +112,17 @@ export async function sendAdminNotification(params: {
     html: `
       <div style="font-family: system-ui, sans-serif; color: #1a1a2e;">
         <h2 style="color: #d86c08;">${heading}</h2>
-        ${intentLine}
-        <p><strong>Email:</strong> ${escapeHtml(params.email)}</p>
-        ${projectLine}
-        ${roleLine}
-        ${useCaseLine}
-        ${integrationsLine}
-        ${txLine}
-        ${stageLine}
+        <table style="border-collapse:collapse;font-size:14px;">
+          ${row("Intent", params.intent)}
+          ${row("Email", params.email)}
+          ${row("Project", params.projectName)}
+          ${row("Integrations", integrations || null)}
+          ${row("Tx Volume", params.txVolumeBucket)}
+          ${row("Build Stage", params.buildStage)}
+          ${row("Role", params.role)}
+        </table>
+        ${params.useCase ? `<p style="margin-top:16px;"><strong>Use case:</strong><br/>${escapeHtml(params.useCase)}</p>` : ""}
+        ${suggestedReplyBlock}
         <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;" />
         <p style="color: #666; font-size: 13px;">Sent from the TruCore waitlist system.</p>
       </div>
@@ -125,19 +140,38 @@ export async function sendUserConfirmation(email: string, intent?: string): Prom
   const isDesignPartner = intent === "design_partner";
 
   const subject = isDesignPartner
-    ? "Your TruCore design partner application"
+    ? "TruCore ATF \u2014 next steps"
     : "You're on the TruCore waitlist";
 
   const heading = isDesignPartner
     ? "Application received."
     : "You're on the list.";
 
+  const schedulingUrl = process.env.DESIGN_PARTNER_SCHEDULING_URL ?? "";
+  const schedulingBlock = schedulingUrl
+    ? `<p style="margin-top:16px;">
+          <a href="${escapeHtml(schedulingUrl)}" style="display:inline-block;padding:12px 24px;background:#d86c08;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;">
+            Book a 15-min fit check
+          </a>
+        </p>`
+    : "";
+
   const body = isDesignPartner
     ? `<p>
           Thanks for applying as a design partner. We review every application
           personally and will follow up with next steps shortly.
         </p>
-        <p>In the meantime, no action is needed on your end.</p>`
+        ${schedulingBlock}
+        <p style="margin-top:20px;"><strong>Quick intake questions</strong> (reply to this email):</p>
+        <ol style="margin-top:8px;padding-left:20px;line-height:1.8;color:#333;">
+          <li>What agent framework and signer are you using?</li>
+          <li>What are your primary actions? (e.g. Jupiter swaps, Solend lending)</li>
+          <li>What risk concerns matter most? (slippage, limits, allowlists, receipts)</li>
+          <li>What is your target volume and automation cadence?</li>
+        </ol>
+        <p style="margin-top:16px;">
+          Just hit reply, we read every response.
+        </p>`
     : `<p>
           Thanks for your interest in TruCore. We're building trust-first infrastructure
           for autonomous finance, and you'll be among the first to get access.
@@ -155,10 +189,11 @@ export async function sendUserConfirmation(email: string, intent?: string): Prom
         <hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;" />
         <p style="color: #666; font-size: 13px;">
           If you didn't sign up for this, you can safely ignore this email or contact
-          <a href="mailto:hello@trucore.xyz" style="color: #349de8;">hello@trucore.xyz</a>.
+          <a href="mailto:info@trucore.xyz" style="color: #349de8;">info@trucore.xyz</a>.
         </p>
       </div>
     `,
+    replyTo: isDesignPartner ? "info@trucore.xyz" : undefined,
   });
 }
 

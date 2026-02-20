@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BlogPostCard } from "@/components/blog-post-card";
+import { BlogFilterBar } from "@/components/blog-filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
@@ -10,6 +10,24 @@ export const metadata: Metadata = {
   title: "Blog",
   description:
     "Short technical posts from TruCore on permits, invariants, and secure autonomous finance infrastructure.",
+  openGraph: {
+    title: "TruCore Blog",
+    description: "Infrastructure for Autonomous Finance",
+    images: [
+      {
+        url: "/blog/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "TruCore Blog social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TruCore Blog",
+    description: "Infrastructure for Autonomous Finance",
+    images: ["/blog/opengraph-image"],
+  },
 };
 
 export default async function BlogIndexPage() {
@@ -40,11 +58,7 @@ export default async function BlogIndexPage() {
       </Section>
 
       <Section className="border-t border-white/10 fade-in-up">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {allPosts.map((post) => (
-            <BlogPostCard key={post.slug} post={post} />
-          ))}
-        </div>
+        <BlogFilterBar posts={allPosts} />
       </Section>
     </Container>
   );

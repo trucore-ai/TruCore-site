@@ -70,7 +70,9 @@ export default function PrivacyPage() {
               Solend), expected transaction volume range, and current build
               stage. These fields help us prioritize outreach and are stored
               alongside your waitlist record under the same policies described
-              above.
+              above. After submission, a link to an external scheduling tool may
+              be provided so you can book a conversation with our team. We do
+              not share your data with the scheduling provider.
             </p>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
               To request deletion of your waitlist data, email{" "}
@@ -97,6 +99,30 @@ export default function PrivacyPage() {
                 info@trucore.xyz
               </a>{" "}
               and we will process your request promptly.
+            </p>
+          </Card>
+
+          <Card>
+            <h2 className="text-3xl font-bold text-[#f0a050]">
+              Related Resources
+            </h2>
+            <p className="mt-3 text-xl leading-[1.6] text-slate-200">
+              Check our{" "}
+              <a
+                href="/status"
+                className="font-semibold text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
+              >
+                System Status
+              </a>{" "}
+              page for current service availability. For questions about your
+              data or this policy, reach out via the{" "}
+              <a
+                href="/contact"
+                className="font-semibold text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
+              >
+                Contact
+              </a>{" "}
+              page.
             </p>
           </Card>
 

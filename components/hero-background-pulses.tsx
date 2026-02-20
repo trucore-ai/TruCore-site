@@ -40,7 +40,7 @@ interface Ray {
   gravY: number;
 }
 
-/** Free-floating dust mote that drifts toward mouse */
+/** Free-floating dust mote that drifts along the pulse path and fades */
 interface Dust {
   x: number;
   y: number;
@@ -51,6 +51,7 @@ interface Dust {
   size: number;       // radius
   alpha0: number;     // starting alpha
   isOrange: boolean;
+  gravityEnabled?: boolean; // disables pointer gravity after spawn
 }
 
 interface Spark {
@@ -61,6 +62,8 @@ interface Spark {
   age: number;
   lifetime: number;
   alpha: number;
+  isOrange: boolean;
+  shade: number;
 }
 
 /* ─── Deterministic PRNG (mulberry32) ─── */
@@ -81,7 +84,6 @@ const MAX_LIFETIME = 7_000;
 const SPARK_LIFETIME = 420;
 const MAX_RAYS = 30;
 const MAX_DUST = 600;          // global dust particle cap
-const DUST_MOUSE_STRENGTH = 0.000025; // gravity pull toward mouse (gentle)
 
 export function HeroBackgroundPulses() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -137,7 +139,7 @@ export function HeroBackgroundPulses() {
       }
       pulseCycles.sort((a, b) => a.startT - b.startT);
 
-      const sinAmp = 3 + rand() * 12;
+      const sinAmp = 1.5 + rand() * 6;
       const headSize = 4 + rand() * 14;
 
       /* Thicker base width at edge — will taper to near-zero at centre */
@@ -146,10 +148,15 @@ export function HeroBackgroundPulses() {
       /* Short trails */
       const trailLen = 6 + Math.floor(rand() * 12); // 6-18
 
-      /* Dust trail variation per ray */
-      const dustRate = 0.15 + rand() * 0.55;          // 0.15-0.70 chance/frame
+      /* Dust trail variation per ray (most pulses get longer trails) */
+      const longTrailProfile = rand() < 0.78;
+      const dustRate = longTrailProfile
+        ? 0.62 + rand() * 0.28  // 0.62-0.90 chance/frame
+        : 0.28 + rand() * 0.32; // 0.28-0.60 chance/frame
       const dustSpeedMult = 0.3 + rand() * 1.4;       // scatter speed multiplier
-      const dustLifetimeMult = 0.5 + rand() * 2.0;    // lifetime multiplier
+      const dustLifetimeMult = longTrailProfile
+        ? 2.1 + rand() * 2.4    // 2.1-4.5 multiplier
+        : 0.9 + rand() * 1.5;   // 0.9-2.4 multiplier
 
       const ray: Ray = {
         startX: sx, startY: sy,
@@ -238,16 +245,19 @@ export function HeroBackgroundPulses() {
 
       const scale = perspectiveScale(progress);
       const traveled = r.speed * (r.age / 16.67);
-      const baseX = r.startX + r.dirX * traveled + r.gravX;
-      const baseY = r.startY + r.dirY * traveled + r.gravY;
+      // Head position: includes gravity
+      const headX = r.startX + r.dirX * traveled + r.gravX;
+      const headY = r.startY + r.dirY * traveled + r.gravY;
       const sinOff = getSineOffset(r, progress);
-      const yaw = (mouseRef.current.x - 0.5) * 12;
-      const pitch = (mouseRef.current.y - 0.5) * 6;
-      const px = baseX + sinOff * r.perpX + yaw * progress;
-      const py = baseY + sinOff * r.perpY + pitch * progress;
+      const px = headX + sinOff * r.perpX;
+      const py = headY + sinOff * r.perpY;
 
       const headR = r.headSize * scale;
       const tw = r.trailWidth * thicknessTaper(progress);
+
+      // Trail points: follow the same gravity-shifted sine path as the head
+      const trailX = headX + sinOff * r.perpX;
+      const trailY = headY + sinOff * r.perpY;
 
       ctx.globalCompositeOperation = "lighter";
 
@@ -307,16 +317,16 @@ export function HeroBackgroundPulses() {
 
       ctx.globalCompositeOperation = "source-over";
 
-      /* Record trail point */
-      r.trail.unshift({ x: px, y: py });
+      /* Record trail point (no gravity) */
+      r.trail.unshift({ x: trailX, y: trailY });
       if (r.trail.length > r.trailLen) r.trail.length = r.trailLen;
     };
 
     const drawDust = (d: Dust) => {
       const progress = d.age / d.lifetime;
-      const a = d.alpha0 * (1 - progress);
+      const a = d.alpha0 * Math.pow(1 - progress, 0.65);
       if (a < 0.01) return;
-      const sz = d.size * (1 - progress * 0.4);
+      const sz = d.size * (1 - progress * 0.2);
       ctx.globalCompositeOperation = "lighter";
       const grad = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, sz);
       if (d.isOrange) {
@@ -340,8 +350,21 @@ export function HeroBackgroundPulses() {
       const r = 1.4 * (1 - progress * 0.5);
       ctx.globalCompositeOperation = "lighter";
       const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r);
-      grad.addColorStop(0, `rgba(255, 255, 255, ${a})`);
-      grad.addColorStop(1, `rgba(142, 211, 255, 0)`);
+      if (s.isOrange) {
+        const warmR = Math.round(245 + s.shade * 10);
+        const warmG = Math.round(150 + s.shade * 40);
+        const warmB = Math.round(70 + s.shade * 30);
+        grad.addColorStop(0, `rgba(255, 245, 230, ${a})`);
+        grad.addColorStop(0.6, `rgba(${warmR}, ${warmG}, ${warmB}, ${a * 0.75})`);
+        grad.addColorStop(1, `rgba(228, 124, 40, 0)`);
+      } else {
+        const coolR = Math.round(150 + s.shade * 55);
+        const coolG = Math.round(205 + s.shade * 35);
+        const coolB = Math.round(245 + s.shade * 10);
+        grad.addColorStop(0, `rgba(245, 252, 255, ${a})`);
+        grad.addColorStop(0.6, `rgba(${coolR}, ${coolG}, ${coolB}, ${a * 0.75})`);
+        grad.addColorStop(1, `rgba(90, 170, 245, 0)`);
+      }
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
@@ -386,8 +409,8 @@ export function HeroBackgroundPulses() {
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, dw, dh);
 
-      const ambCx = dw * 0.5 + (mouseRef.current.x - 0.5) * 30;
-      const ambCy = dh * 0.42 + (mouseRef.current.y - 0.5) * 15;
+      const ambCx = dw * 0.5;
+      const ambCy = dh * 0.42;
       const ambR = Math.min(dw, dh) * 0.38;
       const ambGrad = ctx.createRadialGradient(ambCx, ambCy, 0, ambCx, ambCy, ambR);
       ambGrad.addColorStop(0, "rgba(40, 130, 210, 0.05)");
@@ -414,17 +437,23 @@ export function HeroBackgroundPulses() {
         r.age += dt;
         if (r.age >= r.lifetime) { rays.splice(i, 1); continue; }
 
-        /* Ray mouse gravity (subtle curve) */
+        /* Ray mouse gravity (only head): half-screen range, stronger near pointer */
         const traveled = r.speed * (r.age / 16.67);
-        const curX = r.startX + r.dirX * traveled + r.gravX;
-        const curY = r.startY + r.dirY * traveled + r.gravY;
-        const gmx = mxCanvas - curX;
-        const gmy = myCanvas - curY;
+        const headX = r.startX + r.dirX * traveled + r.gravX;
+        const headY = r.startY + r.dirY * traveled + r.gravY;
+        const gmx = mxCanvas - headX;
+        const gmy = myCanvas - headY;
         const gDist = Math.sqrt(gmx * gmx + gmy * gmy) || 1;
-        const gStr = Math.min(0.12, 800 / (gDist * gDist)) * (dt / 16.67);
-        r.gravX += gmx * gStr;
-        r.gravY += gmy * gStr;
-        const maxOff = 60;
+        const influenceRadius = Math.min(dw, dh) * 0.9;
+        if (gDist < influenceRadius) {
+          const near = 1 - gDist / influenceRadius; // 1 near pointer, 0 at edge
+          const nearBoost = 1 + near * near * 2.2;
+          const farLift = 0.72 + 0.48 * near;
+          const gStr = Math.min(0.026, (620 / (gDist * gDist + 60000)) * nearBoost * farLift) * (dt / 16.67);
+          r.gravX += gmx * gStr;
+          r.gravY += gmy * gStr;
+        }
+        const maxOff = 28;
         const curOff = Math.sqrt(r.gravX * r.gravX + r.gravY * r.gravY);
         if (curOff > maxOff) { r.gravX *= maxOff / curOff; r.gravY *= maxOff / curOff; }
 
@@ -436,74 +465,63 @@ export function HeroBackgroundPulses() {
         /* Fade dust spawn as ray approaches centre — almost none past 70% */
         const dustFade = progress < 0.35 ? 1 : Math.max(0, 1 - Math.pow((progress - 0.35) / 0.45, 1.8));
         if (pAlpha > 0.05 && dustRef.current.length < MAX_DUST && rand() < r.dustRate * dustFade * (dt / 16.67)) {
-          /* Spawn dust BEHIND the head along the ray's reverse direction */
-          const headX = r.startX + r.dirX * traveled + r.gravX;
-          const headY = r.startY + r.dirY * traveled + r.gravY;
-          const behindDist = 8 + rand() * 20; // 8-28px behind the head
-          const bx = headX - r.dirX * behindDist + (rand() - 0.5) * 3;
-          const by = headY - r.dirY * behindDist + (rand() - 0.5) * 3;
-          /* Initial velocity mostly along trailing direction (behind pulse) */
-          const trailVx = -r.dirX * (0.3 + rand() * 0.8) * r.dustSpeedMult + (rand() - 0.5) * 0.3;
-          const trailVy = -r.dirY * (0.3 + rand() * 0.8) * r.dustSpeedMult + (rand() - 0.5) * 0.3;
+          /* Spawn dust along the UNPERTURBED ray path (no gravity offset) */
+          const rawX = r.startX + r.dirX * traveled;
+          const rawY = r.startY + r.dirY * traveled;
+          const behindDist = 14 + rand() * 34; // 14-48px behind the head
+          const bx = rawX - r.dirX * behindDist + (rand() - 0.5) * 0.8;
+          const by = rawY - r.dirY * behindDist + (rand() - 0.5) * 0.8;
           dustRef.current.push({
             x: bx,
             y: by,
-            vx: trailVx,
-            vy: trailVy,
+            vx: 0,
+            vy: 0,
             age: 0,
-            lifetime: (800 + rand() * 2500) * r.dustLifetimeMult,
+            lifetime: (1600 + rand() * 3600) * r.dustLifetimeMult,
             size: 0.4 + rand() * 1.6,
             alpha0: 0.15 + rand() * 0.35,
             isOrange: r.isOrange,
+            gravityEnabled: false, // dust never affected by pointer gravity
           });
         }
 
         /* Also spawn occasional sparks */
         if (rand() < 0.08 * (dt / 16.67) && pAlpha > 0.15) {
           sparksRef.current.push({
-            x: curX, y: curY,
+            x: headX, y: headY,
             vx: (rand() - 0.5) * 2.5,
             vy: (rand() - 0.5) * 2.5,
             age: 0,
             lifetime: SPARK_LIFETIME * (0.4 + rand() * 0.6),
             alpha: 0.3 + rand() * 0.5,
+            isOrange: r.isOrange,
+            shade: rand(),
           });
         }
       }
 
-      /* ── Update & draw dust (mouse-attracted) ── */
+      /* ── Update & draw dust (stationary, fades in place) ── */
       const dusts = dustRef.current;
       for (let i = dusts.length - 1; i >= 0; i--) {
         const d = dusts[i];
         d.age += dt;
         if (d.age >= d.lifetime) { dusts.splice(i, 1); continue; }
-
-        /* Gravity toward mouse pointer */
-        const dmx = mxCanvas - d.x;
-        const dmy = myCanvas - d.y;
-        const dDist = Math.sqrt(dmx * dmx + dmy * dmy) || 1;
-        const pull = DUST_MOUSE_STRENGTH * dt;
-        d.vx += (dmx / dDist) * pull * Math.min(200, dDist);
-        d.vy += (dmy / dDist) * pull * Math.min(200, dDist);
-
-        /* Damping so dust doesn't accelerate infinitely */
-        d.vx *= 0.995;
-        d.vy *= 0.995;
-
-        d.x += d.vx * (dt / 16.67);
-        d.y += d.vy * (dt / 16.67);
-
+        // Dust motes are stationary and never affected by pointer gravity
+        d.gravityEnabled = false;
         drawDust(d);
       }
 
-      /* ── Update & draw sparks ── */
+      /* ── Update & draw sparks (free drift, no pointer gravity) ── */
       const sparks = sparksRef.current;
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];
         s.age += dt;
-        s.x += s.vx * (dt / 16.67);
-        s.y += s.vy * (dt / 16.67);
         if (s.age >= s.lifetime) { sparks.splice(i, 1); continue; }
+        const dtN = dt / 16.67;
+        s.x += s.vx * dtN;
+        s.y += s.vy * dtN;
+        s.vx *= 0.985;
+        s.vy *= 0.985;
         drawSpark(s);
       }
     };
