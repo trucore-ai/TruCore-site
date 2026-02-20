@@ -303,6 +303,42 @@ No CMS is required. Authoring is now file-based MDX for simpler publishing while
 
 Footer navigation includes a `Resources` column with a `Blog` link.
 
+### Blog UX and SEO Upgrade (Stage 34)
+
+`/blog` now supports client-side filtering with search and tag chips, plus a clear action and a live count (`Showing X of Y posts`).
+
+Filtering is case-insensitive and matches post title, description, and tags. Empty filter results show a clear message.
+
+Dynamic Open Graph image routes now exist for blog sharing:
+
+- `/blog/opengraph-image` (blog index social preview)
+- `/blog/<slug>/opengraph-image` (per-post social preview with title, date, tags)
+
+`/blog/[slug]` metadata now points `openGraph.images` and `twitter.images` to the per-post OG route.
+
+`/sitemap.xml` is generated via `app/sitemap.ts` and includes key marketing routes, blog index, and all blog post URLs from MDX frontmatter.
+
+### Docs Hub and Initial ATF Docs (Stage 35)
+
+`/docs` now serves as a lightweight documentation hub for technical teams evaluating ATF.
+
+Initial docs pages:
+
+- `/docs/quickstart`
+- `/docs/policy-model`
+- `/docs/permits`
+
+The docs area uses a shared two-column layout with a persistent desktop sidebar and a mobile dropdown navigator.
+
+Navigation updates:
+
+- `/atf` hero includes a `Docs` CTA near Primer and Whitepaper links
+- Footer `Resources` includes a `Docs` link
+
+Analytics:
+
+- `docs_view_click` with `{ location: "atf_page", target: "docs" }`
+
 ### Health Endpoint (Stage 24)
 
 `GET /api/health` returns `{"ok":true,"ts":"..."}` with `Cache-Control: no-store`. No database checks, no secrets. Use with external uptime monitors (Checkly, UptimeRobot, etc.).

@@ -8,7 +8,9 @@ import { AtfV1Scope } from "@/components/atf-v1-scope";
 import { AtfRoadmap } from "@/components/atf-roadmap";
 import { AtfReadiness } from "@/components/atf-readiness";
 import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
+import { TransparencyMetrics } from "@/components/transparency-metrics";
 import { TrackedLink } from "@/components/tracked-link";
+import { Tilt } from "@/components/ui/tilt";
 
 export const metadata: Metadata = {
   title: "Agent Transaction Firewall (ATF)",
@@ -119,7 +121,7 @@ export default function ATFPage() {
           {/* CTAs */}
           <div className="mt-8 flex flex-wrap gap-4">
             <TrackedLink
-              href="/?intent=design_partner#waitlist"
+              href="/atf/apply"
               eventName="design_partner_apply_click"
               eventProps={{ location: "atf_hero" }}
               className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"
@@ -133,6 +135,30 @@ export default function ATFPage() {
               className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
             >
               How It Works &rarr;
+            </TrackedLink>
+            <TrackedLink
+              href="/atf/primer"
+              eventName="primer_view_click"
+              eventProps={{ location: "atf_page" }}
+              className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+            >
+              Read the Primer
+            </TrackedLink>
+            <TrackedLink
+              href="/docs"
+              eventName="docs_view_click"
+              eventProps={{ location: "atf_page", target: "docs" }}
+              className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+            >
+              Docs
+            </TrackedLink>
+            <TrackedLink
+              href="/atf/whitepaper"
+              eventName="whitepaper_view_click"
+              eventProps={{ location: "atf_page" }}
+              className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+            >
+              Whitepaper (Preview)
             </TrackedLink>
           </div>
         </div>
@@ -164,12 +190,14 @@ export default function ATFPage() {
               desc: "Permits expire fast and cannot be replayed.",
             },
           ].map((item) => (
-            <Card key={item.title} className="border-primary-300/25 bg-primary-500/10">
-              <h3 className="text-xl font-bold text-[#e8944a]">{item.title}</h3>
-              <p className="mt-2 text-lg leading-[1.5] text-slate-200">
-                {item.desc}
-              </p>
-            </Card>
+            <Tilt key={item.title} maxTilt={6}>
+              <Card className="h-full">
+                <h3 className="text-xl font-bold text-[#e8944a]">{item.title}</h3>
+                <p className="mt-2 text-lg leading-[1.5] text-slate-200">
+                  {item.desc}
+                </p>
+              </Card>
+            </Tilt>
           ))}
         </div>
       </Section>
@@ -239,13 +267,15 @@ export default function ATFPage() {
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           {architectureLayers.map((layer, i) => (
-            <Card key={layer.label} className="border-primary-300/25 bg-primary-500/10">
-              <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-primary-300/40 text-sm font-bold text-primary-100">
-                {i + 1}
-              </div>
-              <h3 className="text-2xl font-bold text-[#e8944a]">{layer.label}</h3>
-              <p className="mt-2 text-xl leading-[1.5] text-slate-200">{layer.description}</p>
-            </Card>
+            <Tilt key={layer.label} maxTilt={5}>
+              <Card className="h-full">
+                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-primary-300/40 text-sm font-bold text-primary-100">
+                  {i + 1}
+                </div>
+                <h3 className="text-2xl font-bold text-[#e8944a]">{layer.label}</h3>
+                <p className="mt-2 text-xl leading-[1.5] text-slate-200">{layer.description}</p>
+              </Card>
+            </Tilt>
           ))}
         </div>
       </Section>
@@ -391,13 +421,15 @@ export default function ATFPage() {
             },
           ].map((item) => (
             <li key={item.step}>
-              <Card className="h-full border-primary-300/25 bg-primary-500/10">
-                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-300/40 text-sm font-bold text-primary-100">
-                  {item.step}
-                </div>
-                <h3 className="text-lg font-bold text-[#e8944a]">{item.title}</h3>
-                <p className="mt-2 text-base leading-[1.5] text-slate-200">{item.desc}</p>
-              </Card>
+              <Tilt maxTilt={6}>
+                <Card className="h-full">
+                  <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-300/40 text-sm font-bold text-primary-100">
+                    {item.step}
+                  </div>
+                  <h3 className="text-lg font-bold text-[#e8944a]">{item.title}</h3>
+                  <p className="mt-2 text-base leading-[1.5] text-slate-200">{item.desc}</p>
+                </Card>
+              </Tilt>
             </li>
           ))}
         </ol>
@@ -441,7 +473,7 @@ export default function ATFPage() {
               desc: "Each permit is scoped to TruCore ATF + a specific environment. Cross-domain reuse is invalid.",
             },
           ].map((inv) => (
-            <Card key={inv.label} className="border-primary-300/25 bg-primary-500/10">
+            <Card key={inv.label}>
               <h3 className="text-xl font-bold text-[#e8944a]">{inv.label}</h3>
               <p className="mt-2 text-lg leading-[1.5] text-slate-200">{inv.desc}</p>
             </Card>
@@ -494,6 +526,21 @@ export default function ATFPage() {
 
       {/* ── Roadmap ── */}
       <AtfRoadmap />
+
+      {/* Roadmap deep-link */}
+      <Section className="fade-in-up">
+        <TrackedLink
+          href="/atf/roadmap"
+          eventName="roadmap_view_click"
+          eventProps={{ location: "atf_page" }}
+          className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+        >
+          View Full Roadmap &rarr;
+        </TrackedLink>
+      </Section>
+
+      {/* ── Transparency Metrics ── */}
+      <TransparencyMetrics />
 
       {/* ── Design Partner CTA ── */}
       <AtfDesignPartnerCta />

@@ -191,6 +191,9 @@ export default function RootLayout({
                 <div className="flex flex-col gap-3">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Resources</p>
                   <div className="flex flex-wrap items-center gap-4">
+                    <Link href="/docs" className="transition-colors hover:text-primary-200">
+                      Docs
+                    </Link>
                     <Link href="/blog" className="transition-colors hover:text-primary-200">
                       Blog
                     </Link>
