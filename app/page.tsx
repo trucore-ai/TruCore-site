@@ -7,6 +7,7 @@ import { Section } from "@/components/ui/section";
 import { Tilt } from "@/components/ui/tilt";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
+import { TrustStrip } from "@/components/trust-strip";
 import { ScrollLink } from "@/components/scroll-link";
 import Image from "next/image";
 
@@ -156,6 +157,11 @@ export default function Home() {
           </div>
         </div>
       </Section>
+
+      {/* ── Operational Controls Trust Strip ── */}
+      <div className="-mt-4 mb-2">
+        <TrustStrip />
+      </div>
 
       {/* ── Flagship Product: ATF ── */}
       <Section id="atf" className="border-t border-white/10 fade-in-up fade-delay-1">

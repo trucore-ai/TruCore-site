@@ -6,6 +6,7 @@ import { Section } from "@/components/ui/section";
 import { AtfDesignedFor } from "@/components/atf-designed-for";
 import { AtfV1Scope } from "@/components/atf-v1-scope";
 import { AtfRoadmap } from "@/components/atf-roadmap";
+import { AtfReadiness } from "@/components/atf-readiness";
 import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
 import { TrackedLink } from "@/components/tracked-link";
 
@@ -101,6 +102,18 @@ export default function ATFPage() {
             <Badge>V1: Solana</Badge>
             <Badge>Jupiter (swaps)</Badge>
             <Badge>Solend (lending)</Badge>
+          </div>
+
+          {/* Visual proof badges */}
+          <div className="mt-5 flex flex-wrap gap-2">
+            {["V1: Solana", "Jupiter-ready", "Permit model", "Audit logging"].map((label) => (
+              <span
+                key={label}
+                className="inline-flex items-center rounded-full border border-white/10 bg-neutral-800/60 px-3 py-1 text-xs font-medium text-slate-400"
+              >
+                {label}
+              </span>
+            ))}
           </div>
 
           {/* CTAs */}
@@ -475,6 +488,9 @@ export default function ATFPage() {
 
       {/* ── V1 Scope ── */}
       <AtfV1Scope />
+
+      {/* ── Production Readiness ── */}
+      <AtfReadiness />
 
       {/* ── Roadmap ── */}
       <AtfRoadmap />
