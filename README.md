@@ -291,15 +291,15 @@ Analytics events:
 - `whitepaper_download_click` (location: `whitepaper_page`)
 - `whitepaper_hash_copy_click` (location: `whitepaper_page`)
 
-### Blog Engine MVP and RSS (Stage 32)
+### Blog Authoring Upgrade to MDX (Stage 33)
 
-`/blog` publishes short technical posts as static content sourced from `lib/blog.ts`.
+`/blog` publishes short technical posts from frontmatter metadata in `content/blog/*.mdx`.
 
-`/blog/[slug]` renders individual posts with sectioned body content, optional code blocks, and a design partner CTA linking to `/atf/apply`.
+`/blog/[slug]` renders each MDX post with minimal custom components for code blocks and callouts, followed by a consistent design partner CTA.
 
-`/blog/rss.xml` serves an RSS 2.0 feed (`Content-Type: application/rss+xml; charset=utf-8`) with the latest 20 posts and canonical post URLs (`https://trucore.xyz/blog/<slug>`).
+`/blog/rss.xml` serves an RSS 2.0 feed (`Content-Type: application/rss+xml; charset=utf-8`) built from MDX frontmatter metadata (latest 20 posts, canonical URLs like `https://trucore.xyz/blog/<slug>`).
 
-No CMS is required for this stage. Blog content is managed as typed TypeScript objects for fast edits and deterministic builds.
+No CMS is required. Authoring is now file-based MDX for simpler publishing while keeping static builds deterministic and Vercel-friendly.
 
 Footer navigation includes a `Resources` column with a `Blog` link.
 

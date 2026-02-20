@@ -1,0 +1,36 @@
+---
+title: "Hard invariants: the minimum viable firewall"
+date: 2026-02-19
+description: A firewall for agents starts with a tiny set of non-negotiable invariants that fail closed under stress.
+tags:
+  - invariants
+  - firewall
+  - risk-controls
+---
+
+## Start with failure modes, not features
+
+Most agent incidents are not novel exploits. They are ordinary mistakes amplified by speed, automation, and unlimited permissions.
+
+The minimum viable firewall should reject unsafe states by default, then allow explicit exceptions through policy.
+
+## Three hard invariants
+
+Invariant one, no transaction executes without policy evaluation. Invariant two, no transfer leaves approved protocol boundaries. Invariant three, no settlement proceeds without a signed receipt chain.
+
+If any invariant cannot be proven at runtime, execution halts. This is where fail-closed design becomes operational instead of aspirational.
+
+```ts
+const decision = evaluatePolicy(tx);
+if (!decision.allow) throw new Error("deny: policy");
+if (!isAllowedProtocol(tx.programId)) throw new Error("deny: protocol");
+if (!canIssueReceipt(tx)) throw new Error("deny: receipt");
+```
+
+<Callout title="Implementation note">
+Keep the invariant set small in V1. A compact invariant core is easier to test, easier to audit, and harder to bypass accidentally.
+</Callout>
+
+## Keep the invariant set small
+
+Teams often overfit policy too early. Expand policy logic only after the base invariants are observable, measurable, and stable in production.

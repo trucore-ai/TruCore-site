@@ -4,7 +4,7 @@ import { BlogPostCard } from "@/components/blog-post-card";
 import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
-import { getAllPosts } from "@/lib/blog";
+import { getAllPostsMeta } from "@/lib/mdx";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -12,8 +12,8 @@ export const metadata: Metadata = {
     "Short technical posts from TruCore on permits, invariants, and secure autonomous finance infrastructure.",
 };
 
-export default function BlogIndexPage() {
-  const allPosts = getAllPosts();
+export default async function BlogIndexPage() {
+  const allPosts = await getAllPostsMeta();
 
   return (
     <Container>

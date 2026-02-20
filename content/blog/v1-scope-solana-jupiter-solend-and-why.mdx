@@ -1,0 +1,43 @@
+---
+title: "V1 scope: Solana + Jupiter + Solend and why"
+date: 2026-02-18
+description: Constrained surface area is a security strategy. V1 focuses on one chain and two core protocol rails.
+tags:
+  - v1
+  - solana
+  - jupiter
+  - solend
+---
+
+## Why this scope is deliberate
+
+V1 should maximize learning per integration while minimizing unknown interactions. Solana provides low-latency execution and mature tooling for deterministic checks.
+
+Jupiter and Solend cover core workflows for routing and lending without expanding into broad, unbounded protocol exposure.
+
+## Security upside of narrower integrations
+
+A tighter integration set enables stronger simulation coverage, clearer allowlists, and faster incident triage. Every additional protocol adds policy complexity and threat surface.
+
+Scope discipline is not a growth constraint. It is how you ship a system that users can trust before scaling outward.
+
+```yaml
+v1_scope:
+  chain: solana
+  protocols:
+    - jupiter
+    - solend
+  controls:
+    - slippage_limits
+    - protocol_allowlists
+    - permit_expiry
+    - receipt_signing
+```
+
+<Callout title="After V1">
+Each new integration should pass the same policy and observability bar before it is added to the allowed execution surface.
+</Callout>
+
+## What changes after V1
+
+After invariants and receipts are stable, the roadmap can add integrations in controlled phases. This sequence keeps security architecture ahead of distribution instead of trailing behind it.

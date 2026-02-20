@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAllPosts } from "@/lib/blog";
+import { getAllPostsMeta } from "@/lib/mdx";
 
 function escapeXml(value: string) {
   return value
@@ -11,7 +11,7 @@ function escapeXml(value: string) {
 }
 
 export async function GET() {
-  const feedPosts = getAllPosts().slice(0, 20);
+  const feedPosts = (await getAllPostsMeta()).slice(0, 20);
 
   const items = feedPosts
     .map((post) => {

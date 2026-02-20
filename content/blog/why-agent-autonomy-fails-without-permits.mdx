@@ -1,0 +1,41 @@
+---
+title: Why agent autonomy fails without permits
+date: 2026-02-20
+description: Autonomous execution needs explicit delegation boundaries. Permits turn intent into constrained authority.
+tags:
+  - permits
+  - authorization
+  - agent-security
+---
+
+## Autonomy needs explicit scope
+
+Agent autonomy breaks when execution rights are implicit. If an agent can call every protocol and move every asset, a single bad decision can become a full account compromise.
+
+Permits solve this by expressing exactly what is allowed, for how long, and under what conditions. They convert natural language intent into deterministic machine constraints.
+
+<Callout title="Why this matters">
+Permits do not just improve security. They define execution boundaries that make automated systems testable and auditable.
+</Callout>
+
+## What a useful permit must include
+
+A practical permit should define principal, action, resource, and constraint set. Constraints should include value limits, protocol allowlists, and expiry.
+
+Without these fields, incident response depends on emergency revocation and luck. With them, the blast radius is bounded before execution starts.
+
+```json
+{
+  "principal": "agent:rebalance-bot",
+  "actions": ["swap"],
+  "protocols": ["jupiter"],
+  "max_notional_usd": 25000,
+  "expires_at": "2026-02-20T18:00:00Z"
+}
+```
+
+## Permits are the control plane
+
+Monitoring and audits are valuable, but they are post-event tools. Permits are pre-event controls that make unsafe execution unrepresentable.
+
+For autonomous finance, permits are not optional compliance features. They are the minimum structure that makes autonomy survivable.

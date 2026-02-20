@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import type { BlogPost } from "@/lib/blog";
+import type { BlogPostMeta } from "@/lib/mdx";
 
 type BlogPostCardProps = {
-  post: BlogPost;
+  post: BlogPostMeta;
 };
 
 function formatDate(isoDate: string) {
