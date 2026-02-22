@@ -136,7 +136,7 @@ export default function SecurityPage() {
           </Card>
 
           {/* Contact */}
-          <div className="rounded-xl border border-white/10 bg-neutral-900/50 p-6 text-center space-y-3">
+          <div className="glass-panel rounded-xl p-6 text-center space-y-3">
             <p className="text-xl text-slate-300">
               Security inquiries:{" "}
               <a

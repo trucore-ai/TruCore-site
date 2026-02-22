@@ -126,7 +126,7 @@ export default function PrivacyPage() {
             </p>
           </Card>
 
-          <div className="rounded-xl border border-white/10 bg-neutral-900/50 p-6 text-center">
+          <div className="glass-panel rounded-xl p-6 text-center">
             <p className="text-sm text-slate-400">
               This is not legal advice. This policy is provided for
               informational purposes and may be updated at any time.

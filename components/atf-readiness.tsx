@@ -45,11 +45,11 @@ export function AtfReadiness() {
           Production Readiness
         </h2>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 sm:auto-rows-fr lg:grid-cols-4">
         {readinessCards.map((card) => (
           <article
             key={card.title}
-            className={`rounded-xl border border-white/15 border-t-2 ${card.accent} bg-neutral-950/65 p-6 backdrop-blur-lg`}
+            className={`glass-panel h-full rounded-xl border-t-2 ${card.accent} p-6`}
           >
             <h3 className="text-lg font-bold text-[#e8944a]">
               {card.title}

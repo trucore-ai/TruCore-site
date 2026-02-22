@@ -218,7 +218,7 @@ export default function HowItWorksPage() {
             ATF pipeline.
           </p>
         </div>
-        <div className="mx-auto max-w-3xl overflow-x-auto rounded-xl border border-white/10 bg-neutral-900/60">
+        <div className="glass-panel mx-auto max-w-3xl overflow-x-auto rounded-xl">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-white/10">

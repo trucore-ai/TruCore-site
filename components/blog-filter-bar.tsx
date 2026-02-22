@@ -59,7 +59,7 @@ export function BlogFilterBar({ posts }: BlogFilterBarProps) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-white/10 bg-neutral-900/40 p-5 backdrop-blur-md">
+      <div className="glass-panel rounded-xl p-5">
         <div className="flex flex-col gap-4">
           <input
             type="search"

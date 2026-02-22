@@ -76,7 +76,7 @@ export function WaitlistForm() {
     const isPartnerSuccess = state.intent === "design_partner";
 
     return (
-      <div className="rounded-xl border border-primary-300/30 bg-primary-500/10 px-6 py-5 space-y-4">
+      <div className="glass-panel rounded-xl px-6 py-5 space-y-4">
         <p className="text-xl font-semibold text-primary-100">
           &#10003; {isPartnerSuccess ? "Application received" : state.message}
         </p>

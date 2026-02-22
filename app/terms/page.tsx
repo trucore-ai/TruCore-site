@@ -66,7 +66,7 @@ export default function TermsPage() {
             </p>
           </Card>
 
-          <div className="rounded-xl border border-white/10 bg-neutral-900/50 p-6 text-center">
+          <div className="glass-panel rounded-xl p-6 text-center">
             <p className="text-sm text-slate-400">
               This is not legal advice. These terms are provided for
               informational purposes and may be updated at any time.

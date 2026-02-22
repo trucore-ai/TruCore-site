@@ -98,7 +98,415 @@ body {
   transform: translateZ(8px);
 }
 
-@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+.glass-panel {
+  /* Reflection-stagger custom properties (overridden by nth-child) */
+  --sheen-delay: 0s;
+  --sheen-dur: 10.8s;
+  --sheen-angle: 108deg;
+  --reflect-delay: 0.5s;
+  --reflect-dur: 16s;
+  --film-angle: 135deg;
+  --film-x: 65%;
+  --film-y: 30%;
+  --sparkle-tl-x: 12%;
+  --sparkle-tl-y: 8%;
+  --sparkle-br-x: 85%;
+  --sparkle-br-y: 88%;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(100, 190, 230, 0.14);
+  background: linear-gradient(180deg, rgba(6, 22, 38, 0.25) 0%, rgba(2, 10, 20, 0.35) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(150, 210, 235, 0.035),
+    0 16px 36px rgba(2, 6, 23, 0.50);
+  backdrop-filter: blur(1.5px) saturate(108%);
+  -webkit-backdrop-filter: blur(1.5px) saturate(108%);
+  transform: translateZ(0);
+}
+
+/* nth-child selectors removed: each card now gets random inline --custom-props */
+
+.glass-panel::before,
+.glass-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.glass-panel::before {
+  z-index: 2;
+  background:
+    linear-gradient(var(--sheen-angle), transparent 0%, transparent 25%, rgba(180, 225, 255, 0.12) 44%, rgba(220, 245, 255, 0.18) 50%, rgba(180, 225, 255, 0.12) 56%, transparent 75%, transparent 100%);
+  opacity: 1;
+  transform: translateX(-120%);
+  animation: glassSheenSweep var(--sheen-dur) cubic-bezier(0.2, 0.65, 0.2, 1) var(--sheen-delay) infinite;
+}
+
+.glass-panel::after {
+  z-index: 2;
+  background:
+    radial-gradient(110% 90% at 50% -15%, rgba(200, 230, 245, 0.03) 0%, rgba(200, 230, 245, 0) 58%),
+    radial-gradient(85% 120% at 12% 100%, rgba(80, 180, 220, 0.03) 0%, rgba(80, 180, 220, 0) 62%),
+    radial-gradient(85% 120% at 88% 0%, rgba(90, 115, 200, 0.02) 0%, rgba(90, 115, 200, 0) 62%),
+    radial-gradient(1.2% 1.8% at 21% 26%, rgba(220, 240, 250, 0.24) 0%, rgba(220, 240, 250, 0) 100%),
+    radial-gradient(1% 1.5% at 78% 34%, rgba(180, 220, 240, 0.18) 0%, rgba(180, 220, 240, 0) 100%);
+  opacity: 0.16;
+  mix-blend-mode: screen;
+  animation: glassFilmSheen 13s ease-in-out infinite, glassBrightGlints 7.4s ease-in-out infinite;
+}
+
+.glass-panel-featured {
+  border-color: rgba(126, 218, 255, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(188, 233, 255, 0.11),
+    0 20px 44px rgba(2, 6, 23, 0.62);
+}
+
+.glass-panel-featured::before {
+  opacity: 0.24;
+}
+
+.glass-panel-featured:hover {
+  box-shadow:
+    inset 0 0 0 1px rgba(186, 230, 253, 0.14),
+    0 24px 54px rgba(2, 6, 23, 0.66);
+}
+
+.glass-panel-hero {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: linear-gradient(180deg, rgba(9, 34, 54, 0.2) 0%, rgba(3, 14, 27, 0.30) 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(188, 232, 255, 0.06),
+    0 26px 62px rgba(2, 6, 23, 0.55);
+}
+
+.glass-panel-hero::before {
+  opacity: 0.16;
+}
+
+.glass-panel-hero::after {
+  opacity: 0.16;
+}
+
+
+.glass-inset-badge {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid rgba(186, 230, 253, 0.22);
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.7) 0%, rgba(2, 6, 23, 0.86) 100%);
+  box-shadow:
+    inset 0 2px 5px rgba(2, 6, 23, 0.7),
+    inset 0 -3px 8px rgba(56, 189, 248, 0.16),
+    inset 0 0 0 1px rgba(125, 211, 252, 0.08),
+    0 8px 20px rgba(2, 6, 23, 0.45);
+}
+
+.glass-inset-badge::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 95% at 50% -20%, rgba(224, 242, 254, 0.2) 0%, rgba(224, 242, 254, 0) 52%),
+    radial-gradient(130% 110% at 50% 120%, rgba(14, 116, 144, 0.24) 0%, rgba(14, 116, 144, 0) 58%);
+  pointer-events: none;
+}
+
+.glass-float-glyph {
+  position: relative;
+  z-index: 2;
+  display: inline-block;
+  transform: translateZ(18px);
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45),
+    0 6px 12px rgba(56, 189, 248, 0.25),
+    0 10px 20px rgba(2, 6, 23, 0.55);
+  animation: glassGlyphFloat 4.8s ease-in-out infinite;
+}
+
+@keyframes glassGlyphFloat {
+  0% {
+    transform: translate3d(0, 0, 18px);
+  }
+
+  50% {
+    transform: translate3d(0, -1.5px, 20px);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 18px);
+  }
+}
+
+@keyframes glassFilmDrift {
+  0% {
+    background-position: 8% 4%, 90% 96%, 50% 112%, 50% 50%;
+  }
+
+  50% {
+    background-position: 4% 9%, 86% 91%, 52% 106%, 50% 50%;
+  }
+
+  100% {
+    background-position: 10% 2%, 92% 98%, 48% 114%, 50% 50%;
+  }
+}
+
+@keyframes glassSheenSweep {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.35;
+  }
+
+  35% {
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+@keyframes glassFilmSheen {
+  0%,
+  100% {
+    opacity: 0.2;
+    filter: brightness(1);
+  }
+
+  50% {
+    opacity: 0.26;
+    filter: brightness(1.01);
+  }
+}
+
+@keyframes glassBrightGlints {
+  0%,
+  100% {
+    background-position: 50% -15%, 12% 100%, 88% 0%, 21% 26%, 78% 34%;
+    filter: brightness(1);
+  }
+
+  48% {
+    background-position: 50% -15%, 12% 100%, 88% 0%, 21.4% 25.6%, 77.7% 34.3%;
+    filter: brightness(1.02);
+  }
+
+  52% {
+    background-position: 50% -15%, 12% 100%, 88% 0%, 21.5% 25.5%, 77.6% 34.4%;
+    filter: brightness(1.05);
+  }
+}
+
+@keyframes glassFilmBloom {
+  0% {
+    opacity: 0.5;
+    filter: brightness(1);
+  }
+
+  50% {
+    opacity: 0.56;
+    filter: brightness(1.02);
+  }
+
+  100% {
+    opacity: 0.52;
+    filter: brightness(1.01);
+  }
+}
+
+
+@keyframes glassHoverSweep {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  45% {
+    transform: translateX(120%);
+  }
+
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+/* ── Diagonal film / glare strip (static, like real glass reflection) ── */
+.glass-film {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      var(--film-angle),
+      transparent 0%,
+      transparent 30%,
+      rgba(160, 210, 250, 0.02) 38%,
+      rgba(190, 225, 255, 0.035) 44%,
+      rgba(210, 235, 255, 0.045) 48%,
+      rgba(190, 225, 255, 0.035) 52%,
+      rgba(160, 210, 250, 0.02) 58%,
+      transparent 66%,
+      transparent 100%
+    ),
+    radial-gradient(
+      60% 90% at var(--film-x) var(--film-y),
+      rgba(150, 215, 250, 0.02) 0%,
+      transparent 55%
+    );
+  mix-blend-mode: screen;
+}
+
+/* ── Small sparkle highlights at edges ── */
+.glass-sparkle {
+  position: absolute;
+  z-index: 2;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(220, 245, 255, 0.3) 0%, rgba(180, 225, 250, 0.15) 35%, transparent 70%);
+  filter: blur(0.5px);
+  animation: glassSparkle 4s ease-in-out infinite;
+}
+
+.glass-sparkle-tl {
+  top: var(--sparkle-tl-y);
+  left: var(--sparkle-tl-x);
+  animation-delay: 0s;
+}
+
+.glass-sparkle-br {
+  top: var(--sparkle-br-y);
+  left: var(--sparkle-br-x);
+  animation-delay: 2s;
+}
+
+@keyframes glassSparkle {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* ── Drifting soft light reflection ── */
+.glass-reflection-spot {
+  position: absolute;
+  z-index: 1;
+  width: 50%;
+  height: 140%;
+  top: -20%;
+  left: -28%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(180, 225, 255, 0.05) 0%, rgba(150, 210, 250, 0.02) 40%, transparent 65%);
+  filter: blur(12px);
+  pointer-events: none;
+  animation: glassReflectionDrift var(--reflect-dur) ease-in-out var(--reflect-delay) infinite;
+}
+
+@keyframes glassReflectionDrift {
+  0% {
+    transform: translateX(0%);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(280%);
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(280%);
+    opacity: 0;
+  }
+}
+
+/* ── Hover flash sweep (animated via JS Web Animations API) ── */
+.glass-hover-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      105deg,
+      transparent 0%,
+      transparent 20%,
+      rgba(200, 235, 255, 0.09) 35%,
+      rgba(240, 250, 255, 0.23) 45%,
+      rgba(255, 255, 255, 0.30) 50%,
+      rgba(240, 250, 255, 0.23) 55%,
+      rgba(200, 235, 255, 0.09) 65%,
+      transparent 80%,
+      transparent 100%
+    );
+  opacity: 0;
+  transform: translateX(-130%);
+}
+
+/* (hover flash animation is triggered by JS) */
+
+/* ── Auto-playing dynamic light flash (streaks periodically across each card) ── */
+.glass-light-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      110deg,
+      transparent 0%,
+      transparent 22%,
+      rgba(200, 235, 255, 0.04) 34%,
+      rgba(240, 250, 255, 0.15) 46%,
+      rgba(255, 255, 255, 0.20) 50%,
+      rgba(240, 250, 255, 0.15) 54%,
+      rgba(200, 235, 255, 0.04) 66%,
+      transparent 78%,
+      transparent 100%
+    );
+  transform: translateX(-130%);
+  animation: glassLightFlash var(--flash-dur) cubic-bezier(0.16, 0.7, 0.3, 1) var(--flash-delay) infinite;
+}
+
+@keyframes glassLightFlash {
+  0% {
+    transform: translateX(-130%);
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  15% {
+    transform: translateX(130%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(130%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
   .fade-in-up,
   .tilt-inner,
   .depth-icon,
@@ -107,5 +515,30 @@ body {
     transform: none !important;
     transition: none !important;
     animation: none !important;
+  }
+
+  .glass-panel,
+  .glass-panel::after,
+  .glass-panel::before,
+  .glass-float-glyph,
+  .glass-reflection-spot,
+  .glass-sparkle,
+  .glass-hover-flash,
+  .glass-light-flash {
+    animation: none !important;
+  }
+
+  .glass-panel::before {
+    transform: none !important;
+    transition: none !important;
+    opacity: 0.4 !important;
+  }
+
+  .glass-reflection-spot {
+    display: none;
+  }
+
+  .glass-sparkle {
+    opacity: 0.5;
   }
 }

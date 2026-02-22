@@ -39,7 +39,7 @@ export default function DocsHubPage() {
         ))}
       </section>
 
-      <section className="rounded-xl border border-white/10 bg-neutral-900/40 p-6">
+      <section className="glass-panel rounded-xl p-6">
         <HeadingAnchor id="ready-to-test-atf-in-your-workflow">
           Ready to test ATF in your workflow?
         </HeadingAnchor>

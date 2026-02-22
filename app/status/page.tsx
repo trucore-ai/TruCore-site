@@ -43,7 +43,7 @@ export default function StatusPage() {
               {systems.map((sys) => (
                 <div
                   key={sys.name}
-                  className="flex items-center justify-between rounded-lg border border-white/10 bg-neutral-900/40 px-5 py-3"
+                  className="glass-panel flex items-center justify-between rounded-lg px-5 py-3"
                 >
                   <span className="text-xl text-slate-200">{sys.name}</span>
                   <Badge className="bg-emerald-600/20 text-emerald-300 border-emerald-500/30">
@@ -111,7 +111,7 @@ export default function StatusPage() {
 
           {/* Last Deploy */}
           {commitSha && (
-            <div className="rounded-xl border border-white/10 bg-neutral-900/50 p-6 text-center">
+            <div className="glass-panel rounded-xl p-6 text-center">
               <p className="text-sm text-slate-400">
                 Last deploy:{" "}
                 <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-slate-300">

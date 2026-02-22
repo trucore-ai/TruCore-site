@@ -11,7 +11,7 @@ export default function DocsLayout({ children }: { children: ReactNode }) {
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <DocsSidebar />
         </aside>
-        <div className="min-w-0 rounded-xl border border-white/10 bg-neutral-900/30 p-5 sm:p-8">
+        <div className="glass-panel min-w-0 rounded-xl p-5 sm:p-8">
           <div className="mb-6 space-y-4 border-b border-white/10 pb-6">
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center rounded-full border border-primary-300/40 bg-primary-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary-50">

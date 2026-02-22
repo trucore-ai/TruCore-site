@@ -49,7 +49,7 @@ export function WhitepaperHashPanel() {
   };
 
   return (
-    <div className="rounded-xl border border-white/10 bg-neutral-900/50 p-5">
+    <div className="glass-panel rounded-xl p-5">
       <div className="flex flex-wrap gap-3">
         <button
           type="button"

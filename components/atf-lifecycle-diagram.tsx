@@ -29,7 +29,7 @@ export function AtfLifecycleDiagram() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl overflow-x-auto rounded-xl border border-white/10 bg-neutral-900/60 p-4 sm:p-8">
+    <div className="glass-panel mx-auto max-w-5xl overflow-x-auto rounded-xl p-4 sm:p-8">
       <svg
         viewBox={`0 0 ${svgW} ${svgH}`}
         fill="none"

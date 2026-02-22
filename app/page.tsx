@@ -2,9 +2,9 @@ import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { GlassInnerPanel } from "@/components/ui/glass-slab-canvas";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
-import { Tilt } from "@/components/ui/tilt";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
 import { TrustStrip } from "@/components/trust-strip";
@@ -19,19 +19,16 @@ const metrics = [
 
 const whyItems = [
   {
-    icon: "ZT",
     title: "Zero-trust guardrails",
     description:
       "Every autonomous action is evaluated against explicit trust boundaries before execution.",
   },
   {
-    icon: "PE",
     title: "Policy enforcement",
     description:
       "Deterministic controls keep agent behavior aligned with risk, compliance, and user intent.",
   },
   {
-    icon: "CR",
     title: "Cryptographic receipts",
     description:
       "Each critical event can produce tamper-evident evidence for post-trade verification and audit.",
@@ -47,31 +44,26 @@ const trustPillars = [
 
 const atfFeatures = [
   {
-    icon: "PB",
     title: "Policy-bound execution",
     description:
       "Every agent transaction is validated against explicit policy rules before on-chain submission.",
   },
   {
-    icon: "SC",
     title: "Slippage constraints",
     description:
       "Hard limits on price deviation protect capital from adverse execution and MEV extraction.",
   },
   {
-    icon: "PA",
     title: "Protocol allowlists",
     description:
       "Agents can only interact with pre-approved contracts. No unauthorized protocol access.",
   },
   {
-    icon: "PZ",
     title: "Permit-based authorization",
     description:
       "Scoped, time-bound permits grant agents minimal execution rights with explicit boundaries.",
   },
   {
-    icon: "CR",
     title: "Cryptographic receipts",
     description:
       "Tamper-evident proof of every policy check, execution, and settlement for full auditability.",
@@ -98,7 +90,7 @@ export default function Home() {
     <Container>
       {/* ── Hero ── */}
       <Section id="hero" className="fade-in-up">
-        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-neutral-900/75 backdrop-blur-md p-8 sm:p-12">
+        <Card className="glass-panel-hero sm:p-12">
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-3">
               <Badge>Solana-native</Badge>
@@ -128,10 +120,10 @@ export default function Home() {
                 Explore ATF
               </a>
             </div>
-            <ul className="mt-8 grid gap-4 text-2xl text-primary-50 sm:grid-cols-3">
+            <ul className="mt-8 grid gap-4 text-2xl text-primary-50 sm:grid-cols-3 sm:auto-rows-fr">
               {metrics.map((item) => (
-                <li key={item} className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-7 py-5">
-                  {item}
+                <li key={item} className="h-full">
+                  <GlassInnerPanel>{item}</GlassInnerPanel>
                 </li>
               ))}
             </ul>
@@ -155,7 +147,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       </Section>
 
       {/* ── Operational Controls Trust Strip ── */}
@@ -179,15 +171,10 @@ export default function Home() {
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {atfFeatures.map((feat) => (
-            <Tilt key={feat.title} maxTilt={5} perspective={1100} className="h-full">
-              <Card className="depth-scene h-full">
-                <div className="depth-icon mb-4 inline-flex h-14 w-14 items-center justify-center rounded-lg border border-primary-300/40 bg-primary-500/20 text-base font-bold tracking-wide text-primary-50">
-                  {feat.icon}
-                </div>
-                <h3 className="depth-title text-2xl font-bold text-[#e8944a]">{feat.title}</h3>
-                <p className="depth-body mt-3 text-xl leading-[1.5] text-slate-200">{feat.description}</p>
-              </Card>
-            </Tilt>
+            <Card key={feat.title} className="min-h-[220px]">
+              <h3 className="text-2xl font-bold text-[#f2a65f]">{feat.title}</h3>
+              <p className="mt-3 text-xl leading-[1.5] text-slate-100/95">{feat.description}</p>
+            </Card>
           ))}
         </div>
         <div className="mt-6">
@@ -207,15 +194,10 @@ export default function Home() {
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {whyItems.map((item) => (
-            <Tilt key={item.title} maxTilt={6} perspective={1100} className="h-full">
-              <Card className="depth-scene h-full">
-                <div className="depth-icon mb-4 inline-flex h-16 w-16 items-center justify-center rounded-lg border border-primary-300/40 bg-primary-500/20 text-lg font-bold tracking-wide text-primary-50">
-                  {item.icon}
-                </div>
-                <h3 className="depth-title text-3xl font-bold text-[#e8944a]">{item.title}</h3>
-                <p className="depth-body mt-3 text-2xl leading-[1.5] text-slate-200">{item.description}</p>
-              </Card>
-            </Tilt>
+            <Card key={item.title} className="min-h-[220px]">
+              <h3 className="text-3xl font-bold text-[#e8944a]">{item.title}</h3>
+              <p className="mt-3 text-2xl leading-[1.5] text-slate-200">{item.description}</p>
+            </Card>
           ))}
         </div>
       </Section>
@@ -230,9 +212,9 @@ export default function Home() {
             to operate at scale.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3 md:auto-rows-fr">
           {visionItems.map((item) => (
-            <Card key={item.title}>
+            <Card key={item.title} className="h-full">
               <h3 className="text-2xl font-bold text-[#e8944a]">{item.title}</h3>
               <p className="mt-3 text-xl leading-[1.5] text-slate-200">{item.description}</p>
             </Card>
@@ -248,15 +230,12 @@ export default function Home() {
             Security-grade principles govern every execution path from policy check to final settlement.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3 md:auto-rows-fr">
           <Card className="md:col-span-2">
             <ul className="grid gap-4 text-2xl text-slate-100 sm:grid-cols-2">
               {trustPillars.map((pillar) => (
-                <li
-                  key={pillar}
-                  className="rounded-lg border border-primary-300/25 bg-primary-500/15 px-7 py-5"
-                >
-                  {pillar}
+                <li key={pillar} className="h-full">
+                  <GlassInnerPanel>{pillar}</GlassInnerPanel>
                 </li>
               ))}
             </ul>
@@ -281,31 +260,22 @@ export default function Home() {
             Built with a Solana-first foundation and integrated with critical DeFi rails for execution.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3 md:auto-rows-fr">
           <Card className="border-primary-300/25 bg-primary-500/10 md:col-span-2">
-            <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-lg border border-primary-300/40 text-sm font-semibold text-primary-100">
-              S
-            </div>
             <h3 className="text-4xl font-bold text-[#e8944a]">Solana</h3>
             <p className="mt-3 max-w-xl text-2xl leading-[1.5] text-slate-200">
               Primary execution layer for low-latency policy-aware transactions, deterministic controls,
               and verifiable settlement pathways.
             </p>
           </Card>
-          <div className="grid gap-4 md:col-span-1">
-            <Card>
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 text-sm font-semibold text-slate-200">
-                J
-              </div>
+          <div className="grid gap-4 md:col-span-1 md:auto-rows-fr">
+            <Card className="h-full">
               <h3 className="text-3xl font-bold text-[#e8944a]">Jupiter</h3>
               <p className="mt-3 text-2xl leading-[1.5] text-slate-200">
                 Secondary integration for route intelligence and best-execution support.
               </p>
             </Card>
-            <Card>
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 text-sm font-semibold text-slate-200">
-                L
-              </div>
+            <Card className="h-full">
               <h3 className="text-3xl font-bold text-[#e8944a]">Solend</h3>
               <p className="mt-3 text-2xl leading-[1.5] text-slate-200">
                 Secondary integration for lending and collateral-aware strategy primitives.

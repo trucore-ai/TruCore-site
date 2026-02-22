@@ -101,7 +101,7 @@ export default function ContactPage() {
             </div>
           </Card>
 
-          <div className="rounded-xl border border-white/10 bg-neutral-900/50 p-6 text-center">
+          <div className="glass-panel rounded-xl p-6 text-center">
             <p className="text-sm text-slate-400">
               We typically respond within 2 business days. For urgent security
               issues, use the security email for the fastest response.

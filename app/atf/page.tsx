@@ -293,7 +293,7 @@ export default function ATFPage() {
         </div>
 
         {/* Inline SVG diagram */}
-        <div className="mx-auto max-w-5xl overflow-x-auto rounded-xl border border-white/10 bg-neutral-900/60 p-6 sm:p-10">
+        <div className="glass-panel mx-auto max-w-5xl overflow-x-auto rounded-xl p-6 sm:p-10">
           <svg
             viewBox="0 0 820 700"
             fill="none"
@@ -492,7 +492,7 @@ export default function ATFPage() {
             carry additional metadata. No secrets are shown here.
           </p>
         </div>
-        <div className="mx-auto max-w-2xl overflow-x-auto rounded-xl border border-white/10 bg-neutral-900/80 p-6">
+        <div className="glass-panel mx-auto max-w-2xl overflow-x-auto rounded-xl p-6">
           <pre className="text-sm leading-relaxed text-primary-200 sm:text-base">
             <code>{`{
   "subject": "agent:0xA1B2...C3D4",

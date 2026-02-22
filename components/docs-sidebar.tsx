@@ -44,7 +44,7 @@ export function DocsSidebar() {
 
       <nav
         aria-label="Documentation"
-        className="hidden rounded-xl border border-white/10 bg-neutral-900/30 p-4 lg:block"
+        className="glass-panel hidden rounded-xl p-4 lg:block"
       >
         {sections.map((section) => (
           <div key={section.title} className="space-y-3">

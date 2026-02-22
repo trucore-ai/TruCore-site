@@ -8,7 +8,7 @@ const controls = [
 
 export function TrustStrip() {
   return (
-    <div className="rounded-xl border border-white/10 bg-neutral-900/40 px-6 py-6 sm:px-8">
+    <div className="glass-panel rounded-xl px-6 py-6 sm:px-8">
       <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-primary-200/70">
         Operational Controls
       </p>
