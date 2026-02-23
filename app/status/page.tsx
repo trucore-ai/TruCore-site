@@ -3,6 +3,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StatusLiveChecks } from "@/components/status-live-checks";
 
 export const metadata: Metadata = {
   title: "System Status",
@@ -65,7 +66,12 @@ export default function StatusPage() {
               and key workflows continuously. External uptime checks run against
               the health endpoint to verify system availability.
             </p>
+            <p className="mt-3 text-sm text-slate-400">
+              These checks run in your browser, no personal data is sent.
+            </p>
           </Card>
+
+          <StatusLiveChecks />
 
           {/* Incident Reporting */}
           <Card>

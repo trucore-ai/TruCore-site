@@ -232,6 +232,56 @@ Blocked URIs, source files, and full document URLs are never stored. Reports are
 
 `/status` displays current operational status for Website, Waitlist API, and Admin Tools. Includes monitoring details, incident reporting instructions, and optional last-deploy commit SHA (from `VERCEL_GIT_COMMIT_SHA`).
 
+### Production Smoke Monitor (Stage 46)
+
+`/status` now includes a live browser-side check panel that probes:
+
+- Website reachability (`/`)
+- Waitlist workflow readiness (derived from website + service probes)
+- Health endpoint (`/api/health`)
+
+The browser also fetches `/api/status` for a lightweight status snapshot.
+
+#### `/api/status` Snapshot Endpoint
+
+`GET /api/status` returns:
+
+```json
+{
+  "ok": true,
+  "ts": "2026-02-22T00:00:00.000Z",
+  "commit": "<sha-or-null>",
+  "env": "<vercel-env-or-null>"
+}
+```
+
+Response headers include `Cache-Control: no-store`.
+
+#### Manual Smoke Checks with curl
+
+```bash
+curl -sS https://trucore.xyz/api/health
+curl -sS https://trucore.xyz/api/status
+```
+
+For local development:
+
+```bash
+curl -sS http://localhost:3000/api/health
+curl -sS http://localhost:3000/api/status
+```
+
+#### Optional External Uptime Ping (No Dependencies)
+
+Use any external HTTP monitor to poll:
+
+- `https://trucore.xyz/api/health` every 60 seconds
+- Optional: `https://trucore.xyz/api/status` every 5 minutes
+
+Suggested alert trigger: any non-2xx response for 2 consecutive checks.
+
+These endpoints are read-only and do not store PII.
+
 ### Changelog (Stage 25)
 
 `/changelog` renders a chronological list of updates sourced from `lib/changelog.ts`. Entries include date, title, and bullet-point changes. Latest entries appear first.
