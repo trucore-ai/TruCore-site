@@ -69,6 +69,23 @@ export default function DocsPermitsPage() {
           is reused, expired, or presented in the wrong environment, validation fails and execution is denied.
         </p>
       </section>
+
+      <section className="space-y-4">
+        <HeadingAnchor id="api-auth-and-quotas">API auth and quotas</HeadingAnchor>
+        <p className="text-slate-300">
+          Permit validation examples in this docs section use <code className="font-mono text-slate-200">/api/simulate</code>.
+          For partner traffic, include <code className="font-mono text-slate-200">x-api-key: YOUR_API_KEY</code> on each request.
+        </p>
+        <ul className="space-y-2 text-slate-300">
+          <li>Partner Sandbox quota, 120 requests per minute per key.</li>
+          <li>Public quota without key, 30 requests per minute per IP.</li>
+          <li>
+            Inspect headers for live usage, <code className="font-mono text-slate-200">X-RateLimit-Limit</code>,
+            <code className="ml-1 font-mono text-slate-200">X-RateLimit-Remaining</code>, and
+            <code className="ml-1 font-mono text-slate-200">X-RateLimit-Reset</code>.
+          </li>
+        </ul>
+      </section>
     </article>
   );
 }

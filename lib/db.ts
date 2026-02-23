@@ -105,6 +105,7 @@ let cspTableEnsured = false;
 /* ---------- API keys + usage tables (Stage 55) ---------- */
 
 let apiKeyTablesEnsured = false;
+let partnerPortalTablesEnsured = false;
 
 /**
  * Ensure API key and usage tables exist.
@@ -126,6 +127,12 @@ export async function ensureApiKeyTables() {
     );
   `;
 
+  await sql`ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS owner_email TEXT;`;
+  await sql`ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS owner_project TEXT;`;
+  await sql`ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS label TEXT;`;
+  await sql`ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS key_last4 TEXT;`;
+  await sql`ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ;`;
+
   await sql`
     CREATE TABLE IF NOT EXISTS api_usage (
       id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -137,8 +144,465 @@ export async function ensureApiKeyTables() {
 
   await sql`CREATE INDEX IF NOT EXISTS idx_api_usage_created_at ON api_usage(created_at DESC);`;
   await sql`CREATE INDEX IF NOT EXISTS idx_api_usage_api_key_id ON api_usage(api_key_id);`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_api_keys_owner_email ON api_keys(owner_email);`;
 
   apiKeyTablesEnsured = true;
+}
+
+/**
+ * Ensure partner portal token table exists.
+ * Safe to call on every request; uses IF NOT EXISTS and
+ * skips DDL after the first successful run per process.
+ */
+export async function ensurePartnerPortalTables() {
+  if (partnerPortalTablesEnsured) return;
+
+  await ensureApiKeyTables();
+  const sql = getSQL();
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS partner_portal_tokens (
+      id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+      revoked_at    TIMESTAMPTZ NULL,
+      owner_email   TEXT NOT NULL,
+      owner_project TEXT NULL,
+      token_hash    TEXT NOT NULL UNIQUE,
+      expires_at    TIMESTAMPTZ NOT NULL
+    );
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_partner_portal_tokens_owner_email ON partner_portal_tokens(owner_email);`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_partner_portal_tokens_expires_at ON partner_portal_tokens(expires_at DESC);`;
+
+  partnerPortalTablesEnsured = true;
+}
+
+export interface PartnerPortalTokenRow {
+  id: string;
+  created_at: string;
+  revoked_at: string | null;
+  owner_email: string;
+  owner_project: string | null;
+  token_hash: string;
+  expires_at: string;
+}
+
+export interface PartnerPortalSessionOwner {
+  token_id: string;
+  owner_email: string;
+  owner_project: string | null;
+  expires_at: string;
+}
+
+export interface PartnerKeyUsageRow {
+  id: string;
+  label: string | null;
+  created_at: string;
+  revoked_at: string | null;
+  key_last4: string | null;
+  last_seen_at: string | null;
+  total_requests: number;
+  last_24h: number;
+  last_7d: number;
+}
+
+export async function createPartnerPortalToken({
+  ownerEmail,
+  ownerProject,
+  tokenHash,
+  expiresAt,
+}: {
+  ownerEmail: string;
+  ownerProject?: string | null;
+  tokenHash: string;
+  expiresAt: Date;
+}): Promise<PartnerPortalTokenRow> {
+  await ensurePartnerPortalTables();
+  const sql = getSQL();
+
+  const rows = await sql`
+    INSERT INTO partner_portal_tokens (owner_email, owner_project, token_hash, expires_at)
+    VALUES (${ownerEmail.toLowerCase()}, ${ownerProject ?? null}, ${tokenHash}, ${expiresAt.toISOString()})
+    RETURNING id, created_at, revoked_at, owner_email, owner_project, token_hash, expires_at;
+  `;
+
+  return rows[0] as PartnerPortalTokenRow;
+}
+
+export async function revokePartnerPortalToken(id: string): Promise<boolean> {
+  await ensurePartnerPortalTables();
+  const sql = getSQL();
+
+  const rows = await sql`
+    UPDATE partner_portal_tokens
+    SET revoked_at = now()
+    WHERE id = ${id}
+      AND revoked_at IS NULL
+    RETURNING id;
+  `;
+
+  return rows.length > 0;
+}
+
+export async function revokePartnerPortalTokensForOwner(ownerEmail: string): Promise<number> {
+  await ensurePartnerPortalTables();
+  const sql = getSQL();
+
+  const rows = await sql`
+    UPDATE partner_portal_tokens
+    SET revoked_at = now()
+    WHERE owner_email = ${ownerEmail.toLowerCase()}
+      AND revoked_at IS NULL
+    RETURNING id;
+  `;
+
+  return rows.length;
+}
+
+export async function getActivePartnerPortalTokenByHash(
+  tokenHash: string,
+): Promise<PartnerPortalTokenRow | null> {
+  await ensurePartnerPortalTables();
+  const sql = getSQL();
+
+  const rows = await sql`
+    SELECT id, created_at, revoked_at, owner_email, owner_project, token_hash, expires_at
+    FROM partner_portal_tokens
+    WHERE token_hash = ${tokenHash}
+      AND revoked_at IS NULL
+      AND expires_at > now()
+    LIMIT 1;
+  `;
+
+  return (rows[0] ?? null) as PartnerPortalTokenRow | null;
+}
+
+export async function getPartnerFromPortalSession({
+  tokenId,
+  ownerEmail,
+}: {
+  tokenId: string;
+  ownerEmail: string;
+}): Promise<PartnerPortalSessionOwner | null> {
+  await ensurePartnerPortalTables();
+  const sql = getSQL();
+
+  const rows = await sql`
+    SELECT
+      id AS token_id,
+      owner_email,
+      owner_project,
+      expires_at
+    FROM partner_portal_tokens
+    WHERE id = ${tokenId}
+      AND owner_email = ${ownerEmail.toLowerCase()}
+      AND revoked_at IS NULL
+      AND expires_at > now()
+    LIMIT 1;
+  `;
+
+  return (rows[0] ?? null) as PartnerPortalSessionOwner | null;
+}
+
+export async function listPartnerPortalTokensByOwner(
+  ownerEmail: string,
+  limit = 20,
+): Promise<PartnerPortalTokenRow[]> {
+  await ensurePartnerPortalTables();
+  const sql = getSQL();
+  const safeLimit = Math.min(Math.max(1, limit), 100);
+
+  const rows = await sql`
+    SELECT id, created_at, revoked_at, owner_email, owner_project, token_hash, expires_at
+    FROM partner_portal_tokens
+    WHERE owner_email = ${ownerEmail.toLowerCase()}
+    ORDER BY created_at DESC
+    LIMIT ${safeLimit};
+  `;
+
+  return rows as PartnerPortalTokenRow[];
+}
+
+export async function listLatestActivePortalTokensForOwners(
+  ownerEmails: string[],
+): Promise<Array<Pick<PartnerPortalTokenRow, "id" | "owner_email" | "expires_at" | "created_at">>> {
+  await ensurePartnerPortalTables();
+  const sql = getSQL();
+  const normalizedEmails = Array.from(new Set(ownerEmails.map((email) => email.trim().toLowerCase()).filter(Boolean)));
+
+  if (normalizedEmails.length === 0) return [];
+
+  const rows = await sql`
+    SELECT DISTINCT ON (owner_email)
+      id,
+      owner_email,
+      created_at,
+      expires_at
+    FROM partner_portal_tokens
+    WHERE owner_email = ANY(${normalizedEmails})
+      AND revoked_at IS NULL
+      AND expires_at > now()
+    ORDER BY owner_email ASC, created_at DESC;
+  `;
+
+  return rows as Array<Pick<PartnerPortalTokenRow, "id" | "owner_email" | "expires_at" | "created_at">>;
+}
+
+export async function listPartnerKeysAndUsage(
+  ownerEmail: string,
+): Promise<PartnerKeyUsageRow[]> {
+  await ensureApiKeyTables();
+  const sql = getSQL();
+
+  const rows = await sql`
+    SELECT
+      k.id,
+      k.label,
+      k.created_at,
+      k.revoked_at,
+      k.key_last4,
+      COALESCE(k.last_seen_at, MAX(u.created_at)) AS last_seen_at,
+      COUNT(u.id)::int AS total_requests,
+      COUNT(*) FILTER (
+        WHERE u.created_at >= now() - INTERVAL '24 hours'
+      )::int AS last_24h,
+      COUNT(*) FILTER (
+        WHERE u.created_at >= now() - INTERVAL '7 days'
+      )::int AS last_7d
+    FROM api_keys k
+    LEFT JOIN api_usage u ON u.api_key_id = k.id
+    WHERE k.owner_email = ${ownerEmail.toLowerCase()}
+    GROUP BY k.id, k.label, k.created_at, k.revoked_at, k.key_last4, k.last_seen_at
+    ORDER BY k.created_at DESC;
+  `;
+
+  return (rows as Array<PartnerKeyUsageRow>).map((row) => ({
+    ...row,
+    total_requests: Number(row.total_requests ?? 0),
+    last_24h: Number(row.last_24h ?? 0),
+    last_7d: Number(row.last_7d ?? 0),
+  }));
+}
+
+export type UsageWindow = "24h" | "7d" | "30d" | "all";
+
+export interface ApiKeyUsageSummaryRow {
+  id: string;
+  name: string;
+  label: string | null;
+  owner_email: string | null;
+  owner_project: string | null;
+  created_at: string;
+  revoked_at: string | null;
+  last_seen_at: string | null;
+  total_requests: number;
+  last_24h: number;
+  last_7d: number;
+  top_endpoint: string | null;
+  top_endpoint_count: number;
+}
+
+export interface UsageSummaryResult {
+  total_requests: number;
+  last_seen_at: string | null;
+  endpoint_counts: Array<{
+    endpoint: string;
+    request_count: number;
+  }>;
+}
+
+function toUsageWindow(value: UsageWindow): UsageWindow {
+  if (value === "24h" || value === "7d" || value === "30d" || value === "all") {
+    return value;
+  }
+  return "7d";
+}
+
+export async function listApiKeysWithUsageSummary(
+  limit = 100,
+  {
+    includeRevoked = true,
+  }: {
+    includeRevoked?: boolean;
+  } = {},
+): Promise<ApiKeyUsageSummaryRow[]> {
+  await ensureApiKeyTables();
+  const sql = getSQL();
+  const safeLimit = Math.min(Math.max(1, limit), 500);
+
+  const rows = await sql`
+    SELECT
+      k.id,
+      k.name,
+      k.label,
+      k.owner_email,
+      k.owner_project,
+      k.created_at,
+      k.revoked_at,
+      COALESCE(k.last_seen_at, MAX(u.created_at)) AS last_seen_at,
+      COUNT(u.id)::int AS total_requests,
+      COUNT(*) FILTER (
+        WHERE u.created_at >= now() - INTERVAL '24 hours'
+      )::int AS last_24h,
+      COUNT(*) FILTER (
+        WHERE u.created_at >= now() - INTERVAL '7 days'
+      )::int AS last_7d,
+      (
+        SELECT uu.endpoint
+        FROM api_usage uu
+        WHERE uu.api_key_id = k.id
+        GROUP BY uu.endpoint
+        ORDER BY COUNT(*) DESC, uu.endpoint ASC
+        LIMIT 1
+      ) AS top_endpoint,
+      (
+        SELECT COUNT(*)::int
+        FROM api_usage uu
+        WHERE uu.api_key_id = k.id
+        AND uu.endpoint = (
+          SELECT uuu.endpoint
+          FROM api_usage uuu
+          WHERE uuu.api_key_id = k.id
+          GROUP BY uuu.endpoint
+          ORDER BY COUNT(*) DESC, uuu.endpoint ASC
+          LIMIT 1
+        )
+      ) AS top_endpoint_count
+    FROM api_keys k
+    LEFT JOIN api_usage u ON u.api_key_id = k.id
+    WHERE (${includeRevoked} OR k.revoked_at IS NULL)
+    GROUP BY
+      k.id,
+      k.name,
+      k.label,
+      k.owner_email,
+      k.owner_project,
+      k.created_at,
+      k.revoked_at,
+      k.last_seen_at
+    ORDER BY k.created_at DESC
+    LIMIT ${safeLimit};
+  `;
+
+  return rows.map((row) => ({
+    ...(row as ApiKeyUsageSummaryRow),
+    top_endpoint_count: Number((row as ApiKeyUsageSummaryRow).top_endpoint_count ?? 0),
+  })) as ApiKeyUsageSummaryRow[];
+}
+
+export async function listActiveApiKeyOwnerEmails(): Promise<string[]> {
+  await ensureApiKeyTables();
+  const sql = getSQL();
+  const rows = await sql`
+    SELECT DISTINCT owner_email
+    FROM api_keys
+    WHERE revoked_at IS NULL
+      AND owner_email IS NOT NULL
+      AND TRIM(owner_email) <> '';
+  `;
+
+  return (rows as Array<{ owner_email: string }>).map((row) => row.owner_email.toLowerCase());
+}
+
+export async function getUsageSummaryForKey(
+  keyId: string,
+  window: UsageWindow,
+): Promise<UsageSummaryResult> {
+  await ensureApiKeyTables();
+  const sql = getSQL();
+  const safeWindow = toUsageWindow(window);
+
+  const rows = await sql`
+    SELECT
+      endpoint,
+      COUNT(*)::int AS request_count,
+      MAX(created_at) AS last_seen_at
+    FROM api_usage
+    WHERE api_key_id = ${keyId}
+      AND (
+        ${safeWindow} = 'all'
+        OR created_at >= now() - (
+          CASE
+            WHEN ${safeWindow} = '24h' THEN INTERVAL '24 hours'
+            WHEN ${safeWindow} = '7d' THEN INTERVAL '7 days'
+            ELSE INTERVAL '30 days'
+          END
+        )
+      )
+    GROUP BY endpoint
+    ORDER BY request_count DESC, endpoint ASC;
+  `;
+
+  const endpointCounts = (rows as Array<{ endpoint: string; request_count: number; last_seen_at: string | null }>).map(
+    (row) => ({
+      endpoint: row.endpoint,
+      request_count: Number(row.request_count ?? 0),
+    }),
+  );
+  const totalRequests = endpointCounts.reduce((acc, row) => acc + row.request_count, 0);
+  const lastSeen = (rows as Array<{ last_seen_at: string | null }>).reduce<string | null>((acc, row) => {
+    if (!row.last_seen_at) return acc;
+    if (!acc) return row.last_seen_at;
+    return new Date(row.last_seen_at) > new Date(acc) ? row.last_seen_at : acc;
+  }, null);
+
+  return {
+    total_requests: totalRequests,
+    last_seen_at: lastSeen,
+    endpoint_counts: endpointCounts,
+  };
+}
+
+export async function getUsageSummaryForOwner(
+  email: string,
+  window: UsageWindow,
+): Promise<UsageSummaryResult> {
+  await ensureApiKeyTables();
+  const sql = getSQL();
+  const safeWindow = toUsageWindow(window);
+  const ownerEmail = email.trim().toLowerCase();
+
+  const rows = await sql`
+    SELECT
+      u.endpoint,
+      COUNT(*)::int AS request_count,
+      MAX(u.created_at) AS last_seen_at
+    FROM api_usage u
+    INNER JOIN api_keys k ON k.id = u.api_key_id
+    WHERE k.owner_email = ${ownerEmail}
+      AND (
+        ${safeWindow} = 'all'
+        OR u.created_at >= now() - (
+          CASE
+            WHEN ${safeWindow} = '24h' THEN INTERVAL '24 hours'
+            WHEN ${safeWindow} = '7d' THEN INTERVAL '7 days'
+            ELSE INTERVAL '30 days'
+          END
+        )
+      )
+    GROUP BY u.endpoint
+    ORDER BY request_count DESC, u.endpoint ASC;
+  `;
+
+  const endpointCounts = (rows as Array<{ endpoint: string; request_count: number; last_seen_at: string | null }>).map(
+    (row) => ({
+      endpoint: row.endpoint,
+      request_count: Number(row.request_count ?? 0),
+    }),
+  );
+  const totalRequests = endpointCounts.reduce((acc, row) => acc + row.request_count, 0);
+  const lastSeen = (rows as Array<{ last_seen_at: string | null }>).reduce<string | null>((acc, row) => {
+    if (!row.last_seen_at) return acc;
+    if (!acc) return row.last_seen_at;
+    return new Date(row.last_seen_at) > new Date(acc) ? row.last_seen_at : acc;
+  }, null);
+
+  return {
+    total_requests: totalRequests,
+    last_seen_at: lastSeen,
+    endpoint_counts: endpointCounts,
+  };
 }
 
 /**

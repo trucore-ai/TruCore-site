@@ -36,6 +36,14 @@ const REPORT_TO_VALUE = JSON.stringify({
   endpoints: [{ url: "/api/csp-report" }],
 });
 
+export const SENSITIVE_ROUTE_ROBOTS_HEADERS = [
+  { key: "X-Robots-Tag", value: "noindex, nofollow" },
+];
+
+export const SENSITIVE_ROUTE_NO_STORE_HEADERS = [
+  { key: "Cache-Control", value: "no-store" },
+];
+
 /* ---------- Merged header list ---------- */
 
 export const SECURITY_HEADERS: { key: string; value: string }[] = [

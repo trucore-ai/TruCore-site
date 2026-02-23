@@ -17,7 +17,42 @@ interface TokenBucket {
   resetAt: number;
 }
 
+export interface RateLimitResult {
+  limit: number;
+  remaining: number;
+  resetEpochSeconds: number;
+  exceeded: boolean;
+}
+
 const buckets = new Map<string, TokenBucket>();
+
+export function consumeRateLimit(
+  key: string,
+  {
+    max = DEFAULT_MAX,
+    windowMs = DEFAULT_WINDOW_MS,
+  }: { max?: number; windowMs?: number } = {},
+): RateLimitResult {
+  const now = Date.now();
+  let bucket = buckets.get(key);
+
+  if (!bucket || now >= bucket.resetAt) {
+    bucket = { count: 0, resetAt: now + windowMs };
+    buckets.set(key, bucket);
+  }
+
+  bucket.count += 1;
+
+  const exceeded = bucket.count > max;
+  const remaining = exceeded ? 0 : Math.max(0, max - bucket.count);
+
+  return {
+    limit: max,
+    remaining,
+    resetEpochSeconds: Math.ceil(bucket.resetAt / 1000),
+    exceeded,
+  };
+}
 
 /**
  * Check (and consume) a rate-limit token for the given key.
@@ -30,17 +65,8 @@ export function assertRateLimit(
     windowMs = DEFAULT_WINDOW_MS,
   }: { max?: number; windowMs?: number } = {},
 ): void {
-  const now = Date.now();
-  let bucket = buckets.get(key);
-
-  if (!bucket || now >= bucket.resetAt) {
-    bucket = { count: 0, resetAt: now + windowMs };
-    buckets.set(key, bucket);
-  }
-
-  bucket.count += 1;
-
-  if (bucket.count > max) {
+  const result = consumeRateLimit(key, { max, windowMs });
+  if (result.exceeded) {
     throw new Error("Too many requests. Please wait a moment before trying again.");
   }
 }

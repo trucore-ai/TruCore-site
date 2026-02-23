@@ -425,6 +425,57 @@ All `/api/simulate` hits write a record to `api_usage` with:
 
 Both `api_keys` and `api_usage` tables are auto-created with idempotent `CREATE TABLE IF NOT EXISTS` setup.
 
+### Partner Key Issuing and Usage Dashboard (Stage 56)
+
+Stage 56 makes key operations usable for qualified design partners in admin workflows.
+
+- Waitlist action: in `/admin/waitlist`, rows with `intent=design_partner` and `status=qualified` show `Issue Sandbox Key`.
+- Issue endpoint: `POST /api/keys/issue-for-partner` (admin-session gated, 404 when not authenticated).
+- Usage dashboard: `/admin/usage` with per-key totals, `last_24h`, `last_7d`, `last_seen`, and top endpoint counts.
+- Ownership metadata: keys may include `owner_email`, `owner_project`, and `label` for admin-only attribution.
+
+#### One-time raw key reveal policy
+
+- Raw key is revealed in the admin UI one time at issuance.
+- Raw key is never persisted in storage.
+- Raw key is never written to audit logs.
+- Raw key is never emailed.
+- Database stores only `SHA-256` key hash.
+
+#### Simulator self-debug headers
+
+`POST /api/simulate` includes these response headers for public and keyed traffic, including 429 responses:
+
+- `X-RateLimit-Limit`
+- `X-RateLimit-Remaining`
+- `X-RateLimit-Reset` (epoch seconds)
+
+### Partner Developer Portal (Stage 57)
+
+Stage 57 adds a lightweight self-serve partner portal with signed access tokens, no separate partner account system required.
+
+- Portal page: `/portal`
+- Login endpoint: `GET/POST /portal/login`
+- Logout endpoint: `POST /portal/logout`
+- Admin create endpoint: `POST /api/portal/token/create`
+- Admin revoke endpoint: `POST /api/portal/token/revoke`
+
+#### Access model
+
+- Admin creates a short-lived portal token for one `owner_email` (default 7-day TTL).
+- Raw token is shown once, only the SHA-256 hash is stored in `partner_portal_tokens`.
+- Visiting `/portal/login?token=...` or posting token at `/portal/login` verifies token server-side and issues `partner_portal_session` HttpOnly cookie.
+- Cookie scope is `/portal`, SameSite=Lax, Secure in production, max session 8 hours.
+- Token creation rotates previous active tokens for the same owner email.
+- Revoked or expired tokens cannot create sessions.
+
+#### Data visibility guarantees
+
+- Portal renders only keys and usage where `api_keys.owner_email` matches the session owner.
+- No admin pages, no cross-partner data, no raw API keys.
+- Key cards show metadata only, including label, created/revoked timestamps, tier, and last4.
+- Portal routes are `noindex, nofollow` and use `Cache-Control: no-store`.
+
 ### CSP Reporting (Stage 24)
 
 A `Content-Security-Policy-Report-Only` header mirrors the enforce CSP and sends violation reports to `/api/csp-report` via the Reporting API. Both enforce and report-only headers coexist, so reports are collected without blocking anything.

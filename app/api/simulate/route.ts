@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sha256 } from "@/lib/hash";
-import { assertRateLimit } from "@/lib/rate-limit";
+import { consumeRateLimit, type RateLimitResult } from "@/lib/rate-limit";
 import {
   KEYED_SIM_RATE_LIMIT_MAX,
   PUBLIC_SIM_RATE_LIMIT_MAX,
@@ -13,7 +13,15 @@ const NO_STORE_HEADERS = {
   "Cache-Control": "no-store",
 };
 
-function methodNotAllowed() {
+function rateLimitHeaders(rateLimit: RateLimitResult): Record<string, string> {
+  return {
+    "X-RateLimit-Limit": String(rateLimit.limit),
+    "X-RateLimit-Remaining": String(rateLimit.remaining),
+    "X-RateLimit-Reset": String(rateLimit.resetEpochSeconds),
+  };
+}
+
+function methodNotAllowed(rateLimit: RateLimitResult) {
   return NextResponse.json(
     {
       ok: false,
@@ -21,7 +29,10 @@ function methodNotAllowed() {
     },
     {
       status: 405,
-      headers: NO_STORE_HEADERS,
+      headers: {
+        ...NO_STORE_HEADERS,
+        ...rateLimitHeaders(rateLimit),
+      },
     },
   );
 }
@@ -31,22 +42,25 @@ function getRequestIp(request: NextRequest): string {
   return forwarded?.split(",")[0]?.trim() ?? request.headers.get("x-real-ip") ?? "unknown";
 }
 
-function assertSimRateLimit(request: NextRequest, apiKeyId: string | null): void {
-  if (apiKeyId) {
-    assertRateLimit(`simulate:key:${apiKeyId}`, {
-      max: KEYED_SIM_RATE_LIMIT_MAX,
-      windowMs: 60_000,
-    });
-    return;
-  }
-
+function getPublicRateLimit(request: NextRequest): RateLimitResult {
   const ipKey = `simulate:public:${sha256(getRequestIp(request))}`;
-  assertRateLimit(ipKey, { max: PUBLIC_SIM_RATE_LIMIT_MAX, windowMs: 60_000 });
+  return consumeRateLimit(ipKey, {
+    max: PUBLIC_SIM_RATE_LIMIT_MAX,
+    windowMs: 60_000,
+  });
+}
+
+function getKeyedRateLimit(apiKeyId: string): RateLimitResult {
+  return consumeRateLimit(`simulate:key:${apiKeyId}`, {
+    max: KEYED_SIM_RATE_LIMIT_MAX,
+    windowMs: 60_000,
+  });
 }
 
 export async function POST(request: NextRequest) {
   let usageApiKeyId: string | null = null;
   const endpoint = "/api/simulate";
+  let activeRateLimit = getPublicRateLimit(request);
 
   const respond = async (
     status: number,
@@ -55,7 +69,10 @@ export async function POST(request: NextRequest) {
     await recordUsage({ apiKeyId: usageApiKeyId, endpoint });
     return NextResponse.json(body, {
       status,
-      headers: NO_STORE_HEADERS,
+      headers: {
+        ...NO_STORE_HEADERS,
+        ...rateLimitHeaders(activeRateLimit),
+      },
     });
   };
 
@@ -63,21 +80,23 @@ export async function POST(request: NextRequest) {
 
   if (rawApiKey) {
     const keyRecord = await validateApiKey(rawApiKey);
-    if (!keyRecord) {
-      return respond(401, {
-        ok: false,
-        error: "invalid_api_key",
-      });
+    if (keyRecord) {
+      usageApiKeyId = keyRecord.id;
+      activeRateLimit = getKeyedRateLimit(usageApiKeyId);
     }
-    usageApiKeyId = keyRecord.id;
   }
 
-  try {
-    assertSimRateLimit(request, usageApiKeyId);
-  } catch {
+  if (activeRateLimit.exceeded) {
     return respond(429, {
       ok: false,
       error: "rate_limited",
+    });
+  }
+
+  if (rawApiKey && !usageApiKeyId) {
+    return respond(401, {
+      ok: false,
+      error: "invalid_api_key",
     });
   }
 
@@ -108,17 +127,37 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  return methodNotAllowed();
+  return methodNotAllowed({
+    limit: PUBLIC_SIM_RATE_LIMIT_MAX,
+    remaining: PUBLIC_SIM_RATE_LIMIT_MAX,
+    resetEpochSeconds: Math.ceil((Date.now() + 60_000) / 1000),
+    exceeded: false,
+  });
 }
 
 export async function PUT() {
-  return methodNotAllowed();
+  return methodNotAllowed({
+    limit: PUBLIC_SIM_RATE_LIMIT_MAX,
+    remaining: PUBLIC_SIM_RATE_LIMIT_MAX,
+    resetEpochSeconds: Math.ceil((Date.now() + 60_000) / 1000),
+    exceeded: false,
+  });
 }
 
 export async function PATCH() {
-  return methodNotAllowed();
+  return methodNotAllowed({
+    limit: PUBLIC_SIM_RATE_LIMIT_MAX,
+    remaining: PUBLIC_SIM_RATE_LIMIT_MAX,
+    resetEpochSeconds: Math.ceil((Date.now() + 60_000) / 1000),
+    exceeded: false,
+  });
 }
 
 export async function DELETE() {
-  return methodNotAllowed();
+  return methodNotAllowed({
+    limit: PUBLIC_SIM_RATE_LIMIT_MAX,
+    remaining: PUBLIC_SIM_RATE_LIMIT_MAX,
+    resetEpochSeconds: Math.ceil((Date.now() + 60_000) / 1000),
+    exceeded: false,
+  });
 }

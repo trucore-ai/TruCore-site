@@ -1,11 +1,11 @@
 import type { NextConfig } from "next";
 import createMDX from "@next/mdx";
 import withBundleAnalyzerPlugin from "@next/bundle-analyzer";
-import { SECURITY_HEADERS } from "./lib/security-headers";
-
-const SENSITIVE_ROUTE_ROBOTS_HEADERS = [
-  { key: "X-Robots-Tag", value: "noindex, nofollow" },
-];
+import {
+  SECURITY_HEADERS,
+  SENSITIVE_ROUTE_NO_STORE_HEADERS,
+  SENSITIVE_ROUTE_ROBOTS_HEADERS,
+} from "./lib/security-headers";
 
 const withMDX = createMDX({
   extension: /\.mdx?$/,
@@ -26,6 +26,10 @@ const nextConfig: NextConfig = {
       {
         source: "/admin/:path*",
         headers: SENSITIVE_ROUTE_ROBOTS_HEADERS,
+      },
+      {
+        source: "/portal/:path*",
+        headers: [...SENSITIVE_ROUTE_ROBOTS_HEADERS, ...SENSITIVE_ROUTE_NO_STORE_HEADERS],
       },
       {
         source: "/api/:path*",

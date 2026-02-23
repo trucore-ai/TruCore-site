@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 import {
   listRecentWaitlistSignups,
+  listActiveApiKeyOwnerEmails,
+  listLatestActivePortalTokensForOwners,
   PIPELINE_STATUSES,
   type WaitlistSignupRow,
 } from "@/lib/db";
@@ -9,6 +11,8 @@ import { StatusForm } from "./status-form";
 import { NoteForm } from "./note-form";
 import { CopyOutreachButton } from "./copy-outreach-button";
 import { CsvExportButton } from "./csv-export-button";
+import { PartnerIssueKeyButton } from "@/components/partner-issue-key-button";
+import { PartnerPortalLinkButton } from "@/components/partner-portal-link-button";
 
 /* ---------- types ---------- */
 
@@ -74,6 +78,12 @@ export default async function AdminWaitlistPage({ searchParams }: PageProps) {
   const limit = parseLimit(params.limit);
 
   const rows = await listRecentWaitlistSignups({ limit, intent });
+  const activeKeyOwners = new Set(await listActiveApiKeyOwnerEmails());
+  const ownerEmails = rows.map((row) => row.email);
+  const activePortalTokens = await listLatestActivePortalTokensForOwners(ownerEmails);
+  const activePortalTokenByOwner = new Map(
+    activePortalTokens.map((token) => [token.owner_email, token]),
+  );
   const designPartnerCount = rows.filter(
     (r) => r.intent === "design_partner",
   ).length;
@@ -103,6 +113,12 @@ export default async function AdminWaitlistPage({ searchParams }: PageProps) {
             className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
           >
             API Keys
+          </a>
+          <a
+            href="/admin/usage"
+            className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+          >
+            Usage
           </a>
           <a
             href="/admin/csp"
@@ -183,7 +199,12 @@ export default async function AdminWaitlistPage({ searchParams }: PageProps) {
             </thead>
             <tbody>
               {rows.map((row, i) => (
-                <SignupRow key={i} row={row} />
+                <SignupRow
+                  key={i}
+                  row={row}
+                  hasIssuedKey={activeKeyOwners.has(row.email.toLowerCase())}
+                  activePortalToken={activePortalTokenByOwner.get(row.email.toLowerCase()) ?? null}
+                />
               ))}
             </tbody>
           </table>
@@ -268,8 +289,15 @@ function statusBadge(status: string) {
 
 function SignupRow({
   row,
+  hasIssuedKey,
+  activePortalToken,
 }: {
   row: WaitlistSignupRow;
+  hasIssuedKey: boolean;
+  activePortalToken: {
+    id: string;
+    expires_at: string;
+  } | null;
 }) {
   const useCase = row.use_case ?? "";
   const truncated =
@@ -330,6 +358,21 @@ function SignupRow({
             {row.intent === "design_partner" && (
               <CopyOutreachButton
                 name={row.project_name ?? row.email}
+              />
+            )}
+            {row.intent === "design_partner" && row.status === "qualified" && (
+              <PartnerIssueKeyButton
+                email={row.email}
+                projectName={row.project_name}
+                isAlreadyIssued={hasIssuedKey}
+              />
+            )}
+            {row.intent === "design_partner" && row.status === "qualified" && (
+              <PartnerPortalLinkButton
+                email={row.email}
+                projectName={row.project_name}
+                activeTokenId={activePortalToken?.id}
+                activeTokenExpiresAt={activePortalToken?.expires_at}
               />
             )}
           </div>

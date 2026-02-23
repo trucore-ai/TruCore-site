@@ -26,6 +26,45 @@ export default function DocsQuickstartPage() {
         </p>
       </section>
 
+      <section className="space-y-4">
+        <HeadingAnchor id="api-authentication">API authentication</HeadingAnchor>
+        <p className="text-slate-300">
+          Send your partner key using the <code className="font-mono text-slate-200">x-api-key</code> header when
+          calling <code className="font-mono text-slate-200">/api/simulate</code>. Keys are issued and managed by
+          TruCore, and revoked keys return <code className="font-mono text-slate-200">401 invalid_api_key</code>.
+        </p>
+        <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
+{`curl -sS https://trucore.xyz/api/simulate \\
+  -H "content-type: application/json" \\
+  -H "x-api-key: YOUR_API_KEY" \\
+  -d '{
+    "action": "swap",
+    "token_in": "SOL",
+    "token_out": "USDC",
+    "amount": 10,
+    "max_slippage_bps": 100,
+    "ttl_seconds": 60
+  }'`}
+        </pre>
+      </section>
+
+      <section className="space-y-4">
+        <HeadingAnchor id="rate-limits">Rate limits</HeadingAnchor>
+        <p className="text-slate-300">
+          Public simulator calls use a lower quota. Partner-key traffic uses the Partner Sandbox quota and exposes live
+          quota headers for debugging.
+        </p>
+        <ul className="space-y-2 text-slate-300">
+          <li>Without key, 30 requests per minute per IP.</li>
+          <li>With valid key, 120 requests per minute per key.</li>
+          <li>
+            Response headers: <code className="font-mono text-slate-200">X-RateLimit-Limit</code>,
+            <code className="ml-1 font-mono text-slate-200">X-RateLimit-Remaining</code>,
+            <code className="ml-1 font-mono text-slate-200">X-RateLimit-Reset</code>.
+          </li>
+        </ul>
+      </section>
+
       <section className="space-y-6">
         <HeadingAnchor id="flow">Flow</HeadingAnchor>
 
