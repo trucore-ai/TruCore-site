@@ -94,3 +94,23 @@ test("simulate endpoint returns rate limit headers", async ({ page }) => {
   expect(invalidHeaders.remaining).toBeTruthy();
   expect(invalidHeaders.reset).toBeTruthy();
 });
+
+test("whitepaper verify cta expands browser verifier", async ({ page }) => {
+  await page.route("**/atf/whitepaper/hash", async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        sha256: "b1946ac92492d2347c6235b4d2611184f3f5f26e6bc2f6a7b76f420d7d7f6f8f",
+      }),
+    });
+  });
+
+  await page.goto("/atf/whitepaper");
+
+  await page.getByRole("button", { name: "Verify the PDF I downloaded" }).click();
+
+  const fileInput = page.getByLabel("Choose the downloaded PDF");
+  await expect(fileInput).toBeVisible();
+  await expect(fileInput).toBeEnabled();
+});
