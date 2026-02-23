@@ -33,7 +33,8 @@ export function StatusForm({
       <select
         name="status"
         defaultValue={currentStatus}
-        className="rounded bg-white/10 border border-white/10 px-1.5 py-0.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        aria-label={`Update status for ${email}`}
+        className="rounded border border-white/10 bg-white/10 px-1.5 py-0.5 text-xs text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
       >
         {statuses.map((s) => (
           <option key={s} value={s}>
@@ -44,7 +45,7 @@ export function StatusForm({
       <button
         type="submit"
         disabled={isPending}
-        className="rounded bg-primary-600 px-2 py-0.5 text-xs font-medium text-white hover:bg-primary-500 disabled:opacity-50 transition"
+        className="rounded bg-primary-600 px-2 py-0.5 text-xs font-medium text-white transition hover:bg-primary-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 disabled:opacity-50"
       >
         {isPending ? "..." : "Save"}
       </button>

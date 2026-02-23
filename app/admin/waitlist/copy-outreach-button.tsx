@@ -40,7 +40,8 @@ export function CopyOutreachButton({ name }: { name: string }) {
     <button
       type="button"
       onClick={handleClick}
-      className="whitespace-nowrap rounded bg-amber-600/80 px-2 py-0.5 text-xs font-medium text-white hover:bg-amber-500 transition"
+      aria-label={`Copy outreach email template for ${name}`}
+      className="whitespace-nowrap rounded bg-amber-600/80 px-2 py-0.5 text-xs font-medium text-white transition hover:bg-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
       title="Copy outreach email template"
     >
       {copied ? "Copied!" : "Copy email"}

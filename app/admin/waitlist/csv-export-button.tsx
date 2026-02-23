@@ -37,7 +37,8 @@ export function CsvExportButton() {
         type="button"
         onClick={handleExport}
         disabled={isPending}
-        className="rounded bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-200 hover:bg-white/20 disabled:opacity-50 transition"
+        aria-label="Export design partners as CSV"
+        className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 disabled:opacity-50"
       >
         {isPending ? "Exporting..." : "Export Design Partners (CSV)"}
       </button>

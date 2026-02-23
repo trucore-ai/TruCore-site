@@ -171,11 +171,12 @@ export function DocsSearch() {
         onFocus={() => setOpen(true)}
         onKeyDown={onKeyDown}
         placeholder="Search docs"
-        className="w-full rounded-lg border border-white/15 bg-neutral-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 focus:border-primary-300/50 focus:outline-none"
+        className="w-full rounded-lg border border-white/15 bg-neutral-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-300 focus:border-primary-300/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
         role="combobox"
         aria-expanded={open}
         aria-controls="docs-search-results"
         aria-autocomplete="list"
+        aria-label="Search documentation"
       />
 
       {open && normalizedQuery ? (
@@ -195,7 +196,7 @@ export function DocsSearch() {
                       type="button"
                       onMouseEnter={() => setActiveIndex(index)}
                       onClick={() => navigateTo(result.href)}
-                      className={`block w-full rounded-md px-3 py-2 text-left transition-colors ${
+                      className={`block w-full rounded-md px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 ${
                         active
                           ? "bg-primary-500/20 text-primary-50"
                           : "text-slate-200 hover:bg-white/5"
@@ -204,7 +205,7 @@ export function DocsSearch() {
                       aria-selected={active}
                     >
                       <p className="text-sm font-semibold">{result.title}</p>
-                      <p className="mt-1 text-xs text-slate-400">{result.snippet}</p>
+                      <p className="mt-1 text-xs text-slate-300">{result.snippet}</p>
                     </button>
                   </li>
                 );

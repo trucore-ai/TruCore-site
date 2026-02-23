@@ -88,20 +88,20 @@ export default async function AdminWaitlistPage({ searchParams }: PageProps) {
         <div className="flex items-center gap-3">
           <a
             href="/admin/audit"
-            className="rounded bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/20 transition"
+            className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
           >
             Audit Log
           </a>
           <a
             href="/admin/csp"
-            className="rounded bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/20 transition"
+            className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
           >
             CSP Reports
           </a>
           <form method="POST" action="/admin/logout">
             <button
               type="submit"
-              className="rounded bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/20 transition"
+              className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
             >
               Logout
             </button>
@@ -221,7 +221,7 @@ function FilterGroup({
             <a
               key={opt.value}
               href={href}
-              className={`rounded px-2.5 py-1 transition ${
+              className={`rounded px-2.5 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 ${
                 isActive
                   ? "bg-primary-500/20 text-primary-300 font-medium"
                   : "text-slate-400 hover:bg-white/5 hover:text-slate-200"

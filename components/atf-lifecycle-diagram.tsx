@@ -24,8 +24,8 @@ export function AtfLifecycleDiagram() {
 
   function boxColor(c: "blue" | "orange") {
     return c === "blue"
-      ? { fill: "#349de8", stroke: "#8ed3ff", text: "#eef8ff", glow: "rgba(52,157,232,0.15)" }
-      : { fill: "#d86c08", stroke: "#f08a1f", text: "#ffe0b2", glow: "rgba(240,138,31,0.15)" };
+      ? { fill: "#5cbcfb", stroke: "#8ed3ff", text: "#f2f9ff", glow: "rgba(52,157,232,0.15)" }
+      : { fill: "#f0a050", stroke: "#f08a1f", text: "#ffebd2", glow: "rgba(240,138,31,0.15)" };
   }
 
   return (

@@ -66,8 +66,8 @@ export function BlogFilterBar({ posts }: BlogFilterBarProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search posts"
-            aria-label="Search posts"
-            className="w-full rounded-lg border border-primary-300/30 bg-primary-500/10 px-4 py-3 text-lg text-primary-50 outline-none transition-colors placeholder:text-slate-400 focus:border-primary-300/70"
+            aria-label="Search blog posts"
+            className="w-full rounded-lg border border-primary-300/30 bg-primary-500/10 px-4 py-3 text-lg text-primary-50 outline-none transition-colors placeholder:text-slate-300 focus:border-primary-300/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
           />
 
           <div className="flex flex-wrap gap-2">
@@ -79,10 +79,12 @@ export function BlogFilterBar({ posts }: BlogFilterBarProps) {
                   key={tag}
                   type="button"
                   onClick={() => setActiveTag(isActive ? null : tag)}
-                  className={`rounded-full border px-4 py-2 text-sm font-semibold tracking-wide transition-colors ${
+                  aria-label={`Filter posts by ${tag}`}
+                  aria-pressed={isActive}
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 ${
                     isActive
-                      ? "border-accent-400 bg-accent-500/20 text-accent-400"
-                      : "border-primary-300/40 bg-primary-500/20 text-primary-50 hover:border-primary-300/70"
+                      ? "border-accent-400 bg-accent-500/20 text-accent-300"
+                      : "border-primary-300/40 bg-primary-500/20 text-primary-100 hover:border-primary-300/70"
                   }`}
                 >
                   {tag}
@@ -98,7 +100,7 @@ export function BlogFilterBar({ posts }: BlogFilterBarProps) {
             <button
               type="button"
               onClick={clearFilters}
-              className="text-sm font-semibold text-primary-100 transition-colors hover:text-primary-200"
+              className="rounded-sm text-sm font-semibold text-primary-100 transition-colors hover:text-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
             >
               Clear
             </button>
@@ -131,7 +133,7 @@ export function BlogFilterBar({ posts }: BlogFilterBarProps) {
               <div className="mt-6">
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="text-lg font-semibold text-primary-100 transition-colors hover:text-primary-200"
+                  className="rounded-sm text-lg font-semibold text-primary-100 transition-colors hover:text-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Read post →
                 </Link>

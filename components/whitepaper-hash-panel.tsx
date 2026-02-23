@@ -55,13 +55,14 @@ export function WhitepaperHashPanel() {
           type="button"
           onClick={copyHash}
           disabled={!hash}
-          className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-5 py-3 text-sm font-semibold text-primary-100 transition-colors hover:bg-primary-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label="Copy PDF SHA-256 hash"
+          className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-5 py-3 text-sm font-semibold text-primary-100 transition-colors hover:bg-primary-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Copy PDF SHA-256
         </button>
       </div>
 
-      <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-primary-300">
+      <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-primary-200">
         PDF SHA-256
       </p>
       <p className="mt-2 break-all rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 font-mono text-xs text-slate-200">

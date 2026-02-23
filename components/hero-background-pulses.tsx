@@ -184,8 +184,7 @@ export function HeroBackgroundPulses() {
 
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     let reducedMotion = mq.matches;
-    const onMqChange = (e: MediaQueryListEvent) => { reducedMotion = e.matches; };
-    mq.addEventListener("change", onMqChange);
+    let hidden = document.hidden;
 
     let dw = 0;
     let dh = 0;
@@ -204,10 +203,6 @@ export function HeroBackgroundPulses() {
       mouseRef.current.y = e.clientY / window.innerHeight;
     };
     window.addEventListener("mousemove", onMouse, { passive: true });
-
-    let hidden = false;
-    const onVis = () => { hidden = document.hidden; };
-    document.addEventListener("visibilitychange", onVis);
 
     const now = performance.now();
     nextSpawnRef.current = now + 200 + randRef.current() * 500;
@@ -390,17 +385,27 @@ export function HeroBackgroundPulses() {
 
     /* ── Main loop ── */
     let lastTime = performance.now();
+    const stopLoop = () => {
+      if (animRef.current !== 0) {
+        cancelAnimationFrame(animRef.current);
+        animRef.current = 0;
+      }
+    };
 
     const loop = (time: number) => {
-      animRef.current = requestAnimationFrame(loop);
-      if (hidden) return;
+      if (hidden || reducedMotion) {
+        animRef.current = 0;
+        if (reducedMotion) {
+          ctx.clearRect(0, 0, dw, dh);
+          drawStaticBackground();
+        }
+        return;
+      }
 
       const dt = Math.min(time - lastTime, 50);
       lastTime = time;
 
       ctx.clearRect(0, 0, dw, dh);
-
-      if (reducedMotion) { drawStaticBackground(); return; }
 
       /* Background */
       const bg = ctx.createLinearGradient(0, 0, 0, dh);
@@ -524,12 +529,46 @@ export function HeroBackgroundPulses() {
         s.vy *= 0.985;
         drawSpark(s);
       }
+
+      animRef.current = requestAnimationFrame(loop);
     };
 
-    animRef.current = requestAnimationFrame(loop);
+    const startLoop = () => {
+      if (animRef.current !== 0) {
+        return;
+      }
+      if (hidden || reducedMotion) {
+        ctx.clearRect(0, 0, dw, dh);
+        drawStaticBackground();
+        return;
+      }
+      lastTime = performance.now();
+      animRef.current = requestAnimationFrame(loop);
+    };
+
+    const onMqChange = (e: MediaQueryListEvent) => {
+      reducedMotion = e.matches;
+      if (reducedMotion) {
+        stopLoop();
+      }
+      startLoop();
+    };
+    mq.addEventListener("change", onMqChange);
+
+    const onVis = () => {
+      hidden = document.hidden;
+      if (hidden) {
+        stopLoop();
+        return;
+      }
+      startLoop();
+    };
+    document.addEventListener("visibilitychange", onVis);
+
+    startLoop();
 
     return () => {
-      cancelAnimationFrame(animRef.current);
+      stopLoop();
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", onMouse);
       document.removeEventListener("visibilitychange", onVis);

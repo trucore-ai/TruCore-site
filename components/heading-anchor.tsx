@@ -34,7 +34,7 @@ export function HeadingAnchor({ id, children, className = "" }: HeadingAnchorPro
       <button
         type="button"
         onClick={onCopy}
-        className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded text-slate-400 opacity-0 transition hover:text-primary-100 focus:opacity-100 focus:outline-none group-hover:opacity-100"
+        className="ml-2 inline-flex h-6 w-6 items-center justify-center rounded text-slate-400 opacity-0 transition hover:text-primary-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 group-hover:opacity-100"
         aria-label={`Copy link to ${typeof children === "string" ? children : "section"}`}
       >
         <svg

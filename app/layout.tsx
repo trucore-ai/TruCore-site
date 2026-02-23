@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Analytics } from "@vercel/analytics/react";
 import { Container } from "@/components/ui/container";
 import { HeroBackgroundPulses } from "@/components/hero-background-pulses";
+import { SkipLink } from "@/components/skip-link";
 import { TrackedLink } from "@/components/tracked-link";
 import "./globals.css";
 
@@ -87,12 +88,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <SkipLink />
         {showAnalytics ? <Analytics /> : null}
         <HeroBackgroundPulses />
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="border-b border-white/10 bg-neutral-900/50 backdrop-blur-md">
             <Container className="flex h-16 items-center justify-between">
-              <a href="#hero" aria-label="TruCore home" className="flex items-center gap-3">
+              <a
+                href="#hero"
+                aria-label="TruCore home"
+                className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+              >
                 <Image
                   src="/images/trucore-logo.png"
                   alt="TruCore logo"
@@ -109,119 +115,127 @@ export default function RootLayout({
                 aria-label="Primary"
                 className="flex items-center gap-3 text-sm font-medium text-slate-100 sm:gap-5 sm:text-base md:gap-8 md:text-xl"
               >
-                <Link href="/#hero" className="transition-colors hover:text-primary-200">
+                <Link
+                  href="/#hero"
+                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                >
                   Home
                 </Link>
                 <Link
                   href="/atf"
-                  className="transition-colors hover:text-primary-200"
+                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   ATF
                 </Link>
                 <Link
                   href="/#why-trucore"
-                  className="hidden sm:inline transition-colors hover:text-primary-200"
+                  className="hidden rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 sm:inline"
                 >
                   Why TruCore
                 </Link>
                 <Link
                   href="/#trust-integrity"
-                  className="hidden sm:inline transition-colors hover:text-primary-200"
+                  className="hidden rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 sm:inline"
                 >
                   Trust
                 </Link>
                 <Link
                   href="/#integrations"
-                  className="hidden md:inline transition-colors hover:text-primary-200"
+                  className="hidden rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 md:inline"
                 >
                   Integrations
                 </Link>
-                <Link href="/#waitlist" className="transition-colors hover:text-accent-400">
+                <Link
+                  href="/#waitlist"
+                  className="rounded-sm transition-colors hover:text-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                >
                   Waitlist
                 </Link>
               </nav>
             </Container>
           </header>
 
-          <main className="flex-1">{children}</main>
+          <main id="main" className="flex-1">
+            {children}
+          </main>
 
           <footer id="footer" className="border-t border-white/10 bg-neutral-900/30 backdrop-blur-sm">
             <Container className="flex flex-col gap-6 py-8 text-xl text-slate-200">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <p>© {new Date().getFullYear()} TruCore. Built on trust and integrity.</p>
                 <div className="flex flex-wrap items-center gap-4">
-                  <TrackedLink href="https://x.com/TruCore_AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-200" eventName="outbound_click" eventProps={{ target: "x", location: "footer" }}>
+                  <TrackedLink href="https://x.com/TruCore_AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-100" eventName="outbound_click" eventProps={{ target: "x", location: "footer" }}>
                     X
                   </TrackedLink>
-                  <TrackedLink href="https://github.com/TruCore-AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-200" eventName="outbound_click" eventProps={{ target: "github", location: "footer" }}>
+                  <TrackedLink href="https://github.com/TruCore-AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-100" eventName="outbound_click" eventProps={{ target: "github", location: "footer" }}>
                     GitHub
                   </TrackedLink>
                 </div>
               </div>
               <div className="flex flex-col gap-4 border-t border-white/10 pt-5 text-lg sm:flex-row sm:items-start sm:justify-between">
                 <div className="flex flex-col gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Products</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Products</p>
                   <div className="flex flex-wrap items-center gap-4">
-                    <Link href="/atf" className="transition-colors hover:text-primary-200">
+                    <Link href="/atf" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Agent Transaction Firewall (ATF)
                     </Link>
-                    <Link href="/atf/primer" className="transition-colors hover:text-primary-200">
+                    <Link href="/atf/primer" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       ATF Primer
                     </Link>
-                    <Link href="/atf/roadmap" className="transition-colors hover:text-primary-200">
+                    <Link href="/atf/roadmap" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       ATF Roadmap
                     </Link>
-                    <Link href="/atf/whitepaper" className="transition-colors hover:text-primary-200">
+                    <Link href="/atf/whitepaper" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       ATF Whitepaper (Preview)
                     </Link>
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Company</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Company</p>
                   <div className="flex flex-wrap items-center gap-4">
-                    <Link href="/status" className="transition-colors hover:text-primary-200">
+                    <Link href="/status" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Status
                     </Link>
-                    <Link href="/changelog" className="transition-colors hover:text-primary-200">
+                    <Link href="/changelog" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Changelog
                     </Link>
-                    <Link href="/contact" className="transition-colors hover:text-primary-200">
+                    <Link href="/contact" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Contact
                     </Link>
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Resources</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Resources</p>
                   <div className="flex flex-wrap items-center gap-4">
-                    <Link href="/docs" className="transition-colors hover:text-primary-200">
+                    <Link href="/docs" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Docs
                     </Link>
-                    <Link href="/blog" className="transition-colors hover:text-primary-200">
+                    <Link href="/blog" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Blog
                     </Link>
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Legal</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Legal</p>
                   <div className="flex flex-wrap items-center gap-4">
-                    <Link href="/security" className="transition-colors hover:text-primary-200">
+                    <Link href="/security" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Security
                     </Link>
-                    <Link href="/privacy" className="transition-colors hover:text-primary-200">
+                    <Link href="/privacy" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Privacy
                     </Link>
-                    <Link href="/terms" className="transition-colors hover:text-primary-200">
+                    <Link href="/terms" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Terms
                     </Link>
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Email</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Email</p>
                   <div className="flex flex-wrap items-center gap-4">
-                    <a href="mailto:info@trucore.xyz" className="transition-colors hover:text-primary-200">
+                    <a href="mailto:info@trucore.xyz" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       info@trucore.xyz
                     </a>
-                    <a href="mailto:security@trucore.xyz" className="transition-colors hover:text-primary-200">
+                    <a href="mailto:security@trucore.xyz" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       security@trucore.xyz
                     </a>
                   </div>
