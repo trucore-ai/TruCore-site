@@ -398,6 +398,33 @@ All admin actions are recorded in the `admin_audit_log` Postgres table. Logged a
 
 View the last 50 entries at `/admin/audit` (requires admin session). The log is read-only, no editing or deletion is supported. No secrets or raw cookies are ever stored.
 
+### API Keys and Usage Quotas (Stage 55)
+
+Stage 55 adds API key primitives for controlled simulator access and future monetization.
+
+- Admin page: `/admin/keys`
+- Create endpoint: `POST /api/keys/create` (admin-session gated)
+- Revoke endpoint: `POST /api/keys/revoke` (admin-session gated)
+- Key format: `tk_live_<random>`
+- Storage model: raw key is shown once on creation, only `SHA-256` hash is stored in Postgres.
+
+#### Simulator quota behavior
+
+- `POST /api/simulate` without `x-api-key`: `30 req/min` per hashed IP
+- `POST /api/simulate` with valid `x-api-key`: `120 req/min` per key
+- Revoked keys are rejected with `401` and `invalid_api_key`
+- All simulator responses keep `Cache-Control: no-store`
+
+#### Usage metering
+
+All `/api/simulate` hits write a record to `api_usage` with:
+
+- `api_key_id` nullable (null for public access)
+- `endpoint` (currently `/api/simulate`)
+- `created_at`
+
+Both `api_keys` and `api_usage` tables are auto-created with idempotent `CREATE TABLE IF NOT EXISTS` setup.
+
 ### CSP Reporting (Stage 24)
 
 A `Content-Security-Policy-Report-Only` header mirrors the enforce CSP and sends violation reports to `/api/csp-report` via the Reporting API. Both enforce and report-only headers coexist, so reports are collected without blocking anything.

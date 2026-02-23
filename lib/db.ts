@@ -102,6 +102,45 @@ export async function ensureAuditLogTable() {
 
 let cspTableEnsured = false;
 
+/* ---------- API keys + usage tables (Stage 55) ---------- */
+
+let apiKeyTablesEnsured = false;
+
+/**
+ * Ensure API key and usage tables exist.
+ * Safe to call on every request; uses IF NOT EXISTS and
+ * skips DDL after the first successful run per process.
+ */
+export async function ensureApiKeyTables() {
+  if (apiKeyTablesEnsured) return;
+
+  const sql = getSQL();
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS api_keys (
+      id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      name        TEXT NOT NULL,
+      key_hash    TEXT NOT NULL UNIQUE,
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+      revoked_at  TIMESTAMPTZ NULL
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS api_usage (
+      id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      api_key_id  UUID NULL REFERENCES api_keys(id) ON DELETE SET NULL,
+      endpoint    TEXT NOT NULL,
+      created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+  `;
+
+  await sql`CREATE INDEX IF NOT EXISTS idx_api_usage_created_at ON api_usage(created_at DESC);`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_api_usage_api_key_id ON api_usage(api_key_id);`;
+
+  apiKeyTablesEnsured = true;
+}
+
 /**
  * Ensure the csp_reports table exists.
  * Safe to call on every request; uses IF NOT EXISTS and

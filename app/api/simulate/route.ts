@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sha256 } from "@/lib/hash";
 import { assertRateLimit } from "@/lib/rate-limit";
+import {
+  KEYED_SIM_RATE_LIMIT_MAX,
+  PUBLIC_SIM_RATE_LIMIT_MAX,
+  validateApiKey,
+} from "@/lib/api-keys";
+import { recordUsage } from "@/lib/usage-meter";
 import { isSimRequest, normalizeSimRequest, simulatePolicy } from "@/lib/simulator";
-
-const PUBLIC_SIM_RATE_LIMIT_MAX = 30;
 
 const NO_STORE_HEADERS = {
   "Cache-Control": "no-store",
@@ -27,24 +31,49 @@ function getRequestIp(request: NextRequest): string {
   return forwarded?.split(",")[0]?.trim() ?? request.headers.get("x-real-ip") ?? "unknown";
 }
 
-function assertSimRateLimit(request: NextRequest): void {
+function assertSimRateLimit(request: NextRequest, apiKeyId: string | null): void {
+  if (apiKeyId) {
+    assertRateLimit(`simulate:key:${apiKeyId}`, {
+      max: KEYED_SIM_RATE_LIMIT_MAX,
+      windowMs: 60_000,
+    });
+    return;
+  }
+
   const ipKey = `simulate:public:${sha256(getRequestIp(request))}`;
   assertRateLimit(ipKey, { max: PUBLIC_SIM_RATE_LIMIT_MAX, windowMs: 60_000 });
 }
 
 export async function POST(request: NextRequest) {
-  const respond = (
+  let usageApiKeyId: string | null = null;
+  const endpoint = "/api/simulate";
+
+  const respond = async (
     status: number,
     body: { ok: boolean; error?: string; input?: unknown; result?: unknown },
   ) => {
+    await recordUsage({ apiKeyId: usageApiKeyId, endpoint });
     return NextResponse.json(body, {
       status,
       headers: NO_STORE_HEADERS,
     });
   };
 
+  const rawApiKey = request.headers.get("x-api-key")?.trim();
+
+  if (rawApiKey) {
+    const keyRecord = await validateApiKey(rawApiKey);
+    if (!keyRecord) {
+      return respond(401, {
+        ok: false,
+        error: "invalid_api_key",
+      });
+    }
+    usageApiKeyId = keyRecord.id;
+  }
+
   try {
-    assertSimRateLimit(request);
+    assertSimRateLimit(request, usageApiKeyId);
   } catch {
     return respond(429, {
       ok: false,
