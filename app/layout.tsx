@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { Container } from "@/components/ui/container";
 import { HeroBackgroundPulses } from "@/components/hero-background-pulses";
 import { SkipLink } from "@/components/skip-link";
 import { TrackedLink } from "@/components/tracked-link";
+import { UTM_COOKIE_MAX_AGE, UTM_COOKIE_NAME, UTM_QUERY_KEYS } from "@/lib/utm";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -82,12 +84,47 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const showAnalytics = process.env.NODE_ENV === "production";
+  const utmKeysJson = JSON.stringify(UTM_QUERY_KEYS);
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Script id="trucore-utm-capture" strategy="afterInteractive">
+          {`(function() {
+  try {
+    var cookieName = "${UTM_COOKIE_NAME}";
+    var hasCookie = document.cookie
+      .split('; ')
+      .some(function(part) { return part.indexOf(cookieName + '=') === 0; });
+
+    if (hasCookie) return;
+
+    var url = new URL(window.location.href);
+    var keys = ${utmKeysJson};
+    var payload = {};
+    var found = false;
+
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var value = url.searchParams.get(key);
+      if (!value) continue;
+
+      var trimmed = value.trim();
+      if (!trimmed) continue;
+
+      payload[key] = trimmed.slice(0, 120);
+      found = true;
+    }
+
+    if (!found) return;
+
+    var encoded = encodeURIComponent(JSON.stringify(payload));
+    document.cookie = cookieName + '=' + encoded + '; Max-Age=${UTM_COOKIE_MAX_AGE}; Path=/; SameSite=Lax';
+  } catch {}
+})();`}
+        </Script>
         <SkipLink />
         {showAnalytics ? <Analytics /> : null}
         <HeroBackgroundPulses />

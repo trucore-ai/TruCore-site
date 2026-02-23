@@ -37,7 +37,12 @@ export async function ensureWaitlistTable() {
       use_case      TEXT,
       source        TEXT DEFAULT 'homepage',
       user_agent    TEXT,
-      ip_hash       TEXT
+      ip_hash       TEXT,
+      utm_source    TEXT,
+      utm_medium    TEXT,
+      utm_campaign  TEXT,
+      utm_term      TEXT,
+      utm_content   TEXT
     );
   `;
 
@@ -56,6 +61,11 @@ export async function ensureWaitlistTable() {
   /* ---- updated_at + admin_notes columns (Stage 21) ---- */
   await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ;`;
   await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS admin_notes TEXT;`;
+  await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS utm_source TEXT;`;
+  await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS utm_medium TEXT;`;
+  await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS utm_campaign TEXT;`;
+  await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS utm_term TEXT;`;
+  await sql`ALTER TABLE waitlist_signups ADD COLUMN IF NOT EXISTS utm_content TEXT;`;
   await sql`ALTER TABLE waitlist_signups ALTER COLUMN updated_at SET DEFAULT now();`;
   await sql`UPDATE waitlist_signups SET updated_at = now() WHERE updated_at IS NULL;`;
 
@@ -159,6 +169,11 @@ export async function upsertWaitlistSignup(params: {
   integrationsInterest: string[] | null;
   txVolumeBucket: string | null;
   buildStage: string | null;
+  utmSource: string | null;
+  utmMedium: string | null;
+  utmCampaign: string | null;
+  utmTerm: string | null;
+  utmContent: string | null;
 }): Promise<{ isNew: boolean }> {
   const sql = getSQL();
   const emailLower = params.email.toLowerCase();
@@ -176,6 +191,7 @@ export async function upsertWaitlistSignup(params: {
       INSERT INTO waitlist_signups (
         email, role, use_case, source, user_agent, ip_hash,
         intent, project_name, integrations_interest, tx_volume_bucket, build_stage,
+        utm_source, utm_medium, utm_campaign, utm_term, utm_content,
         updated_at
       )
       VALUES (
@@ -190,6 +206,11 @@ export async function upsertWaitlistSignup(params: {
         ${params.integrationsInterest},
         ${params.txVolumeBucket},
         ${params.buildStage},
+        ${params.utmSource},
+        ${params.utmMedium},
+        ${params.utmCampaign},
+        ${params.utmTerm},
+        ${params.utmContent},
         now()
       )
       ON CONFLICT (email) DO UPDATE SET
@@ -200,6 +221,11 @@ export async function upsertWaitlistSignup(params: {
         role                   = EXCLUDED.role,
         use_case               = EXCLUDED.use_case,
         intent                 = EXCLUDED.intent,
+        utm_source             = COALESCE(waitlist_signups.utm_source, EXCLUDED.utm_source),
+        utm_medium             = COALESCE(waitlist_signups.utm_medium, EXCLUDED.utm_medium),
+        utm_campaign           = COALESCE(waitlist_signups.utm_campaign, EXCLUDED.utm_campaign),
+        utm_term               = COALESCE(waitlist_signups.utm_term, EXCLUDED.utm_term),
+        utm_content            = COALESCE(waitlist_signups.utm_content, EXCLUDED.utm_content),
         updated_at             = now()
       WHERE waitlist_signups.intent = 'design_partner'
          OR waitlist_signups.intent IS NULL
@@ -216,6 +242,7 @@ export async function upsertWaitlistSignup(params: {
     INSERT INTO waitlist_signups (
       email, role, use_case, source, user_agent, ip_hash,
       intent, project_name, integrations_interest, tx_volume_bucket, build_stage,
+      utm_source, utm_medium, utm_campaign, utm_term, utm_content,
       updated_at
     )
     VALUES (
@@ -230,6 +257,11 @@ export async function upsertWaitlistSignup(params: {
       ${params.integrationsInterest},
       ${params.txVolumeBucket},
       ${params.buildStage},
+      ${params.utmSource},
+      ${params.utmMedium},
+      ${params.utmCampaign},
+      ${params.utmTerm},
+      ${params.utmContent},
       now()
     )
     ON CONFLICT (email) DO NOTHING
@@ -255,6 +287,25 @@ export type WaitlistSignupRow = {
   source: string | null;
   status: string;
   admin_notes: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_term: string | null;
+  utm_content: string | null;
+};
+
+export type WaitlistMetricsSnapshot = {
+  total_signups: number;
+  design_partner_count: number;
+  standard_count: number;
+  by_status: {
+    new: number;
+    contacted: number;
+    qualified: number;
+    closed: number;
+  };
+  top_utm_sources: Array<{ source: string; count: number }>;
+  top_campaigns: Array<{ campaign: string; count: number }>;
 };
 
 /** Allowed pipeline status values */
@@ -282,7 +333,8 @@ export async function listRecentWaitlistSignups({
     const rows = await sql`
       SELECT created_at, updated_at, email, intent, role, project_name,
              integrations_interest, tx_volume_bucket, build_stage,
-             use_case, source, status, admin_notes
+              use_case, source, status, admin_notes,
+              utm_source, utm_medium, utm_campaign, utm_term, utm_content
       FROM waitlist_signups
       ORDER BY created_at DESC
       LIMIT ${safeLimit};
@@ -293,7 +345,8 @@ export async function listRecentWaitlistSignups({
   const rows = await sql`
     SELECT created_at, updated_at, email, intent, role, project_name,
            integrations_interest, tx_volume_bucket, build_stage,
-           use_case, source, status, admin_notes
+          use_case, source, status, admin_notes,
+          utm_source, utm_medium, utm_campaign, utm_term, utm_content
     FROM waitlist_signups
     WHERE intent = ${intent}
     ORDER BY created_at DESC
@@ -336,7 +389,8 @@ export async function listDesignPartnerSignups(
   const rows = await sql`
     SELECT created_at, updated_at, email, intent, role, project_name,
            integrations_interest, tx_volume_bucket, build_stage,
-           use_case, source, status, admin_notes
+          use_case, source, status, admin_notes,
+          utm_source, utm_medium, utm_campaign, utm_term, utm_content
     FROM waitlist_signups
     WHERE intent = 'design_partner'
     ORDER BY created_at DESC
@@ -365,4 +419,65 @@ export async function updateWaitlistAdminNotes({
     RETURNING email;
   `;
   return rows.length;
+}
+
+function toInt(value: unknown): number {
+  return Number(value ?? 0);
+}
+
+export async function getWaitlistMetricsSnapshot(): Promise<WaitlistMetricsSnapshot> {
+  await ensureWaitlistTable();
+  const sql = getSQL();
+
+  const totalsRows = await sql`
+    SELECT
+      COUNT(*)::int AS total_signups,
+      COUNT(*) FILTER (WHERE intent = 'design_partner')::int AS design_partner_count,
+      COUNT(*) FILTER (WHERE intent = 'standard' OR intent IS NULL)::int AS standard_count,
+      COUNT(*) FILTER (WHERE status = 'new' OR status IS NULL)::int AS status_new,
+      COUNT(*) FILTER (WHERE status = 'contacted')::int AS status_contacted,
+      COUNT(*) FILTER (WHERE status = 'qualified')::int AS status_qualified,
+      COUNT(*) FILTER (WHERE status = 'closed')::int AS status_closed
+    FROM waitlist_signups;
+  `;
+
+  const topSourceRows = await sql`
+    SELECT utm_source AS source, COUNT(*)::int AS count
+    FROM waitlist_signups
+    WHERE utm_source IS NOT NULL AND TRIM(utm_source) <> ''
+    GROUP BY utm_source
+    ORDER BY count DESC, utm_source ASC
+    LIMIT 5;
+  `;
+
+  const topCampaignRows = await sql`
+    SELECT utm_campaign AS campaign, COUNT(*)::int AS count
+    FROM waitlist_signups
+    WHERE utm_campaign IS NOT NULL AND TRIM(utm_campaign) <> ''
+    GROUP BY utm_campaign
+    ORDER BY count DESC, utm_campaign ASC
+    LIMIT 5;
+  `;
+
+  const totals = totalsRows[0] as Record<string, unknown>;
+
+  return {
+    total_signups: toInt(totals.total_signups),
+    design_partner_count: toInt(totals.design_partner_count),
+    standard_count: toInt(totals.standard_count),
+    by_status: {
+      new: toInt(totals.status_new),
+      contacted: toInt(totals.status_contacted),
+      qualified: toInt(totals.status_qualified),
+      closed: toInt(totals.status_closed),
+    },
+    top_utm_sources: (topSourceRows as Array<Record<string, unknown>>).map((row) => ({
+      source: String(row.source),
+      count: toInt(row.count),
+    })),
+    top_campaigns: (topCampaignRows as Array<Record<string, unknown>>).map((row) => ({
+      campaign: String(row.campaign),
+      count: toInt(row.count),
+    })),
+  };
 }

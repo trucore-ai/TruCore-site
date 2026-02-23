@@ -117,6 +117,59 @@ Added tracked builder and launch events:
 - `builder_docs_click` on `/atf`
 - `launch_apply_click`, `launch_primer_click`, `launch_whitepaper_click` on `/launch`
 
+## Conversion Attribution and Metrics (Stage 52)
+
+Stage 52 adds first-touch UTM capture and a lightweight internal metrics snapshot without adding external analytics vendors.
+
+### UTM Capture
+
+- On first visit, if URL includes any UTM params (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`), the app stores a cookie named `trucore_utm`.
+- Cookie policy:
+  - Max age: 7 days
+  - Path: `/`
+  - `HttpOnly: false`
+  - `SameSite: Lax`
+- Existing attribution cookie is never overwritten.
+
+### Waitlist Attribution Persistence
+
+Waitlist submissions now persist optional attribution fields in `waitlist_signups`:
+
+- `utm_source`
+- `utm_medium`
+- `utm_campaign`
+- `utm_term`
+- `utm_content`
+
+Attribution values are optional and do not block submissions.
+
+### Admin Metrics Snapshot
+
+- JSON endpoint: `/api/metrics` (admin-session gated)
+- Admin page: `/admin/metrics` (read-only)
+
+Snapshot payload shape:
+
+```json
+{
+  "total_signups": 0,
+  "design_partner_count": 0,
+  "standard_count": 0,
+  "by_status": {
+    "new": 0,
+    "contacted": 0,
+    "qualified": 0,
+    "closed": 0
+  },
+  "top_utm_sources": [
+    { "source": "x", "count": 0 }
+  ],
+  "top_campaigns": [
+    { "campaign": "launch", "count": 0 }
+  ]
+}
+```
+
 ## CI and Branch Protection (Stage 42)
 
 ### Required CI Checks

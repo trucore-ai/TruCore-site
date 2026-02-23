@@ -4,6 +4,7 @@ import { headers, cookies } from "next/headers";
 import { ensureWaitlistTable, upsertWaitlistSignup } from "@/lib/db";
 import { sha256 } from "@/lib/hash";
 import { sendAdminNotification, sendUserConfirmation } from "@/lib/email";
+import { parseUtmCookieValue, UTM_COOKIE_NAME } from "@/lib/utm";
 
 /* ---------- constants ---------- */
 
@@ -130,6 +131,7 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
     "unknown";
   const ipHash = ip !== "unknown" ? sha256(ip) : null;
   const userAgent = (hdrs.get("user-agent") ?? "").slice(0, 256) || null;
+  const utm = parseUtmCookieValue(cookieStore.get(UTM_COOKIE_NAME)?.value);
 
   /* ---- persist ---- */
   try {
@@ -146,6 +148,11 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
       integrationsInterest: intent === "design_partner" && integrationsInterest.length > 0 ? integrationsInterest : null,
       txVolumeBucket: intent === "design_partner" ? txVolumeBucket : null,
       buildStage: intent === "design_partner" ? buildStage : null,
+      utmSource: utm?.utm_source ?? null,
+      utmMedium: utm?.utm_medium ?? null,
+      utmCampaign: utm?.utm_campaign ?? null,
+      utmTerm: utm?.utm_term ?? null,
+      utmContent: utm?.utm_content ?? null,
     });
 
     /* ---- set cooldown cookie ---- */
