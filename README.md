@@ -95,6 +95,28 @@ Minimum Lighthouse category scores:
 
 GitHub Actions also runs Lighthouse CI on pull requests and uploads the `.lighthouseci/` report artifact.
 
+## Distribution Readiness (Stage 51)
+
+Stage 51 adds launch and media distribution surfaces for announcements, press handoff, and builder onboarding.
+
+### New Public Routes
+
+- `/launch` for announcement-ready ATF positioning and tracked launch CTAs
+- `/media` for press-ready company/product blurbs and downloadable media assets
+- `/launch/opengraph-image` for launch-specific social preview rendering
+
+### New Reusable Sections
+
+- `PublicMetricsStrip` exposes non-sensitive credibility signals (release, CI, security posture, roadmap/status)
+- `WhyNowSection` on `/atf` communicates urgency and adversarial context without implementation leakage
+
+### Builder Path Events
+
+Added tracked builder and launch events:
+
+- `builder_docs_click` on `/atf`
+- `launch_apply_click`, `launch_primer_click`, `launch_whitepaper_click` on `/launch`
+
 ## CI and Branch Protection (Stage 42)
 
 ### Required CI Checks

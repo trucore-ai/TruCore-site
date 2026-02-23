@@ -207,6 +207,12 @@ export default function RootLayout({
                 <div className="flex flex-col gap-3">
                   <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Resources</p>
                   <div className="flex flex-wrap items-center gap-4">
+                    <Link href="/launch" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      Launch
+                    </Link>
+                    <Link href="/media" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      Media
+                    </Link>
                     <Link href="/docs" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Docs
                     </Link>
