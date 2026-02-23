@@ -182,6 +182,7 @@ Admin actions (status changes, note edits, CSV export) are rate-limited to 30 mu
 - Incorrect login attempts also return a 404.
 - Treat `ADMIN_DASHBOARD_KEY` like a password. Do not share it publicly or commit it to source control.
 - The page is server-rendered only. Client components handle clipboard and downloads only.
+- Rotate `.well-known/security.txt` `Expires` yearly. Current expiry is `2026-08-19T23:59:59.000Z`, plan to update before this date each year.
 
 ### Security Headers (Stage 23)
 

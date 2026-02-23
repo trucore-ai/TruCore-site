@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 import createMDX from "@next/mdx";
 import { SECURITY_HEADERS } from "./lib/security-headers";
 
+const SENSITIVE_ROUTE_ROBOTS_HEADERS = [
+  { key: "X-Robots-Tag", value: "noindex, nofollow" },
+];
+
 const withMDX = createMDX({
   extension: /\.mdx?$/,
 });
@@ -14,6 +18,14 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
+      {
+        source: "/admin/:path*",
+        headers: SENSITIVE_ROUTE_ROBOTS_HEADERS,
+      },
+      {
+        source: "/api/:path*",
+        headers: SENSITIVE_ROUTE_ROBOTS_HEADERS,
+      },
       {
         source: "/(.*)",
         headers: SECURITY_HEADERS,

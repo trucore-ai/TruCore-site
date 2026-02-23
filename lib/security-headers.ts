@@ -2,12 +2,8 @@
  * Strict security headers applied to every response.
  *
  * CSP allowances:
- * - 'unsafe-inline' for Tailwind and Next.js inline styles/scripts
- * - vercel.live + *.vercel.app for Vercel toolbar on preview deploys
- * - va.vercel-scripts.com + vitals.vercel-insights.com for Vercel Analytics
- * - blob: on img-src for CSV blob download previews
- * - raw.githack.com + raw.githubusercontent.com for @react-three/drei HDRI environment presets
- * - blob: on worker-src for Three.js / postprocessing web workers
+ * - 'unsafe-inline' retained for framework-required inline styles/scripts
+ * - va.vercel-scripts.com for Vercel Web Analytics transport
  *
  * Stage 24: added CSP-Report-Only header + Report-To for violation collection.
  */
@@ -16,12 +12,13 @@
 
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://vercel.live https://*.vercel.app",
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com https://vercel.live wss://ws-us3.pusher.com https://raw.githack.com https://raw.githubusercontent.com",
-  "worker-src 'self' blob:",
+  "connect-src 'self' https://va.vercel-scripts.com",
+  "object-src 'none'",
+  "base-uri 'self'",
   "frame-ancestors 'none'",
 ];
 

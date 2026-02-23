@@ -11,9 +11,15 @@
  */
 
 import { cookies } from "next/headers";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 export const ADMIN_COOKIE_NAME = "admin_session";
 export const ADMIN_COOKIE_MAX_AGE = 60 * 60 * 8; // 8 hours
+
+type AdminCookieOptions = Pick<
+  ResponseCookie,
+  "httpOnly" | "secure" | "sameSite" | "path" | "maxAge"
+>;
 
 /* ---------- constant-time compare ---------- */
 
@@ -32,6 +38,22 @@ export function isAdminKeyValid(key: string | null | undefined): boolean {
   const expected = process.env.ADMIN_DASHBOARD_KEY;
   if (!expected || !key) return false;
   return constantTimeEqual(key, expected);
+}
+
+/**
+ * Shared admin session cookie options.
+ * Scope cookie to /admin and only enable Secure in production.
+ */
+export function getAdminSessionCookieOptions(
+  maxAge: number = ADMIN_COOKIE_MAX_AGE,
+): AdminCookieOptions {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/admin",
+    maxAge,
+  };
 }
 
 /* ---------- cookie-based session helpers ---------- */

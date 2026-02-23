@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   isAdminKeyValid,
   ADMIN_COOKIE_NAME,
-  ADMIN_COOKIE_MAX_AGE,
+  getAdminSessionCookieOptions,
 } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit-log";
 
@@ -55,8 +55,6 @@ export async function POST(request: NextRequest) {
     return new NextResponse(null, { status: 404 });
   }
 
-  const isProduction = process.env.NODE_ENV === "production";
-
   await logAdminAction({ action: "admin_login" });
 
   const response = NextResponse.redirect(
@@ -65,11 +63,7 @@ export async function POST(request: NextRequest) {
   );
 
   response.cookies.set(ADMIN_COOKIE_NAME, key!, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
-    path: "/",
-    maxAge: ADMIN_COOKIE_MAX_AGE,
+    ...getAdminSessionCookieOptions(),
   });
 
   return response;
