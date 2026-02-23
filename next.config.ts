@@ -7,6 +7,27 @@ import {
   SENSITIVE_ROUTE_ROBOTS_HEADERS,
 } from "./lib/security-headers";
 
+export function getSecurityHeaderRules() {
+  return [
+    {
+      source: "/admin/:path*",
+      headers: SENSITIVE_ROUTE_ROBOTS_HEADERS,
+    },
+    {
+      source: "/portal/:path*",
+      headers: [...SENSITIVE_ROUTE_ROBOTS_HEADERS, ...SENSITIVE_ROUTE_NO_STORE_HEADERS],
+    },
+    {
+      source: "/api/:path*",
+      headers: SENSITIVE_ROUTE_ROBOTS_HEADERS,
+    },
+    {
+      source: "/(.*)",
+      headers: SECURITY_HEADERS,
+    },
+  ];
+}
+
 const withMDX = createMDX({
   extension: /\.mdx?$/,
 });
@@ -22,24 +43,7 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
-    return [
-      {
-        source: "/admin/:path*",
-        headers: SENSITIVE_ROUTE_ROBOTS_HEADERS,
-      },
-      {
-        source: "/portal/:path*",
-        headers: [...SENSITIVE_ROUTE_ROBOTS_HEADERS, ...SENSITIVE_ROUTE_NO_STORE_HEADERS],
-      },
-      {
-        source: "/api/:path*",
-        headers: SENSITIVE_ROUTE_ROBOTS_HEADERS,
-      },
-      {
-        source: "/(.*)",
-        headers: SECURITY_HEADERS,
-      },
-    ];
+    return getSecurityHeaderRules();
   },
 };
 
