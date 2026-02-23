@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createMDX from "@next/mdx";
+import withBundleAnalyzerPlugin from "@next/bundle-analyzer";
 import { SECURITY_HEADERS } from "./lib/security-headers";
 
 const SENSITIVE_ROUTE_ROBOTS_HEADERS = [
@@ -8,6 +9,10 @@ const SENSITIVE_ROUTE_ROBOTS_HEADERS = [
 
 const withMDX = createMDX({
   extension: /\.mdx?$/,
+});
+
+const withBundleAnalyzer = withBundleAnalyzerPlugin({
+  enabled: process.env.ANALYZE === "true",
 });
 
 const nextConfig: NextConfig = {
@@ -34,4 +39,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withMDX(nextConfig);
+export default withBundleAnalyzer(withMDX(nextConfig));

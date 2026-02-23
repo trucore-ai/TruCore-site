@@ -42,6 +42,59 @@ npm run lint
 npm run build
 ```
 
+## Performance Guardrails (Stage 50)
+
+The project includes enforceable guardrails to catch performance regressions before merge.
+
+### Bundle Analyzer
+
+Generate a bundle analysis report:
+
+```bash
+npm run analyze
+```
+
+This runs `next build` with `ANALYZE=true` and opens webpack bundle analyzer output for route and chunk inspection.
+
+### Bundle Size Budget
+
+Validate bundle size thresholds after a production build:
+
+```bash
+npm run build
+npm run check:bundle
+```
+
+Enforced thresholds:
+
+- Max initial route JS: 200 KB
+- Max single chunk: 150 KB
+
+The script reads Next.js build manifests under `.next`, calculates route and chunk sizes, and exits non-zero if limits are exceeded.
+
+### Lighthouse CI
+
+Run Lighthouse assertions locally:
+
+```bash
+npm run lhci
+```
+
+Configured pages:
+
+- `http://localhost:3000/`
+- `http://localhost:3000/atf`
+- `http://localhost:3000/blog`
+
+Minimum Lighthouse category scores:
+
+- Performance: 0.85
+- Accessibility: 0.95
+- Best Practices: 0.90
+- SEO: 0.90
+
+GitHub Actions also runs Lighthouse CI on pull requests and uploads the `.lighthouseci/` report artifact.
+
 ## CI and Branch Protection (Stage 42)
 
 ### Required CI Checks
