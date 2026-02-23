@@ -1,0 +1,11 @@
+/* @trucore-ai
+/app/admin/** @trucore-ai
+/app/api/** @trucore-ai
+/lib/security-headers.ts @trucore-ai
+/lib/admin-auth.ts @trucore-ai
+/lib/audit-log.ts @trucore-ai
+/lib/db.ts @trucore-ai
+/lib/email.ts @trucore-ai
+/next.config.ts @trucore-ai
+/eslint.config.mjs @trucore-ai
+/.github/workflows/** @trucore-ai

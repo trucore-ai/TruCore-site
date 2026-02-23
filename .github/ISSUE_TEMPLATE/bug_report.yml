@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a reproducible bug.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this issue.
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+      placeholder: Describe the expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+      placeholder: Describe the observed behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: List steps so we can reproduce the issue.
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: Browser name and version.
+      placeholder: Chrome 123, Safari 17.5, Firefox 126
+  - type: input
+    id: device
+    attributes:
+      label: Device / OS
+      description: Device type and operating system.
+      placeholder: iPhone 15 iOS 18, Windows 11 desktop
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Paste relevant logs and attach screenshots if possible.
+      placeholder: Include console/network errors and screenshots.

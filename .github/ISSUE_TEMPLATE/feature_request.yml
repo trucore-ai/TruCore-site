@@ -1,0 +1,34 @@
+name: Feature request
+description: Suggest an improvement to TruCore Site.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What user or business problem are you trying to solve?
+      placeholder: Describe the pain point and current limitation.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What do you want to happen?
+      placeholder: Describe the preferred solution.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What alternatives did you consider?
+      placeholder: Include tradeoffs if relevant.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who benefits and how should success be measured?
+      placeholder: Describe expected impact on users, reliability, or security.

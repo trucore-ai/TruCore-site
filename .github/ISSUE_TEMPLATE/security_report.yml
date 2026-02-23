@@ -1,0 +1,32 @@
+name: Security report
+description: Report a security concern responsibly.
+title: "security: "
+labels:
+  - security
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ⚠️ Do not post sensitive details in this public issue
+
+        Please do not include exploit code, credentials, personal data, private logs, or any sensitive technical details here.
+
+        Report security concerns privately to **security@trucore.xyz**.
+
+        References:
+        - Security page: https://trucore.xyz/security
+        - Security policy file: https://trucore.xyz/.well-known/security.txt
+  - type: textarea
+    id: summary
+    attributes:
+      label: Public-safe summary
+      description: Provide a high-level, non-sensitive description only.
+      placeholder: A brief summary without sensitive details.
+    validations:
+      required: true
+  - type: textarea
+    id: contact
+    attributes:
+      label: Preferred contact details
+      description: Optional. Provide a safe way for the security team to follow up.
+      placeholder: Email or handle for private follow-up.
