@@ -42,6 +42,38 @@ npm run lint
 npm run build
 ```
 
+## CI and Branch Protection (Stage 42)
+
+### Required CI Checks
+
+The GitHub Actions `Test` workflow runs three required jobs in parallel:
+
+- `lint`
+- `unit`
+- `e2e`
+
+Each job uses Node 20 with npm dependency caching. The `e2e` job also caches Playwright browsers.
+
+### Run CI Locally
+
+Use the same top-level script used for local parity with CI:
+
+```bash
+npm run ci
+```
+
+This runs lint with zero warnings, unit tests, and Playwright e2e tests in sequence.
+
+### Branch Protection Setup
+
+In GitHub repository settings for `main`:
+
+1. Open **Settings** -> **Branches**.
+1. Create or edit the branch protection rule for `main`.
+1. Enable **Require status checks to pass before merging**.
+1. Mark these checks as required: `lint`, `unit`, `e2e`.
+1. Enable **Require branches to be up to date before merging**.
+
 ## Build Output Notes
 
 - Main route: `/`
