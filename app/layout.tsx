@@ -256,6 +256,12 @@ export default function RootLayout({
                     <Link href="/blog" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Blog
                     </Link>
+                    <Link href="/security/overview" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      Security Overview
+                    </Link>
+                    <Link href="/security/disclosure" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      Responsible Disclosure
+                    </Link>
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">

@@ -170,6 +170,55 @@ Snapshot payload shape:
 }
 ```
 
+## Trust Hardening and Public Security Proofs (Stage 53)
+
+Stage 53 adds public, security-first trust surfaces and verifiable whitepaper integrity proof without exposing private implementation details.
+
+### Public Security Pages
+
+- `/security/overview` documents architecture philosophy, operational controls, data handling, and release discipline.
+- `/security/disclosure` provides responsible disclosure policy and response timelines.
+- `/security` redirects to `/security/overview`.
+
+Both security pages include a build-time “Last updated” timestamp via `NEXT_PUBLIC_BUILD_DATE`.
+
+### ATF Trust Surface Enhancements
+
+- `/atf` now includes a public Security Commitments section:
+  - Fail-closed design
+  - Scoped permits
+  - Immutable audit trail
+  - Versioned releases
+
+### Whitepaper Integrity Signature Endpoint
+
+- New endpoint: `/atf/whitepaper/signature`
+- Response shape:
+
+```json
+{
+  "sha256": "...",
+  "signature": "..."
+}
+```
+
+Signature details:
+
+- `sha256` is computed from generated whitepaper PDF bytes.
+- `signature` is `HMAC-SHA256(sha256, WHITEPAPER_SIGNING_KEY)`.
+- Uses `Cache-Control: no-store` to avoid caching integrity responses.
+- `WHITEPAPER_SIGNING_KEY` is required in production.
+
+### Header Verification Test
+
+- Added unit test: `tests/security-headers.test.ts`
+- Asserts presence of required hardening headers:
+  - `strict-transport-security`
+  - `content-security-policy`
+  - `x-frame-options`
+  - `x-content-type-options`
+  - `referrer-policy`
+
 ## CI and Branch Protection (Stage 42)
 
 ### Required CI Checks

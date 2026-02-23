@@ -10,6 +10,7 @@ import { AtfReadiness } from "@/components/atf-readiness";
 import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
 import { TransparencyMetrics } from "@/components/transparency-metrics";
 import { WhyNowSection } from "@/components/why-now-section";
+import { SecurityCommitments } from "@/components/security-commitments";
 import { TrackedLink } from "@/components/tracked-link";
 import { Tilt } from "@/components/ui/tilt";
 
@@ -69,6 +70,8 @@ const architectureLayers = [
   },
 ];
 
+const lastUpdated = process.env.NEXT_PUBLIC_BUILD_DATE ?? "unknown";
+
 export default function ATFPage() {
   return (
     <Container>
@@ -82,6 +85,9 @@ export default function ATFPage() {
           <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
             A policy + permit layer that constrains what AI agents can do on
             Solana before any transaction executes.
+          </p>
+          <p className="mt-4 text-sm font-medium text-slate-400">
+            Last updated: {lastUpdated}
           </p>
 
           {/* Instant comprehension strip */}
@@ -527,6 +533,9 @@ export default function ATFPage() {
 
       {/* ── Why Now ── */}
       <WhyNowSection />
+
+      {/* ── Security Commitments ── */}
+      <SecurityCommitments />
 
       {/* ── Builder Path ── */}
       <Section className="border-t border-white/10 fade-in-up">
