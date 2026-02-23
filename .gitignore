@@ -26,6 +26,8 @@
 .DS_Store
 *.pem
 *Zone.Identifier
+.lighthouseci/
+lighthouse.*
 
 # debug
 npm-debug.log*
