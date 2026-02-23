@@ -76,7 +76,7 @@ export function WaitlistForm() {
     const isPartnerSuccess = state.intent === "design_partner";
 
     return (
-      <div className="glass-panel rounded-xl px-6 py-5 space-y-4">
+      <div data-testid="waitlist-success" className="glass-panel rounded-xl px-6 py-5 space-y-4">
         <p className="text-xl font-semibold text-primary-100">
           &#10003; {isPartnerSuccess ? "Application received" : state.message}
         </p>
@@ -147,6 +147,7 @@ export function WaitlistForm() {
         </label>
         <input
           id="waitlist-email"
+          data-testid="waitlist-email"
           name="email"
           type="email"
           autoComplete="email"
@@ -165,6 +166,7 @@ export function WaitlistForm() {
         </label>
         <select
           id="waitlist-role"
+          data-testid="waitlist-role"
           name="role"
           className={`${inputStyles} mt-1 appearance-none`}
           defaultValue=""
@@ -186,6 +188,7 @@ export function WaitlistForm() {
         </label>
         <input
           id="waitlist-usecase"
+          data-testid="waitlist-usecase"
           name="useCase"
           type="text"
           maxLength={500}
@@ -292,7 +295,13 @@ export function WaitlistForm() {
       )}
 
       {/* Submit */}
-      <Button variant="primary" type="submit" disabled={isPending} className="h-12 w-full sm:w-auto">
+      <Button
+        data-testid="waitlist-submit"
+        variant="primary"
+        type="submit"
+        disabled={isPending}
+        className="h-12 w-full sm:w-auto"
+      >
         {isPending
           ? "Submitting..."
           : isDesignPartner

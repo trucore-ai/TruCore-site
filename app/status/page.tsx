@@ -19,6 +19,7 @@ const systems = [
 
 export default function StatusPage() {
   const commitSha = process.env.VERCEL_GIT_COMMIT_SHA ?? null;
+  const environment = process.env.VERCEL_ENV ?? "unknown";
 
   return (
     <Container>
@@ -115,17 +116,26 @@ export default function StatusPage() {
             </p>
           </Card>
 
-          {/* Last Deploy */}
-          {commitSha && (
-            <div className="glass-panel rounded-xl p-6 text-center">
-              <p className="text-sm text-slate-400">
-                Last deploy:{" "}
-                <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-slate-300">
-                  {commitSha.slice(0, 7)}
-                </code>
-              </p>
-            </div>
-          )}
+          {/* Release Metadata */}
+          <div className="glass-panel rounded-xl p-6 text-center">
+            <p className="text-sm text-slate-400">Release metadata</p>
+            <p className="mt-2 text-sm text-slate-300">
+              Commit:{" "}
+              <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-slate-300">
+                {commitSha ? commitSha.slice(0, 7) : "unavailable"}
+              </code>
+            </p>
+            <p className="mt-2 text-sm text-slate-300">
+              Environment:{" "}
+              <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-slate-300">
+                {environment}
+              </code>
+            </p>
+            <p className="mt-3 text-xs text-slate-500">
+              Git tags are not injected by Vercel. Map this commit SHA to a
+              release tag in GitHub.
+            </p>
+          </div>
         </div>
       </Section>
     </Container>

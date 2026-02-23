@@ -74,6 +74,14 @@ In GitHub repository settings for `main`:
 1. Mark these checks as required: `lint`, `unit`, `e2e`.
 1. Enable **Require branches to be up to date before merging**.
 
+## Production Release and Ops Baseline (Stage 48)
+
+Use these docs for production-ready releases, tagging, and operations procedures:
+
+- `RELEASE.md` for versioning, release flow, and release notes template
+- `ops/PRODUCTION_CHECKLIST.md` for pre/post deploy checks, smoke checks, rollback, and incident triage
+- `ops/ENV_VARS.md` for environment variable inventory, scope, and safe defaults
+
 ## Build Output Notes
 
 - Main route: `/`
