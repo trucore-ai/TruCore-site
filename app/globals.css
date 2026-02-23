@@ -141,9 +141,9 @@ body {
   z-index: 2;
   background:
     linear-gradient(var(--sheen-angle), transparent 0%, transparent 25%, rgba(180, 225, 255, 0.12) 44%, rgba(220, 245, 255, 0.18) 50%, rgba(180, 225, 255, 0.12) 56%, transparent 75%, transparent 100%);
-  opacity: 1;
-  transform: translateX(-120%);
-  animation: glassSheenSweep var(--sheen-dur) cubic-bezier(0.2, 0.65, 0.2, 1) var(--sheen-delay) infinite;
+  opacity: 0.16;
+  transform: none;
+  animation: none;
 }
 
 .glass-panel::after {
@@ -154,9 +154,9 @@ body {
     radial-gradient(85% 120% at 88% 0%, rgba(90, 115, 200, 0.02) 0%, rgba(90, 115, 200, 0) 62%),
     radial-gradient(1.2% 1.8% at 21% 26%, rgba(220, 240, 250, 0.24) 0%, rgba(220, 240, 250, 0) 100%),
     radial-gradient(1% 1.5% at 78% 34%, rgba(180, 220, 240, 0.18) 0%, rgba(180, 220, 240, 0) 100%);
-  opacity: 0.16;
+  opacity: 0.12;
   mix-blend-mode: screen;
-  animation: glassFilmSheen 13s ease-in-out infinite, glassBrightGlints 7.4s ease-in-out infinite;
+  animation: none;
 }
 
 .glass-panel-featured {
@@ -438,7 +438,7 @@ body {
   }
 }
 
-/* ── Hover flash sweep (animated via JS Web Animations API) ── */
+/* ── Subtle hover flash sweep (CSS-only) ── */
 .glass-hover-flash {
   position: absolute;
   inset: 0;
@@ -449,20 +449,25 @@ body {
     linear-gradient(
       105deg,
       transparent 0%,
-      transparent 20%,
-      rgba(200, 235, 255, 0.09) 35%,
-      rgba(240, 250, 255, 0.23) 45%,
-      rgba(255, 255, 255, 0.30) 50%,
-      rgba(240, 250, 255, 0.23) 55%,
-      rgba(200, 235, 255, 0.09) 65%,
+      transparent 24%,
+      rgba(200, 235, 255, 0.03) 38%,
+      rgba(240, 250, 255, 0.08) 46%,
+      rgba(255, 255, 255, 0.12) 50%,
+      rgba(240, 250, 255, 0.08) 54%,
+      rgba(200, 235, 255, 0.03) 62%,
       transparent 80%,
       transparent 100%
     );
   opacity: 0;
-  transform: translateX(-130%);
+  transform: translateX(-120%);
+  transition: transform 560ms cubic-bezier(0.22, 0.68, 0.32, 1), opacity 560ms ease;
 }
 
-/* (hover flash animation is triggered by JS) */
+.glass-panel:hover .glass-hover-flash,
+.glass-panel:focus-within .glass-hover-flash {
+  transform: translateX(120%);
+  opacity: 0.55;
+}
 
 /* ── Auto-playing dynamic light flash (streaks periodically across each card) ── */
 .glass-light-flash {
