@@ -1,0 +1,16 @@
+name: Production Smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  portal-public-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify portal public headers and redirect behavior
+        run: bash scripts/verify-prod-portal.sh
+        env:
+          BASE_URL: https://trucore.xyz

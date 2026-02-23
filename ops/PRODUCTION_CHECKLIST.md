@@ -30,6 +30,40 @@ Run each check from production and confirm expected result.
 - `GET /api/status` -> HTTP 200 and status snapshot payload.
 - `GET /blog` and `GET /docs` -> Pages load successfully.
 
+### Partner Portal Header and Session Verification (Stage 58)
+
+Use the repeatable curl-based script from your laptop for production and preview checks.
+
+Public checks only, no token required:
+
+```bash
+BASE_URL=https://trucore.xyz bash scripts/verify-prod-portal.sh
+```
+
+Optional authenticated checks, requires a valid one-time partner portal token:
+
+```bash
+BASE_URL=https://trucore.xyz PARTNER_PORTAL_TOKEN=REDACTED bash scripts/verify-prod-portal.sh
+```
+
+Expected successful output pattern:
+
+- `PASS: GET /portal returns 307 redirect to /portal/login when unauthenticated` (or `PASS ... returns 200` if session already exists)
+- `PASS: GET /portal has X-Robots-Tag noindex`
+- `PASS: GET /portal has Cache-Control no-store`
+- `PASS: GET /portal/login returns 200`
+- With token: login sets `partner_portal_session` with `HttpOnly`, `SameSite=Lax`, `Path=/portal`, plus `Secure` on HTTPS
+- With token: logout returns redirect and clears cookie with `Max-Age=0` or expired `Expires`
+- Final line: `Summary: N passed, 0 failed`
+
+Negative test for failure handling:
+
+```bash
+BASE_URL=https://invalid.example bash scripts/verify-prod-portal.sh
+```
+
+This should print one or more `FAIL:` lines and exit non-zero.
+
 ### Operational Verification
 
 1. Submit one waitlist test entry and verify DB row appears.
