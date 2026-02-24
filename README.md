@@ -42,6 +42,13 @@ npm run lint
 npm run build
 ```
 
+## Motion and Accessibility (Stage 77)
+
+- A visible footer control lets users toggle between system motion behavior and a minimal background mode.
+- Preference persists in localStorage under `trucore.motionPreference`.
+- The root element mirrors the resolved state with `data-reduce-motion="true|false"` so animation-heavy layers can be disabled consistently.
+- On viewports below 768px, the animated hero background is disabled to prioritize legibility and performance.
+
 ## Performance Guardrails (Stage 50)
 
 The project includes enforceable guardrails to catch performance regressions before merge.

@@ -13,6 +13,8 @@ export const metadata: Metadata = {
 };
 
 export default function WhitepaperPage() {
+  const hasSigningKey = Boolean(process.env.WHITEPAPER_SIGNING_KEY?.trim());
+
   return (
     <Container>
       <Section className="fade-in-up">
@@ -39,7 +41,7 @@ export default function WhitepaperPage() {
           </div>
 
           <div className="mt-6">
-            <WhitepaperHashPanel />
+            <WhitepaperHashPanel hasSigningKey={hasSigningKey} />
           </div>
         </div>
       </Section>

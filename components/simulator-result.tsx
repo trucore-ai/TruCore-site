@@ -1,4 +1,5 @@
 import type { SimResult } from "@/lib/simulator";
+import { TrackedLink } from "@/components/tracked-link";
 
 type RateLimitMetadata = {
   limit: string;
@@ -12,6 +13,7 @@ type SimulatorResultProps = {
   isLoading: boolean;
   rateLimit: RateLimitMetadata | null;
   simulationAttempted: boolean;
+  isAdminView?: boolean;
 };
 
 function RateLimitMetadataBlock({
@@ -72,6 +74,7 @@ export function SimulatorResult({
   isLoading,
   rateLimit,
   simulationAttempted,
+  isAdminView = false,
 }: SimulatorResultProps) {
   if (isLoading) {
     return (
@@ -135,6 +138,47 @@ export function SimulatorResult({
         <p className="text-xs uppercase tracking-[0.12em] text-slate-400">receipt_hash</p>
         <p className="mt-1 break-all font-mono text-xs text-slate-200">{result.receipt_hash}</p>
       </div>
+
+      {result.status === "allowed" ? (
+        <div className="space-y-3 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-4">
+          <p className="text-sm font-semibold text-emerald-200">Ready to enforce this in production?</p>
+          {isAdminView ? (
+            <div className="flex flex-wrap gap-3">
+              <TrackedLink
+                href="/admin/keys"
+                eventName="simulator_upgrade_click"
+                eventProps={{ location: "simulator_result", target: "sandbox_key" }}
+                className="inline-flex items-center justify-center rounded-lg border border-primary-300/40 bg-primary-500/15 px-4 py-2 text-sm font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+              >
+                Get Sandbox Key
+              </TrackedLink>
+              <TrackedLink
+                href="/atf/apply"
+                eventName="simulator_upgrade_click"
+                eventProps={{ location: "simulator_result", target: "pilot_apply" }}
+                className="inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition-colors hover:bg-white/10"
+              >
+                Apply for Pilot
+              </TrackedLink>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-emerald-100">Upgrade to higher limits with a sandbox API key.</p>
+              <TrackedLink
+                href="/atf/apply"
+                eventName="simulator_upgrade_click"
+                eventProps={{ location: "simulator_result", target: "pilot_apply" }}
+                className="inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition-colors hover:bg-white/10"
+              >
+                Apply for Pilot
+              </TrackedLink>
+            </div>
+          )}
+          <p className="text-sm text-emerald-100">
+            Use this receipt hash to log execution decisions in your agent runtime.
+          </p>
+        </div>
+      ) : null}
 
       <RateLimitMetadataBlock rateLimit={rateLimit} simulationAttempted={simulationAttempted} />
     </div>

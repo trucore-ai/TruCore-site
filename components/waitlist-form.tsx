@@ -3,7 +3,6 @@
 import { useActionState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { joinWaitlist, type WaitlistResult, type WaitlistIntent } from "@/app/actions/waitlist";
-import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/analytics";
 
 const ROLES = ["Builder", "Founder", "Researcher", "Security", "Other"] as const;
@@ -295,19 +294,18 @@ export function WaitlistForm() {
       )}
 
       {/* Submit */}
-      <Button
+      <button
         data-testid="waitlist-submit"
-        variant="primary"
         type="submit"
         disabled={isPending}
-        className="h-12 w-full sm:w-auto"
+        className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-accent-500 px-7 py-4 text-xl font-semibold text-neutral-950 transition-colors hover:bg-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         {isPending
           ? "Submitting..."
           : isDesignPartner
             ? "Submit Application"
             : "Join Waitlist"}
-      </Button>
+      </button>
 
       {/* Status messages */}
       <p id="waitlist-status" role={!state.ok && state.message ? "alert" : "status"} className="text-lg">

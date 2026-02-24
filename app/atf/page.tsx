@@ -16,13 +16,15 @@ import { SecurityIntegrityStrip } from "@/components/security-integrity-strip";
 import { EvidenceMetricsSection } from "@/components/evidence-metrics-section";
 import { PublicUsageSnapshot } from "@/components/public-usage-snapshot";
 import { AtfComparison } from "@/components/atf-comparison";
+import { MoatSignalStrip } from "@/components/moat-signal-strip";
 import { TrackedLink } from "@/components/tracked-link";
+import { RiskBoundaryBlock } from "@/components/risk-boundary-block";
 import { Tilt } from "@/components/ui/tilt";
 
 export const metadata: Metadata = {
   title: "Agent Transaction Firewall (ATF)",
   description:
-    "ATF is TruCore\u2019s flagship enforcement layer: deterministic policy checks, slippage constraints, protocol allowlists, and cryptographic receipts for every AI-agent transaction.",
+    "Agent Transaction Firewall (ATF) enforces deterministic policy checks on Solana with slippage constraints, protocol allowlists, and tamper-evident receipts for every AI-agent transaction.",
 };
 
 const threatVectors = [
@@ -83,64 +85,102 @@ export default function ATFPage() {
     <Container>
       {/* ── Hero ── */}
       <Section className="fade-in-up">
-        <div className="max-w-3xl">
-          <Badge className="mb-4">Flagship Product</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl lg:text-7xl">
-            Cryptographic guardrails for autonomous finance
-          </h1>
-          <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
-            ATF enforces signed permits, blocks unsafe agent transactions, and
-            issues tamper-evident receipts, try it in under 5 minutes.
-          </p>
+        <div className="relative max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/35 p-6 sm:p-8">
+          <div className="hero-legibility-overlay" aria-hidden="true" />
+          <div className="relative z-10 max-w-3xl">
+            <Badge className="mb-4">Flagship Product</Badge>
+            <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl lg:text-7xl">
+              Cryptographic guardrails for autonomous finance
+            </h1>
+            <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
+              ATF enforces signed permits, blocks unsafe agent transactions, and
+              issues tamper-evident receipts, try it in under 5 minutes.
+            </p>
+            <p className="mt-3 text-lg leading-[1.5] text-slate-300 sm:text-xl">
+              Purpose-built for financial invariants, spend limits, protocol allowlists, exposure caps, and time-bound
+              execution.
+            </p>
 
           {/* CTAs */}
-          <div className="mt-8 flex flex-wrap gap-4">
-            <TrackedLink
-              href="/atf/simulator"
-              eventName="hero_simulator_click"
-              eventProps={{ location: "atf_hero" }}
-              className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"
-            >
-              Try the Simulator
-            </TrackedLink>
-            <TrackedLink
-              href="/docs/quickstart"
-              eventName="hero_quickstart_click"
-              eventProps={{ location: "atf_hero" }}
-              className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
-            >
-              Developer Quickstart
-            </TrackedLink>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <TrackedLink
+                href="/atf/simulator"
+                eventName="hero_simulator_click"
+                eventProps={{ location: "atf_hero" }}
+                className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"
+              >
+                Try sandbox
+              </TrackedLink>
+              <TrackedLink
+                href="/atf/apply"
+                eventName="hero_pilot_click"
+                eventProps={{ location: "atf_hero" }}
+                className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+              >
+                Apply for pilot
+              </TrackedLink>
+              <TrackedLink
+                href="/docs/5-minute-quickstart"
+                eventName="hero_quickstart_click"
+                eventProps={{ location: "atf_hero", target: "5_min_quickstart" }}
+                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-7 py-4 text-xl font-semibold text-slate-100 transition-colors hover:bg-white/10"
+              >
+                Get started in 5 min
+              </TrackedLink>
+            </div>
+
+            <p className="mt-5 text-lg text-slate-300">
+              Need proof first?{" "}
+              <TrackedLink
+                href="/receipts"
+                eventName="hero_receipts_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                View example receipts
+              </TrackedLink>
+              .
+            </p>
+
+            <p className="mt-2 text-lg text-slate-300">
+              New here? Read the{" "}
+              <TrackedLink
+                href="/agent-transaction-firewall"
+                eventName="category_definition_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                Agent Transaction Firewall definition
+              </TrackedLink>
+              .
+            </p>
+
+            <p className="mt-2 text-lg text-slate-300">
+              For operational detail, see{" "}
+              <TrackedLink
+                href="/process"
+                eventName="process_page_link_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                how ATF is built
+              </TrackedLink>
+              {" "}and{" "}
+              <TrackedLink
+                href="/enterprise"
+                eventName="enterprise_page_link_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                enterprise readiness
+              </TrackedLink>
+              .
+            </p>
+
+            <p className="mt-4 text-sm font-medium text-slate-400">
+              Last updated: {lastUpdated}
+            </p>
           </div>
-
-          <p className="mt-5 text-lg text-slate-300">
-            Prefer copy-paste?{" "}
-            <TrackedLink
-              href="/docs/5-minute-quickstart"
-              eventName="hero_quickstart_click"
-              eventProps={{ location: "atf_hero", target: "5_min_quickstart" }}
-              className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-            >
-              5-minute Quickstart &rarr;
-            </TrackedLink>
-          </p>
-
-          <p className="mt-2 text-lg text-slate-300">
-            New here? Read the{" "}
-            <TrackedLink
-              href="/agent-transaction-firewall"
-              eventName="category_definition_click"
-              eventProps={{ location: "atf_hero" }}
-              className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-            >
-              Agent Transaction Firewall definition
-            </TrackedLink>
-            .
-          </p>
-
-          <p className="mt-4 text-sm font-medium text-slate-400">
-            Last updated: {lastUpdated}
-          </p>
         </div>
       </Section>
 
@@ -237,6 +277,30 @@ export default function ATFPage() {
               <p className="mt-2 text-lg leading-[1.5] text-slate-200">{tv.impact}</p>
             </Card>
           ))}
+        </div>
+      </Section>
+
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-4xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">ATF vs LLM Firewalls</h2>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <Card className="h-full">
+              <h3 className="text-2xl font-bold text-[#e8944a]">LLM firewalls</h3>
+              <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
+                <li>Prompt boundary protection</li>
+                <li>Input and output filtering</li>
+                <li>Data leakage prevention controls</li>
+              </ul>
+            </Card>
+            <Card className="h-full">
+              <h3 className="text-2xl font-bold text-[#e8944a]">ATF</h3>
+              <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
+                <li>Pre-execution economic invariants</li>
+                <li>Deterministic decisioning</li>
+                <li>Receipts for verification</li>
+              </ul>
+            </Card>
+          </div>
         </div>
       </Section>
 
@@ -502,6 +566,28 @@ export default function ATFPage() {
       {/* ── Designed For ── */}
       <AtfDesignedFor />
 
+      {/* ── Ecosystem Positioning ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            Designed for AI Agents &amp; DeFi Integrations
+          </h2>
+          <ul className="mt-4 space-y-2 text-lg leading-[1.5] text-slate-200">
+            <li>Agent-native JSON interface</li>
+            <li>Chain-agnostic enforcement layer</li>
+            <li>Compatible with swap routers, lending protocols, and internal bots</li>
+          </ul>
+          <TrackedLink
+            href="/docs/integration-pattern"
+            eventName="integration_pattern_click"
+            eventProps={{ location: "atf_ecosystem_section" }}
+            className="mt-5 inline-flex text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            See Integration Pattern
+          </TrackedLink>
+        </div>
+      </Section>
+
       {/* ── V1 Scope ── */}
       <AtfV1Scope />
 
@@ -514,11 +600,73 @@ export default function ATFPage() {
       {/* ── Deterministic Enforcement Proof ── */}
       <EnforcementProofSection />
 
+      <Section className="pt-0 fade-in-up">
+        <div className="mx-auto max-w-3xl">
+          <RiskBoundaryBlock />
+        </div>
+      </Section>
+
+      <Section className="pt-0 fade-in-up">
+        <div className="flex flex-wrap gap-3">
+          <TrackedLink
+            href="/receipts"
+            eventName="enforcement_proof_receipts_click"
+            eventProps={{ location: "atf_page" }}
+            className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-lg font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+          >
+            View Example Receipts
+          </TrackedLink>
+          <TrackedLink
+            href="/demo-policy"
+            eventName="demo_policy_link_click"
+            eventProps={{ location: "atf_page", section: "enforcement_proof" }}
+            className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-7 py-4 text-lg font-semibold text-slate-100 transition-colors hover:bg-white/10"
+          >
+            View Demo Policy
+          </TrackedLink>
+        </div>
+      </Section>
+
       {/* ── Evidence & Operational Signals ── */}
       <EvidenceMetricsSection />
 
       {/* ── ATF Comparison ── */}
       <AtfComparison />
+
+      {/* ── Positioning ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-4xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            Why Not Just an API Gateway?
+          </h2>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <Card className="h-full">
+              <h3 className="text-2xl font-bold text-[#e8944a]">API Gateway</h3>
+              <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
+                <li>Routes requests</li>
+                <li>Authenticates identity</li>
+                <li>Does not enforce economic invariants</li>
+              </ul>
+            </Card>
+            <Card className="h-full">
+              <h3 className="text-2xl font-bold text-[#e8944a]">ATF</h3>
+              <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
+                <li>Evaluates capital constraints</li>
+                <li>Enforces deterministic policy</li>
+                <li>Produces verifiable receipts</li>
+              </ul>
+            </Card>
+          </div>
+          <TrackedLink
+            href="/docs/atf-architecture"
+            eventName="atf_positioning_docs_click"
+            eventProps={{ location: "atf_positioning_section" }}
+            className="mt-5 inline-flex text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            Read the ATF architecture rationale
+          </TrackedLink>
+        </div>
+      </Section>
 
       {/* ── Public Usage Snapshot ── */}
       <PublicUsageSnapshot />
@@ -541,6 +689,33 @@ export default function ATFPage() {
         </div>
       </Section>
 
+      {/* ── Build With ATF ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">Build With ATF</h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            ATF is designed as an enforcement layer for AI agents and DeFi systems. Explore
+            integration patterns and policy examples.
+          </p>
+          <TrackedLink
+            href="/build-with-atf"
+            eventName="build_with_atf_click"
+            eventProps={{ location: "atf_page" }}
+            className="mt-5 inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-6 py-3 text-lg font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+          >
+            Build With ATF &rarr;
+          </TrackedLink>
+          <TrackedLink
+            href="/pilot/ecommerce"
+            eventName="ecommerce_pilot_link_click"
+            eventProps={{ location: "atf_page", target: "pilot_ecommerce" }}
+            className="ml-0 mt-4 inline-flex items-center justify-center text-lg font-semibold text-primary-200 transition-colors hover:text-primary-100 sm:ml-4 sm:mt-5"
+          >
+            See E-Commerce Pilot &rarr;
+          </TrackedLink>
+        </div>
+      </Section>
+
       {/* ── Roadmap ── */}
       <AtfRoadmap />
 
@@ -558,6 +733,50 @@ export default function ATFPage() {
 
       {/* ── Transparency Metrics ── */}
       <TransparencyMetrics />
+
+      {/* ── Enterprise Procurement Ready ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            Enterprise Procurement Ready
+          </h2>
+          <ul className="mt-4 list-disc space-y-2 pl-6 text-lg leading-[1.5] text-slate-200">
+            <li>Deterministic enforcement logs</li>
+            <li>Explicit policy documentation</li>
+            <li>Public security posture</li>
+            <li>Versioned release discipline</li>
+          </ul>
+          <TrackedLink
+            href="/security/compliance"
+            eventName="enterprise_procurement_click"
+            eventProps={{ location: "atf_page" }}
+            className="mt-5 inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-6 py-3 text-lg font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+          >
+            View Compliance Alignment &rarr;
+          </TrackedLink>
+        </div>
+      </Section>
+
+      {/* ── Built for the Long Term ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            Built for the Long Term
+          </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            ATF is designed as durable enforcement infrastructure, not a short-term product
+            experiment.
+          </p>
+          <TrackedLink
+            href="/direction"
+            eventName="long_term_signal_click"
+            eventProps={{ location: "atf_page", target: "direction" }}
+            className="mt-5 inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-6 py-3 text-lg font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+          >
+            View Long-Term Direction &rarr;
+          </TrackedLink>
+        </div>
+      </Section>
 
       {/* ── Design Partner CTA ── */}
       <Section className="border-t border-white/10 fade-in-up">
@@ -591,6 +810,9 @@ export default function ATFPage() {
 
       {/* ── Design Partner CTA ── */}
       <AtfDesignPartnerCta />
+
+      {/* ── Moat Signals ── */}
+      <MoatSignalStrip />
     </Container>
   );
 }

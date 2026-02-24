@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { CopyBlock } from "@/components/copy-block";
 import { trackEvent } from "@/lib/analytics";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
-const CURL_EXAMPLE = `curl -X POST https://trucore.xyz/api/simulate \\
+const CURL_EXAMPLE = `BASE_URL="${"${BASE_URL:-http://127.0.0.1:3000}"}"
+curl -sS "$BASE_URL/api/simulate" \\
   -H "Content-Type: application/json" \\
-  -H "x-api-key: YOUR_API_KEY" \\
   -d '{
     "action": "swap",
     "token_in": "SOL",
@@ -18,27 +18,6 @@ const CURL_EXAMPLE = `curl -X POST https://trucore.xyz/api/simulate \\
   }'`;
 
 export default function DocsFiveMinuteQuickstartPage() {
-  const [isCopied, setIsCopied] = useState(false);
-
-  useEffect(() => {
-    if (!isCopied) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => setIsCopied(false), 1600);
-    return () => window.clearTimeout(timer);
-  }, [isCopied]);
-
-  async function handleCopyCurl() {
-    try {
-      await navigator.clipboard.writeText(CURL_EXAMPLE);
-      setIsCopied(true);
-      trackEvent("quickstart_copy_curl_click", { location: "docs_5_minute_quickstart" });
-    } catch {
-      setIsCopied(false);
-    }
-  }
-
   return (
     <article className="space-y-10">
       <header className="space-y-3">
@@ -61,21 +40,13 @@ export default function DocsFiveMinuteQuickstartPage() {
 
       <section className="space-y-4">
         <HeadingAnchor id="make-a-request">2. Make a Request</HeadingAnchor>
-        <div className="rounded-xl border border-white/10 bg-neutral-950/70 p-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.1em] text-slate-400">curl</p>
-            <button
-              type="button"
-              onClick={handleCopyCurl}
-              className="inline-flex items-center justify-center rounded-lg border border-primary-300/40 bg-primary-500/15 px-3 py-2 text-xs font-semibold text-primary-100 transition-colors hover:bg-primary-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-            >
-              {isCopied ? "Copied" : "Copy"}
-            </button>
-          </div>
-          <pre className="overflow-x-auto font-mono text-sm leading-relaxed text-slate-200">
-            <code>{CURL_EXAMPLE}</code>
-          </pre>
-        </div>
+        <CopyBlock
+          label="curl"
+          value={CURL_EXAMPLE}
+          copyButtonLabel="Copy command"
+          helperText="Runs locally by default. Set BASE_URL=https://trucore.xyz to run against production."
+          onCopy={() => trackEvent("quickstart_copy_curl_click", { location: "docs_5_minute_quickstart" })}
+        />
         <p className="text-slate-300">Rate-limit headers returned by the API:</p>
         <ul className="space-y-2 text-slate-300">
           <li>
@@ -91,18 +62,35 @@ export default function DocsFiveMinuteQuickstartPage() {
       </section>
 
       <section className="space-y-4">
-        <HeadingAnchor id="understand-result">3. Understand the Result</HeadingAnchor>
+        <HeadingAnchor id="what-you-should-see">3. What You Should See</HeadingAnchor>
         <ul className="space-y-2 text-slate-300">
           <li>
-            <code className="font-mono text-slate-200">status</code> tells you if the request was allowed or denied.
+            <code className="font-mono text-slate-200">status</code> returns allowed or denied.
           </li>
           <li>
-            <code className="font-mono text-slate-200">invariant_checks</code> shows each deterministic check outcome.
+            <code className="font-mono text-slate-200">receipt_hash</code> gives a deterministic digest for the decision.
           </li>
           <li>
-            <code className="font-mono text-slate-200">receipt_hash</code> is the tamper-evident digest for the decision.
+            <code className="font-mono text-slate-200">invariant_checks</code> lists each invariant check outcome.
           </li>
         </ul>
+        <p className="text-slate-300">
+          For field-level contract details, see{" "}
+          <Link
+            href="/docs/permit-schema-v1"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            Permit Schema v1
+          </Link>
+          {" "}and compare against the{" "}
+          <Link
+            href="/demo-policy"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            Demo Policy
+          </Link>
+          .
+        </p>
       </section>
 
       <section className="space-y-4">

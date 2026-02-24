@@ -43,9 +43,9 @@ export function CopyBlock({
       {label ? (
         <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">{label}</p>
       ) : null}
-      <p className="mt-2 break-all rounded-lg border border-white/10 bg-neutral-950/70 px-3 py-2 font-mono text-xs text-slate-200">
-        {value}
-      </p>
+      <pre className="mt-2 overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 px-3 py-2 font-mono text-xs text-slate-200 whitespace-pre-wrap break-words">
+        <code>{value}</code>
+      </pre>
       {helperText ? <p className="mt-2 text-xs text-slate-400">{helperText}</p> : null}
       <button
         type="button"

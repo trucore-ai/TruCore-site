@@ -7,8 +7,8 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
+import { TrackedLink } from "@/components/tracked-link";
 import { TrustStrip } from "@/components/trust-strip";
-import { ScrollLink } from "@/components/scroll-link";
 import Image from "next/image";
 
 const metrics = [
@@ -90,7 +90,8 @@ export default function Home() {
     <Container>
       {/* ── Hero ── */}
       <Section id="hero" className="fade-in-up">
-        <Card className="glass-panel-hero sm:p-12">
+        <Card className="glass-panel-hero relative overflow-hidden p-6 sm:p-12">
+          <div className="hero-legibility-overlay" aria-hidden="true" />
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-3">
               <Badge>Solana-native</Badge>
@@ -106,20 +107,43 @@ export default function Home() {
             <p className="mt-3 max-w-2xl text-xl leading-[1.5] text-primary-200/80">
               Launching with Agent Transaction Firewall (ATF).
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ScrollLink
-                targetId="waitlist"
-                className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <TrackedLink
+                href="/atf/simulator"
+                eventName="hero_sandbox_click"
+                eventProps={{ location: "home_hero" }}
+                className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-7 py-4 text-xl font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
               >
-                Join the ATF Waitlist
-              </ScrollLink>
-              <a
-                href="/atf"
-                className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors border border-primary-300/40 bg-primary-500/10 text-primary-100 hover:border-primary-300/70 hover:bg-primary-500/20"
+                Try sandbox
+              </TrackedLink>
+              <TrackedLink
+                href="/atf/apply"
+                eventName="hero_pilot_click"
+                eventProps={{ location: "home_hero" }}
+                className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/10 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:border-primary-300/70 hover:bg-primary-500/20"
               >
-                Explore ATF
-              </a>
+                Apply for pilot
+              </TrackedLink>
+              <TrackedLink
+                href="/docs/5-minute-quickstart"
+                eventName="hero_quickstart_click"
+                eventProps={{ location: "home_hero", target: "5_minute" }}
+                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-7 py-4 text-xl font-semibold text-slate-100 transition-colors hover:bg-white/10"
+              >
+                Get started in 5 min
+              </TrackedLink>
             </div>
+            <p className="mt-4 text-lg text-slate-300">
+              Need proof first?{" "}
+              <TrackedLink
+                href="/receipts"
+                eventName="hero_receipts_click"
+                eventProps={{ location: "home_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                View example receipts
+              </TrackedLink>
+            </p>
             <ul className="mt-8 grid gap-4 text-2xl text-primary-50 sm:grid-cols-3 sm:auto-rows-fr">
               {metrics.map((item) => (
                 <li key={item} className="h-full">
@@ -128,7 +152,7 @@ export default function Home() {
               ))}
             </ul>
 
-            <div className="mt-8 mx-auto max-w-4xl">
+            <div className="mt-8 mx-auto hidden max-w-4xl md:block">
               <div className="relative overflow-hidden rounded-xl">
                 <Image
                   src="/images/trucore-banner.png"

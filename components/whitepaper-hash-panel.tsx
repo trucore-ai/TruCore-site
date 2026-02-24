@@ -19,9 +19,12 @@ const localVerifyCommands: Record<OsTab["id"], string> = {
   windows: "Get-FileHash .\\ATF-Security-Whitepaper-Preview.pdf -Algorithm SHA256 | Format-List",
 };
 
-export function WhitepaperHashPanel() {
+export function WhitepaperHashPanel({ hasSigningKey = false }: { hasSigningKey?: boolean }) {
   const [hash, setHash] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
+  const [signature, setSignature] = useState<string>("");
+  const [signatureError, setSignatureError] = useState(false);
+  const [isSignatureLoading, setIsSignatureLoading] = useState(false);
   const [isBrowserVerifierOpen, setIsBrowserVerifierOpen] = useState(false);
   const [activeOs, setActiveOs] = useState<OsTab["id"]>("mac");
   const browserVerifierDetailsRef = useRef<HTMLDetailsElement>(null);
@@ -57,6 +60,55 @@ export function WhitepaperHashPanel() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!hasSigningKey) {
+      setSignature("");
+      setSignatureError(false);
+      setIsSignatureLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadSignature() {
+      setIsSignatureLoading(true);
+      setSignatureError(false);
+
+      try {
+        const res = await fetch("/atf/whitepaper/signature", { cache: "no-store" });
+        if (!res.ok) {
+          throw new Error("Failed to load signature");
+        }
+
+        const data = (await res.json()) as { signature?: string };
+        if (active) {
+          const nextSignature = data.signature ?? "";
+          setSignature(nextSignature);
+          if (nextSignature) {
+            trackEvent("whitepaper_signature_view", { location: "whitepaper_page" });
+          }
+        }
+      } catch {
+        if (active) {
+          setSignature("");
+          setSignatureError(true);
+        }
+      } finally {
+        if (active) {
+          setIsSignatureLoading(false);
+        }
+      }
+    }
+
+    loadSignature();
+
+    return () => {
+      active = false;
+    };
+  }, [hasSigningKey]);
+
+  const signaturePreview = signature ? `${signature.slice(0, 16)}...${signature.slice(-16)}` : "";
 
   const copyHash = async () => {
     if (!hash) return;
@@ -128,6 +180,34 @@ export function WhitepaperHashPanel() {
       <p className="mt-3 text-sm text-slate-400">
         Verify you have the authentic document by matching this hash.
       </p>
+
+      <div className="mt-4 rounded-lg border border-white/10 bg-neutral-950/40 px-4 py-3">
+        <p className="text-sm font-semibold text-slate-100">Signature available</p>
+        {hasSigningKey ? (
+          <>
+            <p className="mt-2 break-all rounded-lg border border-white/10 bg-neutral-950/60 px-3 py-2 font-mono text-xs text-slate-200">
+              {isSignatureLoading
+                ? "Loading signature..."
+                : signaturePreview || (signatureError ? "Signature unavailable" : "Signature unavailable")}
+            </p>
+            <details className="mt-3 rounded-lg border border-white/10 bg-neutral-950/40 px-4 py-3">
+              <summary className="cursor-pointer text-sm font-semibold text-slate-100">
+                Verify signature
+              </summary>
+              <p className="mt-3 text-sm text-slate-300">
+                This signature is generated using an HMAC key to attest to the published hash.
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                Compare the full signature from <span className="font-mono">/atf/whitepaper/signature</span> with your local HMAC output over the published SHA-256 value.
+              </p>
+            </details>
+          </>
+        ) : (
+          <p className="mt-2 text-sm text-slate-400">
+            Signature verification is enabled in environments with a configured signing key.
+          </p>
+        )}
+      </div>
 
       <details
         ref={browserVerifierDetailsRef}

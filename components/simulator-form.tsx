@@ -137,6 +137,7 @@ function ExampleCard({
 
 export function SimulatorForm() {
   const searchParams = useSearchParams();
+  const isAdminView = searchParams.get("admin") === "1";
   const [jsonInput, setJsonInput] = useState(JSON.stringify(DEFAULT_REQUEST, null, 2));
   const [result, setResult] = useState<SimResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -283,6 +284,7 @@ export function SimulatorForm() {
             isLoading={isLoading}
             rateLimit={rateLimit}
             simulationAttempted={simulationAttempted}
+            isAdminView={isAdminView}
           />
           <a
             href="/docs/5-minute-quickstart"

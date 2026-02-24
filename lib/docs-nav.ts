@@ -40,10 +40,22 @@ export const sections: DocsNavSection[] = [
           "Review threat model assumptions, permit schema, deterministic checks, and receipt hashing.",
       },
       {
+        title: "Integration Pattern",
+        href: "/docs/integration-pattern",
+        description:
+          "See how AI agents call ATF before execution and consume deterministic decisions with receipt hashes.",
+      },
+      {
         title: "Policy Model",
         href: "/docs/policy-model",
         description:
           "Understand allowlists, limits, slippage bounds, cooldowns, and fail-closed checks.",
+      },
+      {
+        title: "Permit Schema v1",
+        href: "/docs/permit-schema-v1",
+        description:
+          "Use a versioned, deterministic permit contract with copyable demo fields for integration.",
       },
       {
         title: "Permits",

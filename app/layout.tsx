@@ -6,6 +6,7 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 import { Container } from "@/components/ui/container";
 import { HeroBackgroundPulses } from "@/components/hero-background-pulses";
+import { MotionToggle } from "@/components/motion-toggle";
 import { SkipLink } from "@/components/skip-link";
 import { TrackedLink } from "@/components/tracked-link";
 import { UTM_COOKIE_MAX_AGE, UTM_COOKIE_NAME, UTM_QUERY_KEYS } from "@/lib/utm";
@@ -24,13 +25,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://trucore.xyz"),
   title: {
-    default: "TruCore | Trust Infrastructure for Autonomous Finance",
+    default:
+      "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
     template: "%s | TruCore",
   },
   description:
-    "TruCore delivers trust-first, AI-native financial infrastructure with policy-bound execution, cryptographic receipts, and fail-closed safeguards.",
+    "TruCore delivers Agent Transaction Firewall controls for Solana with policy-bound execution and tamper-evident receipts for autonomous finance.",
   keywords: [
     "TruCore",
+    "Agent Transaction Firewall",
+    "tamper-evident receipts",
     "autonomous finance",
     "AI infrastructure",
     "crypto infrastructure",
@@ -42,9 +46,10 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://trucore.xyz",
     siteName: "TruCore",
-    title: "TruCore | Trust Infrastructure for Autonomous Finance",
+    title:
+      "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
     description:
-      "Policy-bound execution, verifiable receipts, and fail-closed design for autonomous finance.",
+      "Policy-bound execution, tamper-evident receipts, and fail-closed design for autonomous finance on Solana.",
     images: [
       {
         url: "/opengraph-image",
@@ -56,9 +61,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TruCore | Trust Infrastructure for Autonomous Finance",
+    title:
+      "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
     description:
-      "AI-native financial infrastructure with policy-first controls and verifiable execution.",
+      "Agent Transaction Firewall with policy-first controls and tamper-evident receipts for Solana execution.",
     images: ["/twitter-image"],
   },
   icons: {
@@ -106,6 +112,13 @@ export default function RootLayout({
           name: "TruCore",
         },
       },
+      {
+        "@type": "CreativeWork",
+        name: "ATF Demo Receipt Example",
+        description:
+          "Static demo-only receipt structure showing tamper-evident verification fields.",
+        url: "https://trucore.xyz/receipts",
+      },
     ],
   });
 
@@ -120,6 +133,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Script id="trucore-motion-preference-init" strategy="beforeInteractive">
+          {`(function() {
+  try {
+    var key = "trucore.motionPreference";
+    var stored = window.localStorage.getItem(key);
+    var systemReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var reduced = stored === "reduce" || (stored !== "reduce" && systemReduced);
+    document.documentElement.dataset.reduceMotion = reduced ? "true" : "false";
+  } catch {
+    document.documentElement.dataset.reduceMotion = "false";
+  }
+})();`}
+        </Script>
         <Script id="trucore-utm-capture" strategy="afterInteractive">
           {`(function() {
   try {
@@ -158,7 +184,7 @@ export default function RootLayout({
         {showAnalytics ? <Analytics /> : null}
         <HeroBackgroundPulses />
         <div className="relative z-10 flex min-h-screen flex-col">
-          <header className="border-b border-white/10 bg-neutral-900/50 backdrop-blur-md">
+          <header className="glass-surface border-b border-white/10 bg-neutral-900/45 backdrop-blur-md">
             <Container className="flex h-16 items-center justify-between">
               <a
                 href="#hero"
@@ -194,6 +220,12 @@ export default function RootLayout({
                   ATF
                 </Link>
                 <Link
+                  href="/receipts"
+                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                >
+                  Receipts
+                </Link>
+                <Link
                   href="/#why-trucore"
                   className="hidden rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 sm:inline"
                 >
@@ -225,7 +257,7 @@ export default function RootLayout({
             {children}
           </main>
 
-          <footer id="footer" className="border-t border-white/10 bg-neutral-900/30 backdrop-blur-sm">
+          <footer id="footer" className="glass-surface border-t border-white/10 bg-neutral-900/25 backdrop-blur-sm">
             <Container className="flex flex-col gap-6 py-8 text-xl text-slate-200">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <p>© {new Date().getFullYear()} TruCore. Built on trust and integrity.</p>
@@ -253,6 +285,9 @@ export default function RootLayout({
                     </Link>
                     <Link href="/atf/whitepaper" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       ATF Whitepaper (Preview)
+                    </Link>
+                    <Link href="/enterprise" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      Enterprise
                     </Link>
                   </div>
                 </div>
@@ -282,15 +317,34 @@ export default function RootLayout({
                     <Link href="/docs" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Docs
                     </Link>
+                    <Link href="/docs/permit-schema-v1" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      Permit Schema v1
+                    </Link>
                     <Link href="/blog" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Blog
+                    </Link>
+                    <Link href="/manifesto" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      Manifesto
+                    </Link>
+                    <Link href="/direction" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      Direction
                     </Link>
                     <Link href="/security/overview" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Security Overview
                     </Link>
+                    <Link href="/security/compliance" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      Compliance
+                    </Link>
                     <Link href="/security/disclosure" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
                       Responsible Disclosure
                     </Link>
+                    <Link href="/process" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      How ATF is built
+                    </Link>
+                    <Link href="/build-with-atf" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
+                      Build With ATF
+                    </Link>
+                    <MotionToggle />
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">

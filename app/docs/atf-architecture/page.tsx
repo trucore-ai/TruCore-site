@@ -138,6 +138,13 @@ const receipt_hash = sha256(canonicalReceipt);`}
 
       <section className="space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-5">
         <HeadingAnchor id="related-pages">Related pages</HeadingAnchor>
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-slate-100">Demo Policy</h3>
+          <p className="text-slate-300">Public simulator constraints are documented at:</p>
+          <Link href="/demo-policy" className="font-semibold text-primary-100 transition-colors hover:text-primary-200">
+            /demo-policy
+          </Link>
+        </div>
         <ul className="space-y-2 text-slate-300">
           <li>
             <Link href="/atf" className="font-semibold text-primary-100 transition-colors hover:text-primary-200">

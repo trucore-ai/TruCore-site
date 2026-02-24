@@ -84,6 +84,13 @@ const MAX_LIFETIME = 7_000;
 const SPARK_LIFETIME = 420;
 const MAX_RAYS = 30;
 const MAX_DUST = 600;          // global dust particle cap
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+const MOBILE_QUERY = "(max-width: 767px)";
+const MOTION_PREFERENCE_CHANGED_EVENT = "trucore:motion-preference-change";
+
+function isMotionReducedByUser(): boolean {
+  return document.documentElement.dataset.reduceMotion === "true";
+}
 
 export function HeroBackgroundPulses() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -182,9 +189,15 @@ export function HeroBackgroundPulses() {
     const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+    const mobileMq = window.matchMedia(MOBILE_QUERY);
     let reducedMotion = mq.matches;
+    let forceReducedMotion = isMotionReducedByUser();
+    let mobileView = mobileMq.matches;
     let hidden = document.hidden;
+
+    const shouldRenderMinimalBackground = () =>
+      reducedMotion || forceReducedMotion || mobileView;
 
     let dw = 0;
     let dh = 0;
@@ -393,12 +406,10 @@ export function HeroBackgroundPulses() {
     };
 
     const loop = (time: number) => {
-      if (hidden || reducedMotion) {
+      if (hidden || shouldRenderMinimalBackground()) {
         animRef.current = 0;
-        if (reducedMotion) {
-          ctx.clearRect(0, 0, dw, dh);
-          drawStaticBackground();
-        }
+        ctx.clearRect(0, 0, dw, dh);
+        drawStaticBackground();
         return;
       }
 
@@ -537,7 +548,7 @@ export function HeroBackgroundPulses() {
       if (animRef.current !== 0) {
         return;
       }
-      if (hidden || reducedMotion) {
+      if (hidden || shouldRenderMinimalBackground()) {
         ctx.clearRect(0, 0, dw, dh);
         drawStaticBackground();
         return;
@@ -548,12 +559,30 @@ export function HeroBackgroundPulses() {
 
     const onMqChange = (e: MediaQueryListEvent) => {
       reducedMotion = e.matches;
-      if (reducedMotion) {
+      if (shouldRenderMinimalBackground()) {
         stopLoop();
       }
       startLoop();
     };
     mq.addEventListener("change", onMqChange);
+
+    const onMobileChange = (e: MediaQueryListEvent) => {
+      mobileView = e.matches;
+      if (shouldRenderMinimalBackground()) {
+        stopLoop();
+      }
+      startLoop();
+    };
+    mobileMq.addEventListener("change", onMobileChange);
+
+    const onMotionPreferenceChange = () => {
+      forceReducedMotion = isMotionReducedByUser();
+      if (shouldRenderMinimalBackground()) {
+        stopLoop();
+      }
+      startLoop();
+    };
+    window.addEventListener(MOTION_PREFERENCE_CHANGED_EVENT, onMotionPreferenceChange);
 
     const onVis = () => {
       hidden = document.hidden;
@@ -565,6 +594,8 @@ export function HeroBackgroundPulses() {
     };
     document.addEventListener("visibilitychange", onVis);
 
+    window.addEventListener("storage", onMotionPreferenceChange);
+
     startLoop();
 
     return () => {
@@ -573,14 +604,18 @@ export function HeroBackgroundPulses() {
       window.removeEventListener("mousemove", onMouse);
       document.removeEventListener("visibilitychange", onVis);
       mq.removeEventListener("change", onMqChange);
+      mobileMq.removeEventListener("change", onMobileChange);
+      window.removeEventListener(MOTION_PREFERENCE_CHANGED_EVENT, onMotionPreferenceChange);
+      window.removeEventListener("storage", onMotionPreferenceChange);
     };
   }, [spawnRay, scheduleNext]);
 
   return (
     <canvas
       ref={canvasRef}
+      data-testid="hero-bg-animation"
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-0 h-full w-full"
+      className="bg-animation pointer-events-none fixed inset-0 z-0 h-full w-full"
       style={{ display: "block" }}
     />
   );

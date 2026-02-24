@@ -4,9 +4,43 @@ test("atf page loads", async ({ page }) => {
   await page.goto("/atf");
 
   await expect(
-    page.getByRole("heading", { name: "Agent Transaction Firewall", level: 1 }),
+    page.getByRole("heading", { name: "Cryptographic guardrails for autonomous finance", level: 1 }),
   ).toBeVisible();
   await expect(page.getByRole("link", { name: "Apply as Design Partner" }).first()).toBeVisible();
+});
+
+test("atf hero shows sandbox-first CTA hierarchy", async ({ page }) => {
+  await page.goto("/atf");
+
+  await expect(page.getByRole("link", { name: "Try sandbox" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Apply for pilot" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Get started in 5 min" }).first()).toBeVisible();
+});
+
+test("atf receipts nav link routes to receipts explorer", async ({ page }) => {
+  await page.goto("/atf");
+
+  await page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: "Receipts" }).click();
+  await expect(page).toHaveURL(/\/receipts$/);
+  await expect(page.getByRole("heading", { level: 1, name: /Receipts Explorer/i })).toBeVisible();
+});
+
+test("atf reduced motion hides animated hero background", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/atf");
+
+  await expect(page.locator("html")).toHaveAttribute("data-reduce-motion", "true");
+  await expect(page.getByTestId("hero-bg-animation")).toBeHidden();
+});
+
+test("atf links to permit schema v1", async ({ page }) => {
+  await page.goto("/atf");
+
+  const schemaLink = page.getByRole("link", { name: "Permit Schema v1" }).first();
+  await expect(schemaLink).toHaveAttribute("href", "/docs/permit-schema-v1");
+  await schemaLink.click();
+
+  await expect(page.getByRole("heading", { level: 1, name: "ATF Permit Schema v1" })).toBeVisible();
 });
 
 test("simulate endpoint returns rate limit headers", async ({ page }) => {
