@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/analytics";
 import type { SimRequest, SimResult } from "@/lib/simulator";
@@ -48,11 +49,54 @@ const EXAMPLE_DENIED_RESPONSE = {
   },
 };
 
+const SCENARIOS: Record<string, { label: string; request: SimRequest }> = {
+  "valid-swap": {
+    label: "Valid swap",
+    request: DEFAULT_REQUEST,
+  },
+  "exceeds-amount": {
+    label: "Exceeds amount",
+    request: {
+      ...DEFAULT_REQUEST,
+      amount: 5000,
+    },
+  },
+  "high-slippage": {
+    label: "High slippage",
+    request: {
+      ...DEFAULT_REQUEST,
+      max_slippage_bps: 500,
+    },
+  },
+};
+
 type SimulateApiResponse = {
   ok: boolean;
   error?: string;
   result?: SimResult;
 };
+
+type RateLimitMetadata = {
+  limit: string;
+  remaining: string;
+  reset: string;
+};
+
+function getRateLimitMetadata(headers: Headers): RateLimitMetadata | null {
+  const limit = headers.get("x-ratelimit-limit");
+  const remaining = headers.get("x-ratelimit-remaining");
+  const reset = headers.get("x-ratelimit-reset");
+
+  if (!limit || !remaining || !reset) {
+    return null;
+  }
+
+  return {
+    limit,
+    remaining,
+    reset,
+  };
+}
 
 function ExampleCard({
   title,
@@ -92,14 +136,50 @@ function ExampleCard({
 }
 
 export function SimulatorForm() {
+  const searchParams = useSearchParams();
   const [jsonInput, setJsonInput] = useState(JSON.stringify(DEFAULT_REQUEST, null, 2));
   const [result, setResult] = useState<SimResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [rateLimit, setRateLimit] = useState<RateLimitMetadata | null>(null);
+  const [simulationAttempted, setSimulationAttempted] = useState(false);
+
+  useEffect(() => {
+    const scenarioKey = searchParams.get("scenario");
+    if (!scenarioKey) {
+      return;
+    }
+
+    const selected = SCENARIOS[scenarioKey];
+    if (!selected) {
+      return;
+    }
+
+    setJsonInput(JSON.stringify(selected.request, null, 2));
+    setResult(null);
+    setError(null);
+    setRateLimit(null);
+    setSimulationAttempted(false);
+  }, [searchParams]);
+
+  function handleScenarioSelect(scenarioKey: string) {
+    const selected = SCENARIOS[scenarioKey];
+    if (!selected) {
+      return;
+    }
+
+    setJsonInput(JSON.stringify(selected.request, null, 2));
+    setResult(null);
+    setError(null);
+    setRateLimit(null);
+    setSimulationAttempted(false);
+  }
 
   async function handleSimulate() {
     setError(null);
     setResult(null);
+    setRateLimit(null);
+    setSimulationAttempted(false);
 
     let parsedBody: unknown;
     try {
@@ -121,6 +201,18 @@ export function SimulatorForm() {
         cache: "no-store",
         body: JSON.stringify(parsedBody),
       });
+
+      const rateLimitMetadata = getRateLimitMetadata(response.headers);
+      setRateLimit(rateLimitMetadata);
+      setSimulationAttempted(true);
+
+      if (rateLimitMetadata) {
+        trackEvent("simulator_rate_limit_visible", {
+          location: "simulator_page",
+          limit: rateLimitMetadata.limit,
+          remaining: rateLimitMetadata.remaining,
+        });
+      }
 
       const payload = (await response.json()) as SimulateApiResponse;
 
@@ -150,6 +242,18 @@ export function SimulatorForm() {
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="space-y-3 rounded-xl border border-white/10 bg-white/[0.03] p-5">
           <h2 className="text-lg font-semibold text-slate-100">JSON Input Editor</h2>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(SCENARIOS).map(([scenarioKey, scenario]) => (
+              <button
+                key={scenarioKey}
+                type="button"
+                onClick={() => handleScenarioSelect(scenarioKey)}
+                className="rounded-lg border border-primary-300/40 bg-primary-500/10 px-3 py-1.5 text-sm font-medium text-primary-100 transition-colors hover:bg-primary-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+              >
+                {scenario.label}
+              </button>
+            ))}
+          </div>
           <textarea
             value={jsonInput}
             onChange={(event) => setJsonInput(event.target.value)}
@@ -164,8 +268,28 @@ export function SimulatorForm() {
         </section>
 
         <section className="space-y-3 rounded-xl border border-white/10 bg-white/[0.03] p-5">
+          <div className="rounded-lg border border-white/10 bg-neutral-950/60 p-3">
+            <p className="text-sm font-semibold text-slate-100">What just happened?</p>
+            <ul className="mt-2 space-y-1 text-sm text-slate-300">
+              <li>Invariant checks are evaluated against the submitted request.</li>
+              <li>The decision is deterministic for the same input payload.</li>
+              <li>A receipt hash is generated as a tamper-evident record.</li>
+            </ul>
+          </div>
           <h2 className="text-lg font-semibold text-slate-100">Result</h2>
-          <SimulatorResult result={result} error={error} isLoading={isLoading} />
+          <SimulatorResult
+            result={result}
+            error={error}
+            isLoading={isLoading}
+            rateLimit={rateLimit}
+            simulationAttempted={simulationAttempted}
+          />
+          <a
+            href="/docs/5-minute-quickstart"
+            className="inline-flex items-center text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            See how this fits into production &rarr;
+          </a>
         </section>
       </div>
 

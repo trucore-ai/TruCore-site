@@ -22,6 +22,23 @@ export default function DocsHubPage() {
           Start with a practical quickstart, then dive into policy primitives and permit construction.
           The docs are intentionally concise so teams can evaluate integration fit quickly.
         </p>
+        <p className="max-w-3xl text-base leading-relaxed text-slate-300">
+          If you are new to the category, read{" "}
+          <Link
+            href="/agent-transaction-firewall"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            Agent Transaction Firewall
+          </Link>
+          . Then continue with the{" "}
+          <Link
+            href="/docs/atf-architecture"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            architecture deep dive
+          </Link>
+          .
+        </p>
       </header>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

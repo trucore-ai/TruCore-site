@@ -10,7 +10,12 @@ import { AtfReadiness } from "@/components/atf-readiness";
 import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
 import { TransparencyMetrics } from "@/components/transparency-metrics";
 import { WhyNowSection } from "@/components/why-now-section";
+import { EnforcementProofSection } from "@/components/enforcement-proof-section";
 import { SecurityCommitments } from "@/components/security-commitments";
+import { SecurityIntegrityStrip } from "@/components/security-integrity-strip";
+import { EvidenceMetricsSection } from "@/components/evidence-metrics-section";
+import { PublicUsageSnapshot } from "@/components/public-usage-snapshot";
+import { AtfComparison } from "@/components/atf-comparison";
 import { TrackedLink } from "@/components/tracked-link";
 import { Tilt } from "@/components/ui/tilt";
 
@@ -71,6 +76,7 @@ const architectureLayers = [
 ];
 
 const lastUpdated = process.env.NEXT_PUBLIC_BUILD_DATE ?? "unknown";
+const atfVersion = process.env.NEXT_PUBLIC_ATF_VERSION;
 
 export default function ATFPage() {
   return (
@@ -80,95 +86,66 @@ export default function ATFPage() {
         <div className="max-w-3xl">
           <Badge className="mb-4">Flagship Product</Badge>
           <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl lg:text-7xl">
-            Agent Transaction Firewall
+            Cryptographic guardrails for autonomous finance
           </h1>
           <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
-            A policy + permit layer that constrains what AI agents can do on
-            Solana before any transaction executes.
+            ATF enforces signed permits, blocks unsafe agent transactions, and
+            issues tamper-evident receipts, try it in under 5 minutes.
           </p>
-          <p className="mt-4 text-sm font-medium text-slate-400">
-            Last updated: {lastUpdated}
-          </p>
-
-          {/* Instant comprehension strip */}
-          <ul className="mt-6 space-y-2 text-lg text-slate-300 sm:text-xl">
-            <li className="flex items-start gap-3">
-              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
-              Prevents unbounded execution
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
-              Enforces spend limits, allowlists, and slippage bounds
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
-              Emits verifiable receipts for every action
-            </li>
-          </ul>
-
-          {/* V1 scope pills */}
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Badge>V1: Solana</Badge>
-            <Badge>Jupiter (swaps)</Badge>
-            <Badge>Solend (lending)</Badge>
-          </div>
-
-          {/* Visual proof badges */}
-          <div className="mt-5 flex flex-wrap gap-2">
-            {["V1: Solana", "Jupiter-ready", "Permit model", "Audit logging"].map((label) => (
-              <span
-                key={label}
-                className="inline-flex items-center rounded-full border border-white/10 bg-neutral-800/60 px-3 py-1 text-xs font-medium text-slate-400"
-              >
-                {label}
-              </span>
-            ))}
-          </div>
 
           {/* CTAs */}
           <div className="mt-8 flex flex-wrap gap-4">
             <TrackedLink
-              href="/atf/apply"
-              eventName="design_partner_apply_click"
+              href="/atf/simulator"
+              eventName="hero_simulator_click"
               eventProps={{ location: "atf_hero" }}
               className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"
             >
-              Apply as Design Partner
+              Try the Simulator
             </TrackedLink>
             <TrackedLink
-              href="/atf/how-it-works"
-              eventName="cta_click"
-              eventProps={{ target: "how_it_works", location: "atf_hero" }}
+              href="/docs/quickstart"
+              eventName="hero_quickstart_click"
+              eventProps={{ location: "atf_hero" }}
               className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
             >
-              How It Works &rarr;
-            </TrackedLink>
-            <TrackedLink
-              href="/atf/primer"
-              eventName="primer_view_click"
-              eventProps={{ location: "atf_page" }}
-              className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
-            >
-              Read the Primer
-            </TrackedLink>
-            <TrackedLink
-              href="/docs"
-              eventName="docs_view_click"
-              eventProps={{ location: "atf_page", target: "docs" }}
-              className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
-            >
-              Docs
-            </TrackedLink>
-            <TrackedLink
-              href="/atf/whitepaper"
-              eventName="whitepaper_view_click"
-              eventProps={{ location: "atf_page" }}
-              className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
-            >
-              Whitepaper (Preview)
+              Developer Quickstart
             </TrackedLink>
           </div>
+
+          <p className="mt-5 text-lg text-slate-300">
+            Prefer copy-paste?{" "}
+            <TrackedLink
+              href="/docs/5-minute-quickstart"
+              eventName="hero_quickstart_click"
+              eventProps={{ location: "atf_hero", target: "5_min_quickstart" }}
+              className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+            >
+              5-minute Quickstart &rarr;
+            </TrackedLink>
+          </p>
+
+          <p className="mt-2 text-lg text-slate-300">
+            New here? Read the{" "}
+            <TrackedLink
+              href="/agent-transaction-firewall"
+              eventName="category_definition_click"
+              eventProps={{ location: "atf_hero" }}
+              className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+            >
+              Agent Transaction Firewall definition
+            </TrackedLink>
+            .
+          </p>
+
+          <p className="mt-4 text-sm font-medium text-slate-400">
+            Last updated: {lastUpdated}
+          </p>
         </div>
+      </Section>
+
+      <Section className="pt-0">
+        <SecurityIntegrityStrip />
       </Section>
 
       {/* ── What ATF Enforces ── */}
@@ -534,6 +511,18 @@ export default function ATFPage() {
       {/* ── Why Now ── */}
       <WhyNowSection />
 
+      {/* ── Deterministic Enforcement Proof ── */}
+      <EnforcementProofSection />
+
+      {/* ── Evidence & Operational Signals ── */}
+      <EvidenceMetricsSection />
+
+      {/* ── ATF Comparison ── */}
+      <AtfComparison />
+
+      {/* ── Public Usage Snapshot ── */}
+      <PublicUsageSnapshot />
+
       {/* ── Security Commitments ── */}
       <SecurityCommitments />
 
@@ -569,6 +558,36 @@ export default function ATFPage() {
 
       {/* ── Transparency Metrics ── */}
       <TransparencyMetrics />
+
+      {/* ── Design Partner CTA ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+          <p className="text-xs uppercase tracking-[0.12em] text-slate-400">ATF Release Discipline</p>
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-mono text-slate-300">
+            <span>{atfVersion ? `Current version ${atfVersion}` : "See release notes"}</span>
+            <span className="text-slate-500">•</span>
+            <a
+              href="https://github.com/trucore-ai/TruCore-site/blob/main/RELEASE.md"
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-primary-100"
+            >
+              RELEASE.md
+            </a>
+            <span className="text-slate-500">•</span>
+            <a href="/status" className="transition-colors hover:text-primary-100">
+              /status
+            </a>
+            <span className="text-slate-500">•</span>
+            <a href="/security/overview" className="transition-colors hover:text-primary-100">
+              /security/overview
+            </a>
+          </div>
+          <p className="mt-3 text-sm text-slate-400">
+            Built with explicit versioning, CI enforcement, and production smoke checks.
+          </p>
+        </div>
+      </Section>
 
       {/* ── Design Partner CTA ── */}
       <AtfDesignPartnerCta />

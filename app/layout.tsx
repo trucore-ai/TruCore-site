@@ -85,9 +85,38 @@ export default function RootLayout({
 }>) {
   const showAnalytics = process.env.NODE_ENV === "production";
   const utmKeysJson = JSON.stringify(UTM_QUERY_KEYS);
+  const structuredDataJson = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        name: "TruCore",
+        url: "https://trucore.xyz",
+        sameAs: ["https://github.com/TruCore-AI", "https://x.com/TruCore_AI"],
+      },
+      {
+        "@type": "SoftwareApplication",
+        name: "Agent Transaction Firewall (ATF)",
+        applicationCategory: "SecurityApplication",
+        operatingSystem: "Web",
+        description: "Permit-based enforcement layer for autonomous finance",
+        url: "https://trucore.xyz/atf",
+        publisher: {
+          "@type": "Organization",
+          name: "TruCore",
+        },
+      },
+    ],
+  });
 
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: structuredDataJson }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

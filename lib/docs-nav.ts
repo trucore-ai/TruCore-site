@@ -28,6 +28,18 @@ export const sections: DocsNavSection[] = [
           "Go from policy definition to validated execution in four practical steps.",
       },
       {
+        title: "5-Minute Quickstart",
+        href: "/docs/5-minute-quickstart",
+        description:
+          "Copy and run a simulator request, then inspect deterministic policy output.",
+      },
+      {
+        title: "ATF Architecture",
+        href: "/docs/atf-architecture",
+        description:
+          "Review threat model assumptions, permit schema, deterministic checks, and receipt hashing.",
+      },
+      {
         title: "Policy Model",
         href: "/docs/policy-model",
         description:

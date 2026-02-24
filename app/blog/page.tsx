@@ -45,6 +45,16 @@ export default async function BlogIndexPage() {
             Ongoing technical notes on policy-bound execution and trust-first agent systems.
           </p>
           <p className="mt-4 text-lg text-slate-300">
+            Category definition: {" "}
+            <Link
+              href="/agent-transaction-firewall"
+              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+            >
+              Agent Transaction Firewall
+            </Link>
+            .
+          </p>
+          <p className="mt-4 text-lg text-slate-300">
             Subscribe via{" "}
             <Link
               href="/blog/rss.xml"

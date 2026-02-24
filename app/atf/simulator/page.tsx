@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { SimulatorForm } from "@/components/simulator-form";
@@ -18,7 +19,7 @@ export default function AtfSimulatorPage() {
             ATF Policy Simulator
           </h1>
           <p className="text-xl leading-[1.5] text-slate-200 sm:text-2xl">
-            Preview how deterministic policy enforcement behaves, no wallet required.
+            Try deterministic policy enforcement with preloaded scenarios, no wallet required.
           </p>
           <p className="text-sm text-slate-400">
             This demo is read-only and intentionally mocked, it demonstrates behavior without exposing
@@ -28,7 +29,11 @@ export default function AtfSimulatorPage() {
       </Section>
 
       <Section className="border-t border-white/10 fade-in-up fade-delay-1">
-        <SimulatorForm />
+        <Suspense
+          fallback={<p className="text-sm text-slate-300">Loading simulator...</p>}
+        >
+          <SimulatorForm />
+        </Suspense>
       </Section>
     </Container>
   );

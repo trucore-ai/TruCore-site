@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
@@ -23,6 +24,16 @@ export default function DocsQuickstartPage() {
         <p className="text-slate-300">
           A fail-closed execution boundary where autonomous actions proceed only when policy checks and permit
           constraints pass.
+        </p>
+        <p className="text-slate-300">
+          For a full enforcement breakdown, read{" "}
+          <Link
+            href="/docs/atf-architecture"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            ATF Architecture &amp; Enforcement Model
+          </Link>
+          .
         </p>
       </section>
 
@@ -117,6 +128,20 @@ if (!validation.ok) reject(validation.reason)`}
 })`}
           </pre>
         </div>
+      </section>
+
+      <section className="space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-5">
+        <HeadingAnchor id="category-reference">Category reference</HeadingAnchor>
+        <p className="text-slate-300">
+          Need the canonical definition? Read{" "}
+          <Link
+            href="/agent-transaction-firewall"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            Agent Transaction Firewall
+          </Link>
+          .
+        </p>
       </section>
     </article>
   );
