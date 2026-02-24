@@ -1,5 +1,27 @@
 # Production Checklist
 
+## Launch v1
+
+- Use the launch runbook in `ops/LAUNCH_V1_SMOKE.md`.
+- Run automated launch smoke checks:
+
+   ```bash
+   BASE_URL=https://trucore.xyz REQUIRED_SIGNING_KEYS=1 bash scripts/verify-prod-launch.sh
+   ```
+
+### Launch-required environment variables
+
+- `RECEIPT_SIGNING_KEY` is required for launch and must be set in Vercel Production.
+- `WHITEPAPER_SIGNING_KEY` is required for launch and must be set in Vercel Production.
+- Redeploy production after setting or rotating either signing key.
+
+### Post-launch monitoring
+
+- Monitor uptime pings against `/api/health`.
+- Review CSP reports in `/admin/csp`.
+- Confirm audit events continue writing in `/admin/audit`.
+- Confirm attribution and usage counts move in `/admin/metrics`.
+
 ## Pre-deploy Checks
 
 1. Confirm latest `main` commit has green CI checks (`lint`, `unit`, `e2e`).

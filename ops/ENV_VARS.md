@@ -11,8 +11,18 @@ All variables are configured in **Vercel Project Settings -> Environment Variabl
 | `DESIGN_PARTNER_SCHEDULING_URL` | Optional | Vercel (manual) | Scheduling CTA in design partner success state and email copy | Empty string, scheduling CTA is hidden |
 | `WAITLIST_NOTIFY_TO` | Recommended | Vercel (manual) | Internal recipient for waitlist/admin notifications | No hard fallback, use `info@trucore.xyz` operationally |
 | `PARTNER_PORTAL_SESSION_SECRET` | Recommended in Preview + Production | Vercel (manual, secret) | Signature secret for `partner_portal_session` cookie on `/portal/*` | Falls back to `ADMIN_DASHBOARD_KEY` if unset |
+| `RECEIPT_SIGNING_KEY` | **Launch Required in Production** | Vercel (manual, secret) | Enables receipt signature generation and public key availability endpoints | None, signature surfaces remain unavailable when missing or invalid |
+| `WHITEPAPER_SIGNING_KEY` | **Launch Required in Production** | Vercel (manual, secret) | Enables signed integrity proof at `/atf/whitepaper/signature` | None in production. Development uses local fallback key |
 | `VERCEL_GIT_COMMIT_SHA` | Optional runtime metadata | Injected by Vercel | Release metadata display on `/status` | Not shown when unavailable |
 | `VERCEL_ENV` | Optional runtime metadata | Injected by Vercel | Environment label on `/status` (`production`, `preview`, `development`) | `unknown` label when unavailable |
+
+## Launch-required signing key formats
+
+- `RECEIPT_SIGNING_KEY` supports base64-encoded Ed25519 material in either format:
+  - 32-byte seed (recommended)
+  - 64-byte secret value, where the first 32 bytes are used as seed
+- `WHITEPAPER_SIGNING_KEY` is an HMAC signing secret string used for whitepaper integrity signatures.
+- Both signing keys must be configured in Vercel Production before launch and followed by redeploy.
 
 ## Environment Scope Guidance
 
