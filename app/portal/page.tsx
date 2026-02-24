@@ -6,6 +6,7 @@ import {
   PARTNER_PORTAL_COOKIE_NAME,
   resolvePartnerPortalSession,
 } from "@/lib/partner-portal";
+import { PortalVerifyPanel } from "@/components/portal-verify-panel";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -206,6 +207,8 @@ export default async function PartnerPortalPage() {
             </div>
           </div>
         </section>
+
+        <PortalVerifyPanel />
       </div>
     </main>
   );

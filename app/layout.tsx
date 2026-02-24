@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
+import truCoreFavicon from "@/images/TruCore-favicon.png";
 import { Container } from "@/components/ui/container";
 import { HeroBackgroundPulses } from "@/components/hero-background-pulses";
 import { MotionToggle } from "@/components/motion-toggle";
@@ -65,7 +66,7 @@ export const metadata: Metadata = {
       "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
     description:
       "Agent Transaction Firewall with policy-first controls and tamper-evident receipts for Solana execution.",
-    images: ["/twitter-image"],
+    images: ["/opengraph-image"],
   },
   icons: {
     icon: [
@@ -185,24 +186,24 @@ export default function RootLayout({
         <HeroBackgroundPulses />
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="glass-surface border-b border-white/10 bg-neutral-900/45 backdrop-blur-md">
-            <Container className="flex h-16 items-center justify-between">
-              <a
-                href="#hero"
+            <Container className="flex h-20 items-center justify-between">
+              <Link
+                href="/"
                 aria-label="TruCore home"
                 className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
               >
                 <Image
-                  src="/images/trucore-logo.png"
+                  src={truCoreFavicon}
                   alt="TruCore logo"
-                  width={36}
-                  height={36}
-                  className="h-9 w-9 rounded-sm object-contain"
+                  width={68}
+                  height={68}
+                  className="h-16 w-16 rounded-md object-contain"
                   priority
                 />
                 <span className="text-2xl font-bold tracking-tight text-white">
                   TruCore
                 </span>
-              </a>
+              </Link>
               <nav
                 aria-label="Primary"
                 className="flex items-center gap-3 text-sm font-medium text-slate-100 sm:gap-5 sm:text-base md:gap-8 md:text-xl"
@@ -257,120 +258,92 @@ export default function RootLayout({
             {children}
           </main>
 
-          <footer id="footer" className="glass-surface border-t border-white/10 bg-neutral-900/25 backdrop-blur-sm">
-            <Container className="flex flex-col gap-6 py-8 text-xl text-slate-200">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-                <p>© {new Date().getFullYear()} TruCore. Built on trust and integrity.</p>
-                <div className="flex flex-wrap items-center gap-4">
-                  <TrackedLink href="https://x.com/TruCore_AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-100" eventName="outbound_click" eventProps={{ target: "x", location: "footer" }}>
-                    X
-                  </TrackedLink>
-                  <TrackedLink href="https://github.com/TruCore-AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-100" eventName="outbound_click" eventProps={{ target: "github", location: "footer" }}>
-                    GitHub
-                  </TrackedLink>
-                </div>
-              </div>
-              <div className="flex flex-col gap-4 border-t border-white/10 pt-5 text-lg sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex flex-col gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Products</p>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <Link href="/atf" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Agent Transaction Firewall (ATF)
+          <footer id="footer" className="glass-surface border-t border-white/10 bg-gradient-to-b from-neutral-900/35 to-neutral-950/80 backdrop-blur-sm">
+            <Container className="py-8 text-sm text-slate-400">
+              <div className="border-t border-white/15 pt-7">
+                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,2fr)]">
+                  <div className="space-y-5">
+                    <Link
+                      href="/"
+                      aria-label="TruCore home"
+                      className="inline-flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                    >
+                      <Image
+                        src={truCoreFavicon}
+                        alt="TruCore logo"
+                        width={44}
+                        height={44}
+                        className="h-11 w-11 rounded-md object-contain"
+                      />
+                      <span className="text-3xl font-bold tracking-tight text-slate-100">TruCore</span>
                     </Link>
-                    <Link href="/atf/primer" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      ATF Primer
-                    </Link>
-                    <Link href="/atf/roadmap" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      ATF Roadmap
-                    </Link>
-                    <Link href="/atf/whitepaper" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      ATF Whitepaper (Preview)
-                    </Link>
-                    <Link href="/enterprise" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Enterprise
-                    </Link>
+                    <p className="max-w-sm text-slate-300">
+                      Deterministic policy enforcement and tamper-evident receipts for autonomous finance.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-5 text-slate-300">
+                      <TrackedLink href="https://x.com/TruCore_AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-100" eventName="outbound_click" eventProps={{ target: "x", location: "footer" }}>
+                        X
+                      </TrackedLink>
+                      <TrackedLink href="https://github.com/TruCore-AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-100" eventName="outbound_click" eventProps={{ target: "github", location: "footer" }}>
+                        GitHub
+                      </TrackedLink>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="border-l border-white/10 pl-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Product</p>
+                      <div className="mt-3 space-y-2">
+                        <Link href="/atf" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF</Link>
+                        <Link href="/atf/primer" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF Primer</Link>
+                        <Link href="/atf/roadmap" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF Roadmap</Link>
+                        <Link href="/enterprise" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Enterprise</Link>
+                      </div>
+                    </div>
+
+                    <div className="border-l border-white/10 pl-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Resources</p>
+                      <div className="mt-3 space-y-2">
+                        <Link href="/docs" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Docs</Link>
+                        <Link href="/verify" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Verify Receipt</Link>
+                        <Link href="/receipts" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Receipts Explorer</Link>
+                        <Link href="/blog" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Blog</Link>
+                      </div>
+                    </div>
+
+                    <div className="border-l border-white/10 pl-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Company</p>
+                      <div className="mt-3 space-y-2">
+                        <Link href="/status" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Status</Link>
+                        <Link href="/changelog" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Changelog</Link>
+                        <Link href="/contact" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Contact</Link>
+                        <Link href="/manifesto" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Manifesto</Link>
+                      </div>
+                    </div>
+
+                    <div className="border-l border-white/10 pl-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Support</p>
+                      <div className="mt-3 space-y-2">
+                        <Link href="/terms" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Terms</Link>
+                        <Link href="/privacy" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Privacy</Link>
+                        <Link href="/security" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Security</Link>
+                        <a href="mailto:info@trucore.xyz" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Email</a>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Company</p>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <Link href="/status" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Status
-                    </Link>
-                    <Link href="/changelog" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Changelog
-                    </Link>
-                    <Link href="/contact" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Contact
-                    </Link>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Resources</p>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <Link href="/launch" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Launch
-                    </Link>
-                    <Link href="/media" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Media
-                    </Link>
-                    <Link href="/docs" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Docs
-                    </Link>
-                    <Link href="/docs/permit-schema-v1" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Permit Schema v1
-                    </Link>
-                    <Link href="/blog" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Blog
-                    </Link>
-                    <Link href="/manifesto" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Manifesto
-                    </Link>
-                    <Link href="/direction" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Direction
-                    </Link>
-                    <Link href="/security/overview" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Security Overview
-                    </Link>
-                    <Link href="/security/compliance" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Compliance
-                    </Link>
-                    <Link href="/security/disclosure" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Responsible Disclosure
-                    </Link>
-                    <Link href="/process" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      How ATF is built
-                    </Link>
-                    <Link href="/build-with-atf" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Build With ATF
-                    </Link>
+
+                <div className="mt-7 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-3 text-slate-400">
+                    <Link href="/docs/permit-schema-v1" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Permit Schema v1</Link>
+                    <span aria-hidden="true" className="text-slate-600">|</span>
+                    <Link href="/build-with-atf" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Build With ATF</Link>
+                    <span aria-hidden="true" className="text-slate-600">|</span>
+                    <Link href="/process" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">How ATF is built</Link>
+                    <span aria-hidden="true" className="text-slate-600">|</span>
                     <MotionToggle />
                   </div>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Legal</p>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <Link href="/security" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Security
-                    </Link>
-                    <Link href="/privacy" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Privacy
-                    </Link>
-                    <Link href="/terms" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      Terms
-                    </Link>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">Email</p>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <a href="mailto:info@trucore.xyz" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      info@trucore.xyz
-                    </a>
-                    <a href="mailto:security@trucore.xyz" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">
-                      security@trucore.xyz
-                    </a>
-                  </div>
+                  <p className="text-slate-400">© {new Date().getFullYear()} TruCore. Built on trust and integrity.</p>
                 </div>
               </div>
             </Container>

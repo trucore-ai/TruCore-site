@@ -25,6 +25,26 @@ export const metadata: Metadata = {
   title: "Agent Transaction Firewall (ATF)",
   description:
     "Agent Transaction Firewall (ATF) enforces deterministic policy checks on Solana with slippage constraints, protocol allowlists, and tamper-evident receipts for every AI-agent transaction.",
+  openGraph: {
+    title: "Agent Transaction Firewall (ATF)",
+    description:
+      "Deterministic policy checks on Solana with slippage constraints, protocol allowlists, and tamper-evident receipts.",
+    images: [
+      {
+        url: "/atf/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "TruCore ATF social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Agent Transaction Firewall (ATF)",
+    description:
+      "Deterministic policy checks on Solana with slippage constraints, protocol allowlists, and tamper-evident receipts.",
+    images: ["/atf/opengraph-image"],
+  },
 };
 
 const threatVectors = [

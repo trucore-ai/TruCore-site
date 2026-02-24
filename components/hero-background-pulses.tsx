@@ -87,6 +87,9 @@ const MAX_DUST = 600;          // global dust particle cap
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const MOBILE_QUERY = "(max-width: 767px)";
 const MOTION_PREFERENCE_CHANGED_EVENT = "trucore:motion-preference-change";
+const DEV_BACKGROUND_BUDGET_ENABLED = process.env.NODE_ENV !== "production";
+const DEV_BACKGROUND_SAMPLE_MS = 2_000;
+const DEV_BACKGROUND_FPS_LIMIT = 30;
 
 function isMotionReducedByUser(): boolean {
   return document.documentElement.dataset.reduceMotion === "true";
@@ -196,8 +199,20 @@ export function HeroBackgroundPulses() {
     let mobileView = mobileMq.matches;
     let hidden = document.hidden;
 
-    const shouldRenderMinimalBackground = () =>
-      reducedMotion || forceReducedMotion || mobileView;
+    const shouldSuspendAnimation = () =>
+      hidden || reducedMotion || forceReducedMotion || mobileView;
+
+    let devFrameSampleStart = 0;
+    let devFrameSampleCount = 0;
+    let devFrameSampleComplete = false;
+    let devBudgetWarningLogged = false;
+    const logDevBudgetWarning = (message: string) => {
+      if (!DEV_BACKGROUND_BUDGET_ENABLED || devBudgetWarningLogged) {
+        return;
+      }
+      devBudgetWarningLogged = true;
+      console.warn(`[HeroBackgroundPulses] ${message}`);
+    };
 
     let dw = 0;
     let dh = 0;
@@ -406,11 +421,31 @@ export function HeroBackgroundPulses() {
     };
 
     const loop = (time: number) => {
-      if (hidden || shouldRenderMinimalBackground()) {
+      if (shouldSuspendAnimation()) {
+        logDevBudgetWarning(
+          `RAF frame while animation should be suspended (hidden=${hidden}, reduced=${reducedMotion}, minimal=${forceReducedMotion}, mobile=${mobileView})`,
+        );
         animRef.current = 0;
         ctx.clearRect(0, 0, dw, dh);
         drawStaticBackground();
         return;
+      }
+
+      if (DEV_BACKGROUND_BUDGET_ENABLED && !devFrameSampleComplete) {
+        if (devFrameSampleStart === 0) {
+          devFrameSampleStart = time;
+        }
+        devFrameSampleCount += 1;
+        const elapsed = time - devFrameSampleStart;
+        if (elapsed >= DEV_BACKGROUND_SAMPLE_MS) {
+          devFrameSampleComplete = true;
+          const fps = (devFrameSampleCount * 1000) / elapsed;
+          if (fps > DEV_BACKGROUND_FPS_LIMIT) {
+            logDevBudgetWarning(
+              `RAF budget exceeded: ${fps.toFixed(1)}fps over ${Math.round(elapsed)}ms (limit ${DEV_BACKGROUND_FPS_LIMIT}fps)`,
+            );
+          }
+        }
       }
 
       const dt = Math.min(time - lastTime, 50);
@@ -548,7 +583,7 @@ export function HeroBackgroundPulses() {
       if (animRef.current !== 0) {
         return;
       }
-      if (hidden || shouldRenderMinimalBackground()) {
+      if (shouldSuspendAnimation()) {
         ctx.clearRect(0, 0, dw, dh);
         drawStaticBackground();
         return;
@@ -559,27 +594,21 @@ export function HeroBackgroundPulses() {
 
     const onMqChange = (e: MediaQueryListEvent) => {
       reducedMotion = e.matches;
-      if (shouldRenderMinimalBackground()) {
-        stopLoop();
-      }
+      stopLoop();
       startLoop();
     };
     mq.addEventListener("change", onMqChange);
 
     const onMobileChange = (e: MediaQueryListEvent) => {
       mobileView = e.matches;
-      if (shouldRenderMinimalBackground()) {
-        stopLoop();
-      }
+      stopLoop();
       startLoop();
     };
     mobileMq.addEventListener("change", onMobileChange);
 
     const onMotionPreferenceChange = () => {
       forceReducedMotion = isMotionReducedByUser();
-      if (shouldRenderMinimalBackground()) {
-        stopLoop();
-      }
+      stopLoop();
       startLoop();
     };
     window.addEventListener(MOTION_PREFERENCE_CHANGED_EVENT, onMotionPreferenceChange);

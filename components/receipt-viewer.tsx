@@ -2,7 +2,9 @@
 
 import { trackEvent } from "@/lib/analytics";
 import type { DemoReceipt } from "@/lib/demo-receipts";
-import { useMemo, useState } from "react";
+import { buildVerifyUrl } from "@/lib/verification-kit";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 type ReceiptViewerProps = {
   receipt: DemoReceipt | null;
@@ -32,7 +34,36 @@ function getInvariantSummary(check: string): { label: string; outcome: "pass" | 
 export function ReceiptViewer({ receipt }: ReceiptViewerProps) {
   const [jsonCopied, setJsonCopied] = useState(false);
   const [hashCopied, setHashCopied] = useState(false);
+  const [signatureAvailable, setSignatureAvailable] = useState<boolean | null>(null);
   const formattedJson = useMemo(() => (receipt ? JSON.stringify(receipt, null, 2) : ""), [receipt]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSignatureAvailability() {
+      try {
+        const response = await fetch("/api/receipt-signing-key", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("failed_request");
+        }
+
+        const payload = (await response.json()) as { available?: boolean };
+        if (isMounted) {
+          setSignatureAvailable(Boolean(payload.available));
+        }
+      } catch {
+        if (isMounted) {
+          setSignatureAvailable(false);
+        }
+      }
+    }
+
+    loadSignatureAvailability();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   async function copyJson() {
     if (!receipt) {
@@ -75,6 +106,12 @@ export function ReceiptViewer({ receipt }: ReceiptViewerProps) {
       </div>
     );
   }
+
+  const verifyKitHref = buildVerifyUrl({
+    hash: receipt.result.receipt_hash,
+    from: "receipts",
+    autofetchSig: Boolean(signatureAvailable),
+  });
 
   return (
     <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-5">
@@ -126,6 +163,55 @@ export function ReceiptViewer({ receipt }: ReceiptViewerProps) {
       <div className="rounded-lg border border-white/10 bg-neutral-950/70 p-3">
         <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Full receipt JSON</p>
         <pre className="mt-2 max-h-[28rem] overflow-auto text-xs text-slate-200">{formattedJson}</pre>
+      </div>
+
+      <div className="rounded-lg border border-white/10 bg-neutral-950/70 p-3">
+        <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Anchor Status (Preview)</p>
+        <p className="mt-2 text-sm text-slate-200">Status: Not anchored (demo mode)</p>
+        <p className="mt-2 text-sm text-slate-300">
+          In production, receipt_hash values can be anchored to a public chain (e.g. Solana) for immutable
+          timestamp proof.
+        </p>
+        <dl className="mt-3 space-y-1 text-sm text-slate-300">
+          <div className="flex items-center justify-between gap-3">
+            <dt className="text-slate-400">Anchor target</dt>
+            <dd>Solana (planned)</dd>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <dt className="text-slate-400">Anchor tx</dt>
+            <dd>— (not yet anchored)</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div className="rounded-lg border border-white/10 bg-neutral-950/70 p-3 text-sm text-slate-300">
+        <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Signature Status</p>
+        {signatureAvailable ? (
+          <>
+            <p className="mt-2 text-emerald-300">Signature available</p>
+            <Link
+              href={verifyKitHref}
+              onClick={() =>
+                trackEvent("verify_autofetch_signature_click", {
+                  location: "receipts",
+                })
+              }
+              className="mt-2 inline-flex rounded border border-primary-300/40 bg-primary-500/10 px-3 py-1.5 text-sm font-medium text-primary-100 transition-colors hover:bg-primary-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+            >
+              Open Verification Kit
+            </Link>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 text-slate-300">Signature not configured (demo mode).</p>
+            <Link
+              href={buildVerifyUrl({ hash: receipt.result.receipt_hash, from: "receipts" })}
+              className="mt-2 inline-flex rounded border border-primary-300/40 bg-primary-500/10 px-3 py-1.5 text-sm font-medium text-primary-100 transition-colors hover:bg-primary-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+            >
+              Open Verification Kit
+            </Link>
+          </>
+        )}
       </div>
     </div>
   );

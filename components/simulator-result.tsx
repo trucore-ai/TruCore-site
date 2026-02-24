@@ -177,6 +177,14 @@ export function SimulatorResult({
           <p className="text-sm text-emerald-100">
             Use this receipt hash to log execution decisions in your agent runtime.
           </p>
+          <TrackedLink
+            href={`/verify?hash=${encodeURIComponent(result.receipt_hash)}`}
+            eventName="simulator_verify_receipt_click"
+            eventProps={{ location: "simulator_result" }}
+            className="inline-flex items-center text-sm font-semibold text-emerald-200 transition-colors hover:text-emerald-100"
+          >
+            Verify this receipt &rarr;
+          </TrackedLink>
         </div>
       ) : null}
 

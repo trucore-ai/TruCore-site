@@ -9,6 +9,26 @@ export const metadata: Metadata = {
   title: "Public Receipts Explorer",
   description:
     "Inspect deterministic ATF demo receipts with status, invariant checks, reasons, and receipt hashes.",
+  openGraph: {
+    title: "Public Receipts Explorer",
+    description:
+      "Inspect deterministic ATF demo receipts with status, invariant checks, reasons, and receipt hashes.",
+    images: [
+      {
+        url: "/receipts/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "TruCore receipts social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Public Receipts Explorer",
+    description:
+      "Inspect deterministic ATF demo receipts with status, invariant checks, reasons, and receipt hashes.",
+    images: ["/receipts/opengraph-image"],
+  },
 };
 
 export default function ReceiptsPage() {

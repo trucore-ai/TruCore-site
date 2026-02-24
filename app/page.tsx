@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,32 @@ import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
 import { TrackedLink } from "@/components/tracked-link";
 import { TrustStrip } from "@/components/trust-strip";
 import Image from "next/image";
+
+export const metadata: Metadata = {
+  title: "TruCore",
+  description:
+    "TruCore delivers Agent Transaction Firewall controls for Solana with policy-bound execution and tamper-evident receipts for autonomous finance.",
+  openGraph: {
+    title: "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
+    description:
+      "Policy-bound execution, tamper-evident receipts, and fail-closed design for autonomous finance on Solana.",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "TruCore home social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
+    description:
+      "Policy-bound execution, tamper-evident receipts, and fail-closed design for autonomous finance on Solana.",
+    images: ["/opengraph-image"],
+  },
+};
 
 const metrics = [
   "Policy-bound execution",

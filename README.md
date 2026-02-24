@@ -49,6 +49,23 @@ npm run build
 - The root element mirrors the resolved state with `data-reduce-motion="true|false"` so animation-heavy layers can be disabled consistently.
 - On viewports below 768px, the animated hero background is disabled to prioritize legibility and performance.
 
+## Static Social Preview and Background Budget (Stage 78)
+
+- Key routes now serve dedicated static OpenGraph image endpoints:
+  - `/opengraph-image`
+  - `/atf/opengraph-image`
+  - `/receipts/opengraph-image`
+  - `/launch/opengraph-image`
+- Home, ATF, Receipts, and Launch metadata now explicitly point both `openGraph.images` and `twitter.images` to their route-specific static previews.
+- Hero background rendering is hard-stopped with no active RAF work whenever any of these are true:
+  - `document.hidden`
+  - `prefers-reduced-motion: reduce`
+  - user minimal background mode (`data-reduce-motion="true"`)
+  - viewport below `768px`
+- Development-only budget diagnostics sample RAF throughput for 2 seconds and log once if:
+  - average RAF exceeds 30 fps, or
+  - any RAF frame executes while animation should be suspended.
+
 ## Performance Guardrails (Stage 50)
 
 The project includes enforceable guardrails to catch performance regressions before merge.
@@ -225,6 +242,83 @@ Signature details:
   - `x-frame-options`
   - `x-content-type-options`
   - `referrer-policy`
+
+## Signed Receipts and Public Verification (Stage 80)
+
+Stage 80 adds cryptographic integrity for deterministic receipt hashes using Ed25519 signatures.
+
+### What is signed
+
+- The signer only signs `receipt_hash` values.
+- Input must be a 64-character SHA-256 hex string.
+- Full receipt bodies are not accepted by signing endpoints.
+
+### Signature and key encoding
+
+- Algorithm: `Ed25519`
+- Signature encoding: `base64`
+- Public key encoding: `base64` (32-byte raw key)
+
+### Environment variable
+
+- `RECEIPT_SIGNING_KEY` must be base64-encoded and can be either:
+  - 32-byte Ed25519 seed, or
+  - 64-byte secret form (first 32 bytes are used as seed)
+- Never commit or log private signing keys.
+- Public key publication is safe and supported.
+
+### Public endpoints
+
+- `GET /api/receipt-signing-key`
+  - Returns availability and public key metadata:
+
+```json
+{
+  "available": true,
+  "public_key": "...",
+  "alg": "Ed25519",
+  "encoding": "base64"
+}
+```
+
+- `POST /api/receipt-signature`
+  - Request body:
+
+```json
+{
+  "receipt_hash": "<64 hex chars>"
+}
+```
+
+- Successful response:
+
+```json
+{
+  "ok": true,
+  "receipt_hash": "...",
+  "signature": "...",
+  "public_key": "...",
+  "alg": "Ed25519"
+}
+```
+
+- If key is not configured:
+
+```json
+{
+  "ok": false,
+  "error": "signature_unavailable"
+}
+```
+
+### Verification flow on `/verify`
+
+1. Paste a `receipt_hash` (or open `/verify?hash=...`).
+2. Click `Fetch signature for this hash`.
+3. The app requests signature data and verifies it server-side.
+4. UI reports `Verified`, `Invalid`, or `Not available`.
+
+The verification utility sends only the hash for signing and verification operations.
 
 ## CI and Branch Protection (Stage 42)
 
