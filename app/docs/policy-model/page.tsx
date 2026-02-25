@@ -12,7 +12,7 @@ export default function DocsPolicyModelPage() {
     <article className="space-y-8">
       <header className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Concepts</p>
-        <h1 className="text-4xl font-bold tracking-tight text-slate-100 sm:text-5xl">Policy Model</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">Policy Model</h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           Policies encode non-negotiable constraints. Agents can propose intent, but ATF decides whether the action
           fits the approved envelope.

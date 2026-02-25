@@ -1,7 +1,7 @@
 import { isSimRequest, normalizeSimRequest, simulatePolicy, type SimRequest } from "@/lib/simulator";
+import { SUPPORTED_RECEIPT_VERSIONS } from "@/lib/receipt-spec-constants";
 
 export const RECEIPT_HASH_PATTERN = /^[a-f0-9]{64}$/i;
-export const SUPPORTED_RECEIPT_VERSIONS = ["1"] as const;
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object") {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CopyBlock } from "@/components/copy-block";
 import { trackEvent } from "@/lib/analytics";
 import { HeadingAnchor } from "@/components/heading-anchor";
+import { SingleCommandQuickstart } from "@/components/single-command-quickstart";
 
 const CURL_EXAMPLE = `BASE_URL="${"${BASE_URL:-http://127.0.0.1:3000}"}"
 curl -sS "$BASE_URL/api/simulate" \\
@@ -22,13 +23,15 @@ export default function DocsFiveMinuteQuickstartPage() {
     <article className="space-y-10">
       <header className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Quickstart</p>
-        <h1 className="text-4xl font-bold tracking-tight text-slate-100 sm:text-5xl">
+        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
           5-Minute Developer Quickstart
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           Start with a key, run one request, and verify deterministic policy output in minutes.
         </p>
       </header>
+
+      <SingleCommandQuickstart location="quickstart" showV1StabilityContract />
 
       <section className="space-y-4">
         <HeadingAnchor id="get-an-api-key">1. Get an API Key</HeadingAnchor>

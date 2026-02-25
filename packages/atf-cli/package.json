@@ -1,0 +1,17 @@
+{
+  "name": "@trucore/atf",
+  "version": "0.1.0",
+  "description": "TruCore ATF one-line simulation CLI",
+  "license": "UNLICENSED",
+  "type": "module",
+  "bin": {
+    "atf": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

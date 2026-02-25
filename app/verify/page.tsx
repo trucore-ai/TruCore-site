@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { VerifyReceiptForm } from "@/components/verify-receipt-form";
 import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
@@ -49,6 +50,16 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
             Validate receipt integrity with hash checks, signature verification, and deterministic demo recompute.
           </p>
           <p className="text-sm text-slate-400">Developer utility for independent, copy-paste verification workflows.</p>
+          <p className="text-sm text-slate-300">
+            Need the normative contract, see{" "}
+            <Link
+              href="/docs/receipt-specification-v1"
+              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+            >
+              Receipt Specification v1
+            </Link>
+            .
+          </p>
         </div>
       </Section>
 

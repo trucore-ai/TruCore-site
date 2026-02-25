@@ -8,17 +8,17 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "analyze": "ANALYZE=true next build --webpack",
     "start": "next start",
     "lint": "eslint",
+    "check:bundle": "node scripts/check-bundle-size.mjs",
+    "lhci": "CHROME_PATH=$(find \"$HOME/.cache/ms-playwright\" -type f -path \"*/chromium-*/chrome-linux*/chrome\" | head -n 1) lhci autorun",
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
-    "ci": "npm run lint -- --max-warnings=0 && npm test -- --run && npm run test:e2e",
-    "analyze": "ANALYZE=true next build --webpack",
-    "check:bundle": "node scripts/check-bundle-size.mjs",
-    "lhci": "lhci autorun"
+    "ci": "npm run lint -- --max-warnings=0 && npm test -- --run && npm run test:e2e"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",

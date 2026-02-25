@@ -106,6 +106,14 @@ export default function ProcessPage() {
               </li>
               <li>
                 <Link
+                  href="/docs/anchoring-roadmap"
+                  className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+                >
+                  /docs/anchoring-roadmap
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="https://github.com/trucore-ai/TruCore-site/blob/main/RELEASE.md"
                   target="_blank"
                   rel="noopener noreferrer"

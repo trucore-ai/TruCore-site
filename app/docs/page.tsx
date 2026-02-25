@@ -17,7 +17,7 @@ export default function DocsHubPage() {
     <div className="space-y-8">
       <header className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">ATF Docs</p>
-        <h1 className="text-4xl font-bold tracking-tight text-slate-100 sm:text-5xl">Documentation</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">Documentation</h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           Start with a practical quickstart, then dive into policy primitives and permit construction.
           The docs are intentionally concise so teams can evaluate integration fit quickly.
@@ -37,6 +37,20 @@ export default function DocsHubPage() {
           >
             architecture deep dive
           </Link>
+          . For receipt semantics, read the formal{" "}
+          <Link
+            href="/docs/receipt-specification-v1"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            Receipt Specification v1
+          </Link>
+          {" "}and the{" "}
+          <Link
+            href="/docs/anchoring-roadmap"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            Anchoring &amp; Execution Roadmap
+          </Link>
           .
         </p>
       </header>
@@ -44,7 +58,7 @@ export default function DocsHubPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {docsCards.map((item) => (
           <Card key={item.href} className="h-full p-6">
-            <h2 className="text-2xl font-semibold text-slate-100">{item.title}</h2>
+            <h2 className="text-2xl font-semibold text-[#f0a050]">{item.title}</h2>
             <p className="mt-2 text-base leading-relaxed text-slate-300">{item.description}</p>
             <Link
               href={item.href}

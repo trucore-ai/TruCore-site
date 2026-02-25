@@ -13,6 +13,7 @@ All variables are configured in **Vercel Project Settings -> Environment Variabl
 | `PARTNER_PORTAL_SESSION_SECRET` | Recommended in Preview + Production | Vercel (manual, secret) | Signature secret for `partner_portal_session` cookie on `/portal/*` | Falls back to `ADMIN_DASHBOARD_KEY` if unset |
 | `RECEIPT_SIGNING_KEY` | **Launch Required in Production** | Vercel (manual, secret) | Enables receipt signature generation and public key availability endpoints | None, signature surfaces remain unavailable when missing or invalid |
 | `WHITEPAPER_SIGNING_KEY` | **Launch Required in Production** | Vercel (manual, secret) | Enables signed integrity proof at `/atf/whitepaper/signature` | None in production. Development uses local fallback key |
+| `NEXT_PUBLIC_ATF_CLI_VERSION` | **Launch Required in Production** | Vercel (manual, public) | Pinned ATF CLI version shown on quickstart surfaces and `/status` metadata | `0.1.0` fallback for local development |
 | `VERCEL_GIT_COMMIT_SHA` | Optional runtime metadata | Injected by Vercel | Release metadata display on `/status` | Not shown when unavailable |
 | `VERCEL_ENV` | Optional runtime metadata | Injected by Vercel | Environment label on `/status` (`production`, `preview`, `development`) | `unknown` label when unavailable |
 
@@ -29,6 +30,12 @@ All variables are configured in **Vercel Project Settings -> Environment Variabl
 - **Production**: All required vars must be set.
 - **Preview**: Keep production-parity values where safe, especially DB and email test domain settings.
 - **Development**: Use `.env.local` for local testing, never commit secrets.
+
+## CLI Version Pinning Policy
+
+- `NEXT_PUBLIC_ATF_CLI_VERSION` controls the pinned one-liner on public quickstart surfaces.
+- Bump this value only after publishing a new `@trucore/atf` tag.
+- Keep the site pinned to the current value until you intentionally advance launch behavior.
 
 ## Secret Handling Notes
 

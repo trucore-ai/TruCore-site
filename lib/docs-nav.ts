@@ -58,6 +58,18 @@ export const sections: DocsNavSection[] = [
           "Use a versioned, deterministic permit contract with copyable demo fields for integration.",
       },
       {
+        title: "Receipt Specification v1",
+        href: "/docs/receipt-specification-v1",
+        description:
+          "Reference the formal RFC-style receipt contract, deterministic hash rules, and version compatibility policy.",
+      },
+      {
+        title: "Anchoring & Execution Roadmap",
+        href: "/docs/anchoring-roadmap",
+        description:
+          "Review live, preview, and planned phases for receipt verification and anchoring evolution.",
+      },
+      {
         title: "Permits",
         href: "/docs/permits",
         description:

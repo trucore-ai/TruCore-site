@@ -47,7 +47,7 @@ export default function DocsPolicyExamplesPage() {
     <article className="space-y-10">
       <header className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">ATF Policy Examples</p>
-        <h1 className="text-4xl font-bold tracking-tight text-slate-100 sm:text-5xl">Policy Examples</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">Policy Examples</h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           Reusable example structures for ATF policy authoring and integration planning.
         </p>

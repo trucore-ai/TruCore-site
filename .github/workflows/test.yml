@@ -27,6 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RECEIPT_SIGNING_KEY: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+      NEXT_PUBLIC_ATF_CLI_VERSION: 0.1.0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,6 +40,35 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Enforce pinned CLI quickstart references
+        run: |
+          if grep -R --line-number "@latest" \
+            lib/one-line-quickstart.ts \
+            components/single-command-quickstart.tsx \
+            app/atf/page.tsx \
+            app/docs/5-minute-quickstart/page.tsx \
+            app/launch/page.tsx \
+            README.md \
+            packages/atf-cli/README.md; then
+            echo "Disallowed @latest reference found in pinned quickstart surfaces"
+            exit 1
+          fi
+
+      - name: CLI smoke test
+        run: |
+          npm run dev > /tmp/trucore-dev.log 2>&1 &
+          DEV_PID=$!
+          trap "kill $DEV_PID" EXIT
+
+          for i in {1..90}; do
+            if curl -fsS http://127.0.0.1:3000/api/health > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          node packages/atf-cli/dist/index.js simulate --preset swap_small --base-url http://localhost:3000 --format pretty --verify
 
       - name: Run tests
         run: npm test -- --run

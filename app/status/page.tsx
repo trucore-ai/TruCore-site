@@ -4,6 +4,7 @@ import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatusLiveChecks } from "@/components/status-live-checks";
+import { getReleaseMetadata } from "@/lib/version";
 
 export const metadata: Metadata = {
   title: "System Status",
@@ -18,8 +19,7 @@ const systems = [
 ];
 
 export default function StatusPage() {
-  const commitSha = process.env.VERCEL_GIT_COMMIT_SHA ?? null;
-  const environment = process.env.VERCEL_ENV ?? "unknown";
+  const release = getReleaseMetadata();
 
   return (
     <Container>
@@ -122,13 +122,19 @@ export default function StatusPage() {
             <p className="mt-2 text-sm text-slate-300">
               Commit:{" "}
               <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-slate-300">
-                {commitSha ? commitSha.slice(0, 7) : "unavailable"}
+                {release.siteCommit ?? "unavailable"}
               </code>
             </p>
             <p className="mt-2 text-sm text-slate-300">
               Environment:{" "}
               <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-slate-300">
-                {environment}
+                {release.environment}
+              </code>
+            </p>
+            <p className="mt-2 text-sm text-slate-300">
+              CLI pinned:{" "}
+              <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-slate-300">
+                {release.cliPinnedVersion}
               </code>
             </p>
             <p className="mt-3 text-xs text-slate-500">

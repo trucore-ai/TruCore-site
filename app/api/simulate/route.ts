@@ -26,6 +26,7 @@ function methodNotAllowed(rateLimit: RateLimitResult) {
     {
       ok: false,
       error: "method_not_allowed",
+      message: "Only POST is supported for this endpoint.",
     },
     {
       status: 405,
@@ -61,10 +62,18 @@ export async function POST(request: NextRequest) {
   let usageApiKeyId: string | null = null;
   const endpoint = "/api/simulate";
   let activeRateLimit = getPublicRateLimit(request);
+  let retryAfterSeconds: number | null = null;
 
   const respond = async (
     status: number,
-    body: { ok: boolean; error?: string; input?: unknown; result?: unknown },
+    body: {
+      ok: boolean;
+      error?: string;
+      message?: string;
+      retry_after_seconds?: number;
+      input?: unknown;
+      result?: unknown;
+    },
   ) => {
     await recordUsage({ apiKeyId: usageApiKeyId, endpoint });
     return NextResponse.json(body, {
@@ -72,6 +81,7 @@ export async function POST(request: NextRequest) {
       headers: {
         ...NO_STORE_HEADERS,
         ...rateLimitHeaders(activeRateLimit),
+        ...(retryAfterSeconds ? { "Retry-After": String(retryAfterSeconds) } : {}),
       },
     });
   };
@@ -87,9 +97,12 @@ export async function POST(request: NextRequest) {
   }
 
   if (activeRateLimit.exceeded) {
+    retryAfterSeconds = Math.max(activeRateLimit.resetEpochSeconds - Math.floor(Date.now() / 1000), 1);
     return respond(429, {
       ok: false,
       error: "rate_limited",
+      message: "Rate limit exceeded. Please retry after the reset window.",
+      retry_after_seconds: retryAfterSeconds,
     });
   }
 
@@ -97,6 +110,7 @@ export async function POST(request: NextRequest) {
     return respond(401, {
       ok: false,
       error: "invalid_api_key",
+      message: "The provided API key is invalid.",
     });
   }
 
@@ -107,6 +121,7 @@ export async function POST(request: NextRequest) {
     return respond(400, {
       ok: false,
       error: "invalid_json",
+      message: "Request body must be valid JSON.",
     });
   }
 
@@ -114,6 +129,7 @@ export async function POST(request: NextRequest) {
     return respond(400, {
       ok: false,
       error: "invalid_request",
+      message: "Request body does not match the simulator schema.",
     });
   }
 

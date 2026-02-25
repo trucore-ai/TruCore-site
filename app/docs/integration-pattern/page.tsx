@@ -14,7 +14,7 @@ export default function DocsIntegrationPatternPage() {
     <article className="space-y-10">
       <header className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">ATF Integration</p>
-        <h1 className="text-4xl font-bold tracking-tight text-slate-100 sm:text-5xl">ATF Integration Pattern</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">ATF Integration Pattern</h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           Use ATF as an enforcement checkpoint between agent intent and execution. The integration is
           agent-native, deterministic, and chain-agnostic.
@@ -119,6 +119,14 @@ export default function DocsIntegrationPatternPage() {
                 className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
               >
                 /docs/atf-architecture
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/docs/receipt-specification-v1"
+                className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+              >
+                /docs/receipt-specification-v1
               </Link>
             </li>
             <li>

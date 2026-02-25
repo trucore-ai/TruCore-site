@@ -11,7 +11,7 @@ describe("verify receipt version awareness", () => {
   });
 
   it("recognizes supported and unsupported versions in helper", () => {
-    expect(isSupportedReceiptVersion("1")).toBe(true);
+    expect(isSupportedReceiptVersion("v1")).toBe(true);
     expect(isSupportedReceiptVersion("999")).toBe(false);
   });
 
@@ -60,7 +60,7 @@ describe("verify receipt version awareness", () => {
         receipt_hash: demoReceipt.result.receipt_hash,
         receipt: {
           id: demoReceipt.id,
-          version: "1",
+          version: "v1",
           input: demoReceipt.input,
           result: demoReceipt.result,
           created_at: demoReceipt.created_at,
@@ -80,7 +80,7 @@ describe("verify receipt version awareness", () => {
 
     expect(payload.ok).toBe(true);
     expect(payload.supported_version).toBe(true);
-    expect(payload.version).toBe("1");
+    expect(payload.version).toBe("v1");
     expect(payload.matches).toBe(true);
   });
 

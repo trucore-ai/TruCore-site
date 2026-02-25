@@ -12,7 +12,7 @@ export default function DocsQuickstartPage() {
     <article className="space-y-8">
       <header className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Quickstart</p>
-        <h1 className="text-4xl font-bold tracking-tight text-slate-100 sm:text-5xl">Quickstart</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">Quickstart</h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           ATF sits between agent intent and chain execution. You define guardrails once, issue scoped permits,
           validate every transaction against policy, and record receipts for auditability.

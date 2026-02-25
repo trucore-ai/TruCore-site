@@ -31,7 +31,7 @@ describe("verification kit helpers", () => {
   });
 
   it("builds recompute command with receipt payload", () => {
-    const receiptJson = JSON.stringify({ version: "1", input: { action: "swap" } });
+    const receiptJson = JSON.stringify({ version: "v1", input: { action: "swap" } });
 
     const unixCommand = buildHashRecomputeCommand("mac", "c".repeat(64), receiptJson);
     expect(unixCommand).toContain("/api/verify-receipt");

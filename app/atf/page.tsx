@@ -20,6 +20,7 @@ import { MoatSignalStrip } from "@/components/moat-signal-strip";
 import { TrackedLink } from "@/components/tracked-link";
 import { RiskBoundaryBlock } from "@/components/risk-boundary-block";
 import { Tilt } from "@/components/ui/tilt";
+import { SingleCommandQuickstart } from "@/components/single-command-quickstart";
 
 export const metadata: Metadata = {
   title: "Agent Transaction Firewall (ATF)",
@@ -147,6 +148,10 @@ export default function ATFPage() {
               >
                 Get started in 5 min
               </TrackedLink>
+            </div>
+
+            <div className="mt-6 max-w-3xl">
+              <SingleCommandQuickstart location="atf" showV1StabilityContract />
             </div>
 
             <p className="mt-5 text-lg text-slate-300">
@@ -627,7 +632,8 @@ export default function ATFPage() {
       </Section>
 
       <Section className="pt-0 fade-in-up">
-        <div className="flex flex-wrap gap-3">
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-3">
           <TrackedLink
             href="/receipts"
             eventName="enforcement_proof_receipts_click"
@@ -643,6 +649,15 @@ export default function ATFPage() {
             className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-7 py-4 text-lg font-semibold text-slate-100 transition-colors hover:bg-white/10"
           >
             View Demo Policy
+          </TrackedLink>
+          </div>
+          <TrackedLink
+            href="/docs/anchoring-roadmap"
+            eventName="anchoring_roadmap_click"
+            eventProps={{ location: "atf_page", section: "enforcement_proof" }}
+            className="inline-flex text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            Read Anchoring &amp; Execution Roadmap
           </TrackedLink>
         </div>
       </Section>

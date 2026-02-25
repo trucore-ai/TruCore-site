@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { PublicMetricsStrip } from "@/components/public-metrics-strip";
 import { TrackedLink } from "@/components/tracked-link";
+import { SingleCommandQuickstart } from "@/components/single-command-quickstart";
 
 export const metadata: Metadata = {
   title: "Launch",
@@ -86,6 +87,14 @@ export default function LaunchPage() {
               Whitepaper Preview
             </TrackedLink>
           </div>
+
+          <div className="mt-6">
+            <SingleCommandQuickstart location="launch" compact />
+          </div>
+          <p className="mt-4 text-sm text-slate-300">
+            v1 launch mode uses a pinned CLI tag for reproducibility. Simulator behavior is deterministic, and
+            signature availability depends on environment configuration.
+          </p>
         </div>
       </Section>
 

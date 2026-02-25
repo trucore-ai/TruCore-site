@@ -28,6 +28,34 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+### 3.1) Single Command Quickstart (ATF v1)
+
+Run one command and get a deterministic decision plus receipt hash:
+
+```bash
+npx @trucore/atf@v0.1.0 simulate --preset swap_small --verify
+```
+
+Use an API key for higher quota when available:
+
+```bash
+ATF_API_KEY="<your_key>" npx @trucore/atf@v0.1.0 simulate --preset swap_small --verify
+```
+
+v1 launch mode keeps the CLI command pinned for reproducibility. Bump only when a new CLI tag is intentionally published.
+
+Run from this repo against local dev server:
+
+```bash
+node packages/atf-cli/dist/index.js simulate --preset swap_small --base-url http://localhost:3000
+```
+
+Raw JSON mode:
+
+```bash
+node packages/atf-cli/dist/index.js simulate --json '{"action":"swap","token_in":"SOL","token_out":"USDC","amount":10,"max_slippage_bps":100,"ttl_seconds":60}'
+```
+
 ### 4) Production Build
 
 ```bash
@@ -318,7 +346,25 @@ Stage 80 adds cryptographic integrity for deterministic receipt hashes using Ed2
 3. The app requests signature data and verifies it server-side.
 4. UI reports `Verified`, `Invalid`, or `Not available`.
 
+## Formal Receipt Specification v1 (Stage 85)
+
+Stage 85 publishes a formal RFC-style receipt contract for deterministic verification workflows.
+
+- Public spec route: `/docs/receipt-specification-v1`
+- Scope includes canonical JSON structure, deterministic evaluation contract, receipt hash definition, versioning rules, optional signature extension, and security considerations.
+- Version constants are centralized in `lib/receipt-spec-constants.ts` and shared with verifier logic.
+- Unknown receipt versions continue to resolve with `supported_version=false`, and missing version remains backward-compatible as legacy v1.
+
 The verification utility sends only the hash for signing and verification operations.
+
+## Anchoring and Execution Roadmap (Stage 86)
+
+Stage 86 adds a public technical roadmap page for phased receipt verification and anchoring evolution.
+
+- New docs route: `/docs/anchoring-roadmap`
+- Scope is documentation and positioning only, with explicit separation between live, preview, planned, and future phases.
+- Includes a static social preview image route at `/docs/anchoring-roadmap/opengraph-image`.
+- No runtime anchoring logic changed in this stage.
 
 ## CI and Branch Protection (Stage 42)
 

@@ -17,6 +17,18 @@ test("atf hero shows sandbox-first CTA hierarchy", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Get started in 5 min" }).first()).toBeVisible();
 });
 
+test("atf one-line quickstart strip is visible with copy control", async ({ page }) => {
+  await page.goto("/atf");
+
+  const quickstart = page.getByTestId("one-line-quickstart");
+
+  await expect(quickstart).toBeVisible();
+  await expect(page.getByRole("button", { name: "Copy npx command" })).toBeVisible();
+  await expect(quickstart).toContainText("npx @trucore/atf@v0.1.0 simulate --preset swap_small --verify");
+  await expect(quickstart.getByRole("link", { name: "Verify a receipt hash" })).toHaveAttribute("href", "/verify");
+  await expect(quickstart.locator("details a[href='/verify']")).toHaveCount(1);
+});
+
 test("atf receipts nav link routes to receipts explorer", async ({ page }) => {
   await page.goto("/atf");
 

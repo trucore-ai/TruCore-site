@@ -122,7 +122,7 @@ const changelog: ChangelogEntry[] = [
     title: "Launch Site Foundation",
     changes: [
       "Deployed initial TruCore marketing site with animated hero background.",
-      "Added Why TruCore, Trust and Integrity, and Integrations sections.",
+      "Added Why TruCore, Built with Integrety to not rely on Trust, and Integrations sections.",
       "Configured Vercel deployment with custom domain and social previews.",
     ],
   },

@@ -1,0 +1,2 @@
+export const RECEIPT_SPEC_VERSION = "v1";
+export const SUPPORTED_RECEIPT_VERSIONS = [RECEIPT_SPEC_VERSION] as const;

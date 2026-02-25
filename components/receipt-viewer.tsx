@@ -1,6 +1,7 @@
 "use client";
 
 import { trackEvent } from "@/lib/analytics";
+import { ANCHOR_PREVIEW_STATUS } from "@/lib/anchor-preview";
 import type { DemoReceipt } from "@/lib/demo-receipts";
 import { buildVerifyUrl } from "@/lib/verification-kit";
 import Link from "next/link";
@@ -166,22 +167,24 @@ export function ReceiptViewer({ receipt }: ReceiptViewerProps) {
       </div>
 
       <div className="rounded-lg border border-white/10 bg-neutral-950/70 p-3">
-        <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Anchor Status (Preview)</p>
-        <p className="mt-2 text-sm text-slate-200">Status: Not anchored (demo mode)</p>
-        <p className="mt-2 text-sm text-slate-300">
-          In production, receipt_hash values can be anchored to a public chain (e.g. Solana) for immutable
-          timestamp proof.
-        </p>
+        <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Anchor Status</p>
         <dl className="mt-3 space-y-1 text-sm text-slate-300">
           <div className="flex items-center justify-between gap-3">
-            <dt className="text-slate-400">Anchor target</dt>
-            <dd>Solana (planned)</dd>
+            <dt className="text-slate-400">Status</dt>
+            <dd className="text-primary-100">{ANCHOR_PREVIEW_STATUS.state}</dd>
           </div>
           <div className="flex items-center justify-between gap-3">
-            <dt className="text-slate-400">Anchor tx</dt>
-            <dd>— (not yet anchored)</dd>
+            <dt className="text-slate-400">Details</dt>
+            <dd>{ANCHOR_PREVIEW_STATUS.details}</dd>
           </div>
         </dl>
+        <p className="mt-2 text-sm text-slate-300">Anchoring not enabled yet.</p>
+        <Link
+          href="/process"
+          className="mt-2 inline-flex text-sm font-semibold text-primary-100 transition-colors hover:text-primary-200"
+        >
+          See roadmap details
+        </Link>
       </div>
 
       <div className="rounded-lg border border-white/10 bg-neutral-950/70 p-3 text-sm text-slate-300">
