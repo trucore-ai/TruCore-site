@@ -6,6 +6,7 @@ import { Section } from "@/components/ui/section";
 import { TrackedLink } from "@/components/tracked-link";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { SimulateVerifyExecuteFlow } from "@/components/simulate-verify-execute-flow";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -353,29 +354,7 @@ export default function ATFPage() {
           </p>
         </div>
 
-        <div className="max-w-3xl">
-          <pre className="overflow-x-auto rounded-xl border border-white/10 bg-neutral-950/60 p-5 font-mono text-sm text-slate-200">
-{`Simulate (policy)
-    │
-    ▼
-Receipt (content_hash)
-    │
-    ▼
-Verify (local)
-    │
-    ▼
-Sign
-    │
-    ▼
-Send
-    │
-    ▼
-Status
-    │
-    ▼
-Archive`}
-          </pre>
-        </div>
+        <SimulateVerifyExecuteFlow />
 
         <p className="mt-6 max-w-3xl text-sm leading-relaxed text-slate-300">
           The simulate step evaluates your transaction against active policy
