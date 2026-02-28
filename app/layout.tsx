@@ -302,6 +302,17 @@ export default function RootLayout({
                       <TrackedLink href="https://github.com/TruCore-AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-100" eventName="outbound_click" eventProps={{ target: "github", location: "footer" }}>
                         GitHub
                       </TrackedLink>
+                      <TrackedLink
+                        href={process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || "https://discord.gg/hZWTn6Vr"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Join TruCore Discord"
+                        className="transition-colors hover:text-primary-100"
+                        eventName="outbound_click"
+                        eventProps={{ target: "discord", location: "footer" }}
+                      >
+                        Discord
+                      </TrackedLink>
                     </div>
                   </div>
 

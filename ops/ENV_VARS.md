@@ -14,6 +14,7 @@ All variables are configured in **Vercel Project Settings -> Environment Variabl
 | `RECEIPT_SIGNING_KEY` | **Launch Required in Production** | Vercel (manual, secret) | Enables receipt signature generation and public key availability endpoints | None, signature surfaces remain unavailable when missing or invalid |
 | `WHITEPAPER_SIGNING_KEY` | **Launch Required in Production** | Vercel (manual, secret) | Enables signed integrity proof at `/atf/whitepaper/signature` | None in production. Development uses local fallback key |
 | `NEXT_PUBLIC_ATF_CLI_VERSION` | **Launch Required in Production** | Vercel (manual, public) | Pinned ATF CLI version shown on quickstart surfaces and `/status` metadata | `0.1.0` fallback for local development |
+| `NEXT_PUBLIC_DISCORD_INVITE_URL` | Optional | Vercel (manual, public) | Discord invite link shown in site footer | `https://discord.gg/hZWTn6Vr` fallback when missing |
 | `VERCEL_GIT_COMMIT_SHA` | Optional runtime metadata | Injected by Vercel | Release metadata display on `/status` | Not shown when unavailable |
 | `VERCEL_ENV` | Optional runtime metadata | Injected by Vercel | Environment label on `/status` (`production`, `preview`, `development`) | `unknown` label when unavailable |
 
