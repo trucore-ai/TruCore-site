@@ -84,6 +84,7 @@ type QuickNavItem = { label: string; anchor: string };
 const QUICK_NAV: QuickNavItem[] = [
   { label: "Run This First", anchor: "#run-this-first" },
   { label: "Common Dev Flows", anchor: "#common-dev-flows" },
+  { label: "Guides", anchor: "#guides" },
   { label: "Command Reference", anchor: "#command-reference" },
   { label: "Subpage Deep Dives", anchor: "#deep-dives" },
   { label: "Response Fields", anchor: "#response-fields" },
@@ -218,6 +219,38 @@ export default function DocsCliPage() {
             </p>
           </div>
         </div>
+      </section>
+
+      {/* ── Guides ── */}
+      <section className="space-y-6">
+        <HeadingAnchor id="guides">Guides</HeadingAnchor>
+        <p className="max-w-3xl text-slate-300">
+          Step-by-step walkthroughs for common workflows. Each guide includes prerequisites,
+          copyable commands, expected outputs, and troubleshooting tips.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { href: "/docs/cli/guides/swap-permits", title: "Swap Permit Parameters", desc: "Parameter glossary, safe defaults, override precedence" },
+            { href: "/docs/cli/guides/simulate-verify-execute", title: "Simulate, Verify, Execute", desc: "The canonical ATF transaction workflow" },
+            { href: "/docs/cli/guides/helius-setup", title: "Helius RPC Setup", desc: "Profiles, secrets separation, connectivity" },
+            { href: "/docs/cli/guides/devnet-burner", title: "Devnet Burner Quickstart", desc: "Disposable wallets for fast testing" },
+            { href: "/docs/cli/guides/production-bot-basics", title: "Production Bot Basics", desc: "Profile separation, receipts retention, monitoring" },
+          ].map((guide) => (
+            <Link
+              key={guide.href}
+              href={guide.href}
+              className="rounded-lg border border-white/10 bg-neutral-950/50 p-4 transition-colors hover:border-primary-300/30 hover:bg-neutral-950/70"
+            >
+              <p className="font-semibold text-slate-100">{guide.title}</p>
+              <p className="mt-1 text-xs text-slate-400">{guide.desc}</p>
+            </Link>
+          ))}
+        </div>
+        <p className="text-sm text-slate-400">
+          <Link href="/docs/cli/guides" className="font-semibold text-primary-100 transition-colors hover:text-primary-200">
+            View all guides &rarr;
+          </Link>
+        </p>
       </section>
 
       {/* ── Command Reference Table ── */}
@@ -384,7 +417,7 @@ export default function DocsCliPage() {
             >
               Verification
             </TrackedLink>{" "}
-            &mdash; understand what content_hash proves and how to use it in production.
+            &ndash; understand what content_hash proves and how to use it in production.
           </li>
           <li>
             <TrackedLink
@@ -395,7 +428,7 @@ export default function DocsCliPage() {
             >
               Architecture
             </TrackedLink>{" "}
-            &mdash; see what happens under the hood when the CLI calls ATF.
+            &ndash; see what happens under the hood when the CLI calls ATF.
           </li>
           <li>
             <TrackedLink
@@ -406,7 +439,16 @@ export default function DocsCliPage() {
             >
               Security posture
             </TrackedLink>{" "}
-            &mdash; review threat model, disclosure policy, and audit status.
+            &ndash; review threat model, disclosure policy, and audit status.
+          </li>
+          <li>
+            <Link
+              href="/docs/cli/guides"
+              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+            >
+              CLI Guides
+            </Link>{" "}
+            &ndash; step-by-step walkthroughs for common workflows.
           </li>
         </ul>
       </section>

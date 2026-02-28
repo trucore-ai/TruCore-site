@@ -34,7 +34,8 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "three": "^0.183.1",
-    "vanilla-tilt": "^1.8.1"
+    "vanilla-tilt": "^1.8.1",
+    "zod": "3.24.4"
   },
   "devDependencies": {
     "@lhci/cli": "^0.15.1",

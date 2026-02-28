@@ -146,4 +146,45 @@ export const sections: DocsNavSection[] = [
       },
     ],
   },
+  {
+    title: "CLI Guides",
+    items: [
+      {
+        title: "Guides Overview",
+        href: "/docs/cli/guides",
+        description:
+          "Step-by-step walkthroughs for common ATF CLI workflows.",
+      },
+      {
+        title: "Swap Permit Parameters",
+        href: "/docs/cli/guides/swap-permits",
+        description:
+          "Parameter glossary, safe defaults, and override precedence for swap permits.",
+      },
+      {
+        title: "Simulate, Verify, Execute",
+        href: "/docs/cli/guides/simulate-verify-execute",
+        description:
+          "The canonical ATF workflow from simulation through verification to execution.",
+      },
+      {
+        title: "Helius RPC Setup",
+        href: "/docs/cli/guides/helius-setup",
+        description:
+          "Configure profiles, set a Helius endpoint, and confirm connectivity.",
+      },
+      {
+        title: "Devnet Burner Quickstart",
+        href: "/docs/cli/guides/devnet-burner",
+        description:
+          "Disposable devnet wallets for fast, safe testing.",
+      },
+      {
+        title: "Production Bot Basics",
+        href: "/docs/cli/guides/production-bot-basics",
+        description:
+          "Profile separation, receipts retention, and operational hygiene.",
+      },
+    ],
+  },
 ];

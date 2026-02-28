@@ -7,7 +7,7 @@ import { getAtfCliVersion } from "@/lib/version";
 export const metadata: Metadata = {
   title: "ATF CLI: Transactions",
   description:
-    "Simulate, sign, send, and check status of transactions with the ATF CLI. Includes the simulate-verify-execute workflow.",
+    "Simulate, sign, send, and check status of transactions with the ATF CLI. Includes the simulate-verify-execute workflow, permit parameters reference, and enforcement model.",
 };
 
 const cliVersion = getAtfCliVersion();
@@ -27,6 +27,79 @@ export default function TransactionsPage() {
           then execute with confidence.
         </p>
       </header>
+
+      {/* ── Permit Parameters and Enforcement Model ── */}
+      <section className="space-y-6">
+        <HeadingAnchor id="permit-parameters">Permit Parameters and Enforcement Model</HeadingAnchor>
+        <p className="max-w-3xl text-slate-300">
+          Every ATF transaction begins with a <strong className="text-slate-100">permit</strong>:
+          a structured declaration of intent that describes what the transaction is allowed to do.
+          Today, swap permits are the primary type. The model is extensible to other permit types in the future.
+        </p>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-slate-100">Where parameters are defined</h3>
+          <p className="text-sm text-slate-300">
+            Permit parameters can be supplied from several sources. When multiple sources are present,
+            ATF uses the most explicit input as the source of truth:
+          </p>
+          <ol className="list-decimal space-y-1 pl-6 text-sm text-slate-300">
+            <li><strong className="text-slate-100">CLI flags</strong> (highest priority, e.g. <code className="font-mono text-slate-200">--slippage-bps 50</code>)</li>
+            <li><strong className="text-slate-100">Policy JSON file</strong> (referenced via <code className="font-mono text-slate-200">--policy</code>)</li>
+            <li><strong className="text-slate-100">Preset selection</strong> (e.g. <code className="font-mono text-slate-200">--preset swap_small</code>)</li>
+            <li><strong className="text-slate-100">Profile config</strong> (defaults set in the active profile)</li>
+          </ol>
+          <p className="text-sm text-slate-400">
+            Explicit CLI flags override policy file values, which override preset defaults,
+            which override profile-level configuration.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-slate-100">What ATF enforces</h3>
+          <ul className="list-disc space-y-1 pl-6 text-sm text-slate-300">
+            <li>Allowed mint pairs (input and output tokens)</li>
+            <li>Maximum amount and size bounds</li>
+            <li>Slippage bounds (basis points)</li>
+            <li>Protocol allowlist (e.g. Jupiter)</li>
+            <li>TTL and expiry on permits</li>
+            <li>Nonce and replay protection</li>
+            <li>Network constraints (devnet vs mainnet)</li>
+            <li>Deterministic receipt hashing and verification</li>
+          </ul>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-slate-100">What ATF does not do</h3>
+          <ul className="list-disc space-y-1 pl-6 text-sm text-slate-300">
+            <li>Choose slippage for you</li>
+            <li>Choose token pairs on your behalf</li>
+            <li>Decide trade sizes</li>
+            <li>Custody your private keys</li>
+            <li>Auto-route trades or execute without developer intent</li>
+          </ul>
+        </div>
+
+        <div className="rounded-lg border border-primary-300/20 bg-primary-950/10 p-4">
+          <p className="text-sm text-slate-200">
+            <strong className="text-primary-100">The developer defines intent. ATF enforces and proves it.</strong>{" "}
+            You declare what your transaction should do, within what bounds, and for which tokens.
+            ATF evaluates that intent against the active policy, produces a deterministic receipt, and
+            gives you a verifiable proof that the rules were applied correctly. ATF never invents
+            trade parameters or makes decisions on your behalf.
+          </p>
+        </div>
+
+        <p className="text-sm text-slate-400">
+          For a full glossary of swap permit parameters, see the{" "}
+          <Link
+            href="/docs/cli/guides/swap-permits"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            Swap Permits guide &rarr;
+          </Link>
+        </p>
+      </section>
 
       <section className="space-y-4">
         <HeadingAnchor id="simulate">Simulate</HeadingAnchor>

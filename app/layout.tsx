@@ -236,25 +236,31 @@ export default function RootLayout({
                   Demo Live
                 </Link>
                 <Link
-                  href="/#why-trucore"
+                  href="/atf#why-trucore"
                   className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Why TruCore
                 </Link>
                 <Link
-                  href="/#verify"
+                  href="/atf#verify"
                   className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Verify
                 </Link>
                 <Link
-                  href="/#integrations"
+                  href="/atf#integrations"
                   className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Integrations
                 </Link>
                 <Link
-                  href="/#waitlist"
+                  href="/feedback"
+                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                >
+                  Feedback
+                </Link>
+                <Link
+                  href="/#updates"
                   className="rounded-sm transition-colors hover:text-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Waitlist
@@ -322,6 +328,7 @@ export default function RootLayout({
                         <Link href="/receipts" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Receipts Explorer</Link>
                         <Link href="/demo" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Demo Live</Link>
                         <Link href="/blog" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Blog</Link>
+                        <Link href="/feedback" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Feedback</Link>
                       </div>
                     </div>
 

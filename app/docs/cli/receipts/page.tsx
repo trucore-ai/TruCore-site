@@ -122,6 +122,76 @@ req_5555555555     ALLOWED    ✔          2026-02-27T18:38:22Z`}
             without relying on server-side assertions alone.
           </p>
         </div>
+        <div className="rounded-lg border border-primary-300/20 bg-primary-950/10 p-4 space-y-3">
+          <p className="text-sm font-semibold text-primary-100">How the verify gate works in practice:</p>
+          <ol className="list-decimal space-y-1 pl-6 text-sm text-slate-300">
+            <li>Your agent or script calls <code className="font-mono text-slate-200">simulate --verify</code>.</li>
+            <li>The CLI receives the policy decision and receipt from the ATF API.</li>
+            <li>The CLI recomputes the content hash locally from the receipt fields.</li>
+            <li>If the local hash matches the server hash and the decision is ALLOWED, the gate passes.</li>
+            <li>Only then does your script proceed to sign and send.</li>
+          </ol>
+          <p className="text-sm text-slate-400">
+            If verification fails or the decision is BLOCKED, your script should halt. No transaction is sent.
+          </p>
+        </div>
+        <AtfCopyCommand
+          label="Simulate with verify gate"
+          command={`npx @trucore/atf@${cliVersion} simulate --preset swap_small --verify && npx @trucore/atf@${cliVersion} tx send --receipt last`}
+        />
+      </section>
+
+      <section className="space-y-4">
+        <HeadingAnchor id="receipt-fields">Receipt Fields Reference</HeadingAnchor>
+        <p className="text-sm text-slate-300">
+          Every receipt contains these fields. The content hash is computed from the canonical
+          serialization of all non-metadata fields.
+        </p>
+        <div className="overflow-x-auto rounded-lg border border-white/10">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-white/10 bg-neutral-950/50">
+                <th className="px-4 py-2.5 font-semibold text-slate-200">Field</th>
+                <th className="px-4 py-2.5 font-semibold text-slate-200">Description</th>
+              </tr>
+            </thead>
+            <tbody className="text-slate-300">
+              <tr className="border-b border-white/5">
+                <td className="px-4 py-2.5 font-mono text-primary-200">request_id</td>
+                <td className="px-4 py-2.5">Unique identifier for this simulation request.</td>
+              </tr>
+              <tr className="border-b border-white/5">
+                <td className="px-4 py-2.5 font-mono text-primary-200">decision</td>
+                <td className="px-4 py-2.5">ALLOWED or BLOCKED. The deterministic policy outcome.</td>
+              </tr>
+              <tr className="border-b border-white/5">
+                <td className="px-4 py-2.5 font-mono text-primary-200">content_hash</td>
+                <td className="px-4 py-2.5">Deterministic hash of the canonical response payload.</td>
+              </tr>
+              <tr className="border-b border-white/5">
+                <td className="px-4 py-2.5 font-mono text-primary-200">timestamp</td>
+                <td className="px-4 py-2.5">ISO-8601 UTC timestamp when the decision was issued.</td>
+              </tr>
+              <tr className="border-b border-white/5">
+                <td className="px-4 py-2.5 font-mono text-primary-200">ok</td>
+                <td className="px-4 py-2.5">Boolean. True when the request completed without errors.</td>
+              </tr>
+              <tr>
+                <td className="px-4 py-2.5 font-mono text-primary-200">verified</td>
+                <td className="px-4 py-2.5">Boolean. True when the CLI confirmed receipt integrity locally.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="text-sm text-slate-400">
+          For a walkthrough of the full simulate, verify, and execute workflow, see the{" "}
+          <Link
+            href="/docs/cli/guides/simulate-verify-execute"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            Simulate, Verify, Execute guide &rarr;
+          </Link>
+        </p>
       </section>
 
       <section className="space-y-4">

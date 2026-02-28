@@ -10,15 +10,11 @@ const pageSource = readFileSync(ATF_PAGE_PATH, "utf-8");
  * Each must appear exactly once as id="<anchor>" in the page source.
  */
 const REQUIRED_ANCHORS = [
-  "doctor",
-  "burner",
-  "helius",
-  "flow",
-  "toolbox",
-  "designed-for",
-  "roadmap",
-  "get-started",
-  "updates",
+  "hero",
+  "integrations",
+  "why-trucore",
+  "verify",
+  "waitlist",
 ];
 
 describe("/atf anchor integrity", () => {
