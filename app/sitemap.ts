@@ -25,6 +25,7 @@ const corePages: Array<{
   { path: "/docs/receipt-specification-v1", priority: 0.7 },
   { path: "/docs/anchoring-roadmap", priority: 0.7 },
   { path: "/docs/policy-examples", priority: 0.7 },
+  { path: "/docs/changelog", priority: 0.7 },
   { path: "/blog", priority: 0.7 },
   { path: "/security", priority: 0.6 },
   { path: "/security/compliance", priority: 0.6 },

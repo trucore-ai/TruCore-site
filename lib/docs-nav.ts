@@ -22,6 +22,18 @@ export const sections: DocsNavSection[] = [
         description: "Start here for structure, core concepts, and next steps.",
       },
       {
+        title: "ATF CLI",
+        href: "/docs/cli",
+        description:
+          "Run deterministic firewall simulations and verify receipts locally with a single command.",
+      },
+      {
+        title: "ATF API",
+        href: "/docs/api",
+        description:
+          "Public endpoints for deterministic simulation and receipt generation.",
+      },
+      {
         title: "Quickstart",
         href: "/docs/quickstart",
         description:
@@ -64,6 +76,12 @@ export const sections: DocsNavSection[] = [
           "Reference the formal RFC-style receipt contract, deterministic hash rules, and version compatibility policy.",
       },
       {
+        title: "Verification",
+        href: "/docs/verify",
+        description:
+          "Understand what content_hash means, what --verify guarantees, and how to use receipt verification in production.",
+      },
+      {
         title: "Anchoring & Execution Roadmap",
         href: "/docs/anchoring-roadmap",
         description:
@@ -74,6 +92,12 @@ export const sections: DocsNavSection[] = [
         href: "/docs/permits",
         description:
           "Learn permit fields, domain separation, TTL, nonce usage, and replay protection.",
+      },
+      {
+        title: "Changelog",
+        href: "/docs/changelog",
+        description:
+          "Versioned release notes for the ATF CLI and public API.",
       },
     ],
   },

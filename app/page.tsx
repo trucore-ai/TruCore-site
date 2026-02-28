@@ -86,7 +86,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
             {/* ── Micro-nav ── */}
             <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-400">
               <TrackedLink
-                href="/docs"
+                href="/docs/cli"
                 eventName="hero_micronav_click"
                 eventProps={{ target: "docs", location: "home_hero" }}
                 className="transition-colors hover:text-primary-100"
@@ -95,7 +95,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
               </TrackedLink>
               <span aria-hidden="true" className="text-white/20">/</span>
               <TrackedLink
-                href="/changelog"
+                href="/docs/changelog"
                 eventName="hero_micronav_click"
                 eventProps={{ target: "changelog", location: "home_hero" }}
                 className="transition-colors hover:text-primary-100"
