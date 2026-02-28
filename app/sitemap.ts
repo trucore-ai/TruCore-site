@@ -19,7 +19,7 @@ const corePages: Array<{
   { path: "/manifesto", priority: 0.8 },
   { path: "/direction", priority: 0.8 },
   { path: "/process", priority: 0.8 },
-  { path: "/cuza", priority: 0.8 },
+  { path: "/demo", priority: 0.8 },
   { path: "/enterprise", priority: 0.8 },
   { path: "/docs/permit-schema-v1", priority: 0.7 },
   { path: "/docs/receipt-specification-v1", priority: 0.7 },

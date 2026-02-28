@@ -40,7 +40,7 @@ export default function OpenGraphImage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "22px", maxWidth: 900 }}>
           <div style={{ fontSize: 64, lineHeight: 1.1, fontWeight: 700 }}>
-            Trust infrastructure for autonomous finance.
+            Trustless infrastructure for autonomous finance.
           </div>
           <div style={{ fontSize: 30, lineHeight: 1.35, color: "#d8efff" }}>
             Policy-bound execution • Verifiable receipts • Fail-closed design

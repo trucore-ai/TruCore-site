@@ -10,6 +10,11 @@
       ],
       "destination": "https://trucore.xyz/:path*",
       "permanent": true
+    },
+    {
+      "source": "/cuza",
+      "destination": "/demo",
+      "permanent": true
     }
   ]
 }
