@@ -60,8 +60,8 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
               </pre>
             </div>
 
-            <p className="mt-4 text-sm text-primary-200/80">
-              Returns a cryptographically verifiable ALLOWED decision with deterministic content_hash.
+            <p className="mt-4 font-mono text-sm text-primary-200/80">
+              Don&apos;t trust, verify.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -152,7 +152,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
 
         <div className="max-w-3xl space-y-6 text-xl leading-[1.5] text-slate-200">
           <p>1. The CLI sends a deterministic transaction payload to ATF.</p>
-          <p>2. ATF evaluates policy constraints under a trustless model.</p>
+          <p>2. ATF evaluates policy constraints under a zero-trust model.</p>
           <p>3. A decision object is generated with:</p>
           <ul className="list-disc pl-6 space-y-2">
             <li>decision (ALLOWED / BLOCKED)</li>
@@ -167,11 +167,11 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
         </div>
       </Section>
 
-      {/* ── Don't Trust, Verify ── */}
+      {/* ── Proof + Verification ── */}
       <Section id="verify" className="border-t border-white/10 fade-in-up fade-delay-3">
         <div className="mb-8 max-w-2xl">
           <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
-            Don&apos;t Trust, Verify
+            Proof + Verification
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
             Every claim ATF makes is verifiable. Here is what backs it.
@@ -238,7 +238,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
             <li>Permit-based authorization</li>
             <li>Cryptographic execution receipts</li>
             <li>Deterministic content hashing</li>
-            <li>Trustless threat modeling</li>
+            <li>Zero-trust threat modeling</li>
           </ul>
           <p>
             On-chain guardrails and vault enforcement are part of the roadmap.

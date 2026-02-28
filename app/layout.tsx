@@ -351,7 +351,7 @@ export default function RootLayout({
                     <span aria-hidden="true" className="text-slate-600">|</span>
                     <MotionToggle />
                   </div>
-                  <p className="text-slate-400">© {new Date().getFullYear()} TruCore. Don&apos;t trust, verify.</p>
+                  <p className="text-slate-400">© {new Date().getFullYear()} TruCore. Trustless enforcement for AI-driven capital.</p>
                 </div>
               </div>
             </Container>
