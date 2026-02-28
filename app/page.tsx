@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
@@ -41,12 +40,7 @@ export default function Home() {
         <Card className="glass-panel-hero relative overflow-hidden p-6 sm:p-12">
           <div className="hero-legibility-overlay" aria-hidden="true" />
           <div className="relative z-10">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge>Live</Badge>
-              <Badge>Trustless</Badge>
-              <Badge>Deterministic</Badge>
-            </div>
-            <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight text-[#ffe0b2] md:text-6xl">
+            <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-[#ffe0b2] md:text-6xl">
               Agent Transaction Firewall
             </h1>
             <p className="mt-6 max-w-2xl text-xl leading-[1.5] text-slate-200">
@@ -207,8 +201,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
 
         <div className="grid gap-6 sm:grid-cols-2">
           <Card>
-            <Badge>Receipts</Badge>
-            <h3 className="mt-4 text-lg font-semibold text-[#ffe0b2]">Deterministic Receipts</h3>
+            <h3 className="text-lg font-semibold text-[#ffe0b2]">Deterministic Receipts</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
               Every decision produces a <code className="text-primary-200/90">content_hash</code> computed from stable
               JSON serialization. Re-hash the payload locally and the digest matches.
@@ -216,8 +209,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
           </Card>
 
           <Card>
-            <Badge>Tracing</Badge>
-            <h3 className="mt-4 text-lg font-semibold text-[#ffe0b2]">Request Tracing</h3>
+            <h3 className="text-lg font-semibold text-[#ffe0b2]">Request Tracing</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
               Every request carries an <code className="text-primary-200/90">X-Request-ID</code> header.
               Pass it through your stack for end-to-end correlation across services.
@@ -225,8 +217,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
           </Card>
 
           <Card>
-            <Badge>CLI</Badge>
-            <h3 className="mt-4 text-lg font-semibold text-[#ffe0b2]">Zero-Dependency CLI</h3>
+            <h3 className="text-lg font-semibold text-[#ffe0b2]">Zero-Dependency CLI</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
               The CLI ships with no runtime dependencies. Run it in CI, on air-gapped hosts,
               or inside containers without pulling transitive packages.
@@ -234,8 +225,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
           </Card>
 
           <Card>
-            <Badge>Production</Badge>
-            <h3 className="mt-4 text-lg font-semibold text-[#ffe0b2]">Production Path</h3>
+            <h3 className="text-lg font-semibold text-[#ffe0b2]">Production Path</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
               <code className="text-primary-200/90">/v1/simulate</code> is the canonical API route.
               <code className="text-primary-200/90">/api/simulate</code> aliases it behind Caddy for convenience.
