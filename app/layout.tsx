@@ -186,27 +186,27 @@ export default function RootLayout({
         <HeroBackgroundPulses />
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="glass-surface border-b border-white/10 bg-neutral-900/45 backdrop-blur-md">
-            <Container className="flex h-20 items-center justify-between">
+            <Container className="flex h-16 items-center justify-between">
               <Link
                 href="/"
                 aria-label="TruCore home"
-                className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                className="flex shrink-0 items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
               >
                 <Image
                   src={truCoreFavicon}
                   alt="TruCore logo"
-                  width={92}
-                  height={92}
-                  className="h-20 w-20 rounded-md object-contain"
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 rounded-md object-contain"
                   priority
                 />
-                <span className="text-4xl font-bold tracking-tight text-white">
+                <span className="text-2xl font-bold tracking-tight text-white">
                   TruCore
                 </span>
               </Link>
               <nav
                 aria-label="Primary"
-                className="flex items-center gap-3 text-sm font-medium text-slate-100 sm:gap-5 sm:text-base md:gap-8 md:text-xl"
+                className="flex items-center gap-3 text-sm font-medium text-slate-100 sm:gap-4 sm:text-sm md:gap-6 md:text-base"
               >
                 <Link
                   href="/#hero"
