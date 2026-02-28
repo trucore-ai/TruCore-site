@@ -242,7 +242,7 @@ body {
     0 1px 0 rgba(255, 255, 255, 0.45),
     0 6px 12px rgba(56, 189, 248, 0.25),
     0 10px 20px rgba(2, 6, 23, 0.55);
-  animation: glassGlyphFloat 4.8s ease-in-out infinite;
+  animation: glassGlyphFloat 4.8s ease-in-out 1 both;
 }
 
 @keyframes glassGlyphFloat {
@@ -399,7 +399,7 @@ body {
   pointer-events: none;
   background: radial-gradient(circle, rgba(220, 245, 255, 0.3) 0%, rgba(180, 225, 250, 0.15) 35%, transparent 70%);
   filter: blur(0.5px);
-  animation: glassSparkle 4s ease-in-out infinite;
+  animation: glassSparkle 4s ease-in-out 1 both;
 }
 
 .glass-sparkle-tl {
@@ -431,7 +431,7 @@ body {
   background: radial-gradient(ellipse at center, rgba(180, 225, 255, 0.05) 0%, rgba(150, 210, 250, 0.02) 40%, transparent 65%);
   filter: blur(12px);
   pointer-events: none;
-  animation: glassReflectionDrift var(--reflect-dur) ease-in-out var(--reflect-delay) infinite;
+  animation: glassReflectionDrift var(--reflect-dur) ease-in-out var(--reflect-delay) 1 both;
 }
 
 @keyframes glassReflectionDrift {
@@ -506,7 +506,7 @@ body {
       transparent 100%
     );
   transform: translateX(-130%);
-  animation: glassLightFlash var(--flash-dur) cubic-bezier(0.16, 0.7, 0.3, 1) var(--flash-delay) infinite;
+  animation: glassLightFlash var(--flash-dur) cubic-bezier(0.16, 0.7, 0.3, 1) var(--flash-delay) 1 both;
 }
 
 @keyframes glassLightFlash {
@@ -552,8 +552,7 @@ body {
   .glass-float-glyph,
   .glass-reflection-spot,
   .glass-sparkle,
-  .glass-hover-flash,
-  .glass-light-flash {
+  .glass-hover-flash {
     animation: none !important;
   }
 
@@ -579,7 +578,6 @@ html[data-reduce-motion="true"] .glass-sweep,
 html[data-reduce-motion="true"] .glass-reflection-spot,
 html[data-reduce-motion="true"] .glass-sparkle,
 html[data-reduce-motion="true"] .glass-hover-flash,
-html[data-reduce-motion="true"] .glass-light-flash,
 html[data-reduce-motion="true"] .fade-in-up,
 html[data-reduce-motion="true"] .glass-float-glyph {
   animation: none !important;

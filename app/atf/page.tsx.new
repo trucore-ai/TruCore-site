@@ -218,9 +218,6 @@ export default function ATFPage() {
             No secrets leaked. Private keys, API tokens, and RPC credentials are
             redacted from all output by default.
           </p>
-          <p className="mt-2 text-sm text-slate-400">
-            Doctor runs locally. Secrets are never uploaded.
-          </p>
         </div>
       </Section>
 
@@ -386,9 +383,6 @@ Archive`}
           funds move. This verify-then-send model means you never rely on server
           trust alone.
         </p>
-        <p className="mt-2 max-w-3xl text-sm text-slate-400">
-          Verify receipts locally before signing.
-        </p>
       </Section>
 
       {/* ── 6. Toolbox ── */}
@@ -552,7 +546,7 @@ Archive`}
         <div className="mx-auto mt-8 max-w-xl">
           <Suspense
             fallback={
-              <div className="h-40 rounded-xl bg-white/5" />
+              <div className="h-40 animate-pulse rounded-xl bg-white/5" />
             }
           >
             <WaitlistForm />

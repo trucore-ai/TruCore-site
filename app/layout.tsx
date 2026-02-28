@@ -140,10 +140,13 @@ export default function RootLayout({
     var key = "trucore.motionPreference";
     var stored = window.localStorage.getItem(key);
     var systemReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    var reduced = stored === "reduce" || (stored !== "reduce" && systemReduced);
+    var reduced = true;
+    if (stored === "enable" && !systemReduced) {
+      reduced = false;
+    }
     document.documentElement.dataset.reduceMotion = reduced ? "true" : "false";
   } catch {
-    document.documentElement.dataset.reduceMotion = "false";
+    document.documentElement.dataset.reduceMotion = "true";
   }
 })();`}
         </Script>
@@ -206,7 +209,7 @@ export default function RootLayout({
               </Link>
               <nav
                 aria-label="Primary"
-                className="flex items-center gap-3 text-xs font-medium text-slate-100 sm:gap-4 sm:text-sm md:gap-6 md:text-base"
+                className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs font-medium text-slate-100 sm:gap-x-4 sm:text-sm md:gap-x-6 md:text-base"
               >
                 <Link
                   href="/#hero"
@@ -228,25 +231,25 @@ export default function RootLayout({
                 </Link>
                 <Link
                   href="/demo"
-                  className="hidden rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 md:inline"
+                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Demo Live
                 </Link>
                 <Link
                   href="/#why-trucore"
-                  className="hidden rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 sm:inline"
+                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Why TruCore
                 </Link>
                 <Link
                   href="/#verify"
-                  className="hidden rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 sm:inline"
+                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Verify
                 </Link>
                 <Link
                   href="/#integrations"
-                  className="hidden rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 md:inline"
+                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Integrations
                 </Link>

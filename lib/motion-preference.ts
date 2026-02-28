@@ -1,6 +1,12 @@
 export const MOTION_PREFERENCE_STORAGE_KEY = "trucore.motionPreference";
 
-export type MotionPreference = "system" | "reduce";
+/**
+ * Motion preference:
+ * - "system" (default) = animations OFF (calm, professional default)
+ * - "enable" = user explicitly opted in to animations
+ * - "reduce" = legacy value, treated same as "system"
+ */
+export type MotionPreference = "system" | "enable" | "reduce";
 
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -10,7 +16,9 @@ type ResolveReducedMotionInput = {
 };
 
 export function parseMotionPreference(rawValue: string | null | undefined): MotionPreference {
-  return rawValue === "reduce" ? "reduce" : "system";
+  if (rawValue === "enable") return "enable";
+  if (rawValue === "reduce") return "reduce";
+  return "system";
 }
 
 export function readStoredMotionPreference(storage: StorageLike | null | undefined): MotionPreference {
@@ -34,10 +42,22 @@ export function persistMotionPreference(preference: MotionPreference, storage: S
   storage.setItem(MOTION_PREFERENCE_STORAGE_KEY, preference);
 }
 
+/**
+ * Animations are OFF by default. Only enabled when user explicitly opts in
+ * via the toggle (stored preference === "enable") AND the OS does not
+ * enforce reduced motion.
+ */
 export function resolveReducedMotion({ storedPreference, systemReduced }: ResolveReducedMotionInput): boolean {
-  if (storedPreference === "reduce") {
+  // OS-level reduced motion always wins
+  if (systemReduced) {
     return true;
   }
 
-  return systemReduced;
+  // Only enable animations when user explicitly opted in
+  if (storedPreference === "enable") {
+    return false;
+  }
+
+  // Default: animations off
+  return true;
 }

@@ -6,7 +6,23 @@ function normalizeCliVersion(version: string): string {
 }
 
 export function getAtfCliVersion(): string {
-  return normalizeCliVersion(process.env.NEXT_PUBLIC_ATF_CLI_VERSION ?? DEFAULT_ATF_CLI_VERSION);
+  const raw = process.env.NEXT_PUBLIC_ATF_CLI_VERSION;
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (isProduction) {
+    if (raw === undefined || raw.trim().length === 0) {
+      throw new Error(
+        "NEXT_PUBLIC_ATF_CLI_VERSION must be explicitly set in production and cannot be 'latest'."
+      );
+    }
+    if (raw.trim().toLowerCase() === "latest") {
+      throw new Error(
+        "NEXT_PUBLIC_ATF_CLI_VERSION must be explicitly set in production and cannot be 'latest'."
+      );
+    }
+  }
+
+  return normalizeCliVersion(raw ?? DEFAULT_ATF_CLI_VERSION);
 }
 
 export function getAtfCliTag(): string {

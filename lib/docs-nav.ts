@@ -25,7 +25,7 @@ export const sections: DocsNavSection[] = [
         title: "ATF CLI",
         href: "/docs/cli",
         description:
-          "Run deterministic firewall simulations and verify receipts locally with a single command.",
+          "Complete CLI reference: doctor, burner, transactions, receipts, and more.",
       },
       {
         title: "ATF API",
@@ -98,6 +98,51 @@ export const sections: DocsNavSection[] = [
         href: "/docs/changelog",
         description:
           "Versioned release notes for the ATF CLI and public API.",
+      },
+    ],
+  },
+  {
+    title: "CLI Deep Dives",
+    items: [
+      {
+        title: "Doctor",
+        href: "/docs/cli/doctor",
+        description: "Environment health checks, RPC reachability, and wallet detection.",
+      },
+      {
+        title: "Profiles & Config",
+        href: "/docs/cli/profiles",
+        description: "Named profiles, secrets separation, and configuration management.",
+      },
+      {
+        title: "RPC & Network",
+        href: "/docs/cli/rpc",
+        description: "Helius-first RPC setup, latency testing, and network selection.",
+      },
+      {
+        title: "Devnet Burner",
+        href: "/docs/cli/burner",
+        description: "Throwaway devnet wallets for fast, safe testing.",
+      },
+      {
+        title: "Transactions",
+        href: "/docs/cli/transactions",
+        description: "Simulate, sign, send, and check transaction status.",
+      },
+      {
+        title: "Receipts & Verification",
+        href: "/docs/cli/receipts",
+        description: "Deterministic receipt verification and local hash recomputation.",
+      },
+      {
+        title: "Shell Completion",
+        href: "/docs/cli/completion",
+        description: "Tab-completion scripts for bash, zsh, and fish.",
+      },
+      {
+        title: "Whoami & Ls",
+        href: "/docs/cli/whoami-ls",
+        description: "Identity inspection and profile listing.",
       },
     ],
   },

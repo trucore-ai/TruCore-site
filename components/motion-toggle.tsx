@@ -53,13 +53,14 @@ export function MotionToggle() {
     applyReduceMotionAttribute(preference, systemReduced);
   }, [preference, systemReduced]);
 
-  const reduceMotionEnabled = resolveReducedMotion({
+  const animationsEnabled = !resolveReducedMotion({
     storedPreference: preference,
     systemReduced,
   });
 
   const onToggle = () => {
-    const nextPreference = preference === "reduce" ? "system" : "reduce";
+    // Toggle between "enable" (animations on) and "system" (animations off)
+    const nextPreference: MotionPreference = preference === "enable" ? "system" : "enable";
 
     persistMotionPreference(nextPreference, window.localStorage);
     setPreference(nextPreference);
@@ -70,11 +71,12 @@ export function MotionToggle() {
   return (
     <button
       type="button"
-      aria-pressed={preference === "reduce"}
+      aria-pressed={animationsEnabled}
       onClick={onToggle}
+      title="Animations are off by default. Toggle to enable background effects."
       className="rounded-sm border border-white/20 bg-white/5 px-3 py-1 text-sm font-medium text-slate-100 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
     >
-      {reduceMotionEnabled ? "Minimal background" : "Reduce motion"}
+      {animationsEnabled ? "Animations: On" : "Animations: Off"}
     </button>
   );
 }

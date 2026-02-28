@@ -42,18 +42,6 @@ export function StatusLiveChecks() {
   const [snapshot, setSnapshot] = useState<SnapshotPayload | null>(null);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const applyPreference = () => setPrefersReducedMotion(mq.matches);
-    applyPreference();
-
-    mq.addEventListener("change", applyPreference);
-    return () => {
-      mq.removeEventListener("change", applyPreference);
-    };
-  }, []);
 
   const runChecks = useCallback(async () => {
     setIsLoading(true);
@@ -172,7 +160,7 @@ export function StatusLiveChecks() {
   }, [hasFailures, isLoading]);
 
   const indicatorClass = (level: StatusLevel) => {
-    const base = prefersReducedMotion ? "h-2.5 w-2.5 rounded-full" : "h-2.5 w-2.5 rounded-full animate-pulse";
+    const base = "h-2.5 w-2.5 rounded-full";
 
     if (level === "ok") return `${base} bg-emerald-400`;
     if (level === "warn") return `${base} bg-orange-400`;

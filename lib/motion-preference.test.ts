@@ -30,17 +30,18 @@ function createStorage(value: MotionPreference | null): MockStorage {
 }
 
 describe("motion preference", () => {
-  it("defaults to system behavior when no preference is persisted", () => {
+  it("defaults to calm (reduced motion) when no preference is persisted", () => {
     const storage = createStorage(null);
     const preference = readStoredMotionPreference(storage);
 
     expect(preference).toBe("system");
+    // Calm by default: animations off even when OS does not request reduced motion
     expect(
       resolveReducedMotion({
         storedPreference: preference,
         systemReduced: false,
       }),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       resolveReducedMotion({
         storedPreference: preference,
