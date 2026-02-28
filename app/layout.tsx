@@ -236,19 +236,19 @@ export default function RootLayout({
                   Demo Live
                 </Link>
                 <Link
-                  href="/atf#why-trucore"
+                  href="/#why-trucore"
                   className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Why TruCore
                 </Link>
                 <Link
-                  href="/atf#verify"
+                  href="/#verify"
                   className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Verify
                 </Link>
                 <Link
-                  href="/atf#integrations"
+                  href="/#integrations"
                   className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Integrations
@@ -260,7 +260,7 @@ export default function RootLayout({
                   Feedback
                 </Link>
                 <Link
-                  href="/#updates"
+                  href="/atf#updates"
                   className="rounded-sm transition-colors hover:text-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Waitlist

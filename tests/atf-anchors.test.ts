@@ -2,14 +2,16 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "fs";
 import { join } from "path";
 
+const HOME_PAGE_PATH = join(__dirname, "..", "app", "page.tsx");
 const ATF_PAGE_PATH = join(__dirname, "..", "app", "atf", "page.tsx");
-const pageSource = readFileSync(ATF_PAGE_PATH, "utf-8");
+const pageSource = readFileSync(HOME_PAGE_PATH, "utf-8");
+const atfPageSource = readFileSync(ATF_PAGE_PATH, "utf-8");
 
 /**
- * Every anchor that /atf internal links and documentation reference.
- * Each must appear exactly once as id="<anchor>" in the page source.
+ * Anchors that live on the home page (/) after the hero swap.
+ * These sections moved from /atf to / and are referenced by nav links.
  */
-const REQUIRED_ANCHORS = [
+const HOME_REQUIRED_ANCHORS = [
   "hero",
   "integrations",
   "why-trucore",
@@ -17,55 +19,80 @@ const REQUIRED_ANCHORS = [
   "waitlist",
 ];
 
-describe("/atf anchor integrity", () => {
-  for (const anchor of REQUIRED_ANCHORS) {
+/**
+ * Anchors that live on the ATF page (/atf).
+ */
+const ATF_REQUIRED_ANCHORS = [
+  "hero",
+  "doctor",
+  "burner",
+  "updates",
+];
+
+describe("/ (home) anchor integrity", () => {
+  for (const anchor of HOME_REQUIRED_ANCHORS) {
     it(`has exactly one id="${anchor}" in the rendered tree`, () => {
       const pattern = new RegExp(`id=["']${anchor}["']`, "g");
       const matches = pageSource.match(pattern);
       expect(matches, `Anchor #${anchor} should exist exactly once`).toHaveLength(1);
     });
   }
+});
 
-  it("has no duplicate section IDs", () => {
-    // Extract all id="..." values from Section/section elements
-    const idPattern = /id=["']([^"']+)["']/g;
-    const ids: string[] = [];
-    let match: RegExpExecArray | null;
-    while ((match = idPattern.exec(pageSource)) !== null) {
-      ids.push(match[1]);
-    }
+describe("/atf anchor integrity", () => {
+  for (const anchor of ATF_REQUIRED_ANCHORS) {
+    it(`has exactly one id="${anchor}" in the rendered tree`, () => {
+      const pattern = new RegExp(`id=["']${anchor}["']`, "g");
+      const matches = atfPageSource.match(pattern);
+      expect(matches, `Anchor #${anchor} should exist exactly once`).toHaveLength(1);
+    });
+  }
+});
 
-    const seen = new Set<string>();
-    const duplicates: string[] = [];
-    for (const id of ids) {
-      if (seen.has(id)) duplicates.push(id);
-      seen.add(id);
-    }
+describe("no duplicate section IDs", () => {
+  for (const [label, source] of [["/ (home)", pageSource], ["/atf", atfPageSource]] as const) {
+    it(`${label} has no duplicate section IDs`, () => {
+      const idPattern = /id=["']([^"']+)["']/g;
+      const ids: string[] = [];
+      let match: RegExpExecArray | null;
+      while ((match = idPattern.exec(source)) !== null) {
+        ids.push(match[1]);
+      }
 
-    expect(duplicates, `Duplicate IDs found: ${duplicates.join(", ")}`).toEqual([]);
-  });
+      const seen = new Set<string>();
+      const duplicates: string[] = [];
+      for (const id of ids) {
+        if (seen.has(id)) duplicates.push(id);
+        seen.add(id);
+      }
 
-  it("every hero nav href points to an existing anchor", () => {
-    // Match href="#..." patterns within the page
-    const hrefPattern = /href=["']#([^"']+)["']/g;
-    const hrefs: string[] = [];
-    let match: RegExpExecArray | null;
-    while ((match = hrefPattern.exec(pageSource)) !== null) {
-      hrefs.push(match[1]);
-    }
+      expect(duplicates, `Duplicate IDs found: ${duplicates.join(", ")}`).toEqual([]);
+    });
+  }
+});
 
-    // Collect all section IDs
-    const idPattern = /id=["']([^"']+)["']/g;
-    const existingIds = new Set<string>();
-    while ((match = idPattern.exec(pageSource)) !== null) {
-      existingIds.add(match[1]);
-    }
+describe("internal href anchors point to existing IDs", () => {
+  for (const [label, source] of [["/ (home)", pageSource], ["/atf", atfPageSource]] as const) {
+    it(`${label} every href="#..." points to an existing anchor`, () => {
+      const hrefPattern = /href=["']#([^"']+)["']/g;
+      const hrefs: string[] = [];
+      let match: RegExpExecArray | null;
+      while ((match = hrefPattern.exec(source)) !== null) {
+        hrefs.push(match[1]);
+      }
 
-    for (const href of hrefs) {
-      expect(
-        existingIds.has(href),
-        `href="#${href}" points to a non-existent section ID`
-      ).toBe(true);
-    }
-  });
+      const idPattern = /id=["']([^"']+)["']/g;
+      const existingIds = new Set<string>();
+      while ((match = idPattern.exec(source)) !== null) {
+        existingIds.add(match[1]);
+      }
+
+      for (const href of hrefs) {
+        expect(
+          existingIds.has(href),
+          `href="#${href}" points to a non-existent section ID`
+        ).toBe(true);
+      }
+    });
+  }
 });

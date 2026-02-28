@@ -1,12 +1,25 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
+import { AtfDesignedFor } from "@/components/atf-designed-for";
+import { AtfV1Scope } from "@/components/atf-v1-scope";
+import { AtfRoadmap } from "@/components/atf-roadmap";
+import { AtfReadiness } from "@/components/atf-readiness";
+import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
+import { TransparencyMetrics } from "@/components/transparency-metrics";
+import { WhyNowSection } from "@/components/why-now-section";
+import { EnforcementProofSection } from "@/components/enforcement-proof-section";
+import { SecurityCommitments } from "@/components/security-commitments";
+import { SecurityIntegrityStrip } from "@/components/security-integrity-strip";
+import { EvidenceMetricsSection } from "@/components/evidence-metrics-section";
+import { PublicUsageSnapshot } from "@/components/public-usage-snapshot";
+import { AtfComparison } from "@/components/atf-comparison";
+import { MoatSignalStrip } from "@/components/moat-signal-strip";
 import { TrackedLink } from "@/components/tracked-link";
-import { WaitlistForm } from "@/components/waitlist-form";
-import { AtfCopyCommand } from "@/components/atf-copy-command";
-import { getAtfCliVersion } from "@/lib/version";
+import { RiskBoundaryBlock } from "@/components/risk-boundary-block";
+import { Tilt } from "@/components/ui/tilt";
+import { SingleCommandQuickstart } from "@/components/single-command-quickstart";
 
 export const metadata: Metadata = {
   title: "TruCore | Developer Security Infrastructure for Solana",
@@ -34,531 +47,815 @@ export const metadata: Metadata = {
   },
 };
 
-const cliVersion = getAtfCliVersion();
-
-/* ── Toolbox command groups ── */
-const toolboxGroups = [
+const threatVectors = [
   {
-    title: "Environment",
-    commands: [
-      { name: "doctor", desc: "Full environment health check" },
-      { name: "whoami", desc: "Show active profile and pubkey" },
-      { name: "ls", desc: "List all configured profiles" },
-      { name: "completion", desc: "Generate shell completions (bash/zsh/fish)" },
-    ],
+    threat: "Unbounded execution",
+    impact: "Agent submits transactions outside approved parameters, draining capital.",
   },
   {
-    title: "Network",
-    commands: [
-      { name: "rpc ping", desc: "Verify RPC connectivity and latency" },
-    ],
+    threat: "Protocol drift",
+    impact: "Agent interacts with unapproved or compromised contracts without restriction.",
   },
   {
-    title: "Transactions",
-    commands: [
-      { name: "tx sign", desc: "Sign a transaction payload" },
-      { name: "tx send", desc: "Submit a signed transaction to the network" },
-      { name: "tx status", desc: "Check confirmation status of a transaction" },
-    ],
+    threat: "Slippage exploitation",
+    impact: "Adverse fills and MEV extraction erode portfolio value during autonomous trades.",
   },
   {
-    title: "Verification",
-    commands: [
-      { name: "receipts verify", desc: "Verify deterministic receipt integrity locally" },
-    ],
+    threat: "Authorization creep",
+    impact: "Over-permissioned agents accumulate access rights beyond original scope.",
+  },
+  {
+    threat: "Audit opacity",
+    impact: "No verifiable trail of what was checked, approved, or rejected at execution time.",
+  },
+  {
+    threat: "Adversary and MEV exploitation",
+    impact: "MEV bots, sandwich attacks, and adversarial actors extract value from agent transactions that lack pre-flight protection and slippage enforcement.",
   },
 ];
+
+const architectureLayers = [
+  {
+    label: "Policy Engine",
+    description:
+      "Declarative rule definitions evaluated against every transaction before submission. Supports allowlists, rate limits, slippage bounds, and multi-sig requirements.",
+  },
+  {
+    label: "Permit Gateway",
+    description:
+      "Scoped, time-bound authorization tokens grant agents minimal execution rights. Permits expire automatically and cannot be escalated.",
+  },
+  {
+    label: "Execution Validator",
+    description:
+      "Pre-flight simulation and constraint verification ensure transactions conform to policy before touching the chain. Fail-closed by default.",
+  },
+  {
+    label: "Receipt Ledger",
+    description:
+      "Cryptographic receipts capture every policy evaluation, approval, rejection, and settlement event for tamper-evident post-trade audit.",
+  },
+];
+
+const lastUpdated = process.env.NEXT_PUBLIC_BUILD_DATE ?? "unknown";
+const atfVersion = process.env.NEXT_PUBLIC_ATF_VERSION;
 
 export default function Home() {
   return (
     <Container>
-      {/* ── 1. Hero: ATF Developer Platform ── */}
+      {/* ── Hero ── */}
       <Section id="hero" className="fade-in-up">
-        <Card className="glass-panel-hero relative overflow-hidden p-6 sm:p-12">
+        <div className="relative max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/35 p-6 sm:p-8">
           <div className="hero-legibility-overlay" aria-hidden="true" />
-          <div className="relative z-10">
+          <div className="relative z-10 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
               Developer Security Infrastructure
             </p>
-            <h1 className="mt-3 max-w-4xl text-4xl font-bold tracking-tight text-[#ffe0b2] md:text-6xl">
-              Agent Transaction Firewall
+            <h1 className="mt-2 text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl lg:text-7xl">
+              Deterministic enforcement for onchain automation
             </h1>
-            <p className="mt-6 max-w-3xl text-xl leading-[1.6] text-slate-200">
-              ATF is a non-custodial developer platform for building and operating
-              transactional bots and AI agents on Solana. Profiles, Helius-first
-              RPC, devnet burner mode, transaction tooling, and cryptographically
+            <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
+              ATF is a non-custodial developer platform for Solana bots and AI agents.
+              Profiles, Helius-first RPC, transaction tooling, and cryptographically
               verifiable receipts.
             </p>
+            <p className="mt-3 text-lg leading-[1.5] text-slate-300 sm:text-xl">
+              Purpose-built for financial invariants, spend limits, protocol allowlists, exposure caps, and time-bound
+              execution.
+            </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          {/* CTAs */}
+            <div className="mt-8 flex flex-wrap gap-4">
               <TrackedLink
-                href="#doctor"
-                eventName="hero_doctor_click"
+                href="/atf/simulator"
+                eventName="hero_simulator_click"
                 eventProps={{ location: "atf_hero" }}
-                className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-lg font-semibold text-neutral-950 transition-colors hover:bg-slate-200"
+                className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"
               >
-                Run This First
+                Try sandbox
               </TrackedLink>
               <TrackedLink
-                href="#burner"
-                eventName="hero_burner_click"
+                href="/atf/apply"
+                eventName="hero_pilot_click"
                 eventProps={{ location: "atf_hero" }}
-                className="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3 text-lg font-semibold text-slate-100 transition-colors hover:bg-white/10"
+                className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
               >
-                Devnet Quickstart
+                Apply for pilot
+              </TrackedLink>
+              <TrackedLink
+                href="/docs/5-minute-quickstart"
+                eventName="hero_quickstart_click"
+                eventProps={{ location: "atf_hero", target: "5_min_quickstart" }}
+                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-7 py-4 text-xl font-semibold text-slate-100 transition-colors hover:bg-white/10"
+              >
+                Get started in 5 min
               </TrackedLink>
             </div>
 
-            {/* ── Micro-nav ── */}
-            <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-400">
-              <TrackedLink
-                href="/docs/cli"
-                eventName="hero_micronav_click"
-                eventProps={{ target: "cli_docs", location: "atf_hero" }}
-                className="transition-colors hover:text-primary-100"
-              >
-                CLI Docs
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
-              <TrackedLink
-                href="/docs/verify"
-                eventName="hero_micronav_click"
-                eventProps={{ target: "verify_docs", location: "atf_hero" }}
-                className="transition-colors hover:text-primary-100"
-              >
-                Verification
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
-              <TrackedLink
-                href="/docs/api"
-                eventName="hero_micronav_click"
-                eventProps={{ target: "api_docs", location: "atf_hero" }}
-                className="transition-colors hover:text-primary-100"
-              >
-                API
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
-              <TrackedLink
-                href="/docs/changelog"
-                eventName="hero_micronav_click"
-                eventProps={{ target: "changelog", location: "atf_hero" }}
-                className="transition-colors hover:text-primary-100"
-              >
-                Changelog
-              </TrackedLink>
+            <div className="mt-6 max-w-3xl">
+              <SingleCommandQuickstart location="atf" showV1StabilityContract />
             </div>
-          </div>
-        </Card>
-      </Section>
 
-      {/* ── 2. Run This First: doctor ── */}
-      <Section id="doctor" className="border-t border-white/10 fade-in-up fade-delay-1">
-        <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
-            Run This First
-          </h2>
-          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            One command tells you everything about your environment. No
-            installation required.
-          </p>
-        </div>
-
-        <div className="max-w-3xl">
-          <AtfCopyCommand
-            label="Doctor"
-            command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
-          />
-        </div>
-
-        <div className="mt-8 max-w-3xl">
-          <h3 className="text-lg font-semibold text-[#ffe0b2]">What it checks</h3>
-          <ul className="mt-3 space-y-2 text-sm text-slate-200">
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-primary-200">&#x2713;</span>
-              Active profile and configuration
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-primary-200">&#x2713;</span>
-              RPC provider connectivity and latency
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-primary-200">&#x2713;</span>
-              Signer/wallet presence and type
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-primary-200">&#x2713;</span>
-              Network selection (devnet/mainnet)
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-primary-200">&#x2713;</span>
-              Environment variables and paths
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-0.5 text-primary-200">&#x2713;</span>
-              CLI and Node.js versions
-            </li>
-          </ul>
-        </div>
-
-        {/* ── Example doctor JSON ── */}
-        <div className="mt-8 max-w-3xl">
-          <h3 className="text-lg font-semibold text-[#ffe0b2]">Example output</h3>
-          <pre className="mt-3 overflow-x-auto rounded-xl border border-white/10 bg-neutral-950/60 p-4 font-mono text-xs text-slate-200 whitespace-pre-wrap break-words">
-{`{
-  "ok": true,
-  "profile": "devnet-burner",
-  "network": "devnet",
-  "rpc": { "provider": "helius", "latency_ms": 87 },
-  "wallet": { "present": true, "type": "burner", "pubkey": "9x…kP" },
-  "receipts": { "verify_ready": true },
-  "versions": { "cli": "${cliVersion}", "node": "20.x" }
-}`}
-          </pre>
-          <p className="mt-3 text-sm text-primary-200/80">
-            No secrets leaked. Private keys, API tokens, and RPC credentials are
-            redacted from all output by default.
-          </p>
-          <p className="mt-2 text-sm text-slate-400">
-            Doctor runs locally. Secrets are never uploaded.
-          </p>
-        </div>
-      </Section>
-
-      {/* ── 3. Devnet Burner Quickstart ── */}
-      <Section id="burner" className="border-t border-white/10 fade-in-up fade-delay-2">
-        <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
-            Devnet Burner Quickstart
-          </h2>
-          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            Go from zero to a verified devnet transaction in six commands. Burner
-            mode creates an ephemeral wallet so you never risk real keys.
-          </p>
-        </div>
-
-        <div className="max-w-3xl space-y-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              1. Create a devnet profile
+            <p className="mt-5 text-lg text-slate-300">
+              Need proof first?{" "}
+              <TrackedLink
+                href="/receipts"
+                eventName="hero_receipts_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                View example receipts
+              </TrackedLink>
+              .
             </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} profile create devnet-burner --network devnet`}
-            />
-          </div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              2. Select the profile
+            <p className="mt-2 text-lg text-slate-300">
+              New here? Read the{" "}
+              <TrackedLink
+                href="/agent-transaction-firewall"
+                eventName="category_definition_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                Agent Transaction Firewall definition
+              </TrackedLink>
+              .
             </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} profile select devnet-burner`}
-            />
-          </div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              3. Enable burner mode (ephemeral devnet wallet)
+            <p className="mt-2 text-lg text-slate-300">
+              For operational detail, see{" "}
+              <TrackedLink
+                href="/process"
+                eventName="process_page_link_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                how ATF is built
+              </TrackedLink>
+              {" "}and{" "}
+              <TrackedLink
+                href="/enterprise"
+                eventName="enterprise_page_link_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                enterprise readiness
+              </TrackedLink>
+              .
             </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} burner enable`}
-            />
-          </div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              4. Verify RPC connectivity
+            <p className="mt-4 text-sm font-medium text-slate-400">
+              Last updated: {lastUpdated}
             </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} rpc ping`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              5. Sign and send a small transaction
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} tx sign --preset swap_small | npx @trucore/atf@${cliVersion} tx send`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              6. Verify the receipt
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} receipts verify --last`}
-            />
           </div>
         </div>
       </Section>
 
-      {/* ── 4. Helius Setup ── */}
-      <Section id="helius" className="border-t border-white/10 fade-in-up fade-delay-3">
-        <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
-            Helius Setup: Profiles + Secrets + RPC Ping
-          </h2>
-          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            ATF is Helius-first. Set your RPC endpoint through a named profile and
-            secrets are never echoed to stdout.
-          </p>
-        </div>
-
-        <div className="max-w-3xl space-y-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              1. Create a production profile
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} profile create prod --network mainnet-beta`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              2. Set your Helius RPC URL (stored securely, never printed)
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} profile config prod --rpc-url <YOUR_HELIUS_URL>`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              3. Sanity check: ping the RPC
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} rpc ping --profile prod`}
-            />
-          </div>
-        </div>
-
-        <p className="mt-6 max-w-3xl text-sm text-primary-200/80">
-          Secrets set via <code className="text-primary-200/90">profile config</code> are
-          stored in your local profile directory and redacted from all CLI output.
-          ATF never transmits private keys or API tokens over the network.
-        </p>
+      <Section className="pt-0">
+        <SecurityIntegrityStrip />
       </Section>
 
-      {/* ── 5. Simulate > Verify > Execute Flow ── */}
-      <Section id="flow" className="border-t border-white/10 fade-in-up fade-delay-4">
-        <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
-            Simulate, Verify, Execute
+      {/* ── What ATF Enforces ── */}
+      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+            What ATF Enforces
           </h2>
-          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            Every transaction passes through a deterministic pipeline. Nothing
-            touches the chain until local verification succeeds.
-          </p>
         </div>
-
-        <div className="max-w-3xl">
-          <pre className="overflow-x-auto rounded-xl border border-white/10 bg-neutral-950/60 p-5 font-mono text-sm text-slate-200">
-{`Simulate (policy)
-    │
-    ▼
-Receipt (content_hash)
-    │
-    ▼
-Verify (local)
-    │
-    ▼
-Sign
-    │
-    ▼
-Send
-    │
-    ▼
-Status
-    │
-    ▼
-Archive`}
-          </pre>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              title: "Spend Caps",
+              desc: "Max SOL or token spend per tx and per window.",
+            },
+            {
+              title: "Protocol Allowlist",
+              desc: "Only Jupiter and Solend actions allowed in V1.",
+            },
+            {
+              title: "Slippage Bounds",
+              desc: "Hard max slippage and minimum-out checks.",
+            },
+            {
+              title: "TTL + Nonce",
+              desc: "Permits expire fast and cannot be replayed.",
+            },
+          ].map((item) => (
+            <Tilt key={item.title} maxTilt={6}>
+              <Card className="h-full">
+                <h3 className="text-xl font-bold text-[#e8944a]">{item.title}</h3>
+                <p className="mt-2 text-lg leading-[1.5] text-slate-200">
+                  {item.desc}
+                </p>
+              </Card>
+            </Tilt>
+          ))}
         </div>
-
-        <p className="mt-6 max-w-3xl text-sm leading-relaxed text-slate-300">
-          The simulate step evaluates your transaction against active policy
-          constraints and produces a receipt with a deterministic{" "}
-          <code className="text-primary-200/90">content_hash</code>. Your client
-          re-hashes the payload locally. If the digests match, the transaction is
-          signed and submitted. If they diverge, execution is blocked before any
-          funds move. This verify-then-send model means you never rely on server
-          trust alone.
-        </p>
-        <p className="mt-2 max-w-3xl text-sm text-slate-400">
-          Verify receipts locally before signing.
-        </p>
       </Section>
 
-      {/* ── 6. Toolbox ── */}
-      <Section id="toolbox" className="border-t border-white/10 fade-in-up fade-delay-5">
-        <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
-            Toolbox
-          </h2>
-          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            Everything the CLI ships today, grouped by workflow.
+      {/* ── Problem Statement ── */}
+      <Section className="border-t border-white/10 fade-in-up fade-delay-2">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">The Problem</h2>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            Autonomous AI agents are executing financial transactions with
+            increasing frequency and complexity. Current infrastructure assumes
+            human oversight at critical decision points, an assumption that
+            breaks down when agents operate independently at machine speed.
+          </p>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            Without an enforcement boundary, agents can exceed authorized
+            parameters, interact with unapproved protocols, and produce no
+            auditable record of their behavior. The result is uncontrolled
+            capital exposure and zero accountability.
+          </p>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            The core issue is that AI cannot be fully trusted. Models
+            hallucinate, drift, and behave unpredictably under novel conditions.
+            Capital preservation is uncertain when the system making decisions
+            has no hard-coded boundaries. Risk reduction requires an external
+            enforcement layer that constrains what agents can do before
+            transactions ever reach the chain.
+          </p>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            On-chain environments are adversarial by nature. MEV bots,
+            sandwich attacks, and front-runners actively exploit unprotected
+            transactions. Agents operating without pre-flight simulation,
+            slippage caps, and protocol allowlists are easy targets. ATF
+            provides the enforcement boundary that stands between autonomous
+            agents and these external threats.
           </p>
         </div>
+      </Section>
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          {toolboxGroups.map((group) => (
-            <Card key={group.title}>
-              <h3 className="text-lg font-semibold text-[#ffe0b2]">
-                {group.title}
-              </h3>
-              <ul className="mt-3 space-y-2">
-                {group.commands.map((cmd) => (
-                  <li key={cmd.name} className="text-sm text-slate-200">
-                    <code className="mr-2 text-primary-200/90">{cmd.name}</code>
-                    <span className="text-slate-400">{cmd.desc}</span>
-                  </li>
-                ))}
-              </ul>
+      {/* ── Threat Model ── */}
+      <Section className="border-t border-white/10 fade-in-up fade-delay-2">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">Threat Model</h2>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            ATF is designed to mitigate the following categories of risk in
+            agent-driven financial systems.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {threatVectors.map((tv) => (
+            <Card key={tv.threat}>
+              <h3 className="text-xl font-bold text-[#e8944a]">{tv.threat}</h3>
+              <p className="mt-2 text-lg leading-[1.5] text-slate-200">{tv.impact}</p>
             </Card>
           ))}
         </div>
       </Section>
 
-      {/* ── 7. Designed for Bots, Agents, Custodians ── */}
-      <Section id="designed-for" className="border-t border-white/10 fade-in-up fade-delay-6">
-        <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
-            Designed for Production Bots, AI Agents, and Custodians
-          </h2>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-2">
-          <Card>
-            <h3 className="text-lg font-semibold text-[#ffe0b2]">Non-Custodial</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
-              ATF never holds your private keys. Signing happens on your machine,
-              in your environment. The platform enforces policy, not custody.
-            </p>
-          </Card>
-
-          <Card>
-            <h3 className="text-lg font-semibold text-[#ffe0b2]">Profile Separation</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
-              Named profiles isolate dev, test, and production environments.
-              Different RPC endpoints, wallets, and policies per profile keep
-              concerns separated cleanly.
-            </p>
-          </Card>
-
-          <Card>
-            <h3 className="text-lg font-semibold text-[#ffe0b2]">Deterministic Receipts</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
-              Every decision produces a{" "}
-              <code className="text-primary-200/90">content_hash</code> computed
-              from stable JSON serialization. Re-hash the payload locally and the
-              digest matches. Full auditability, zero ambiguity.
-            </p>
-          </Card>
-
-          <Card>
-            <h3 className="text-lg font-semibold text-[#ffe0b2]">Safe Defaults</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
-              Fail-closed enforcement, automatic secret redaction, and explicit
-              network selection mean accidents cost nothing while you iterate. The
-              guardrails are always on.
-            </p>
-          </Card>
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-4xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">ATF vs LLM Firewalls</h2>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <Card className="h-full">
+              <h3 className="text-2xl font-bold text-[#e8944a]">LLM firewalls</h3>
+              <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
+                <li>Prompt boundary protection</li>
+                <li>Input and output filtering</li>
+                <li>Data leakage prevention controls</li>
+              </ul>
+            </Card>
+            <Card className="h-full">
+              <h3 className="text-2xl font-bold text-[#e8944a]">ATF</h3>
+              <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
+                <li>Pre-execution economic invariants</li>
+                <li>Deterministic decisioning</li>
+                <li>Receipts for verification</li>
+              </ul>
+            </Card>
+          </div>
         </div>
       </Section>
 
-      {/* ── 8. Roadmap Note (v2) ── */}
-      <Section id="roadmap" className="border-t border-white/10 fade-in-up">
-        <div className="max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
-            What Comes Next
+      {/* ── Architecture Overview ── */}
+      <Section className="border-t border-white/10 fade-in-up fade-delay-3">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">Architecture Overview</h2>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            ATF is composed of four coordinated layers that enforce policy from
+            intent through settlement.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {architectureLayers.map((layer, i) => (
+            <Tilt key={layer.label} maxTilt={5}>
+              <Card className="h-full">
+                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-primary-300/40 text-sm font-bold text-primary-100">
+                  {i + 1}
+                </div>
+                <h3 className="text-2xl font-bold text-[#e8944a]">{layer.label}</h3>
+                <p className="mt-2 text-xl leading-[1.5] text-slate-200">{layer.description}</p>
+              </Card>
+            </Tilt>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Architecture Diagram (SVG) ── */}
+      <Section className="border-t border-white/10 fade-in-up fade-delay-4">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+            Architecture Diagram
+          </h2>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            Four coordinated layers enforce policy from intent through
+            settlement. Each layer is fail-closed by default.
+          </p>
+        </div>
+
+        {/* Inline SVG diagram */}
+        <div className="glass-panel mx-auto max-w-5xl overflow-x-auto rounded-xl p-6 sm:p-10">
+          <svg
+            viewBox="0 0 820 700"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full"
+            role="img"
+            aria-label="ATF architecture diagram showing four layers: Policy Engine, Permit Gateway, Execution Validator, and Receipt Ledger"
+          >
+            <defs>
+              <linearGradient id="blueGlow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#349de8" stopOpacity="0.12" />
+                <stop offset="100%" stopColor="#1e69a5" stopOpacity="0.04" />
+              </linearGradient>
+              <linearGradient id="orangeGlow" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#f08a1f" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#d86c08" stopOpacity="0.05" />
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            {/* Agent (top) */}
+            <rect x="280" y="16" width="260" height="64" rx="10" fill="#162236" stroke="#8ed3ff" strokeWidth="1.5" />
+            <text x="410" y="56" textAnchor="middle" fill="#8ed3ff" fontSize="22" fontWeight="600" fontFamily="system-ui, sans-serif">
+              AI Agent
+            </text>
+
+            {/* Arrow down */}
+            <line x1="410" y1="80" x2="410" y2="126" stroke="#5cbcfb" strokeWidth="2" strokeDasharray="5 4" />
+            <polygon points="403,121 410,134 417,121" fill="#5cbcfb" />
+
+            {/* Layer 1: Policy Engine */}
+            <rect x="60" y="140" width="700" height="90" rx="12" fill="url(#blueGlow)" stroke="#349de8" strokeWidth="1.5" />
+            <text x="410" y="178" textAnchor="middle" fill="#8ed3ff" fontSize="24" fontWeight="700" fontFamily="system-ui, sans-serif">
+              Policy Engine
+            </text>
+            <text x="410" y="210" textAnchor="middle" fill="#b0bec5" fontSize="17" fontFamily="system-ui, sans-serif">
+              Evaluates intent against policy + threat model
+            </text>
+
+            {/* Arrow */}
+            <line x1="410" y1="230" x2="410" y2="272" stroke="#5cbcfb" strokeWidth="2" strokeDasharray="5 4" />
+            <polygon points="403,267 410,280 417,267" fill="#5cbcfb" />
+
+            {/* Layer 2: Permit Gateway */}
+            <rect x="60" y="286" width="700" height="90" rx="12" fill="url(#blueGlow)" stroke="#349de8" strokeWidth="1.5" />
+            <text x="410" y="324" textAnchor="middle" fill="#8ed3ff" fontSize="24" fontWeight="700" fontFamily="system-ui, sans-serif">
+              Permit Gateway
+            </text>
+            <text x="410" y="356" textAnchor="middle" fill="#b0bec5" fontSize="17" fontFamily="system-ui, sans-serif">
+              Scoped authorization: TTL, nonce, domain separation
+            </text>
+
+            {/* Arrow */}
+            <line x1="410" y1="376" x2="410" y2="418" stroke="#5cbcfb" strokeWidth="2" strokeDasharray="5 4" />
+            <polygon points="403,413 410,426 417,413" fill="#5cbcfb" />
+
+            {/* Layer 3: Execution Validator */}
+            <rect x="60" y="432" width="700" height="90" rx="12" fill="url(#orangeGlow)" stroke="#f08a1f" strokeWidth="1.2" />
+            <text x="410" y="470" textAnchor="middle" fill="#f0a050" fontSize="24" fontWeight="700" fontFamily="system-ui, sans-serif">
+              Execution Validator
+            </text>
+            <text x="410" y="502" textAnchor="middle" fill="#b0bec5" fontSize="17" fontFamily="system-ui, sans-serif">
+              Allowlists, slippage bounds, spend caps, simulation
+            </text>
+
+            {/* Arrow */}
+            <line x1="410" y1="522" x2="410" y2="564" stroke="#5cbcfb" strokeWidth="2" strokeDasharray="5 4" />
+            <polygon points="403,559 410,572 417,559" fill="#5cbcfb" />
+
+            {/* Layer 4: Receipt Ledger */}
+            <rect x="60" y="578" width="700" height="90" rx="12" fill="url(#blueGlow)" stroke="#349de8" strokeWidth="1.5" />
+            <text x="410" y="616" textAnchor="middle" fill="#8ed3ff" fontSize="24" fontWeight="700" fontFamily="system-ui, sans-serif">
+              Receipt Ledger
+            </text>
+            <text x="410" y="648" textAnchor="middle" fill="#b0bec5" fontSize="17" fontFamily="system-ui, sans-serif">
+              Tamper-evident receipts for audit + incident response
+            </text>
+          </svg>
+        </div>
+      </Section>
+
+      {/* ── Execution Flow ── */}
+      <Section className="border-t border-white/10 fade-in-up fade-delay-5">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+            Execution Flow
+          </h2>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            Every agent transaction follows a deterministic five-step path from
+            intent to verifiable receipt.
+          </p>
+        </div>
+        <ol className="grid gap-4 md:grid-cols-5">
+          {[
+            {
+              step: 1,
+              title: "Agent proposes intent",
+              desc: "The AI agent submits its intended action (e.g., swap, lend) to the ATF pipeline.",
+            },
+            {
+              step: 2,
+              title: "Policy evaluation",
+              desc: "The Policy Engine evaluates intent against configured rules and constructs constraints.",
+            },
+            {
+              step: 3,
+              title: "Permit issued",
+              desc: "The Permit Gateway issues a signed, time-bound permit with TTL + nonce.",
+            },
+            {
+              step: 4,
+              title: "Bounded execution",
+              desc: "The Executor performs the transaction within permit bounds (e.g., Jupiter swap, Solend action).",
+            },
+            {
+              step: 5,
+              title: "Receipt emitted",
+              desc: "A cryptographic receipt is generated (hashes, policy ID, outcome) and stored.",
+            },
+          ].map((item) => (
+            <li key={item.step}>
+              <Tilt maxTilt={6}>
+                <Card className="h-full">
+                  <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-300/40 text-sm font-bold text-primary-100">
+                    {item.step}
+                  </div>
+                  <h3 className="text-lg font-bold text-[#e8944a]">{item.title}</h3>
+                  <p className="mt-2 text-base leading-[1.5] text-slate-200">{item.desc}</p>
+                </Card>
+              </Tilt>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      {/* ── Hard Invariants ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+            Hard Invariants
+          </h2>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            Non-negotiable constraints enforced on every transaction. These
+            cannot be bypassed, overridden, or weakened at runtime.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            {
+              label: "Spend cap",
+              desc: "Maximum value per transaction and per rolling time window. Exceeding either limit blocks execution.",
+            },
+            {
+              label: "Protocol allowlist",
+              desc: "Only pre-approved programs (Jupiter, Solend for v1) may be invoked. All other program IDs are rejected.",
+            },
+            {
+              label: "Slippage max",
+              desc: "Price deviation hard-capped (e.g., ≤ 30 bps) with enforced minimum output amount.",
+            },
+            {
+              label: "Cooldown period",
+              desc: "Minimum interval between high-risk actions prevents rapid-fire exploitation.",
+            },
+            {
+              label: "Permit TTL + nonce",
+              desc: "Permits expire (e.g., 60 s) and carry single-use nonces to prevent replay.",
+            },
+            {
+              label: "Domain separation",
+              desc: "Each permit is scoped to TruCore ATF + a specific environment. Cross-domain reuse is invalid.",
+            },
+          ].map((inv) => (
+            <Card key={inv.label}>
+              <h3 className="text-xl font-bold text-[#e8944a]">{inv.label}</h3>
+              <p className="mt-2 text-lg leading-[1.5] text-slate-200">{inv.desc}</p>
+            </Card>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Permit Example ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+            Permit Example
+          </h2>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            A minimal, illustrative permit payload. Real permits are signed and
+            carry additional metadata. No secrets are shown here.
+          </p>
+        </div>
+        <div className="glass-panel mx-auto max-w-2xl overflow-x-auto rounded-xl p-6">
+          <pre className="text-sm leading-relaxed text-primary-200 sm:text-base">
+            <code>{`{
+  "subject": "agent:0xA1B2...C3D4",
+  "scope": "swap",
+  "constraints": {
+    "maxSpend": "500 USDC",
+    "slippageBps": 30,
+    "minOut": "0.95 SOL"
+  },
+  "programAllowlist": [
+    "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+    "So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo"
+  ],
+  "chain": "solana:mainnet-beta",
+  "expiresAt": "2026-02-19T12:01:00Z",
+  "nonce": "a7f3e1c9-...-4b2d",
+  "signature": "<Ed25519 signature placeholder>"
+}`}</code>
+          </pre>
+        </div>
+      </Section>
+
+      {/* ── Designed For ── */}
+      <AtfDesignedFor />
+
+      {/* ── Ecosystem Positioning ── */}
+      <Section id="integrations" className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            Designed for AI Agents &amp; DeFi Integrations
+          </h2>
+          <ul className="mt-4 space-y-2 text-lg leading-[1.5] text-slate-200">
+            <li>Agent-native JSON interface</li>
+            <li>Chain-agnostic enforcement layer</li>
+            <li>Compatible with swap routers, lending protocols, and internal bots</li>
+          </ul>
+          <TrackedLink
+            href="/docs/integration-pattern"
+            eventName="integration_pattern_click"
+            eventProps={{ location: "atf_ecosystem_section" }}
+            className="mt-5 inline-flex text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            See Integration Pattern
+          </TrackedLink>
+        </div>
+      </Section>
+
+      {/* ── V1 Scope ── */}
+      <AtfV1Scope />
+
+      {/* ── Production Readiness ── */}
+      <AtfReadiness />
+
+      {/* ── Why Now ── */}
+      <div id="why-trucore">
+        <WhyNowSection />
+      </div>
+
+      {/* ── Deterministic Enforcement Proof ── */}
+      <div id="verify">
+        <EnforcementProofSection />
+      </div>
+
+      <Section className="pt-0 fade-in-up">
+        <div className="mx-auto max-w-3xl">
+          <RiskBoundaryBlock />
+        </div>
+      </Section>
+
+      <Section className="pt-0 fade-in-up">
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-3">
+          <TrackedLink
+            href="/receipts"
+            eventName="enforcement_proof_receipts_click"
+            eventProps={{ location: "atf_page" }}
+            className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-lg font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+          >
+            View Example Receipts
+          </TrackedLink>
+          <TrackedLink
+            href="/demo-policy"
+            eventName="demo_policy_link_click"
+            eventProps={{ location: "atf_page", section: "enforcement_proof" }}
+            className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-7 py-4 text-lg font-semibold text-slate-100 transition-colors hover:bg-white/10"
+          >
+            View Demo Policy
+          </TrackedLink>
+          </div>
+          <TrackedLink
+            href="/docs/anchoring-roadmap"
+            eventName="anchoring_roadmap_click"
+            eventProps={{ location: "atf_page", section: "enforcement_proof" }}
+            className="inline-flex text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            Read Anchoring &amp; Execution Roadmap
+          </TrackedLink>
+        </div>
+      </Section>
+
+      {/* ── Evidence & Operational Signals ── */}
+      <EvidenceMetricsSection />
+
+      {/* ── ATF Comparison ── */}
+      <AtfComparison />
+
+      {/* ── Positioning ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-4xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            Why Not Just an API Gateway?
+          </h2>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <Card className="h-full">
+              <h3 className="text-2xl font-bold text-[#e8944a]">API Gateway</h3>
+              <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
+                <li>Routes requests</li>
+                <li>Authenticates identity</li>
+                <li>Does not enforce economic invariants</li>
+              </ul>
+            </Card>
+            <Card className="h-full">
+              <h3 className="text-2xl font-bold text-[#e8944a]">ATF</h3>
+              <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
+                <li>Evaluates capital constraints</li>
+                <li>Enforces deterministic policy</li>
+                <li>Produces verifiable receipts</li>
+              </ul>
+            </Card>
+          </div>
+          <TrackedLink
+            href="/docs/atf-architecture"
+            eventName="atf_positioning_docs_click"
+            eventProps={{ location: "atf_positioning_section" }}
+            className="mt-5 inline-flex text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            Read the ATF architecture rationale
+          </TrackedLink>
+        </div>
+      </Section>
+
+      {/* ── Public Usage Snapshot ── */}
+      <PublicUsageSnapshot />
+
+      {/* ── Security Commitments ── */}
+      <SecurityCommitments />
+
+      {/* ── Builder Path ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-xl border border-white/10 bg-neutral-900/40 p-6">
+          <p className="text-lg font-medium text-slate-200">Building an agent? Start with the docs.</p>
+          <TrackedLink
+            href="/docs"
+            eventName="builder_docs_click"
+            eventProps={{ location: "atf_page", target: "docs" }}
+            className="text-lg font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            Start with docs &rarr;
+          </TrackedLink>
+        </div>
+      </Section>
+
+      {/* ── Build With ATF ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">Build With ATF</h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            ATF is designed as an enforcement layer for AI agents and DeFi systems. Explore
+            integration patterns and policy examples.
+          </p>
+          <TrackedLink
+            href="/build-with-atf"
+            eventName="build_with_atf_click"
+            eventProps={{ location: "atf_page" }}
+            className="mt-5 inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-6 py-3 text-lg font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+          >
+            Build With ATF &rarr;
+          </TrackedLink>
+          <TrackedLink
+            href="/pilot/ecommerce"
+            eventName="ecommerce_pilot_link_click"
+            eventProps={{ location: "atf_page", target: "pilot_ecommerce" }}
+            className="ml-0 mt-4 inline-flex items-center justify-center text-lg font-semibold text-primary-200 transition-colors hover:text-primary-100 sm:ml-4 sm:mt-5"
+          >
+            See E-Commerce Pilot &rarr;
+          </TrackedLink>
+        </div>
+      </Section>
+
+      {/* ── Roadmap ── */}
+      <AtfRoadmap />
+
+      {/* Roadmap deep-link */}
+      <Section className="fade-in-up">
+        <TrackedLink
+          href="/atf/roadmap"
+          eventName="roadmap_view_click"
+          eventProps={{ location: "atf_page" }}
+          className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+        >
+          View Full Roadmap &rarr;
+        </TrackedLink>
+      </Section>
+
+      {/* ── Transparency Metrics ── */}
+      <TransparencyMetrics />
+
+      {/* ── Enterprise Procurement Ready ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            Enterprise Procurement Ready
+          </h2>
+          <ul className="mt-4 list-disc space-y-2 pl-6 text-lg leading-[1.5] text-slate-200">
+            <li>Deterministic enforcement logs</li>
+            <li>Explicit policy documentation</li>
+            <li>Public security posture</li>
+            <li>Versioned release discipline</li>
+          </ul>
+          <TrackedLink
+            href="/security/compliance"
+            eventName="enterprise_procurement_click"
+            eventProps={{ location: "atf_page" }}
+            className="mt-5 inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-6 py-3 text-lg font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+          >
+            View Compliance Alignment &rarr;
+          </TrackedLink>
+        </div>
+      </Section>
+
+      {/* ── Built for the Long Term ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            Built for the Long Term
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            A hosted API key model is planned for v2 to support managed workflows
-            and team-level access control. No dates. We ship only when security
-            and verification guarantees are preserved.
+            ATF is designed as durable enforcement infrastructure, not a short-term product
+            experiment.
           </p>
-        </div>
-      </Section>
-
-      {/* ── 9. Footer CTA ── */}
-      <Section id="get-started" className="border-t border-white/10 fade-in-up">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
-            Get Started
-          </h2>
-          <p className="mt-4 text-lg leading-[1.5] text-slate-200">
-            Run the health check, spin up a devnet burner, and verify your first
-            receipt. Everything you need ships in the CLI.
-          </p>
-        </div>
-
-        <div className="mx-auto mt-6 max-w-xl">
-          <AtfCopyCommand
-            label="Install and run"
-            command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
-          />
-        </div>
-
-        <div className="mx-auto mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-slate-300">
           <TrackedLink
-            href="/docs/cli"
-            eventName="footer_cta_click"
-            eventProps={{ target: "cli_docs", location: "atf_footer" }}
-            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+            href="/direction"
+            eventName="long_term_signal_click"
+            eventProps={{ location: "atf_page", target: "direction" }}
+            className="mt-5 inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-6 py-3 text-lg font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
           >
-            CLI Docs
-          </TrackedLink>
-          <TrackedLink
-            href="/docs/verify"
-            eventName="footer_cta_click"
-            eventProps={{ target: "verify_docs", location: "atf_footer" }}
-            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
-          >
-            Verification
-          </TrackedLink>
-          <TrackedLink
-            href="/docs/api"
-            eventName="footer_cta_click"
-            eventProps={{ target: "api_docs", location: "atf_footer" }}
-            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
-          >
-            API Reference
-          </TrackedLink>
-          <TrackedLink
-            href="/docs/changelog"
-            eventName="footer_cta_click"
-            eventProps={{ target: "changelog", location: "atf_footer" }}
-            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
-          >
-            Changelog
+            View Long-Term Direction &rarr;
           </TrackedLink>
         </div>
       </Section>
 
-      {/* ── Get Updates ── */}
-      <Section id="updates" className="border-t border-white/10 fade-in-up">
-        <div className="mx-auto max-w-xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
-            Get Updates
-          </h2>
-          <p className="mt-4 text-lg leading-[1.5] text-slate-200">
-            Get release notes and security updates. CLI versions are pinned and
-            the changelog announces every upgrade.
+      {/* ── Design Partner CTA ── */}
+      <Section className="border-t border-white/10 fade-in-up">
+        <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+          <p className="text-xs uppercase tracking-[0.12em] text-slate-400">ATF Release Discipline</p>
+          <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-mono text-slate-300">
+            <span>{atfVersion ? `Current version ${atfVersion}` : "See release notes"}</span>
+            <span className="text-slate-500">•</span>
+            <a
+              href="https://github.com/trucore-ai/TruCore-site/blob/main/RELEASE.md"
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-primary-100"
+            >
+              RELEASE.md
+            </a>
+            <span className="text-slate-500">•</span>
+            <a href="/status" className="transition-colors hover:text-primary-100">
+              /status
+            </a>
+            <span className="text-slate-500">•</span>
+            <a href="/security/overview" className="transition-colors hover:text-primary-100">
+              /security/overview
+            </a>
+          </div>
+          <p className="mt-3 text-sm text-slate-400">
+            Built with explicit versioning, CI enforcement, and production smoke checks.
           </p>
         </div>
-
-        <div className="mx-auto mt-8 max-w-xl">
-          <Suspense
-            fallback={
-              <div className="h-40 rounded-xl bg-white/5" />
-            }
-          >
-            <WaitlistForm />
-          </Suspense>
-        </div>
       </Section>
+
+      {/* ── Waitlist / Design Partner CTA ── */}
+      <div id="waitlist">
+        <AtfDesignPartnerCta />
+      </div>
+
+      {/* ── Moat Signals ── */}
+      <MoatSignalStrip />
     </Container>
   );
 }

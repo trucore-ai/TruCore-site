@@ -11,8 +11,8 @@ const atfSrc = readFileSync(join(__dirname, "..", "app", "atf", "page.tsx"), "ut
  * exports because Next.js page files only allow specific named exports.
  *
  * Target layout:
- *   /     = CLI developer landing (quickstart, doctor, toolbox, waitlist)
- *   /atf  = full ATF platform page (threat model, architecture, enforcement)
+ *   /     = full platform hero (threat model, architecture, enforcement, why-trucore)
+ *   /atf  = CLI developer landing (quickstart, doctor, toolbox, waitlist)
  */
 describe("route identity", () => {
   it("/ exports the Home component", () => {
@@ -32,13 +32,13 @@ describe("route identity", () => {
     expect(atfSrc).toContain("ATF Developer Platform");
   });
 
-  it("/ page contains the CLI developer landing (doctor section)", () => {
-    expect(homeSrc).toContain("Agent Transaction Firewall");
-    expect(homeSrc).toContain('id="doctor"');
+  it("/ page contains the marketing hero headline", () => {
+    expect(homeSrc).toContain("Deterministic enforcement for onchain automation");
+    expect(homeSrc).toContain('id="why-trucore"');
   });
 
-  it("/atf page contains the marketing hero headline", () => {
-    expect(atfSrc).toContain("Deterministic enforcement for onchain automation");
-    expect(atfSrc).toContain('id="why-trucore"');
+  it("/atf page contains the CLI developer landing (doctor section)", () => {
+    expect(atfSrc).toContain("Agent Transaction Firewall");
+    expect(atfSrc).toContain('id="doctor"');
   });
 });
