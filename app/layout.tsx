@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     "AI infrastructure",
     "crypto infrastructure",
     "policy enforcement",
-    "zero-trust",
+    "trustless",
     "Solana",
   ],
   openGraph: {
@@ -227,10 +227,10 @@ export default function RootLayout({
                   Receipts
                 </Link>
                 <Link
-                  href="/cuza"
+                  href="/demo"
                   className="hidden rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 md:inline"
                 >
-                  Cuza Live
+                  Demo Live
                 </Link>
                 <Link
                   href="/#why-trucore"
@@ -239,10 +239,10 @@ export default function RootLayout({
                   Why TruCore
                 </Link>
                 <Link
-                  href="/#trust-integrity"
+                  href="/#verify"
                   className="hidden rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 sm:inline"
                 >
-                  Trust
+                  Verify
                 </Link>
                 <Link
                   href="/#integrations"
@@ -311,10 +311,13 @@ export default function RootLayout({
                       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Resources</p>
                       <div className="mt-3 space-y-2">
                         <Link href="/docs" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Docs</Link>
+                        <Link href="/docs/cli" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF CLI</Link>
+                        <Link href="/docs/verify" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Verification</Link>
+                        <Link href="/docs/api" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">API</Link>
                         <Link href="/atf/whitepaper" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Whitepaper</Link>
                         <Link href="/verify" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Verify Receipt</Link>
                         <Link href="/receipts" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Receipts Explorer</Link>
-                        <Link href="/cuza" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Cuza Live</Link>
+                        <Link href="/demo" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Demo Live</Link>
                         <Link href="/blog" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Blog</Link>
                       </div>
                     </div>
@@ -323,7 +326,7 @@ export default function RootLayout({
                       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Company</p>
                       <div className="mt-3 space-y-2">
                         <Link href="/status" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Status</Link>
-                        <Link href="/changelog" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Changelog</Link>
+                        <Link href="/docs/changelog" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Changelog</Link>
                         <Link href="/contact" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Contact</Link>
                         <Link href="/manifesto" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Manifesto</Link>
                       </div>
@@ -351,7 +354,7 @@ export default function RootLayout({
                     <span aria-hidden="true" className="text-slate-600">|</span>
                     <MotionToggle />
                   </div>
-                  <p className="text-slate-400">© {new Date().getFullYear()} TruCore. Built with Integrety to not rely on Trust</p>
+                  <p className="text-slate-400">© {new Date().getFullYear()} TruCore. Trustless enforcement for AI-driven capital.</p>
                 </div>
               </div>
             </Container>

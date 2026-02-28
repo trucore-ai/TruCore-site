@@ -7,7 +7,7 @@ import { SimulatorForm } from "@/components/simulator-form";
 export const metadata: Metadata = {
   title: "ATF Policy Simulator",
   description:
-    "Preview deterministic ATF policy enforcement in a read-only simulator, no wallet or chain connection required.",
+    "Preview deterministic ATF policy enforcement powered by firewall-api, no wallet or chain connection required.",
 };
 
 export default function AtfSimulatorPage() {
@@ -22,8 +22,8 @@ export default function AtfSimulatorPage() {
             Try deterministic policy enforcement with preloaded scenarios, no wallet required.
           </p>
           <p className="text-sm text-slate-400">
-            This demo is read-only and intentionally mocked, it demonstrates behavior without exposing
-            proprietary policy internals.
+            This demo is read-only and powered by firewall-api, it demonstrates live decision behavior
+            without exposing secrets.
           </p>
         </div>
       </Section>

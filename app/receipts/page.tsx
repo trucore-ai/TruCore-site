@@ -49,10 +49,10 @@ export default function ReceiptsPage() {
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
-              href="/cuza"
+              href="/demo"
               className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-5 py-2 text-sm font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
             >
-              See Cuza Live stream
+              See Demo Live stream
             </Link>
           </div>
         </div>

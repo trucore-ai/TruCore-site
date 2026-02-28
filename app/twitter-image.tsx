@@ -30,10 +30,10 @@ export default function TwitterImage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "20px", maxWidth: 920 }}>
           <div style={{ fontSize: 62, lineHeight: 1.1, fontWeight: 700 }}>
-            Trust infrastructure for autonomous finance.
+            Trustless infrastructure for autonomous finance.
           </div>
           <div style={{ fontSize: 30, color: "#d8efff" }}>
-            Zero-trust controls with verifiable AI execution.
+            Trustless controls with verifiable AI execution.
           </div>
         </div>
 
