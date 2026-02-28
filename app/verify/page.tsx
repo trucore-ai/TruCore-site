@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { VerifyReceiptForm } from "@/components/verify-receipt-form";
-import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 
@@ -44,7 +43,6 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
     <Container>
       <Section className="fade-in-up">
         <div className="max-w-3xl space-y-4">
-          <Badge>Verification Utility</Badge>
           <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">Verify Receipt Hash</h1>
           <p className="text-xl leading-[1.5] text-slate-200">
             Validate receipt integrity with hash checks, signature verification, and deterministic demo recompute.

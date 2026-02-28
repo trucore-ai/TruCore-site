@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { HeadingAnchor } from "@/components/heading-anchor";
-import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
   title: "Changelog",
@@ -26,10 +25,7 @@ export default function DocsChangelogPage() {
 
       {/* ── Version 1.0.2 ── */}
       <section className="space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <HeadingAnchor id="v1-0-2">Version 1.0.2</HeadingAnchor>
-          <Badge>Stable</Badge>
-        </div>
+        <HeadingAnchor id="v1-0-2">Version 1.0.2</HeadingAnchor>
 
         <div className="space-y-4">
           <div>
