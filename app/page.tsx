@@ -1,25 +1,20 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { GlassInnerPanel } from "@/components/ui/glass-slab-canvas";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
-import { WaitlistForm } from "@/components/waitlist-form";
-import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
 import { TrackedLink } from "@/components/tracked-link";
-import { TrustStrip } from "@/components/trust-strip";
-import Image from "next/image";
+import { WaitlistForm } from "@/components/waitlist-form";
 
 export const metadata: Metadata = {
-  title: "TruCore",
+  title: "TruCore | Agent Transaction Firewall",
   description:
-    "TruCore delivers Agent Transaction Firewall controls for Solana with policy-bound execution and tamper-evident receipts for autonomous finance.",
+    "Trustless enforcement for AI-driven capital. Deterministic decisions, verifiable receipts, zero runtime dependencies.",
   openGraph: {
-    title: "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
+    title: "TruCore | Agent Transaction Firewall",
     description:
-      "Policy-bound execution, tamper-evident receipts, and fail-closed design for autonomous finance on Solana.",
+      "Trustless enforcement for AI-driven capital. Deterministic decisions, verifiable receipts, zero runtime dependencies.",
     images: [
       {
         url: "/opengraph-image",
@@ -31,86 +26,12 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
+    title: "TruCore | Agent Transaction Firewall",
     description:
-      "Policy-bound execution, tamper-evident receipts, and fail-closed design for autonomous finance on Solana.",
+      "Trustless enforcement for AI-driven capital. Deterministic decisions, verifiable receipts, zero runtime dependencies.",
     images: ["/opengraph-image"],
   },
 };
-
-const metrics = [
-  "Policy-bound execution",
-  "Verifiable receipts",
-  "Fail-closed design",
-];
-
-const whyItems = [
-  {
-    title: "Zero-trust guardrails",
-    description:
-      "Every autonomous action is evaluated against explicit trust boundaries before execution.",
-  },
-  {
-    title: "Policy enforcement",
-    description:
-      "Deterministic controls keep agent behavior aligned with risk, compliance, and user intent.",
-  },
-  {
-    title: "Cryptographic receipts",
-    description:
-      "Each critical event can produce tamper-evident evidence for post-trade verification and audit.",
-  },
-];
-
-const trustPillars = [
-  "Fail-closed defaults for autonomous actions",
-  "Auditability across every critical decision",
-  "Deterministic policy enforcement before execution",
-  "Cryptographic receipts for verifiable operations",
-];
-
-const atfFeatures = [
-  {
-    title: "Policy-bound execution",
-    description:
-      "Every agent transaction is validated against explicit policy rules before on-chain submission.",
-  },
-  {
-    title: "Slippage constraints",
-    description:
-      "Hard limits on price deviation protect capital from adverse execution and MEV extraction.",
-  },
-  {
-    title: "Protocol allowlists",
-    description:
-      "Agents can only interact with pre-approved contracts. No unauthorized protocol access.",
-  },
-  {
-    title: "Permit-based authorization",
-    description:
-      "Scoped, time-bound permits grant agents minimal execution rights with explicit boundaries.",
-  },
-  {
-    title: "Cryptographic receipts",
-    description:
-      "Tamper-evident proof of every policy check, execution, and settlement for full auditability.",
-  },
-];
-
-const visionItems = [
-  {
-    title: "AI-native DeFi infrastructure",
-    description: "Purpose-built primitives for autonomous agents operating across decentralized financial protocols.",
-  },
-  {
-    title: "Stable asset tooling",
-    description: "Trust-verified instruments and guardrails for AI systems managing stable value representations.",
-  },
-  {
-    title: "Agent coordination layers",
-    description: "Secure multi-agent communication and settlement channels for complex financial workflows.",
-  },
-];
 
 export default function Home() {
   return (
@@ -121,237 +42,252 @@ export default function Home() {
           <div className="hero-legibility-overlay" aria-hidden="true" />
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-3">
-              <Badge>Solana-native</Badge>
+              <Badge>Live</Badge>
               <Badge>Zero-trust</Badge>
-              <Badge>AI execution</Badge>
+              <Badge>Deterministic</Badge>
             </div>
-            <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-7xl lg:text-8xl">
-              Security Infrastructure for Autonomous Finance
+            <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight text-[#ffe0b2] md:text-6xl">
+              Agent Transaction Firewall
             </h1>
-            <p className="mt-5 max-w-2xl text-3xl leading-[1.4] text-slate-200 sm:text-4xl">
-              TruCore builds trust layers for AI agents transacting on-chain.
+            <p className="mt-6 max-w-2xl text-xl leading-[1.5] text-slate-200">
+              Trustless enforcement for AI-driven capital.
+              Deterministic decisions. Verifiable receipts. Zero runtime dependencies.
             </p>
-            <p className="mt-3 max-w-2xl text-xl leading-[1.5] text-primary-200/80">
-              Launching with Agent Transaction Firewall (ATF).
+
+            <div className="mt-8">
+              <pre className="rounded-xl bg-black text-white p-4 overflow-x-auto text-sm font-mono">
+npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
+              </pre>
+            </div>
+
+            <p className="mt-4 text-sm text-primary-200/80">
+              Returns a cryptographically verifiable ALLOWED decision with deterministic content_hash.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <TrackedLink
-                href="/atf/simulator"
-                eventName="hero_sandbox_click"
+                href="#quickstart"
+                eventName="hero_try_cli_click"
                 eventProps={{ location: "home_hero" }}
-                className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-7 py-4 text-xl font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
+                className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-lg font-semibold text-neutral-950 transition-colors hover:bg-slate-200"
               >
-                Try sandbox
+                Try the CLI
               </TrackedLink>
               <TrackedLink
-                href="/atf/apply"
-                eventName="hero_pilot_click"
+                href="#architecture"
+                eventName="hero_architecture_click"
                 eventProps={{ location: "home_hero" }}
-                className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/10 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:border-primary-300/70 hover:bg-primary-500/20"
+                className="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3 text-lg font-semibold text-slate-100 transition-colors hover:bg-white/10"
               >
-                Apply for pilot
-              </TrackedLink>
-              <TrackedLink
-                href="/docs/5-minute-quickstart"
-                eventName="hero_quickstart_click"
-                eventProps={{ location: "home_hero", target: "5_minute" }}
-                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-7 py-4 text-xl font-semibold text-slate-100 transition-colors hover:bg-white/10"
-              >
-                Get started in 5 min
+                View Architecture
               </TrackedLink>
             </div>
-            <p className="mt-4 text-lg text-slate-300">
-              Need proof first?{" "}
-              <TrackedLink
-                href="/receipts"
-                eventName="hero_receipts_click"
-                eventProps={{ location: "home_hero" }}
-                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-              >
-                View example receipts
-              </TrackedLink>
-            </p>
-            <ul className="mt-8 grid gap-4 text-2xl text-primary-50 sm:grid-cols-3 sm:auto-rows-fr">
-              {metrics.map((item) => (
-                <li key={item} className="h-full">
-                  <GlassInnerPanel>{item}</GlassInnerPanel>
-                </li>
-              ))}
-            </ul>
 
-            <div className="mt-8 mx-auto hidden max-w-4xl md:block">
-              <div className="relative overflow-hidden rounded-xl">
-                <Image
-                  src="/images/trucore-banner.png"
-                  alt="TruCore banner"
-                  width={1536}
-                  height={1024}
-                  className="h-auto w-full object-cover"
-                  style={{
-                    WebkitMaskImage:
-                      "radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 72%)",
-                    maskImage:
-                      "radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 72%)",
-                  }}
-                  priority
-                />
-              </div>
+            {/* ── Micro-nav ── */}
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-400">
+              <TrackedLink
+                href="/docs"
+                eventName="hero_micronav_click"
+                eventProps={{ target: "docs", location: "home_hero" }}
+                className="transition-colors hover:text-primary-100"
+              >
+                Docs
+              </TrackedLink>
+              <span aria-hidden="true" className="text-white/20">/</span>
+              <TrackedLink
+                href="/changelog"
+                eventName="hero_micronav_click"
+                eventProps={{ target: "changelog", location: "home_hero" }}
+                className="transition-colors hover:text-primary-100"
+              >
+                Changelog
+              </TrackedLink>
+              <span aria-hidden="true" className="text-white/20">/</span>
+              <TrackedLink
+                href="https://github.com/TruCore-AI"
+                target="_blank"
+                rel="noopener noreferrer"
+                eventName="hero_micronav_click"
+                eventProps={{ target: "github", location: "home_hero" }}
+                className="transition-colors hover:text-primary-100"
+              >
+                GitHub
+              </TrackedLink>
             </div>
           </div>
         </Card>
       </Section>
 
-      {/* ── Operational Controls Trust Strip ── */}
-      <div className="-mt-4 mb-2">
-        <TrustStrip />
-      </div>
-
-      {/* ── Flagship Product: ATF ── */}
-      <Section id="atf" className="border-t border-white/10 fade-in-up fade-delay-1">
+      {/* ── Quickstart ── */}
+      <Section id="quickstart" className="border-t border-white/10 fade-in-up fade-delay-1">
         <div className="mb-8 max-w-2xl">
-          <Badge className="mb-4">Flagship Product</Badge>
-          <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">
-            Agent Transaction Firewall (ATF)
+          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+            Quickstart
           </h2>
-          <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
-            ATF is the enforcement layer between AI agents and on-chain execution.
-            It applies deterministic policy checks to every transaction before
-            submission, constraining slippage, restricting protocol access, and
-            producing cryptographic receipts for full auditability.
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            Run a deterministic firewall simulation and verify the receipt locally.
+            No installation required.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {atfFeatures.map((feat) => (
-            <Card key={feat.title} className="min-h-[220px]">
-              <h3 className="text-2xl font-bold text-[#f2a65f]">{feat.title}</h3>
-              <p className="mt-3 text-xl leading-[1.5] text-slate-100/95">{feat.description}</p>
-            </Card>
-          ))}
-        </div>
-        <div className="mt-6">
-          <Button href="/atf" variant="secondary">
-            Learn More →
-          </Button>
+
+        <pre className="rounded-xl bg-black text-white p-6 overflow-x-auto text-sm font-mono max-w-3xl">
+npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
+        </pre>
+
+        <div className="mt-8 max-w-2xl space-y-3 text-sm text-slate-200">
+          <p>&bull; Calls production ATF API</p>
+          <p>&bull; Receives ALLOWED decision</p>
+          <p>&bull; Validates deterministic content_hash</p>
+          <p>&bull; Confirms receipt integrity locally</p>
         </div>
       </Section>
 
-      {/* ── Why TruCore ── */}
-      <Section id="why-trucore" className="border-t border-white/10 fade-in-up fade-delay-2">
+      {/* ── What Happens Under the Hood ── */}
+      <Section id="architecture" className="border-t border-white/10 fade-in-up fade-delay-2">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">Why TruCore</h2>
-          <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
-            Trust-first controls and verifiable operations for AI systems handling financial decisions.
-          </p>
+          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+            What Happens Under the Hood
+          </h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {whyItems.map((item) => (
-            <Card key={item.title} className="min-h-[220px]">
-              <h3 className="text-3xl font-bold text-[#e8944a]">{item.title}</h3>
-              <p className="mt-3 text-2xl leading-[1.5] text-slate-200">{item.description}</p>
-            </Card>
-          ))}
+
+        <div className="max-w-3xl space-y-6 text-xl leading-[1.5] text-slate-200">
+          <p>1. The CLI sends a deterministic transaction payload to ATF.</p>
+          <p>2. ATF evaluates policy constraints under a zero-trust model.</p>
+          <p>3. A decision object is generated with:</p>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>decision (ALLOWED / BLOCKED)</li>
+            <li>request_id</li>
+            <li>content_hash</li>
+            <li>timestamp</li>
+          </ul>
+          <p>4. The CLI independently verifies receipt integrity.</p>
+          <p className="text-primary-200/80">
+            No client secrets. No runtime dependencies. No hidden state.
+          </p>
         </div>
       </Section>
 
-      {/* ── The TruCore Vision ── */}
-      <Section id="vision" className="border-t border-white/10 fade-in-up fade-delay-3">
+      {/* ── Trust + Proof ── */}
+      <Section id="trust" className="border-t border-white/10 fade-in-up fade-delay-3">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">The TruCore Vision</h2>
-          <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
-            Agent Transaction Firewall is the first product, not the last. TruCore is building
-            the foundational security infrastructure that autonomous financial systems require
-            to operate at scale.
+          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+            Trust + Proof
+          </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            Every claim ATF makes is verifiable. Here is what backs it.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-3 md:auto-rows-fr">
-          {visionItems.map((item) => (
-            <Card key={item.title} className="h-full">
-              <h3 className="text-2xl font-bold text-[#e8944a]">{item.title}</h3>
-              <p className="mt-3 text-xl leading-[1.5] text-slate-200">{item.description}</p>
-            </Card>
-          ))}
-        </div>
-      </Section>
 
-      {/* ── Trust & Integrity ── */}
-      <Section id="trust-integrity" className="border-t border-white/10 fade-in-up fade-delay-4">
-        <div className="mb-8 max-w-2xl">
-          <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">Trust &amp; Integrity</h2>
-          <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
-            Security-grade principles govern every execution path from policy check to final settlement.
-          </p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3 md:auto-rows-fr">
-          <Card className="md:col-span-2">
-            <ul className="grid gap-4 text-2xl text-slate-100 sm:grid-cols-2">
-              {trustPillars.map((pillar) => (
-                <li key={pillar} className="h-full">
-                  <GlassInnerPanel>{pillar}</GlassInnerPanel>
-                </li>
-              ))}
-            </ul>
-          </Card>
-          <Card className="border-primary-300/25 bg-primary-500/10">
-            <p className="text-xl font-bold uppercase tracking-[0.14em] text-primary-100">
-              Security Contact
-            </p>
-            <p className="mt-3 text-2xl text-slate-200">
-              For responsible disclosure and security coordination, contact our team directly.
-            </p>
-            <p className="mt-4 text-2xl font-bold text-white">security@trucore.xyz</p>
-          </Card>
-        </div>
-      </Section>
-
-      {/* ── V1 Integrations ── */}
-      <Section id="integrations" className="border-t border-white/10 fade-in-up fade-delay-5">
-        <div className="mb-8 max-w-2xl">
-          <h2 className="text-5xl font-bold tracking-tight text-[#f0a050]">V1 Integrations</h2>
-          <p className="mt-4 text-3xl leading-[1.4] text-slate-200">
-            Built with a Solana-first foundation and integrated with critical DeFi rails for execution.
-          </p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3 md:auto-rows-fr">
-          <Card className="border-primary-300/25 bg-primary-500/10 md:col-span-2">
-            <h3 className="text-4xl font-bold text-[#e8944a]">Solana</h3>
-            <p className="mt-3 max-w-xl text-2xl leading-[1.5] text-slate-200">
-              Primary execution layer for low-latency policy-aware transactions, deterministic controls,
-              and verifiable settlement pathways.
+        <div className="grid gap-6 sm:grid-cols-2">
+          <Card>
+            <Badge>Receipts</Badge>
+            <h3 className="mt-4 text-lg font-semibold text-[#ffe0b2]">Deterministic Receipts</h3>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+              Every decision produces a <code className="text-primary-200/90">content_hash</code> computed from stable
+              JSON serialization. Re-hash the payload locally and the digest matches.
             </p>
           </Card>
-          <div className="grid gap-4 md:col-span-1 md:auto-rows-fr">
-            <Card className="h-full">
-              <h3 className="text-3xl font-bold text-[#e8944a]">Jupiter</h3>
-              <p className="mt-3 text-2xl leading-[1.5] text-slate-200">
-                Secondary integration for route intelligence and best-execution support.
-              </p>
-            </Card>
-            <Card className="h-full">
-              <h3 className="text-3xl font-bold text-[#e8944a]">Solend</h3>
-              <p className="mt-3 text-2xl leading-[1.5] text-slate-200">
-                Secondary integration for lending and collateral-aware strategy primitives.
-              </p>
-            </Card>
-          </div>
+
+          <Card>
+            <Badge>Tracing</Badge>
+            <h3 className="mt-4 text-lg font-semibold text-[#ffe0b2]">Request Tracing</h3>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+              Every request carries an <code className="text-primary-200/90">X-Request-ID</code> header.
+              Pass it through your stack for end-to-end correlation across services.
+            </p>
+          </Card>
+
+          <Card>
+            <Badge>CLI</Badge>
+            <h3 className="mt-4 text-lg font-semibold text-[#ffe0b2]">Zero-Dependency CLI</h3>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+              The CLI ships with no runtime dependencies. Run it in CI, on air-gapped hosts,
+              or inside containers without pulling transitive packages.
+            </p>
+          </Card>
+
+          <Card>
+            <Badge>Production</Badge>
+            <h3 className="mt-4 text-lg font-semibold text-[#ffe0b2]">Production Path</h3>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+              <code className="text-primary-200/90">/v1/simulate</code> is the canonical API route.
+              <code className="text-primary-200/90">/api/simulate</code> aliases it behind Caddy for convenience.
+            </p>
+          </Card>
         </div>
       </Section>
 
-      {/* ── Design Partner CTA ── */}
-      <AtfDesignPartnerCta location="homepage_bottom" />
+      {/* ── Why ATF Exists ── */}
+      <Section id="why-atf" className="border-t border-white/10 fade-in-up fade-delay-4">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+            Why ATF Exists
+          </h2>
+        </div>
 
-      {/* ── Waitlist ── */}
-      <Section id="waitlist" className="border-t border-white/10 fade-in-up">
-        <Card className="bg-accent-500/10 border-accent-500/30 p-8 sm:p-10">
-          <h2 className="text-5xl font-bold text-accent-300">Join the ATF Waitlist</h2>
-          <p className="mt-4 max-w-2xl text-3xl leading-[1.4] text-slate-100">
-            Be first to access the Agent Transaction Firewall — TruCore’s trust-first enforcement layer for autonomous finance.
+        <div className="max-w-3xl space-y-6 text-xl leading-[1.5] text-slate-200">
+          <p>
+            AI agents will coordinate capital.
+            Enforcement cannot rely on trust.
           </p>
-          <div className="mt-6 max-w-xl">
-            <Suspense fallback={null}>
-              <WaitlistForm />
-            </Suspense>
-          </div>
-        </Card>
+          <p>
+            ATF enforces deterministic transaction policy before execution.
+          </p>
+          <p>Built on:</p>
+          <ul className="list-disc pl-6 space-y-2">
+            <li>Permit-based authorization</li>
+            <li>Cryptographic execution receipts</li>
+            <li>Deterministic content hashing</li>
+            <li>Zero-trust threat modeling</li>
+          </ul>
+          <p>
+            On-chain guardrails and vault enforcement are part of the roadmap.
+          </p>
+        </div>
+      </Section>
+
+      {/* ── Roadmap ── */}
+      <Section id="roadmap" className="border-t border-white/10 fade-in-up fade-delay-5">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+            Roadmap
+          </h2>
+        </div>
+
+        <div className="max-w-3xl space-y-6 text-xl leading-[1.5] text-slate-200">
+          <p><strong className="text-[#f2a65f]">Phase 1 &mdash; Deterministic Enforcement (Live)</strong></p>
+          <p>&bull; Production API</p>
+          <p>&bull; Zero-dependency CLI</p>
+          <p>&bull; Deterministic receipts</p>
+
+          <p className="pt-6"><strong className="text-[#f2a65f]">Phase 2 &mdash; Trustless Foundations</strong></p>
+          <p>&bull; Permit-based cryptographic authorization</p>
+          <p>&bull; Tamper-evident audit receipts</p>
+          <p>&bull; Secure-by-default policy templates</p>
+
+          <p className="pt-6"><strong className="text-[#f2a65f]">Phase 3 &mdash; On-Chain Guardrails (Solana)</strong></p>
+          <p>&bull; Vault + invariant enforcement program</p>
+          <p>&bull; Policy attestation registry</p>
+          <p>&bull; Router enforcement layer</p>
+        </div>
+      </Section>
+
+      {/* ── Get Updates ── */}
+      <Section id="updates" className="border-t border-white/10 fade-in-up">
+        <div className="mx-auto max-w-xl text-center">
+          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+            Get Updates
+          </h2>
+          <p className="mt-4 text-lg leading-[1.5] text-slate-200">
+            Get release notes and security updates. CLI versions are pinned; the changelog announces upgrades.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-8 max-w-xl">
+          <Suspense fallback={<div className="h-40 animate-pulse rounded-xl bg-white/5" />}>
+            <WaitlistForm />
+          </Suspense>
+        </div>
       </Section>
     </Container>
   );
