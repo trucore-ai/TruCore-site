@@ -142,8 +142,35 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
         </div>
       </Section>
 
+      {/* ── Example Output ── */}
+      <Section id="example-output" className="border-t border-white/10 fade-in-up fade-delay-2">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+            Example Output
+          </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            What the CLI returns after a successful simulation.
+          </p>
+        </div>
+
+        <pre className="rounded-xl bg-black text-white p-6 overflow-x-auto text-sm font-mono max-w-3xl">
+{`{
+  "ok": true,
+  "verified": true,
+  "decision": "ALLOWED",
+  "request_id": "req_1234567890",
+  "content_hash": "0xabc123...",
+  "timestamp": "2026-02-27T18:42:11Z"
+}`}
+        </pre>
+
+        <p className="mt-6 max-w-2xl text-sm text-primary-200/80">
+          Receipt integrity verified locally via deterministic hashing.
+        </p>
+      </Section>
+
       {/* ── What Happens Under the Hood ── */}
-      <Section id="architecture" className="border-t border-white/10 fade-in-up fade-delay-2">
+      <Section id="architecture" className="border-t border-white/10 fade-in-up fade-delay-3">
         <div className="mb-8 max-w-2xl">
           <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
             What Happens Under the Hood
@@ -168,7 +195,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
       </Section>
 
       {/* ── Proof + Verification ── */}
-      <Section id="verify" className="border-t border-white/10 fade-in-up fade-delay-3">
+      <Section id="verify" className="border-t border-white/10 fade-in-up fade-delay-4">
         <div className="mb-8 max-w-2xl">
           <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
             Proof + Verification
@@ -218,7 +245,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
       </Section>
 
       {/* ── Why ATF Exists ── */}
-      <Section id="why-atf" className="border-t border-white/10 fade-in-up fade-delay-4">
+      <Section id="why-atf" className="border-t border-white/10 fade-in-up fade-delay-5">
         <div className="mb-8 max-w-2xl">
           <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
             Why ATF Exists
@@ -247,7 +274,7 @@ npx @trucore/atf@1.0.2 simulate --preset swap_small --verify
       </Section>
 
       {/* ── Roadmap ── */}
-      <Section id="roadmap" className="border-t border-white/10 fade-in-up fade-delay-5">
+      <Section id="roadmap" className="border-t border-white/10 fade-in-up fade-delay-6">
         <div className="mb-8 max-w-2xl">
           <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
             Roadmap
