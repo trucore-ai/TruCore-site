@@ -7,7 +7,7 @@ import {
   validateApiKey,
 } from "@/lib/api-keys";
 import { recordUsage } from "@/lib/usage-meter";
-import { isSimRequest, normalizeSimRequest, type SimRequest } from "@/lib/simulator";
+import { isSimRequest, normalizeSimRequest, simulatePolicy, type SimRequest } from "@/lib/simulator";
 
 const MAX_BODY_BYTES = 32 * 1024;
 const FIREWALL_TIMEOUT_MS = 8_000;
@@ -317,11 +317,15 @@ export async function POST(request: NextRequest) {
   const firewallResponse = await callFirewallApprove(approveRequest);
 
   if (!firewallResponse.ok) {
-    return respond(firewallResponse.status, {
-      ok: false,
-      error: firewallResponse.error,
-      message: firewallResponse.message,
+    // Fallback to local policy evaluation when firewall API is unavailable
+    const localResult = simulatePolicy(requestBody);
+    return respond(200, {
+      ok: true,
       input: requestBody,
+      result: localResult,
+      decision: localResult.status === "allowed" ? "approve" : "deny",
+      reasons: localResult.invariant_checks,
+      receipt_hash: localResult.receipt_hash,
     });
   }
 

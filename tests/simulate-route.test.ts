@@ -84,7 +84,7 @@ describe("/api/simulate proxy", () => {
     expect(JSON.parse(String(init?.body))).toEqual(requestBody);
   });
 
-  it("returns firewall unreachable error when upstream fails", async () => {
+  it("falls back to local policy evaluation when upstream fails", async () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("network down"));
 
     const request = new NextRequest("http://localhost/api/simulate", {
@@ -103,11 +103,76 @@ describe("/api/simulate proxy", () => {
     });
 
     const response = await POST(request);
-    const payload = (await response.json()) as { ok: boolean; error: string };
+    const payload = (await response.json()) as {
+      ok: boolean;
+      decision: string;
+      result: { status: string };
+    };
 
-    expect(response.status).toBe(502);
-    expect(payload.ok).toBe(false);
-    expect(payload.error).toBe("firewall_api_unreachable");
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.decision).toBe("approve");
+    expect(payload.result.status).toBe("allowed");
     expect(response.headers.get("x-ratelimit-limit")).toBeTruthy();
+  });
+
+  it("falls back to local policy and denies when amount exceeds limit", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("network down"));
+
+    const request = new NextRequest("http://localhost/api/simulate", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "swap",
+        token_in: "SOL",
+        token_out: "USDC",
+        amount: 5000,
+        max_slippage_bps: 100,
+        ttl_seconds: 60,
+      }),
+    });
+
+    const response = await POST(request);
+    const payload = (await response.json()) as {
+      ok: boolean;
+      decision: string;
+      result: { status: string };
+    };
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.decision).toBe("deny");
+    expect(payload.result.status).toBe("denied");
+  });
+
+  it("falls back to local policy when firewall API is unconfigured", async () => {
+    delete process.env.FIREWALL_API_BASE_URL;
+
+    const request = new NextRequest("http://localhost/api/simulate", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "swap",
+        token_in: "SOL",
+        token_out: "USDC",
+        amount: 10,
+        max_slippage_bps: 100,
+        ttl_seconds: 60,
+      }),
+    });
+
+    const response = await POST(request);
+    const payload = (await response.json()) as {
+      ok: boolean;
+      result: { status: string };
+    };
+
+    expect(response.status).toBe(200);
+    expect(payload.ok).toBe(true);
+    expect(payload.result.status).toBe("allowed");
   });
 });
