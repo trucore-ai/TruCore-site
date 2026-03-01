@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
@@ -20,6 +21,7 @@ import { TrackedLink } from "@/components/tracked-link";
 import { RiskBoundaryBlock } from "@/components/risk-boundary-block";
 import { Tilt } from "@/components/ui/tilt";
 import { SingleCommandQuickstart } from "@/components/single-command-quickstart";
+import truCoreBanner from "@/images/TruCore-banner-new.png";
 
 export const metadata: Metadata = {
   title: "TruCore | Developer Security Infrastructure for Solana",
@@ -107,6 +109,18 @@ export default function Home() {
       <Section id="hero" className="fade-in-up">
         <div className="relative max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/35 p-6 sm:p-8">
           <div className="hero-legibility-overlay" aria-hidden="true" />
+          <Image
+            src={truCoreBanner}
+            alt="TruCore banner"
+            width={280}
+            height={187}
+            className="pointer-events-none absolute right-4 top-4 z-10 hidden w-48 sm:block sm:w-56 lg:w-[280px]"
+            style={{
+              maskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 100%)",
+              WebkitMaskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 100%)",
+            }}
+            priority
+          />
           <div className="relative z-10 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
               Developer Security Infrastructure
