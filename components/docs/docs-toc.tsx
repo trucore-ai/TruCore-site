@@ -1,18 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
 import { extractTocFromDom, type TocItem } from "@/lib/docs/toc";
 
 /* ── External store for TOC items (avoids setState in useEffect) ── */
 
-let tocSnapshot: TocItem[] = [];
-const tocListeners = new Set<() => void>();
-
-// Stable module-level constants for server snapshots — must not create new
-// references on each call or React will throw "getServerSnapshot should be
-// cached to avoid an infinite loop".
+// SERVER_TOC_SNAPSHOT is also used as the initial client value so that
+// Object.is() comparison during hydration passes (same reference on both sides).
 const SERVER_TOC_SNAPSHOT: TocItem[] = [];
 const SERVER_ACTIVE_SNAPSHOT = "";
+
+let tocSnapshot: TocItem[] = SERVER_TOC_SNAPSHOT;
+const tocListeners = new Set<() => void>();
 
 function subscribeToc(callback: () => void) {
   tocListeners.add(callback);
@@ -69,8 +69,15 @@ export function DocsToc() {
   const activeId = useSyncExternalStore(subscribeActive, getActiveSnapshot, getServerActiveSnapshot);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Scan the content area for headings once mounted
+  const pathname = usePathname();
+
+  // Re-scan headings whenever the route changes so the TOC stays current
+  // across client-side navigations (the layout stays mounted between pages).
   useEffect(() => {
+    // Reset store first so stale headings don't flash
+    setTocItems(SERVER_TOC_SNAPSHOT);
+    setActiveHeading(SERVER_ACTIVE_SNAPSHOT);
+
     const content = document.getElementById("docs-content");
     if (!content) return;
 
@@ -106,7 +113,7 @@ export function DocsToc() {
     return () => {
       observerRef.current?.disconnect();
     };
-  }, []);
+  }, [pathname]);
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -133,8 +140,11 @@ export function DocsToc() {
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Table of contents" className="docs-toc">
-      {/* Desktop: always visible */}
+    <nav
+      aria-label="Table of contents"
+      className="docs-toc xl:sticky xl:top-24 xl:max-h-[calc(100vh-7rem)] xl:self-start xl:overflow-y-auto"
+    >
+      {/* Desktop: sticky right column */}
       <div className="hidden xl:block">
         <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
           On this page

@@ -31,22 +31,15 @@ export function DocsShell({ children }: DocsShellProps) {
             <DocsBreadcrumbs />
           </div>
 
-          {/* Mobile TOC (shown before content on smaller screens) */}
-          <div className="mb-4 xl:hidden">
-            <DocsToc />
-          </div>
-
           <div id="docs-content" className="docs-content prose-docs">
             {children}
           </div>
         </div>
 
-        {/* Right: Desktop TOC */}
-        <div className="hidden xl:block">
-          <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
-            <DocsToc />
-          </div>
-        </div>
+        {/* Right: single DocsToc instance. It renders a desktop sticky panel
+            (hidden xl:block) and a mobile accordion (xl:hidden) internally,
+            so there is no need to render it twice. */}
+        <DocsToc />
       </div>
     </div>
   );

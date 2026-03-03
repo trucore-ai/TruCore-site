@@ -19,7 +19,12 @@ function buildAllOpenState(): Record<string, boolean> {
   return result;
 }
 
-let openSectionsStore: Record<string, boolean> = buildAllOpenState();
+// SERVER_OPEN_SECTIONS_SNAPSHOT is the stable constant used as the server
+// snapshot AND as the initial store value, so Object.is() comparison during
+// React hydration passes (same object reference on both sides).
+const SERVER_OPEN_SECTIONS_SNAPSHOT: Record<string, boolean> = buildAllOpenState();
+
+let openSectionsStore: Record<string, boolean> = SERVER_OPEN_SECTIONS_SNAPSHOT;
 const openSectionsListeners = new Set<() => void>();
 
 function subscribeOpenSections(cb: () => void) {
@@ -31,6 +36,10 @@ function subscribeOpenSections(cb: () => void) {
 
 function getOpenSectionsSnapshot() {
   return openSectionsStore;
+}
+
+function getServerOpenSectionsSnapshot() {
+  return SERVER_OPEN_SECTIONS_SNAPSHOT;
 }
 
 function setOpenSectionsStore(next: Record<string, boolean>) {
@@ -93,7 +102,7 @@ export function DocsNavSidebar() {
   const openSections = useSyncExternalStore(
     subscribeOpenSections,
     getOpenSectionsSnapshot,
-    getOpenSectionsSnapshot,
+    getServerOpenSectionsSnapshot,
   );
   const [search, setSearch] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
