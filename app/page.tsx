@@ -123,19 +123,16 @@ export default function Home() {
           />
           <div className="relative z-10 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
-              Developer Security Infrastructure
+              Autonomous Agent Controls for Solana
             </p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl lg:text-7xl">
-              Deterministic enforcement for onchain automation
+              Agent guardrails for automated finance.
             </h1>
             <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
-              ATF is a non-custodial developer platform for Solana bots and AI agents.
-              Profiles, Helius-first RPC, transaction tooling, and cryptographically
-              verifiable receipts.
+              Don&apos;t let your autonomous bot blow up your wallet. ATF enforces spend limits, protocol allowlists, and slippage caps on every transaction, so your agents can move fast without going off the rails.
             </p>
             <p className="mt-3 text-lg leading-[1.5] text-slate-300 sm:text-xl">
-              Purpose-built for financial invariants, spend limits, protocol allowlists, exposure caps, and time-bound
-              execution.
+              Non-custodial. Helius-first RPC. Cryptographic receipts prove every enforcement decision.
             </p>
 
           {/* CTAs */}
