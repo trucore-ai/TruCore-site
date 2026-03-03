@@ -112,20 +112,20 @@ export default function Home() {
           <Image
             src={truCoreBanner}
             alt="TruCore banner"
-            width={280}
-            height={187}
-            className="pointer-events-none absolute right-4 top-4 z-10 hidden w-48 sm:block sm:w-56 lg:w-[280px]"
+            width={420}
+            height={280}
+            className="pointer-events-none absolute right-4 top-4 z-10 hidden w-48 sm:block sm:w-[336px] lg:w-[420px]"
             style={{
               maskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 100%)",
               WebkitMaskImage: "radial-gradient(ellipse 60% 60% at 50% 50%, black 20%, transparent 100%)",
             }}
             priority
           />
-          <div className="relative z-10 max-w-3xl sm:pr-60 lg:pr-72">
+          <div className="relative z-10 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
               Autonomous Agent Controls for Solana
             </p>
-            <h1 className="mt-2 text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl lg:text-7xl">
+            <h1 className="mt-2 text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
               Agent guardrails for automated finance.
             </h1>
             <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
