@@ -527,6 +527,100 @@ body {
   }
 }
 
+/* ── Docs typography and layout ── */
+
+.prose-docs {
+  @apply text-slate-300 leading-relaxed;
+}
+
+.prose-docs h1 {
+  @apply text-3xl font-bold tracking-tight text-[#ffe0b2] sm:text-4xl;
+  margin-bottom: 1rem;
+}
+
+.prose-docs h2 {
+  @apply text-2xl font-semibold text-slate-100;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-docs h3 {
+  @apply text-lg font-semibold text-slate-200;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose-docs h4 {
+  @apply text-base font-semibold text-slate-200;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose-docs p {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-docs ul,
+.prose-docs ol {
+  @apply pl-5 space-y-1;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-docs ul {
+  list-style-type: disc;
+}
+
+.prose-docs ol {
+  list-style-type: decimal;
+}
+
+.prose-docs li {
+  @apply text-slate-300;
+}
+
+.prose-docs a {
+  @apply font-semibold text-primary-200 transition-colors hover:text-primary-100;
+}
+
+.prose-docs code:not(pre code) {
+  @apply rounded bg-white/5 px-1.5 py-0.5 font-mono text-sm text-primary-200;
+}
+
+.prose-docs pre {
+  @apply my-4 overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 font-mono text-sm leading-relaxed text-slate-200;
+}
+
+.prose-docs blockquote {
+  @apply my-4 border-l-4 border-primary-400/30 pl-4 text-slate-400 italic;
+}
+
+.prose-docs hr {
+  @apply my-8 border-white/10;
+}
+
+.prose-docs table {
+  @apply my-4 w-full text-sm;
+}
+
+.prose-docs thead th {
+  @apply border-b border-white/15 px-3 py-2 text-left text-xs font-bold uppercase tracking-wider text-slate-400;
+}
+
+.prose-docs tbody td {
+  @apply border-b border-white/5 px-3 py-2 text-slate-300;
+}
+
+.prose-docs strong {
+  @apply font-semibold text-slate-100;
+}
+
+/* Docs breadcrumb spacing */
+.docs-breadcrumbs {
+  @apply mb-2;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bg-animation,
   .shine,
