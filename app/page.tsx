@@ -121,7 +121,7 @@ export default function Home() {
             }}
             priority
           />
-          <div className="relative z-10 max-w-3xl">
+          <div className="relative z-10 max-w-3xl sm:pr-60 lg:pr-72">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
               Autonomous Agent Controls for Solana
             </p>
