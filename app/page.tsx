@@ -126,10 +126,10 @@ export default function Home() {
               Autonomous Agent Controls for Solana
             </p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
-              Agent guardrails for automated finance.
+              Guardrails for automated finance.
             </h1>
             <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
-              Don&apos;t let your autonomous bot blow up your wallet. ATF enforces spend limits, protocol allowlists, and slippage caps on every transaction, so your agents can move fast without going off the rails.
+              Don&apos;t let your AI or autonomous bot blow up your wallet. ATF enforces spend limits, protocol allowlists, and slippage caps on every transaction, so your agents can move fast without going off the rails.
             </p>
             <p className="mt-3 text-lg leading-[1.5] text-slate-300 sm:text-xl">
               Non-custodial. Helius-first RPC. Cryptographic receipts prove every enforcement decision.
