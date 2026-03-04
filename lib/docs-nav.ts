@@ -22,6 +22,12 @@ export const sections: DocsNavSection[] = [
         description: "Start here for structure, core concepts, and next steps.",
       },
       {
+        title: "Agent Discovery",
+        href: "/docs/agent-discovery",
+        description:
+          "Machine-readable ATF manifest, OpenClaw plugin, recipes_v2 self-install, and receipts-backed savings reporting for autonomous agents.",
+      },
+      {
         title: "ATF CLI",
         href: "/docs/cli",
         description:

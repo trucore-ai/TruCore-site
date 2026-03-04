@@ -16,6 +16,7 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
+    "test:manifest": "node scripts/validate-atf-manifest.mjs",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "ci": "npm run lint -- --max-warnings=0 && npm test -- --run && npm run test:e2e"

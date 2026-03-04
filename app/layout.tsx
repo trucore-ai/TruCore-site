@@ -27,16 +27,22 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://trucore.xyz"),
   title: {
     default:
-      "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
+      "TruCore — Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
     template: "%s | TruCore",
   },
   description:
-    "TruCore delivers Agent Transaction Firewall controls for Solana with policy-bound execution and tamper-evident receipts for autonomous finance.",
+    "Zero-trust transaction firewall for AI agents. Deterministic receipts, policy guardrails for swaps, lending, and perps. OpenClaw plugin and receipts-backed savings reports.",
   keywords: [
     "TruCore",
     "Agent Transaction Firewall",
     "tamper-evident receipts",
     "autonomous finance",
+    "AI agent guardrails",
+    "OpenClaw plugin",
+    "AI trading bot safety",
+    "agent safety middleware",
+    "perps guardrails",
+    "autonomous trading bot",
     "AI infrastructure",
     "crypto infrastructure",
     "policy enforcement",
@@ -48,9 +54,9 @@ export const metadata: Metadata = {
     url: "https://trucore.xyz",
     siteName: "TruCore",
     title:
-      "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
+      "TruCore — Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
     description:
-      "Policy-bound execution, tamper-evident receipts, and fail-closed design for autonomous finance on Solana.",
+      "Zero-trust transaction firewall for AI agents. Policy guardrails for swaps, lending, and perps on Solana. OpenClaw plugin and receipts-backed savings reports.",
     images: [
       {
         url: "/opengraph-image",
@@ -63,9 +69,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title:
-      "TruCore | Agent Transaction Firewall, Tamper-Evident Receipts, Solana",
+      "TruCore — Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
     description:
-      "Agent Transaction Firewall with policy-first controls and tamper-evident receipts for Solana execution.",
+      "Zero-trust transaction firewall for AI agents. OpenClaw plugin, policy guardrails for swaps and perps, and receipts-backed savings reports.",
     images: ["/opengraph-image"],
   },
   icons: {
@@ -224,6 +230,12 @@ export default function RootLayout({
                   ATF
                 </Link>
                 <Link
+                  href="/docs/agent-discovery"
+                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                >
+                  Agent Discovery
+                </Link>
+                <Link
                   href="/receipts"
                   className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
@@ -331,6 +343,7 @@ export default function RootLayout({
                       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Resources</p>
                       <div className="mt-3 space-y-2">
                         <Link href="/docs" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Docs</Link>
+                        <Link href="/docs/agent-discovery" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Agent Discovery</Link>
                         <Link href="/docs/cli" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF CLI</Link>
                         <Link href="/docs/verify" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Verification</Link>
                         <Link href="/docs/api" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">API</Link>
