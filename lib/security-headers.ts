@@ -3,7 +3,11 @@
  *
  * CSP allowances:
  * - 'unsafe-inline' retained for framework-required inline styles/scripts
- * - va.vercel-scripts.com for Vercel Web Analytics transport
+ * - va.vercel-scripts.com for Vercel Web Analytics (script load + transport)
+ *
+ * Browser-extension violations (Phantom wallet's solana.js, MetaMask's
+ * evmAsk.js, etc.) are expected and not addressable via CSP. These
+ * extensions inject scripts/styles/images from their own origins.
  *
  * Stage 24: added CSP-Report-Only header + Report-To for violation collection.
  */
@@ -12,7 +16,7 @@
 
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
