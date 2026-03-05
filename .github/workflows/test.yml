@@ -41,6 +41,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate ATF manifest
+        run: npm run check:atf-manifest
+
       - name: Enforce pinned CLI quickstart references
         run: |
           if grep -R --line-number "@latest" \

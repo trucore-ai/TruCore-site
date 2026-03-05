@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "eslint",
     "check:bundle": "node scripts/check-bundle-size.mjs",
+    "check:atf-manifest": "node scripts/validate_atf_manifest.mjs",
     "lhci": "CHROME_PATH=$(find \"$HOME/.cache/ms-playwright\" -type f -path \"*/chromium-*/chrome-linux*/chrome\" | head -n 1) lhci autorun",
     "test": "vitest",
     "test:watch": "vitest --watch",
