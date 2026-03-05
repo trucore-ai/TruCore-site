@@ -1,0 +1,55 @@
+{
+  "schema_version": "1",
+  "plugin": "@trucore/openclaw-atf",
+  "plugin_version": "0.1.0",
+  "description": "OpenClaw plugin for TruCore ATF. Provides six typed tools for agent discovery, bootstrap, intent protection, receipt verification, and savings reporting.",
+  "docs_url": "/docs/agent-discovery",
+  "safety_defaults": {
+    "allowNetwork": false,
+    "allowExecuteSafe": true,
+    "tools_optional": true
+  },
+  "tools": [
+    {
+      "name": "atf_discover",
+      "description": "Fetch and parse /.well-known/atf.json to confirm ATF is reachable and return manifest fields.",
+      "parameters": {}
+    },
+    {
+      "name": "atf_bootstrap_plan",
+      "description": "Plan a bootstrap recipe (dry-run). Returns the ordered step list without executing anything.",
+      "parameters": {
+        "recipe": { "type": "string", "description": "Recipe id, e.g. bootstrap_local" }
+      }
+    },
+    {
+      "name": "atf_bootstrap_execute_safe",
+      "description": "Execute only the safe steps of a recipe (env + verify kinds). Never runs cli steps that require network or signer access.",
+      "parameters": {
+        "recipe": { "type": "string", "description": "Recipe id" }
+      }
+    },
+    {
+      "name": "atf_protect_intent",
+      "description": "Submit an agent intent to ATF for policy evaluation. Returns a permit or denial receipt.",
+      "parameters": {
+        "intent": { "type": "object", "description": "ExecutionRequest JSON" }
+      }
+    },
+    {
+      "name": "atf_verify_receipt",
+      "description": "Run local deterministic hash verification on a receipt to confirm it has not been tampered with.",
+      "parameters": {
+        "receipt": { "type": "object", "description": "Receipt JSON returned from atf_protect_intent" }
+      }
+    },
+    {
+      "name": "atf_report_savings",
+      "description": "Aggregate local receipt files and generate a receipt-backed savings or losses-prevented report.",
+      "parameters": {
+        "receipts_dir": { "type": "string", "description": "Path to local receipts directory" },
+        "format": { "type": "string", "enum": ["json", "human"], "default": "human" }
+      }
+    }
+  ]
+}

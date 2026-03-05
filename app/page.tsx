@@ -123,7 +123,7 @@ export default function Home() {
           />
           <div className="relative z-10 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
-              Autonomous Agent Controls for Solana
+              Solana-First Agent Controls — Multi-Chain Next
             </p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
               Guardrails for automated finance.
@@ -132,7 +132,7 @@ export default function Home() {
               Don&apos;t let your AI or autonomous bot blow up your wallet. ATF enforces spend limits, protocol allowlists, and slippage caps on every transaction, so your agents can move fast without going off the rails.
             </p>
             <p className="mt-3 text-lg leading-[1.5] text-slate-300 sm:text-xl">
-              Non-custodial. Helius-first RPC. Cryptographic receipts prove every enforcement decision.
+              Non-custodial. Helius-first RPC. Cryptographic receipts prove every enforcement decision. ATF enforces policy across swaps, lending, and perpetual futures.
             </p>
 
           {/* CTAs */}
@@ -604,25 +604,171 @@ export default function Home() {
       {/* ── Designed For ── */}
       <AtfDesignedFor />
 
-      {/* ── Ecosystem Positioning ── */}
+      {/* ── Integrations ── */}
       <Section id="integrations" className="border-t border-white/10 fade-in-up">
-        <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
-            Designed for AI Agents &amp; DeFi Integrations
-          </h2>
-          <ul className="mt-4 space-y-2 text-lg leading-[1.5] text-slate-200">
-            <li>Agent-native JSON interface</li>
-            <li>Chain-agnostic enforcement layer</li>
-            <li>Compatible with swap routers, lending protocols, and internal bots</li>
-          </ul>
-          <TrackedLink
-            href="/docs/integration-pattern"
-            eventName="integration_pattern_click"
-            eventProps={{ location: "atf_ecosystem_section" }}
-            className="mt-5 inline-flex text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
-          >
-            See Integration Pattern
-          </TrackedLink>
+        <div className="mx-auto max-w-5xl space-y-6">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary-300">Integrations</p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+              Connect or deploy in minutes
+            </h2>
+            <p className="mt-3 text-lg text-slate-300">
+              Three surfaces. Every one is deterministic, receipt-backed, and fail-closed by default.
+            </p>
+          </div>
+
+          {/* Card grid */}
+          <div className="grid gap-5 lg:grid-cols-3">
+
+            {/* 1 — OpenClaw Plugin */}
+            <div className="flex flex-col rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-primary-300">OpenClaw Plugin</p>
+                <h3 className="mt-1 text-xl font-semibold text-slate-100">@trucore/openclaw-atf</h3>
+                <p className="mt-2 text-sm text-slate-400">
+                  Six typed tools for ATF discovery, bootstrap, protect, verify, and savings reporting.
+                  Safe defaults ship on install.
+                </p>
+              </div>
+              <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-3 text-xs text-slate-200">{`npm i @trucore/openclaw-atf@0.1.0
+openclaw plugins install @trucore/openclaw-atf
+openclaw gateway restart`}</pre>
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Tools (6)</p>
+                <ul className="space-y-0.5 text-xs text-slate-400 font-mono">
+                  {[
+                    "atf_discover",
+                    "atf_bootstrap_plan",
+                    "atf_bootstrap_execute_safe",
+                    "atf_protect_intent",
+                    "atf_verify_receipt",
+                    "atf_report_savings",
+                  ].map((t) => <li key={t}>{t}</li>)}
+                </ul>
+              </div>
+              <div className="space-y-0.5 text-xs text-slate-500">
+                <p><span className="font-mono text-slate-400">allowNetwork=false</span> by default</p>
+                <p><span className="font-mono text-slate-400">allowExecuteSafe=true</span> for safe steps</p>
+                <p>Tools are optional — call protect directly</p>
+              </div>
+              <div className="mt-auto pt-2">
+                <TrackedLink
+                  href="/docs/agent-discovery#openclaw-plugin"
+                  eventName="integrations_openclaw_click"
+                  eventProps={{ location: "integrations_section" }}
+                  className="text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+                >
+                  Plugin docs &rarr;
+                </TrackedLink>
+              </div>
+            </div>
+
+            {/* 2 — Agent Discovery Manifest */}
+            <div className="flex flex-col rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-primary-300">Agent Discovery Manifest</p>
+                <h3 className="mt-1 text-xl font-semibold text-slate-100">/.well-known/atf.json</h3>
+                <p className="mt-2 text-sm text-slate-400">
+                  Machine-readable static manifest. Deterministic hashes on every field.
+                  CDN-cached, always <span className="font-mono">application/json</span>.
+                </p>
+              </div>
+              <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-3 text-xs text-slate-200">{`curl -sS https://trucore.xyz/.well-known/atf.json | head`}</pre>
+              <ul className="space-y-1 text-xs text-slate-400">
+                <li><span className="font-mono text-slate-300">manifest_hash</span> — SHA-256 of full manifest body</li>
+                <li><span className="font-mono text-slate-300">recipes_v2_hash</span> — hash of recipes array only</li>
+                <li><span className="font-mono text-slate-300">openclaw_plugin</span> — install descriptor</li>
+                <li><span className="font-mono text-slate-300">capabilities</span> — feature flag map</li>
+              </ul>
+              <div className="mt-auto pt-2">
+                <TrackedLink
+                  href="/docs/agent-discovery"
+                  eventName="integrations_manifest_click"
+                  eventProps={{ location: "integrations_section" }}
+                  className="text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+                >
+                  Agent discovery docs &rarr;
+                </TrackedLink>
+              </div>
+            </div>
+
+            {/* 3 — Bot Protect API + CLI */}
+            <div className="flex flex-col rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-primary-300">Bot Protect API + CLI</p>
+                <h3 className="mt-1 text-xl font-semibold text-slate-100">Protect every intent</h3>
+                <p className="mt-2 text-sm text-slate-400">
+                  HTTP endpoints and CLI pipeline. Every call returns a permit or denial receipt.
+                  No keys held, no transactions submitted.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Endpoints</p>
+                <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-3 text-xs text-slate-200">{`POST /v1/bot/protect
+POST /v1/receipts/verify
+GET  /health`}</pre>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">CLI</p>
+                <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-3 text-xs text-slate-200">{`echo '<ExecutionRequest JSON>' | atf bot protect --stdin
+atf receipts verify --last
+atf report savings --receipts-dir ./atf_receipts --format json`}</pre>
+              </div>
+              <div className="mt-auto pt-2">
+                <TrackedLink
+                  href="/docs/cli"
+                  eventName="integrations_cli_click"
+                  eventProps={{ location: "integrations_section" }}
+                  className="text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+                >
+                  CLI reference &rarr;
+                </TrackedLink>
+              </div>
+            </div>
+          </div>{/* /grid */}
+
+          {/* Perps feature-gated callout */}
+          <div className="rounded-xl border border-amber-400/20 bg-amber-900/10 p-5 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center rounded-full border border-amber-400/40 bg-amber-900/30 px-2.5 py-0.5 text-xs font-bold text-amber-300">
+                Feature-gated
+              </span>
+              <p className="text-sm font-semibold text-amber-200">Perps Enforcement (Feature-Gated)</p>
+            </div>
+            <p className="text-sm text-slate-400">
+              Solana perpetuals gates are available for Drift v2, Mango v4, and Hyperliquid but must be
+              explicitly enabled. Unknown operations and discriminators fail closed.
+            </p>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {[
+                { label: "Drift v2", env: "ATF_ENABLE_DRIFT_POLICY" },
+                { label: "Mango v4", env: "ATF_ENABLE_MANGO_POLICY" },
+                { label: "Hyperliquid", env: "ATF_ENABLE_HYPERLIQUID_POLICY" },
+              ].map(({ label, env }) => (
+                <div key={env} className="rounded-lg border border-white/8 bg-neutral-950/40 px-3 py-2.5 space-y-0.5">
+                  <p className="text-xs font-semibold text-slate-300">{label}</p>
+                  <p className="font-mono text-xs text-slate-500">{env}=true</p>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Security posture</p>
+              <ul className="space-y-0.5 text-xs text-slate-400">
+                <li>OFF by default</li>
+                <li>Fail-closed on unknown operations</li>
+                <li>Fail-closed on unknown instruction discriminators</li>
+              </ul>
+            </div>
+            <TrackedLink
+              href="/docs/agent-discovery#when-to-install"
+              eventName="integrations_perps_click"
+              eventProps={{ location: "integrations_section" }}
+              className="inline-flex text-xs font-semibold text-amber-300 transition-colors hover:text-amber-200"
+            >
+              When to enable perps gates &rarr;
+            </TrackedLink>
+          </div>
+
         </div>
       </Section>
 

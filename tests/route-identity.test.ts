@@ -33,7 +33,7 @@ describe("route identity", () => {
   });
 
   it("/ page contains the marketing hero headline", () => {
-    expect(homeSrc).toContain("Deterministic enforcement for onchain automation");
+    expect(homeSrc).toContain("Guardrails for automated finance");
     expect(homeSrc).toContain('id="why-trucore"');
   });
 
