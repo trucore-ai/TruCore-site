@@ -54,10 +54,32 @@ if (op) {
     console.log(`✓ openclaw_plugin.plugin_id = ${op.plugin_id}`);
   }
 
-  if (!op.install) {
-    errors.push("openclaw_plugin.install is missing");
+  // Accept canonical install_command OR legacy install (transition window)
+  const installCmd = op.install_command || op.install;
+  if (typeof installCmd !== "string" || !installCmd.trim()) {
+    errors.push(
+      "openclaw_plugin.install_command (or legacy .install): at least one must be non-empty"
+    );
   } else {
-    console.log(`✓ openclaw_plugin.install = ${op.install}`);
+    const field = op.install_command ? "install_command" : "install (legacy)";
+    console.log(`✓ openclaw_plugin.${field} = ${installCmd}`);
+  }
+
+  // Accept canonical toolsOptional OR legacy safety_defaults.tools_optional
+  const toolsOptionalVal =
+    typeof op.toolsOptional === "boolean"
+      ? op.toolsOptional
+      : op.safety_defaults?.tools_optional;
+  if (typeof toolsOptionalVal !== "boolean") {
+    errors.push(
+      "openclaw_plugin.toolsOptional (or legacy safety_defaults.tools_optional): at least one must be a boolean"
+    );
+  } else {
+    const field =
+      typeof op.toolsOptional === "boolean"
+        ? "toolsOptional"
+        : "safety_defaults.tools_optional (legacy)";
+    console.log(`✓ openclaw_plugin.${field} = ${toolsOptionalVal}`);
   }
 }
 

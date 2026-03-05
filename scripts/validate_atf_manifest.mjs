@@ -107,6 +107,38 @@ if (!requirePresent("openclaw_plugin", manifest.openclaw_plugin)) {
 
   // 4b. openclaw_plugin.tools — array of exactly 6 entries
   requireArrayLength("openclaw_plugin.tools", op.tools, 6);
+
+  // 4c. install command — accept canonical install_command OR legacy install
+  //     (transition window: at least one must exist and be non-empty)
+  const installCmd = op.install_command || op.install;
+  if (typeof installCmd !== "string" || installCmd.trim() === "") {
+    errors.push(
+      "✗ openclaw_plugin.install_command (or legacy .install): " +
+        "at least one must be a non-empty string"
+    );
+  } else {
+    const field = op.install_command ? "install_command" : "install (legacy)";
+    console.log(`✓ openclaw_plugin.${field} = ${installCmd}`);
+  }
+
+  // 4d. toolsOptional — accept canonical top-level toolsOptional OR
+  //     legacy safety_defaults.tools_optional (transition window)
+  const toolsOptionalVal =
+    typeof op.toolsOptional === "boolean"
+      ? op.toolsOptional
+      : op.safety_defaults?.tools_optional;
+  if (typeof toolsOptionalVal !== "boolean") {
+    errors.push(
+      "✗ openclaw_plugin.toolsOptional (or legacy safety_defaults.tools_optional): " +
+        "at least one must be a boolean"
+    );
+  } else {
+    const field =
+      typeof op.toolsOptional === "boolean"
+        ? "toolsOptional"
+        : "safety_defaults.tools_optional (legacy)";
+    console.log(`✓ openclaw_plugin.${field} = ${toolsOptionalVal}`);
+  }
 }
 
 // ---------------------------------------------------------------------------

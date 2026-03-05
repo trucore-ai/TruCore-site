@@ -487,10 +487,10 @@ atf report savings --last 20`}</pre>
               Execute only safe steps (recommended for agent-run)
             </p>
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-              {`atf bootstrap --format json --recipe bootstrap_local --execute safe --dry-run`}
+              {`atf bootstrap --format json --recipe bootstrap_local --execute-safe --dry-run`}
             </pre>
             <p className="text-xs text-slate-500">
-              <code className="font-mono">--execute safe</code> restricts execution to
+              <code className="font-mono">--execute-safe</code> restricts execution to
               env and verify steps only. <code className="font-mono">--dry-run</code>{" "}
               previews the plan without running anything.
             </p>

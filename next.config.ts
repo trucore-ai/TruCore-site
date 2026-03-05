@@ -42,6 +42,34 @@ const nextConfig: NextConfig = {
     root: process.cwd(),
   },
 
+  async redirects() {
+    // Legacy manifest runbook paths redirect to the canonical agent-discovery page.
+    // These paths were referenced in openclaw_plugin.discovery.openclaw_runbook
+    // and discovery.universal_runbook in manifest versions prior to Stage 3.
+    return [
+      {
+        source: "/docs/runbooks/openclaw-atf-agent",
+        destination: "/docs/agent-discovery",
+        permanent: false,
+      },
+      {
+        source: "/docs/runbooks/openclaw-atf-agent.md",
+        destination: "/docs/agent-discovery",
+        permanent: false,
+      },
+      {
+        source: "/docs/runbooks/agent-adoption-atf",
+        destination: "/docs/agent-discovery",
+        permanent: false,
+      },
+      {
+        source: "/docs/runbooks/agent-adoption-atf.md",
+        destination: "/docs/agent-discovery",
+        permanent: false,
+      },
+    ];
+  },
+
   async headers() {
     return getSecurityHeaderRules();
   },
