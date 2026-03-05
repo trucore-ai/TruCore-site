@@ -772,6 +772,47 @@ export default function Home() {
 
           </div>{/* /capability grid */}
 
+          {/* Perps CLI Quickstart */}
+          <div className="rounded-xl border border-amber-400/20 bg-amber-900/10 p-5 space-y-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-amber-300">Perps CLI Quickstart</p>
+              <p className="mt-1 text-sm text-slate-400">
+                Supported venues: Drift v2 (Solana), Mango v4 (Solana), Hyperliquid
+              </p>
+            </div>
+            <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200 leading-relaxed">{`atf perps fixtures
+echo '<ExecutionRequest JSON>' | atf perps protect --stdin
+echo '<ExecutionRequest JSON>' | atf perps explain --stdin`}</pre>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">Enable venue gates</p>
+              <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200 leading-relaxed">{`ATF_ENABLE_DRIFT_POLICY=1
+ATF_ENABLE_MANGO_POLICY=1
+ATF_ENABLE_HYPERLIQUID_POLICY=1`}</pre>
+            </div>
+            <ul className="ml-5 list-disc space-y-1 text-sm text-slate-300">
+              <li>All perps gates are <strong className="text-slate-200">OFF by default</strong>. Must be explicitly enabled per venue.</li>
+              <li><strong className="text-slate-200">Fail-closed on unknown operations</strong>. Any perps intent that does not match a known operation type is denied.</li>
+            </ul>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              <TrackedLink
+                href="/docs/live-demo"
+                eventName="integrations_perps_demo_click"
+                eventProps={{ location: "integrations_section" }}
+                className="text-sm font-semibold text-amber-300 transition-colors hover:text-amber-200"
+              >
+                Live demo &rarr;
+              </TrackedLink>
+              <TrackedLink
+                href="/docs/agent-discovery#perps-enforcement"
+                eventName="integrations_perps_docs_click"
+                eventProps={{ location: "integrations_section" }}
+                className="text-sm font-semibold text-amber-300 transition-colors hover:text-amber-200"
+              >
+                Perps enforcement docs &rarr;
+              </TrackedLink>
+            </div>
+          </div>
+
           {/* Agent Integrations note */}
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-primary-300">Agent Integrations</p>

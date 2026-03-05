@@ -413,7 +413,12 @@ atf report savings --last 20`}</pre>
               Install
             </p>
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-              {`openclaw plugins install @trucore/openclaw-atf\nopenclaw gateway restart`}
+              {`# npm (versioned)
+npm i @trucore/openclaw-atf@0.1.0
+
+# Or via OpenClaw gateway:
+openclaw plugins install @trucore/openclaw-atf
+openclaw gateway restart`}
             </pre>
           </div>
 
@@ -451,6 +456,91 @@ atf report savings --last 20`}</pre>
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Perps intents note */}
+          <div className="rounded-lg border border-amber-400/20 bg-amber-900/10 p-4 space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-amber-300">
+              Perps intents (feature-gated)
+            </p>
+            <p className="text-sm text-slate-300">
+              Plugin tools already support perps intents via{" "}
+              <code className="font-mono text-slate-200">intentJson</code>. Pass a perps{" "}
+              <code className="font-mono text-slate-200">ExecutionRequest</code> to{" "}
+              <code className="font-mono text-slate-200">atf_protect_intent</code> after enabling
+              the relevant venue gate. See{" "}
+              <Link href="/docs/agent-discovery#perps-enforcement" className="text-amber-300 hover:text-amber-200 underline underline-offset-2">
+                Perps Enforcement
+              </Link>{" "}
+              below.
+            </p>
+          </div>
+        </section>
+
+        {/* ── Perps Enforcement ── */}
+        <section className="space-y-5">
+          <HeadingAnchor id="perps-enforcement">
+            Perps Enforcement (Feature-Gated)
+          </HeadingAnchor>
+          <p className="text-slate-300">
+            ATF includes production-grade perps enforcement for Drift v2 (Solana),
+            Mango v4 (Solana), and Hyperliquid. Enforcement is feature-gated: all
+            perps policy gates are <strong className="text-slate-200">OFF by default</strong> and
+            must be explicitly enabled per venue. Any perps intent that does not match a
+            known operation type is <strong className="text-slate-200">fail-closed</strong>.
+          </p>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Perps CLI commands
+            </p>
+            <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200 leading-relaxed">
+              {`atf perps fixtures
+echo '<ExecutionRequest JSON>' | atf perps protect --stdin
+echo '<ExecutionRequest JSON>' | atf perps explain --stdin`}
+            </pre>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Enable venue gates (environment flags)
+            </p>
+            <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200 leading-relaxed">
+              {`ATF_ENABLE_DRIFT_POLICY=1
+ATF_ENABLE_MANGO_POLICY=1
+ATF_ENABLE_HYPERLIQUID_POLICY=1`}
+            </pre>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Supported venues
+            </p>
+            <ul className="ml-5 list-disc space-y-1 text-sm text-slate-300">
+              <li>Drift v2 (Solana)</li>
+              <li>Mango v4 (Solana)</li>
+              <li>Hyperliquid</li>
+            </ul>
+          </div>
+
+          <ul className="ml-5 list-disc space-y-1 text-sm text-slate-300">
+            <li>All gates are <strong className="text-slate-200">OFF by default</strong>. Enable per venue as above.</li>
+            <li><strong className="text-slate-200">Fail-closed on unknown operations.</strong> Any intent that does not match a recognized operation type is denied and a denial receipt is issued.</li>
+          </ul>
+
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <Link
+              href="/docs/live-demo"
+              className="text-sm font-semibold text-amber-300 transition-colors hover:text-amber-200"
+            >
+              Live demo &rarr;
+            </Link>
+            <Link
+              href="/#integrations"
+              className="text-sm font-semibold text-amber-300 transition-colors hover:text-amber-200"
+            >
+              Perps CLI Quickstart (Integrations) &rarr;
+            </Link>
           </div>
         </section>
 
