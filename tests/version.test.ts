@@ -76,13 +76,13 @@ describe("getAtfCliTag()", () => {
   });
 });
 
-describe("getAtfCliVersion() — production determinism", () => {
+describe("getAtfCliVersion() — Vercel production determinism", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });
 
-  it("throws when NEXT_PUBLIC_ATF_CLI_VERSION is missing in production", async () => {
-    vi.stubEnv("NODE_ENV", "production");
+  it("throws when env var is missing on Vercel production", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "");
     const { getAtfCliVersion } = await importVersion();
     expect(() => getAtfCliVersion()).toThrow(
@@ -90,8 +90,8 @@ describe("getAtfCliVersion() — production determinism", () => {
     );
   });
 
-  it("throws when NEXT_PUBLIC_ATF_CLI_VERSION is 'latest' in production", async () => {
-    vi.stubEnv("NODE_ENV", "production");
+  it("throws when env var is 'latest' on Vercel production", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "latest");
     const { getAtfCliVersion } = await importVersion();
     expect(() => getAtfCliVersion()).toThrow(
@@ -99,8 +99,8 @@ describe("getAtfCliVersion() — production determinism", () => {
     );
   });
 
-  it("throws when NEXT_PUBLIC_ATF_CLI_VERSION is whitespace in production", async () => {
-    vi.stubEnv("NODE_ENV", "production");
+  it("throws when env var is whitespace on Vercel production", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "   ");
     const { getAtfCliVersion } = await importVersion();
     expect(() => getAtfCliVersion()).toThrow(
@@ -108,10 +108,45 @@ describe("getAtfCliVersion() — production determinism", () => {
     );
   });
 
-  it("returns pinned version in production when explicitly set", async () => {
-    vi.stubEnv("NODE_ENV", "production");
+  it("returns pinned version on Vercel production when explicitly set", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
     vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "1.3.1");
     const { getAtfCliVersion } = await importVersion();
     expect(getAtfCliVersion()).toBe("1.3.1");
+  });
+});
+
+describe("getAtfCliVersion() — preview/dev fallback", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("uses safe default on Vercel preview when env var is missing", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "");
+    const { getAtfCliVersion, DEFAULT_ATF_CLI_VERSION } = await importVersion();
+    expect(getAtfCliVersion()).toBe(DEFAULT_ATF_CLI_VERSION);
+  });
+
+  it("still throws on preview when env var is 'latest'", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "latest");
+    const { getAtfCliVersion } = await importVersion();
+    expect(() => getAtfCliVersion()).toThrow(
+      "cannot be 'latest'"
+    );
+  });
+
+  it("uses safe default when VERCEL_ENV is unset (local dev)", async () => {
+    vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "");
+    const { getAtfCliVersion, DEFAULT_ATF_CLI_VERSION } = await importVersion();
+    expect(getAtfCliVersion()).toBe(DEFAULT_ATF_CLI_VERSION);
+  });
+
+  it("does not throw on NODE_ENV=production without VERCEL_ENV", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "");
+    const { getAtfCliVersion, DEFAULT_ATF_CLI_VERSION } = await importVersion();
+    expect(getAtfCliVersion()).toBe(DEFAULT_ATF_CLI_VERSION);
   });
 });

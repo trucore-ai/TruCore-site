@@ -40,14 +40,16 @@ Set these in **Vercel Project > Settings > Environment Variables**.
 
 ### What happens if it is missing?
 
-The build will **fail by design**. The `/atf` page calls `getAtfCliVersion()` at build time, which throws:
+**Production deployments** (`VERCEL_ENV=production`) will **fail by design**. The `/atf` page calls `getAtfCliVersion()` at build time, which throws:
 
-```
-NEXT_PUBLIC_ATF_CLI_VERSION must be set (e.g., 1.4.0) in Vercel env vars.
-Never use @latest. Pin an explicit version for production builds.
+```text
+NEXT_PUBLIC_ATF_CLI_VERSION must be set (e.g., 1.4.0) in Vercel env vars for PRODUCTION.
+Never use @latest. Pin an explicit version.
 ```
 
 This is intentional. TruCore enforces explicit version pinning so production builds are deterministic and auditable.
+
+**Preview and Development deployments** will fall back to the safe default (`0.1.0`) if the env var is not yet configured. This allows you to open a Preview deploy, access the Vercel dashboard, and set the env var before promoting to production. The `@latest` value is still forbidden everywhere.
 
 ## 3. Optional Environment Variables
 
