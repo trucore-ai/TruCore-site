@@ -5,10 +5,10 @@
       "has": [
         {
           "type": "host",
-          "value": "www.trucore.xyz"
+          "value": "trucore.xyz"
         }
       ],
-      "destination": "https://trucore.xyz/:path*",
+      "destination": "https://www.trucore.xyz/:path*",
       "permanent": true
     }
   ]
