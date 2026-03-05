@@ -12,12 +12,16 @@ export function getAtfCliVersion(): string {
   if (isProduction) {
     if (raw === undefined || raw.trim().length === 0) {
       throw new Error(
-        "NEXT_PUBLIC_ATF_CLI_VERSION must be explicitly set in production and cannot be 'latest'."
+        "NEXT_PUBLIC_ATF_CLI_VERSION must be set (e.g., 1.4.0) in Vercel env vars. " +
+          "Never use @latest. Pin an explicit version for production builds. " +
+          "See docs/DEPLOY_VERCEL.md for setup instructions."
       );
     }
     if (raw.trim().toLowerCase() === "latest") {
       throw new Error(
-        "NEXT_PUBLIC_ATF_CLI_VERSION must be explicitly set in production and cannot be 'latest'."
+        "NEXT_PUBLIC_ATF_CLI_VERSION must be set (e.g., 1.4.0) in Vercel env vars. " +
+          "Never use @latest. Pin an explicit version for production builds. " +
+          "See docs/DEPLOY_VERCEL.md for setup instructions."
       );
     }
   }

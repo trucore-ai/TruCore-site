@@ -12,7 +12,15 @@ Launch-ready marketing site for TruCore: trust-first, AI-native financial infras
 
 ### 1) Node.js Version
 
-Use Node.js `20.19+` or `22.13+` (recommended: Node 22 LTS).
+This project requires **Node.js 22** (LTS). The repo ships an `.nvmrc` pinned to `22`.
+
+```bash
+nvm use
+```
+
+### Deploy Prerequisites (Vercel)
+
+If deploying to Vercel (especially after project recreation), see [docs/DEPLOY_VERCEL.md](docs/DEPLOY_VERCEL.md) for the full checklist including required environment variables and Node version settings.
 
 ### 2) Install Dependencies
 

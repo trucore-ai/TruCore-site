@@ -86,7 +86,7 @@ describe("getAtfCliVersion() — production determinism", () => {
     vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "");
     const { getAtfCliVersion } = await importVersion();
     expect(() => getAtfCliVersion()).toThrow(
-      "NEXT_PUBLIC_ATF_CLI_VERSION must be explicitly set in production"
+      "NEXT_PUBLIC_ATF_CLI_VERSION must be set"
     );
   });
 
@@ -95,7 +95,7 @@ describe("getAtfCliVersion() — production determinism", () => {
     vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "latest");
     const { getAtfCliVersion } = await importVersion();
     expect(() => getAtfCliVersion()).toThrow(
-      "cannot be 'latest'"
+      "Never use @latest"
     );
   });
 
@@ -104,7 +104,7 @@ describe("getAtfCliVersion() — production determinism", () => {
     vi.stubEnv("NEXT_PUBLIC_ATF_CLI_VERSION", "   ");
     const { getAtfCliVersion } = await importVersion();
     expect(() => getAtfCliVersion()).toThrow(
-      "NEXT_PUBLIC_ATF_CLI_VERSION must be explicitly set in production"
+      "NEXT_PUBLIC_ATF_CLI_VERSION must be set"
     );
   });
 
