@@ -5,7 +5,7 @@ const phases = [
     phase: "Phase 1",
     title: "V1 Guardrails (Solana core)",
     description:
-      "Policy engine, permit gateway, execution validator, and receipt ledger for Solana with Jupiter and Solend integrations.",
+      "Policy engine, permit gateway, execution validator, and receipt ledger for Solana with Jupiter, Solend, and feature-gated perps integrations.",
   },
   {
     phase: "Phase 2",

@@ -60,7 +60,7 @@ export const primerSections: PrimerSection[] = [
     ],
     bullets: [
       "Spend cap: max value per transaction and per rolling time window.",
-      "Protocol allowlist: only pre-approved programs may be invoked.",
+      "Protocol allowlist: only pre-approved programs may be invoked. V1: Jupiter, Solend. Perps adapters feature-gated, off by default.",
       "Slippage max: price deviation hard-capped with enforced minimum output.",
       "Cooldown period: minimum interval between high-risk actions.",
       "Permit TTL + nonce: permits expire fast and carry single-use nonces.",

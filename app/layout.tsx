@@ -8,6 +8,7 @@ import truCoreFavicon from "@/images/TruCore-favicon.png";
 import { Container } from "@/components/ui/container";
 import { HeroBackgroundPulses } from "@/components/hero-background-pulses";
 import { MotionToggle } from "@/components/motion-toggle";
+import { ReleaseBadge } from "@/components/status/release-badge";
 import { SkipLink } from "@/components/skip-link";
 import { TrackedLink } from "@/components/tracked-link";
 import { UTM_COOKIE_MAX_AGE, UTM_COOKIE_NAME, UTM_QUERY_KEYS } from "@/lib/utm";
@@ -236,18 +237,6 @@ export default function RootLayout({
                   Receipts
                 </Link>
                 <Link
-                  href="/demo"
-                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Demo Live
-                </Link>
-                <Link
-                  href="/#why-trucore"
-                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Why TruCore
-                </Link>
-                <Link
                   href="/#verify"
                   className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
@@ -260,16 +249,10 @@ export default function RootLayout({
                   Integrations
                 </Link>
                 <Link
-                  href="/feedback"
+                  href="/#why-trucore"
                   className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
-                  Feedback
-                </Link>
-                <Link
-                  href="/atf#updates"
-                  className="rounded-sm transition-colors hover:text-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Waitlist
+                  Why TruCore
                 </Link>
               </nav>
             </Container>
@@ -366,9 +349,19 @@ export default function RootLayout({
                         <Link href="/privacy" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Privacy</Link>
                         <Link href="/security" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Security</Link>
                         <a href="mailto:info@trucore.xyz" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Email</a>
+                        <Link href="/feedback" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Feedback</Link>
+                        <Link href="/atf#updates" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Waitlist</Link>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* For Automated Integrators (de-emphasized) */}
+                <div className="mt-5 flex items-center gap-4 text-[10px] text-slate-600">
+                  <span className="font-medium uppercase tracking-[0.12em]">For Automated Integrators</span>
+                  <Link href="/docs/agent-discovery" className="rounded-sm transition-colors hover:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Integration Runbook</Link>
+                  <span aria-hidden="true" className="text-slate-700">|</span>
+                  <span className="text-slate-600">.well-known/atf.json manifest</span>
                 </div>
 
                 <div className="mt-7 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
@@ -383,6 +376,7 @@ export default function RootLayout({
                   </div>
                   <p className="text-slate-400">© {new Date().getFullYear()} TruCore. Trustless enforcement for AI-driven capital.</p>
                 </div>
+                <ReleaseBadge />
               </div>
             </Container>
           </footer>

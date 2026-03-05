@@ -122,16 +122,13 @@ export default function Home() {
           />
           <div className="relative z-10 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
-              Solana-First Agent Controls — Multi-Chain Next
+              Solana-first agent controls, multi-chain next
             </p>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
               Guardrails for automated finance.
             </h1>
             <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
-              Don&apos;t let your AI or autonomous bot blow up your wallet. ATF enforces spend limits, protocol allowlists, and slippage caps on every transaction, so your agents can move fast without going off the rails.
-            </p>
-            <p className="mt-3 text-lg leading-[1.5] text-slate-300 sm:text-xl">
-              Non-custodial. Helius-first RPC. Cryptographic receipts prove every enforcement decision. ATF enforces policy across swaps, lending, and perpetual futures.
+              ATF enforces spend limits, protocol allowlists, and slippage caps on every transaction. Your agents move fast without going off the rails.
             </p>
 
           {/* CTAs */}
@@ -152,63 +149,58 @@ export default function Home() {
               >
                 Apply for pilot
               </TrackedLink>
+            </div>
+
+            <p className="mt-4 text-base text-slate-300">
+              Non-custodial. Helius-first RPC. Cryptographic receipts prove every enforcement decision.
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
               <TrackedLink
                 href="/docs/5-minute-quickstart"
                 eventName="hero_quickstart_click"
                 eventProps={{ location: "atf_hero", target: "5_min_quickstart" }}
-                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/5 px-7 py-4 text-xl font-semibold text-slate-100 transition-colors hover:bg-white/10"
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
-                Get started in 5 min
+                5-min quickstart
               </TrackedLink>
-            </div>
-
-            <p className="mt-5 text-lg text-slate-300">
-              Need proof first?{" "}
+              <span aria-hidden="true" className="text-white/20">/</span>
               <TrackedLink
                 href="/receipts"
                 eventName="hero_receipts_click"
                 eventProps={{ location: "atf_hero" }}
                 className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
-                View example receipts
+                View receipts
               </TrackedLink>
-              .
-            </p>
-
-            <p className="mt-2 text-lg text-slate-300">
-              New here? Read the{" "}
+              <span aria-hidden="true" className="text-white/20">/</span>
               <TrackedLink
                 href="/agent-transaction-firewall"
                 eventName="category_definition_click"
                 eventProps={{ location: "atf_hero" }}
                 className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
-                Agent Transaction Firewall definition
+                What is ATF?
               </TrackedLink>
-              .
-            </p>
-
-            <p className="mt-2 text-lg text-slate-300">
-              For operational detail, see{" "}
+              <span aria-hidden="true" className="text-white/20">/</span>
               <TrackedLink
                 href="/process"
                 eventName="process_page_link_click"
                 eventProps={{ location: "atf_hero" }}
                 className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
-                how ATF is built
+                How ATF is built
               </TrackedLink>
-              {" "}and{" "}
+              <span aria-hidden="true" className="text-white/20">/</span>
               <TrackedLink
                 href="/enterprise"
                 eventName="enterprise_page_link_click"
                 eventProps={{ location: "atf_hero" }}
                 className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
-                enterprise readiness
+                Enterprise
               </TrackedLink>
-              .
-            </p>
+            </div>
 
             <p className="mt-4 text-sm font-medium text-slate-400">
               Last updated: {lastUpdated}
@@ -236,7 +228,7 @@ export default function Home() {
             },
             {
               title: "Protocol Allowlist",
-              desc: "Only Jupiter and Solend actions allowed in V1.",
+              desc: "V1: Jupiter (swaps) and Solend (lending). Perps venues feature-gated, off by default.",
             },
             {
               title: "Slippage Bounds",
@@ -374,11 +366,11 @@ export default function Home() {
             {[
               {
                 label: "Perps leverage caps",
-                detail: "Hard ceiling on position size relative to collateral, enforced pre-execution.",
+                detail: "Hard ceiling on position size relative to collateral, enforced pre-execution. Feature-gated, off by default.",
               },
               {
                 label: "Market allowlists",
-                detail: "Only approved perps venues and markets can be traded against.",
+                detail: "Only approved perps venues and markets can be traded against. Feature-gated, off by default.",
               },
               {
                 label: "Slippage ceilings",
@@ -613,7 +605,7 @@ export default function Home() {
             },
             {
               label: "Protocol allowlist",
-              desc: "Only pre-approved programs (Jupiter, Solend for v1) may be invoked. All other program IDs are rejected.",
+              desc: "Pre-approved programs only. V1: Jupiter, Solend. Perps adapters (Drift v2, Mango v4, Hyperliquid) are feature-gated, off by default. All other program IDs are rejected.",
             },
             {
               label: "Slippage max",

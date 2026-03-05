@@ -65,8 +65,8 @@ export const whitepaperSections: WhitepaperSection[] = [
     id: "v1-scope",
     heading: "V1 Scope",
     bullets: [
-      "Chain: Solana",
-      "Protocol coverage: Jupiter (swaps), Solend (lending)",
+      "Chain: Solana (v1). Multi-chain expansion planned.",
+      "Protocol coverage: Jupiter (swaps), Solend (lending). Perps adapters (Drift v2, Mango v4, Hyperliquid) feature-gated, off by default.",
       "Controls: allowlists, spend caps, slippage constraints, TTL and nonce requirements",
     ],
   },

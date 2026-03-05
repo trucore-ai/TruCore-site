@@ -19,13 +19,14 @@ export function AtfV1Scope() {
       <div className="grid gap-4 md:grid-cols-3">
         {/* Supported Chain */}
         <Card className="border-primary-300/25 bg-primary-500/10">
-          <h3 className="text-xl font-bold text-[#e8944a]">Supported Chain</h3>
+          <h3 className="text-xl font-bold text-[#e8944a]">Supported Chain (v1)</h3>
           <ul className="mt-3 space-y-2">
             <li className="flex items-start gap-2 text-lg leading-[1.5] text-slate-200">
               <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />
               Solana
             </li>
           </ul>
+          <p className="mt-3 text-sm text-slate-400">Solana-first. Multi-chain expansion next.</p>
         </Card>
 
         {/* Protocol Integrations */}
@@ -39,6 +40,18 @@ export function AtfV1Scope() {
             <li className="flex items-start gap-2 text-lg leading-[1.5] text-slate-200">
               <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />
               Solend (lending)
+            </li>
+            <li className="flex items-start gap-2 text-lg leading-[1.5] text-slate-200">
+              <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />
+              <span>Drift v2 (perps) <span className="text-xs text-amber-300">feature-gated / off by default</span></span>
+            </li>
+            <li className="flex items-start gap-2 text-lg leading-[1.5] text-slate-200">
+              <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />
+              <span>Mango v4 (perps) <span className="text-xs text-amber-300">feature-gated / off by default</span></span>
+            </li>
+            <li className="flex items-start gap-2 text-lg leading-[1.5] text-slate-200">
+              <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />
+              <span>Hyperliquid (perps) <span className="text-xs text-amber-300">feature-gated / off by default</span></span>
             </li>
           </ul>
         </Card>
