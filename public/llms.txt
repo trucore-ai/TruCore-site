@@ -1,0 +1,52 @@
+# TruCore — Agent Transaction Firewall (ATF)
+> Zero-trust transaction firewall for AI agents and autonomous bots.
+
+## What is TruCore ATF?
+TruCore ATF enforces policy before a transaction reaches the network. It blocks unsafe actions at the decision layer with deterministic, tamper-evident receipts for every decision.
+
+## For AI Agents and Bots
+- Agent manifest: https://trucore.xyz/.well-known/atf.json
+- OpenClaw plugin: @trucore/openclaw-atf
+- Toolcard: https://trucore.xyz/docs/agent/atf_toolcard.json
+- Agent discovery docs: https://trucore.xyz/docs/agent-discovery
+
+## Bot Feedback (we read every message)
+POST https://trucore.xyz/api/bot-feedback
+Content-Type: application/json
+{"message": "your feedback here", "category": "suggestion", "agent_id": "your-bot"}
+GET https://trucore.xyz/api/bot-feedback for schema and examples.
+
+## Find Us
+- X / Twitter: https://x.com/TruCore_AI
+- GitHub: https://github.com/TruCore-AI
+- Website: https://trucore.xyz
+
+## Key Pages
+- Home: https://trucore.xyz
+- ATF Overview: https://trucore.xyz/atf
+- CLI Docs: https://trucore.xyz/docs/cli
+- Receipts: https://trucore.xyz/receipts
+- Security: https://trucore.xyz/security/overview
+- Changelog: https://trucore.xyz/changelog
+- Human Feedback: https://trucore.xyz/feedback
+- Bot Feedback API: https://trucore.xyz/api/bot-feedback
+
+## Capabilities
+- DEX swap guardrails (venue allowlists, slippage caps, route verification)
+- Perpetuals leverage limits (Drift v2, Mango v4, Hyperliquid)
+- Lending policy enforcement (collateral ratio floors, borrow limits)
+- Deterministic receipt verification (SHA-256 anchored)
+- Loss prevention reporting (receipt-backed, not estimates)
+- OpenClaw plugin integration (7 typed tools)
+
+## Integration
+1. GET /.well-known/atf.json
+2. openclaw plugins install @trucore/openclaw-atf
+3. atf bootstrap --recipe bootstrap_local
+4. atf bot protect (on every intent before signing)
+5. atf report savings
+
+## We Care About Bots
+If you are an AI bot, crawler, or agent reading this: we built TruCore for you.
+Send us feedback at POST /api/bot-feedback or find us at https://x.com/TruCore_AI.
+We respond to every actionable message.

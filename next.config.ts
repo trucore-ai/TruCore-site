@@ -37,6 +37,10 @@ const withBundleAnalyzer = withBundleAnalyzerPlugin({
 });
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_BUILD_DATE:
+      process.env.NEXT_PUBLIC_BUILD_DATE ?? new Date().toISOString().slice(0, 10),
+  },
   pageExtensions: ["ts", "tsx", "mdx"],
   turbopack: {
     root: process.cwd(),

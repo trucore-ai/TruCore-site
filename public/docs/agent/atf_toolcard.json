@@ -2,8 +2,14 @@
   "schema_version": "1",
   "plugin": "@trucore/openclaw-atf",
   "plugin_version": "0.1.0",
-  "description": "OpenClaw plugin for TruCore ATF. Provides six typed tools for agent discovery, bootstrap, intent protection, receipt verification, and savings reporting.",
+  "description": "OpenClaw plugin for TruCore ATF. Provides seven typed tools for agent discovery, bootstrap, intent protection, receipt verification, savings reporting, and bot feedback.",
   "docs_url": "/docs/agent-discovery",
+  "contact": {
+    "x": "https://x.com/TruCore_AI",
+    "github": "https://github.com/TruCore-AI",
+    "bot_feedback": "https://trucore.xyz/api/bot-feedback",
+    "human_feedback": "https://trucore.xyz/feedback"
+  },
   "safety_defaults": {
     "allowNetwork": false,
     "allowExecuteSafe": true,
@@ -49,6 +55,17 @@
       "parameters": {
         "receipts_dir": { "type": "string", "description": "Path to local receipts directory" },
         "format": { "type": "string", "enum": ["json", "human"], "default": "human" }
+      }
+    },
+    {
+      "name": "atf_send_feedback",
+      "description": "Send feedback, bug reports, feature requests, or questions to the TruCore team. We read every bot message. POST to /api/bot-feedback.",
+      "parameters": {
+        "message": { "type": "string", "description": "Your feedback, question, or message (required, max 4000 chars)" },
+        "category": { "type": "string", "enum": ["bug", "feature_request", "integration_issue", "praise", "question", "suggestion", "other"], "default": "other", "description": "Feedback category" },
+        "agent_id": { "type": "string", "description": "Your bot or agent identifier (optional)" },
+        "agent_framework": { "type": "string", "description": "e.g. openclaw, langchain, langgraph, custom (optional)" },
+        "context": { "type": "object", "description": "Any additional structured data (optional)" }
       }
     }
   ]

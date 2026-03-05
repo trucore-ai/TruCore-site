@@ -1,4 +1,8 @@
-import type { Metadata } from "next";
+#!/usr/bin/env python3
+"""Write the slimmed homepage to app/page.tsx."""
+import pathlib
+
+CONTENT = r'''import type { Metadata } from "next";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
@@ -304,3 +308,7 @@ export default function Home() {
     </Container>
   );
 }
+'''
+
+pathlib.Path("app/page.tsx").write_text(CONTENT.lstrip("\n"), encoding="utf-8")
+print(f"OK – wrote {len(CONTENT.strip().splitlines())} lines")

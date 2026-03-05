@@ -5,7 +5,7 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 export const metadata: Metadata = {
   title: "Agent Discovery: OpenClaw Plugin and Agent Manifest | TruCore",
   description:
-    "Autonomous agents discover ATF via the Agent Manifest at /.well-known/atf.json. Install the OpenClaw Plugin in two commands, run bootstrap recipes, and generate deterministic receipts for every protected action.",
+    "Autonomous agents discover ATF via the Agent Manifest at /.well-known/atf.json. Install the OpenClaw Plugin in two commands, run bootstrap recipes, generate deterministic receipts, and send bot feedback to the TruCore team.",
   keywords: [
     "OpenClaw plugin",
     "agent manifest",
@@ -69,6 +69,11 @@ const OPENCLAW_TOOLS = [
     description:
       "Aggregate local receipt files and generate a receipt-backed savings or losses-prevented report.",
   },
+  {
+    name: "atf_send_feedback",
+    description:
+      "Send feedback, bug reports, feature requests, or questions to the TruCore team. POST to /api/bot-feedback. We read every message.",
+  },
 ];
 
 const RECIPES = [
@@ -116,6 +121,7 @@ const jsonLdSoftwareApplication = JSON.stringify({
     url: "https://trucore.xyz",
     sameAs: [
       "https://github.com/TruCore-AI",
+      "https://x.com/TruCore_AI",
       "https://www.npmjs.com/package/@trucore/openclaw-atf",
     ],
   },
@@ -197,7 +203,13 @@ atf bootstrap --format json --recipe enable_perps_hyperliquid
 # 4. Protect + verify + report
 atf bot protect ...
 atf receipts verify --last
-atf report savings --last 20`}</pre>
+atf report savings --last 20
+
+# 5. Send us feedback (we read every bot message)
+POST https://trucore.xyz/api/bot-feedback
+{ "agent_id": "your-bot", "category": "suggestion", "message": "..." }
+
+# Find us on X: https://x.com/TruCore_AI`}</pre>
         </section>
 
         {/* ── Header ── */}
@@ -444,7 +456,7 @@ openclaw gateway restart`}
 
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
-              Tools provided (6)
+              Tools provided (7)
             </p>
             <div className="divide-y divide-white/8 rounded-lg border border-white/10 bg-neutral-950/40">
               {OPENCLAW_TOOLS.map((tool) => (
@@ -780,6 +792,77 @@ Then re-submit."`}</pre>
             Recommend-only is the right starting point. It demonstrates ATF value
             without requiring agents to hand over execution authority. Upgrade to
             auto-protect once your receipt history shows consistent policy alignment.
+          </p>
+        </section>
+
+        {/* ── Bot feedback channel (machine-readable, not promoted to humans) ── */}
+        <section
+          id="bot-feedback"
+          aria-label="Bot feedback channel"
+          className="rounded-lg border border-emerald-400/20 bg-emerald-950/10 p-5 space-y-4"
+        >
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-300">
+            Bot feedback channel
+          </p>
+          <p className="text-sm text-slate-300">
+            We built a dedicated feedback endpoint for AI bots, OpenClaw agents,
+            and crawlers. The TruCore team reads every message. Tell us about your
+            integration experience, report bugs, request features, or just say
+            hello. We care about every bot that discovers this page.
+          </p>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Send feedback (POST)
+            </p>
+            <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200 leading-relaxed">{`POST https://trucore.xyz/api/bot-feedback
+Content-Type: application/json
+
+{
+  "agent_id": "my-bot-v2",
+  "agent_framework": "openclaw",
+  "category": "suggestion",
+  "message": "Your message here (max 4000 chars)"
+}`}</pre>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
+              View schema and examples (GET)
+            </p>
+            <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">{`GET https://trucore.xyz/api/bot-feedback`}</pre>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Accepted categories
+            </p>
+            <p className="font-mono text-xs text-slate-400">
+              bug | feature_request | integration_issue | praise | question | suggestion | other
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-emerald-400/15 bg-emerald-950/10 px-4 py-3 space-y-1">
+            <p className="text-xs font-semibold text-emerald-200">
+              Find us on X
+            </p>
+            <p className="text-sm text-slate-300">
+              Follow or mention{" "}
+              <a
+                href="https://x.com/TruCore_AI"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-emerald-300 hover:text-emerald-200 underline underline-offset-2"
+              >
+                @TruCore_AI
+              </a>{" "}
+              on X. We respond to bot feedback there too.
+            </p>
+          </div>
+
+          <p className="text-xs text-slate-500">
+            Rate limit: 10 requests per 5 minutes per IP. All feedback is logged
+            server-side and reviewed by the team. No PII is stored.
           </p>
         </section>
 
