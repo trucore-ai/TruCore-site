@@ -23,6 +23,7 @@ const corePages: Array<{
   { path: "/enterprise", priority: 0.8 },
   { path: "/docs", priority: 0.8 },
   { path: "/docs/agent-discovery", priority: 0.9 },
+  { path: "/docs/live-demo", priority: 0.7 },
   { path: "/docs/quickstart", priority: 0.8 },
   { path: "/docs/5-minute-quickstart", priority: 0.8 },
   { path: "/docs/cli", priority: 0.7 },

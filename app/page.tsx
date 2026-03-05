@@ -361,6 +361,84 @@ export default function Home() {
         </div>
       </Section>
 
+      {/* ── Built for trading bots ── */}
+      <Section className="border-t border-white/10 fade-in-up fade-delay-4">
+        <div className="mx-auto max-w-4xl rounded-xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            Built for trading bots
+          </h2>
+          <p className="mt-3 text-xl leading-[1.5] text-slate-200">
+            ATF evaluates and enforces your risk limits before any transaction is signed or broadcast, so your bot stays inside its authorized parameters at every tick.
+          </p>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+            {[
+              {
+                label: "Perps leverage caps",
+                detail: "Hard ceiling on position size relative to collateral, enforced pre-execution.",
+              },
+              {
+                label: "Market allowlists",
+                detail: "Only approved perps venues and markets can be traded against.",
+              },
+              {
+                label: "Slippage ceilings",
+                detail: "Max slippage and minimum-out checks on every swap, not just at config time.",
+              },
+              {
+                label: "Notional limits",
+                detail: "Per-transaction and rolling-window USD notional caps keep exposure bounded.",
+              },
+              {
+                label: "Fail-closed on unknowns",
+                detail: "Any operation not covered by an explicit policy rule is rejected by default.",
+              },
+              {
+                label: "Deterministic receipts",
+                detail: "Every decision produces a cryptographic receipt, giving you an auditable trail of what was enforced and when.",
+              },
+            ].map((item) => (
+              <li key={item.label} className="flex gap-3 rounded-lg border border-white/8 bg-white/[0.03] p-4">
+                <span className="mt-0.5 text-primary-300">✓</span>
+                <div>
+                  <p className="font-semibold text-slate-100">{item.label}</p>
+                  <p className="mt-0.5 text-base leading-[1.5] text-slate-400">{item.detail}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {/* Example policy YAML */}
+          <div className="mt-6 rounded-lg border border-white/10 bg-neutral-950/60 p-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
+              Example policy (framework-agnostic)
+            </p>
+            <pre className="overflow-x-auto text-sm leading-relaxed text-slate-300">
+              <code>{`policy:
+  perps_leverage_max: "3x"
+  markets_allowlist:
+    - SOL-PERP
+    - BTC-PERP
+  slippage_max_bps: 50
+  notional_limit_usd: 10000
+  fail_closed: true
+  receipts: deterministic`}</code>
+            </pre>
+          </div>
+
+          <div className="mt-5">
+            <TrackedLink
+              href="/docs/agent-discovery"
+              eventName="trading_bots_guardrails_click"
+              eventProps={{ location: "trading_bots_section" }}
+              className="inline-flex items-center gap-1.5 text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
+            >
+              See recommended guardrails
+              <span aria-hidden="true">→</span>
+            </TrackedLink>
+          </div>
+        </div>
+      </Section>
+
       {/* ── Architecture Diagram (SVG) ── */}
       <Section className="border-t border-white/10 fade-in-up fade-delay-4">
         <div className="mb-8 max-w-2xl">
