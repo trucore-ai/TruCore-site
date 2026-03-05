@@ -13,15 +13,19 @@ describe("security headers", () => {
     expect(headers.get("referrer-policy")).toBeTruthy();
   });
 
-  it("emits exactly one enforce and one report-only CSP header", () => {
+  it("emits exactly one enforced CSP header and no report-only", () => {
     const cspEntries = SECURITY_HEADERS.filter(
       (h) => h.key === "Content-Security-Policy",
     );
     const reportOnlyEntries = SECURITY_HEADERS.filter(
       (h) => h.key === "Content-Security-Policy-Report-Only",
     );
+    const reportToEntries = SECURITY_HEADERS.filter(
+      (h) => h.key === "Report-To",
+    );
     expect(cspEntries).toHaveLength(1);
-    expect(reportOnlyEntries).toHaveLength(1);
+    expect(reportOnlyEntries).toHaveLength(0);
+    expect(reportToEntries).toHaveLength(0);
   });
 });
 
@@ -55,13 +59,12 @@ describe("CSP directives", () => {
     expect(csp).toContain("upgrade-insecure-requests");
   });
 
-  it("report-only CSP mirrors enforce CSP with report-to appended", () => {
+  it("enforced CSP contains all required directives", () => {
     const enforce = SECURITY_HEADERS.find(
       (h) => h.key === "Content-Security-Policy",
     )!.value;
-    const reportOnly = SECURITY_HEADERS.find(
-      (h) => h.key === "Content-Security-Policy-Report-Only",
-    )!.value;
-    expect(reportOnly).toBe(enforce + "; report-to csp");
+    expect(enforce).toContain("default-src 'self'");
+    expect(enforce).toContain("upgrade-insecure-requests");
+    expect(enforce).toContain("frame-ancestors 'none'");
   });
 });
