@@ -10,7 +10,7 @@ export type DocsNavSection = {
 };
 
 export const DOCS_VERSION = "v0.1";
-export const LAST_UPDATED = "2026-02-20";
+export const LAST_UPDATED = "2026-03-05";
 
 export const sections: DocsNavSection[] = [
   {
@@ -62,6 +62,18 @@ export const sections: DocsNavSection[] = [
         href: "/docs/integration-pattern",
         description:
           "See how AI agents call ATF before execution and consume deterministic decisions with receipt hashes.",
+      },
+      {
+        title: "Perps Enforcement",
+        href: "/docs/perps",
+        description:
+          "Feature-gated perps enforcement for Hyperliquid, Drift v2, and Mango v4. OFF by default, fail-closed.",
+      },
+      {
+        title: "DEX Guardrails",
+        href: "/docs/dex-guardrails",
+        description:
+          "Slippage caps, DEX allowlists, mint allow/deny lists, unverified route deny, and deterministic receipts.",
       },
       {
         title: "Policy Model",

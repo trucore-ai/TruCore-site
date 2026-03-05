@@ -33,13 +33,13 @@ Open `http://localhost:3000`.
 Run one command and get a deterministic decision plus receipt hash:
 
 ```bash
-npx @trucore/atf@v0.1.0 simulate --preset swap_small --verify
+npx @trucore/atf@v1.4.0 simulate --preset swap_small --verify
 ```
 
 Use an API key for higher quota when available:
 
 ```bash
-ATF_API_KEY="<your_key>" npx @trucore/atf@v0.1.0 simulate --preset swap_small --verify
+ATF_API_KEY="<your_key>" npx @trucore/atf@v1.4.0 simulate --preset swap_small --verify
 ```
 
 v1 launch mode keeps the CLI command pinned for reproducibility. Bump only when a new CLI tag is intentionally published.

@@ -427,7 +427,7 @@ export default function Home() {
 
           <div className="mt-5">
             <TrackedLink
-              href="/docs/agent-discovery"
+              href="/docs/perps"
               eventName="trading_bots_guardrails_click"
               eventProps={{ location: "trading_bots_section" }}
               className="inline-flex items-center gap-1.5 text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
@@ -732,22 +732,51 @@ export default function Home() {
             <Tilt maxTilt={5}>
               <Card className="h-full">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-xl font-bold text-[#e8944a]">Perps Guardrails</h3>
+                  <h3 className="text-xl font-bold text-[#e8944a]">Perps Enforcement: Hyperliquid + Solana Venues</h3>
                   <span className="inline-flex items-center rounded-full border border-amber-400/40 bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-300">
                     Feature-gated
                   </span>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">
-                  Position sizing, leverage caps, and direction constraints for Drift v2, Mango v4,
-                  and Hyperliquid. Must be explicitly enabled. Fail-closed on unknown operations.
+                  Adapters implemented. OFF by default. Fail-closed on unknown operations.
                 </p>
+                <ul className="mt-2 ml-5 list-disc space-y-1 text-sm text-slate-300">
+                  <li><strong className="text-slate-200">Hyperliquid</strong> (Perps)</li>
+                  <li><strong className="text-slate-200">Drift v2</strong> (Solana Perps)</li>
+                  <li><strong className="text-slate-200">Mango v4</strong> (Solana Perps)</li>
+                </ul>
+                <pre className="mt-3 overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 px-3 py-2 text-xs text-slate-300 leading-relaxed">{`ATF_ENABLE_HYPERLIQUID_POLICY=1
+ATF_ENABLE_DRIFT_POLICY=1
+ATF_ENABLE_MANGO_POLICY=1`}</pre>
                 <TrackedLink
-                  href="/docs/agent-discovery#when-to-install"
+                  href="/docs/perps"
                   eventName="capabilities_perps_click"
                   eventProps={{ location: "capabilities_section" }}
                   className="mt-4 inline-flex text-sm font-semibold text-amber-300 transition-colors hover:text-amber-200"
                 >
-                  Perps docs &rarr;
+                  Perps enforcement docs &rarr;
+                </TrackedLink>
+              </Card>
+            </Tilt>
+
+            <Tilt maxTilt={5}>
+              <Card className="h-full">
+                <h3 className="text-xl font-bold text-[#e8944a]">Solana DEX Guardrails</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                  Slippage caps, allowlists, unverified route deny. Deterministic receipts for every swap decision.
+                </p>
+                <ul className="mt-2 ml-5 list-disc space-y-1 text-sm text-slate-300">
+                  <li><strong className="text-slate-200">Jupiter</strong> (initial DEX path)</li>
+                  <li>DEX allowlists and slippage caps</li>
+                  <li>Mint allow/deny lists</li>
+                </ul>
+                <TrackedLink
+                  href="/docs/dex-guardrails"
+                  eventName="capabilities_dex_click"
+                  eventProps={{ location: "capabilities_section" }}
+                  className="mt-4 inline-flex text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+                >
+                  DEX guardrails docs &rarr;
                 </TrackedLink>
               </Card>
             </Tilt>
@@ -803,7 +832,7 @@ ATF_ENABLE_HYPERLIQUID_POLICY=1`}</pre>
                 Live demo &rarr;
               </TrackedLink>
               <TrackedLink
-                href="/docs/agent-discovery#perps-enforcement"
+                href="/docs/perps"
                 eventName="integrations_perps_docs_click"
                 eventProps={{ location: "integrations_section" }}
                 className="text-sm font-semibold text-amber-300 transition-colors hover:text-amber-200"
@@ -813,21 +842,39 @@ ATF_ENABLE_HYPERLIQUID_POLICY=1`}</pre>
             </div>
           </div>
 
-          {/* Agent Integrations note */}
-          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-primary-300">Agent Integrations</p>
-            <p className="mt-2 text-sm text-slate-400">
-              ATF integrates with agent frameworks and automated trading systems.
-            </p>
-            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+          {/* DEX Guardrails Quickstart */}
+          <div className="rounded-xl border border-primary-400/20 bg-primary-900/10 p-5 space-y-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-primary-300">DEX Guardrails</p>
+              <p className="mt-1 text-sm text-slate-400">
+                Slippage caps, allowlists, unverified route deny. Deterministic receipts for every swap.
+              </p>
+            </div>
+            <ul className="ml-5 list-disc space-y-1 text-sm text-slate-300">
+              <li><strong className="text-slate-200">Jupiter</strong> enforced as the initial DEX path.</li>
+              <li>DEX allowlists limit which venues can execute swaps.</li>
+              <li>Slippage caps are checked pre-flight and enforced at settlement.</li>
+              <li>Mint allow/deny lists prevent interaction with unverified tokens.</li>
+            </ul>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
               <TrackedLink
-                href="/docs/agent-discovery"
-                eventName="integrations_agent_discovery_click"
+                href="/docs/dex-guardrails"
+                eventName="integrations_dex_docs_click"
                 eventProps={{ location: "integrations_section" }}
                 className="text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
-                Agent discovery &rarr;
+                DEX guardrails docs &rarr;
               </TrackedLink>
+            </div>
+          </div>
+
+          {/* Getting started */}
+          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-primary-300">Getting Started</p>
+            <p className="mt-2 text-sm text-slate-400">
+              Pick a quickstart, explore the CLI, or jump into the policy model.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
               <TrackedLink
                 href="/docs/5-minute-quickstart"
                 eventName="integrations_quickstart_click"
@@ -843,6 +890,22 @@ ATF_ENABLE_HYPERLIQUID_POLICY=1`}</pre>
                 className="text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
                 CLI reference &rarr;
+              </TrackedLink>
+              <TrackedLink
+                href="/docs/perps"
+                eventName="integrations_perps_docs_click"
+                eventProps={{ location: "integrations_section" }}
+                className="text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                Perps enforcement &rarr;
+              </TrackedLink>
+              <TrackedLink
+                href="/docs/dex-guardrails"
+                eventName="integrations_dex_docs_click"
+                eventProps={{ location: "integrations_section" }}
+                className="text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                DEX guardrails &rarr;
               </TrackedLink>
             </div>
           </div>

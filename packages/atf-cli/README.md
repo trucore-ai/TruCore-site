@@ -5,7 +5,7 @@ One-line CLI for TruCore Agent Transaction Firewall simulation.
 ## One-liner
 
 ```bash
-npx @trucore/atf@v0.1.0 simulate --preset swap_small --format pretty --verify
+npx @trucore/atf@v1.4.0 simulate --preset swap_small --format pretty --verify
 ```
 
 ## Commands
