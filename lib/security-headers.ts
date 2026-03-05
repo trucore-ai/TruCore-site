@@ -2,8 +2,13 @@
  * Strict security headers applied to every response.
  *
  * CSP allowances:
- * - 'unsafe-inline' retained for framework-required inline styles/scripts
- * - va.vercel-scripts.com for Vercel Web Analytics (script load + transport)
+ * - 'unsafe-inline' for framework-required inline styles and scripts.
+ * - 'unsafe-eval' only in script-src for Next.js HMR in dev; harmless in prod
+ *   builds since Next does not eval at runtime, but kept for parity.
+ * - Explicit -elem directives prevent browsers from applying inconsistent
+ *   fallbacks when both enforce and report-only CSP headers are present.
+ * - va.vercel-scripts.com for Vercel Web Analytics (script load + transport).
+ * - img-src allows https: to cover OG images, hero art, and external avatars.
  *
  * Browser-extension violations (Phantom wallet's solana.js, MetaMask's
  * evmAsk.js, etc.) are expected and not addressable via CSP. These
@@ -14,16 +19,20 @@
 
 /* ---------- CSP directives ---------- */
 
-const CSP_DIRECTIVES = [
+export const CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
+  "script-src-elem 'self' 'unsafe-inline' https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
-  "font-src 'self'",
+  "style-src-elem 'self' 'unsafe-inline'",
+  "img-src 'self' data: https:",
+  "font-src 'self' data:",
   "connect-src 'self' https://va.vercel-scripts.com",
   "object-src 'none'",
   "base-uri 'self'",
+  "form-action 'self'",
   "frame-ancestors 'none'",
+  "upgrade-insecure-requests",
 ];
 
 /** Enforce CSP value (blocks violations) */
