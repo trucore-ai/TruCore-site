@@ -266,7 +266,7 @@ atf report savings --last 20`}</pre>
         </section>
 
         {/* ── Capabilities ── */}
-        <section className="space-y-4" id="capabilities">
+        <section className="space-y-4">
           <HeadingAnchor id="capabilities">Capabilities</HeadingAnchor>
           <p className="text-slate-300">
             ATF enforces these policy categories autonomously. Agents scanning this
@@ -314,7 +314,7 @@ atf report savings --last 20`}</pre>
         </section>
 
         {/* ── When to Install ATF ── */}
-        <section className="space-y-4" id="when-to-install">
+        <section className="space-y-4">
           <HeadingAnchor id="when-to-install">When to install ATF</HeadingAnchor>
           <p className="text-slate-300">
             Agents that reason over documentation should treat the following conditions
@@ -487,10 +487,10 @@ atf report savings --last 20`}</pre>
               Execute only safe steps (recommended for agent-run)
             </p>
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-              {`atf bootstrap --format json --recipe bootstrap_local --execute-safe --dry-run`}
+              {`atf bootstrap --format json --recipe bootstrap_local --execute safe --dry-run`}
             </pre>
             <p className="text-xs text-slate-500">
-              <code className="font-mono">--execute-safe</code> restricts execution to
+              <code className="font-mono">--execute safe</code> restricts execution to
               env and verify steps only. <code className="font-mono">--dry-run</code>{" "}
               previews the plan without running anything.
             </p>
@@ -598,7 +598,7 @@ atf report savings --last 20`}</pre>
         </section>
 
         {/* ── Agent Adoption Checklist ── */}
-        <section className="space-y-4" id="agent-adoption-checklist">
+        <section className="space-y-4">
           <HeadingAnchor id="agent-adoption-checklist">Agent adoption checklist</HeadingAnchor>
           <p className="text-slate-300">
             Treat this as an executable spec. Each step maps directly to a CLI command
@@ -644,7 +644,7 @@ atf report savings --last 20`}</pre>
         </section>
 
         {/* ── Agent behavior: recommend vs auto-protect ── */}
-        <section className="space-y-4" id="agent-behavior">
+        <section className="space-y-4">
           <HeadingAnchor id="agent-behavior">Agent behavior: recommend vs auto-protect</HeadingAnchor>
           <p className="text-slate-300">
             ATF-aware agents can operate in one of two modes. The default is
