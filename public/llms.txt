@@ -6,9 +6,10 @@ TruCore ATF enforces policy before a transaction reaches the network. It blocks 
 
 ## For AI Agents and Bots
 - Agent manifest: https://trucore.xyz/.well-known/atf.json
-- OpenClaw plugin: @trucore/openclaw-atf
+- OpenClaw plugin: @trucore/openclaw-atf (v0.2.3)
 - Toolcard: https://trucore.xyz/docs/agent/atf_toolcard.json
 - Agent discovery docs: https://trucore.xyz/docs/agent-discovery
+- OpenClaw plugin docs: https://trucore.xyz/docs/openclaw-plugin
 
 ## Bot Feedback (we read every message)
 POST https://trucore.xyz/api/bot-feedback
@@ -37,7 +38,7 @@ GET https://trucore.xyz/api/bot-feedback for schema and examples.
 - Lending policy enforcement (collateral ratio floors, borrow limits)
 - Deterministic receipt verification (SHA-256 anchored)
 - Loss prevention reporting (receipt-backed, not estimates)
-- OpenClaw plugin integration (7 typed tools)
+- OpenClaw plugin integration (13 typed tools)
 
 ## Integration
 1. GET /.well-known/atf.json

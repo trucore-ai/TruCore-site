@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Canonical tool surface — matches @trucore/openclaw-atf@0.2.0      */
+/*  Canonical tool surface — matches @trucore/openclaw-atf@0.2.3      */
 /* ------------------------------------------------------------------ */
 const TOOLS: Array<{ name: string; description: string; category: string }> = [
   {
@@ -150,7 +150,7 @@ openclaw gateway restart`}
               Via npm (pinned version)
             </p>
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-              {`npm i @trucore/openclaw-atf@0.2.0`}
+              {`npm i @trucore/openclaw-atf@0.2.3`}
             </pre>
           </div>
 
@@ -164,9 +164,41 @@ openclaw gateway restart`}
             >
               npm
             </a>
-            . Current version: <strong className="text-slate-200">0.2.0</strong>.
+            . Current version: <strong className="text-slate-200">0.2.3</strong>.
           </p>
         </div>
+      </section>
+
+      {/* ── What’s new in 0.2.3 ── */}
+      <section className="space-y-4">
+        <HeadingAnchor id="whats-new">What&apos;s new in 0.2.3</HeadingAnchor>
+        <p className="text-slate-300">
+          Version 0.2.3 focuses on strict gateway compatibility. The plugin now
+          passes recursive schema validation on every tool and config schema,
+          which means it works reliably with stricter OpenClaw gateway builds
+          and third-party schema walkers.
+        </p>
+        <ul className="ml-5 list-disc space-y-2 text-sm text-slate-300">
+          <li>
+            <strong className="text-slate-200">Recursive schema guard.</strong>{" "}
+            A deep validation pass now runs over all 14 schemas (13 tools + 1 config)
+            before publish. Nested object nodes that previously lacked explicit
+            <code className="font-mono text-slate-200"> properties</code> and{" "}
+            <code className="font-mono text-slate-200">additionalProperties</code>{" "}
+            are now fully specified.
+          </li>
+          <li>
+            <strong className="text-slate-200">Three schema fixes.</strong>{" "}
+            <code className="font-mono text-slate-200">atf_protect_intent.inputSchema.intentJson</code>,{" "}
+            <code className="font-mono text-slate-200">atf_verify_receipt.inputSchema.receipt</code>, and{" "}
+            <code className="font-mono text-slate-200">atf_tx_explain.inputSchema.receipt</code>{" "}
+            now carry correct nested property definitions.
+          </li>
+          <li>
+            <strong className="text-slate-200">756 tests pass, zero failures.</strong>{" "}
+            Validated against the full ATF test suite before publish.
+          </li>
+        </ul>
       </section>
 
       {/* ── Safety defaults ── */}

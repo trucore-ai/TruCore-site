@@ -456,7 +456,7 @@ POST https://trucore.xyz/api/bot-feedback
             </p>
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
               {`# npm (versioned)
-npm i @trucore/openclaw-atf@0.2.0
+npm i @trucore/openclaw-atf@0.2.3
 
 # Or via OpenClaw gateway:
 openclaw plugins install @trucore/openclaw-atf
@@ -498,6 +498,29 @@ openclaw gateway restart`}
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Schema hardening (0.2.3) */}
+          <div className="rounded-lg border border-emerald-400/20 bg-emerald-900/10 p-4 space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-emerald-300">
+              Strict schema compatibility (0.2.3)
+            </p>
+            <p className="text-sm text-slate-300">
+              Starting with 0.2.3, the plugin ships a recursive schema guard that
+              validates all 14 schemas (13 tool inputSchemas + 1 configSchema)
+              before every publish. Three nested object-schema issues were fixed:
+            </p>
+            <ul className="ml-5 list-disc space-y-1 text-sm text-slate-400">
+              <li><code className="font-mono text-slate-200">atf_protect_intent.inputSchema.intentJson</code></li>
+              <li><code className="font-mono text-slate-200">atf_verify_receipt.inputSchema.receipt</code></li>
+              <li><code className="font-mono text-slate-200">atf_tx_explain.inputSchema.receipt</code></li>
+            </ul>
+            <p className="text-sm text-slate-400">
+              All object nodes now carry explicit <code className="font-mono text-slate-200">properties</code> and{" "}
+              <code className="font-mono text-slate-200">additionalProperties</code> fields.
+              The plugin should no longer crash strict gateway schema walkers.
+              756 tests pass, 0 failures.
+            </p>
           </div>
 
           {/* Perps intents note */}

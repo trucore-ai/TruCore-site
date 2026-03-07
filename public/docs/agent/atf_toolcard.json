@@ -1,8 +1,8 @@
 {
     "schema_version": "1",
     "plugin": "@trucore/openclaw-atf",
-    "plugin_version": "0.2.0",
-    "description": "OpenClaw plugin for TruCore ATF. Provides thirteen typed tools for agent discovery, health, bootstrap, intent protection, receipt verification, savings reporting, integration doctor, preflight, explain, billing, and adoption advising.",
+    "plugin_version": "0.2.3",
+    "description": "OpenClaw plugin for TruCore ATF. Provides thirteen typed tools for agent discovery, health, bootstrap, intent protection, receipt verification, savings reporting, integration doctor, preflight, explain, billing, and adoption advising. Version 0.2.3 adds a recursive schema guard and fixes three nested object-schema issues for strict gateway compatibility.",
     "docs_url": "/docs/agent-discovery",
     "contact": {
         "x": "https://x.com/TruCore_AI",
