@@ -70,9 +70,39 @@ const OPENCLAW_TOOLS = [
       "Aggregate local receipt files and generate a receipt-backed savings or losses-prevented report.",
   },
   {
-    name: "atf_send_feedback",
+    name: "atf_health",
     description:
-      "Send feedback, bug reports, feature requests, or questions to the TruCore team. POST to /api/bot-feedback. We read every message.",
+      "Check ATF CLI and API backend availability. Returns health status and dependency checks.",
+  },
+  {
+    name: "atf_integration_doctor",
+    description:
+      "Run ATF integration readiness check. Reports plugin loading status, config validity, and backend connectivity.",
+  },
+  {
+    name: "atf_bot_preflight",
+    description:
+      "Pre-session readiness check: is ATF ready to protect intents right now? Confirms CLI, policy, and network are operational.",
+  },
+  {
+    name: "atf_tx_explain",
+    description:
+      "Explain an ATF deny decision or receipt in human terms. Returns reason codes, policy triggers, and remediation suggestions.",
+  },
+  {
+    name: "atf_billing_info",
+    description:
+      "Discover ATF billing, pricing, and package metadata for the active account.",
+  },
+  {
+    name: "atf_adoption_advisor",
+    description:
+      "Evaluate bot capability signals and return a deterministic ATF adoption recommendation with next steps.",
+  },
+  {
+    name: "atf_billing_claim",
+    description:
+      "Verify an on-chain Solana payment and process a billing claim for ATF service credits.",
   },
 ];
 
@@ -314,7 +344,7 @@ POST https://trucore.xyz/api/bot-feedback
               [
                 "openclaw-plugin-integration",
                 "OpenClaw Plugin integration",
-                "Native @trucore/openclaw-atf plugin exposing six typed tools for ATF discovery, bootstrap, protect, verify, and report.",
+                "Native @trucore/openclaw-atf plugin exposing thirteen typed tools for ATF discovery, bootstrap, protect, verify, report, health, integration doctor, preflight, explain, billing, and adoption advising.",
               ],
             ].map(([id, label, desc]) => (
               <li key={id} className="flex flex-col gap-0.5 px-5 py-3">
@@ -426,7 +456,7 @@ POST https://trucore.xyz/api/bot-feedback
             </p>
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
               {`# npm (versioned)
-npm i @trucore/openclaw-atf@0.1.0
+npm i @trucore/openclaw-atf@0.2.0
 
 # Or via OpenClaw gateway:
 openclaw plugins install @trucore/openclaw-atf
@@ -456,7 +486,7 @@ openclaw gateway restart`}
 
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
-              Tools provided (7)
+              Tools provided (13)
             </p>
             <div className="divide-y divide-white/8 rounded-lg border border-white/10 bg-neutral-950/40">
               {OPENCLAW_TOOLS.map((tool) => (

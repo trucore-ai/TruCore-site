@@ -22,12 +22,6 @@ export const sections: DocsNavSection[] = [
         description: "Start here for structure, core concepts, and next steps.",
       },
       {
-        title: "Agent Discovery",
-        href: "/docs/agent-discovery",
-        description:
-          "Machine-readable ATF manifest, OpenClaw plugin, recipes_v2 self-install, and receipts-backed savings reporting for autonomous agents.",
-      },
-      {
         title: "ATF CLI",
         href: "/docs/cli",
         description:
@@ -116,6 +110,18 @@ export const sections: DocsNavSection[] = [
         href: "/docs/changelog",
         description:
           "Versioned release notes for the ATF CLI and public API.",
+      },
+      {
+        title: "OpenClaw Plugin",
+        href: "/docs/openclaw-plugin",
+        description:
+          "Install @trucore/openclaw-atf, review thirteen tools, safety defaults, and configuration options.",
+      },
+      {
+        title: "Agent Discovery",
+        href: "/docs/agent-discovery",
+        description:
+          "Machine-readable ATF manifest, OpenClaw plugin, recipes_v2 self-install, and receipts-backed savings reporting for autonomous agents.",
       },
     ],
   },

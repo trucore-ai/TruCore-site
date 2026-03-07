@@ -13,7 +13,7 @@
  *   recipes_v2          — present (any truthy value)
  *   recipes_v2_hash     — non-empty string
  *   openclaw_plugin.npm — non-empty string
- *   openclaw_plugin.tools — array of length == 7
+ *   openclaw_plugin.tools — array of length == 13
  *
  * Exit codes:
  *   0 — manifest is valid
@@ -105,8 +105,8 @@ if (!requirePresent("openclaw_plugin", manifest.openclaw_plugin)) {
   // 4a. openclaw_plugin.npm — non-empty string
   requireNonEmptyString("openclaw_plugin.npm", op.npm);
 
-  // 4b. openclaw_plugin.tools — array of exactly 7 entries
-  requireArrayLength("openclaw_plugin.tools", op.tools, 7);
+  // 4b. openclaw_plugin.tools — array of exactly 13 entries
+  requireArrayLength("openclaw_plugin.tools", op.tools, 13);
 
   // 4c. install command — accept canonical install_command OR legacy install
   //     (transition window: at least one must exist and be non-empty)

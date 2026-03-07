@@ -1,72 +1,133 @@
 {
-  "schema_version": "1",
-  "plugin": "@trucore/openclaw-atf",
-  "plugin_version": "0.1.0",
-  "description": "OpenClaw plugin for TruCore ATF. Provides seven typed tools for agent discovery, bootstrap, intent protection, receipt verification, savings reporting, and bot feedback.",
-  "docs_url": "/docs/agent-discovery",
-  "contact": {
-    "x": "https://x.com/TruCore_AI",
-    "github": "https://github.com/TruCore-AI",
-    "bot_feedback": "https://trucore.xyz/api/bot-feedback",
-    "human_feedback": "https://trucore.xyz/feedback"
-  },
-  "safety_defaults": {
-    "allowNetwork": false,
-    "allowExecuteSafe": true,
-    "tools_optional": true
-  },
-  "tools": [
-    {
-      "name": "atf_discover",
-      "description": "Fetch and parse /.well-known/atf.json to confirm ATF is reachable and return manifest fields.",
-      "parameters": {}
+    "schema_version": "1",
+    "plugin": "@trucore/openclaw-atf",
+    "plugin_version": "0.2.0",
+    "description": "OpenClaw plugin for TruCore ATF. Provides thirteen typed tools for agent discovery, health, bootstrap, intent protection, receipt verification, savings reporting, integration doctor, preflight, explain, billing, and adoption advising.",
+    "docs_url": "/docs/agent-discovery",
+    "contact": {
+        "x": "https://x.com/TruCore_AI",
+        "github": "https://github.com/TruCore-AI",
+        "bot_feedback": "https://trucore.xyz/api/bot-feedback",
+        "human_feedback": "https://trucore.xyz/feedback"
     },
-    {
-      "name": "atf_bootstrap_plan",
-      "description": "Plan a bootstrap recipe (dry-run). Returns the ordered step list without executing anything.",
-      "parameters": {
-        "recipe": { "type": "string", "description": "Recipe id, e.g. bootstrap_local" }
-      }
+    "safety_defaults": {
+        "allowNetwork": false,
+        "allowExecuteSafe": true,
+        "tools_optional": true
     },
-    {
-      "name": "atf_bootstrap_execute_safe",
-      "description": "Execute only the safe steps of a recipe (env + verify kinds). Never runs cli steps that require network or signer access.",
-      "parameters": {
-        "recipe": { "type": "string", "description": "Recipe id" }
-      }
-    },
-    {
-      "name": "atf_protect_intent",
-      "description": "Submit an agent intent to ATF for policy evaluation. Returns a permit or denial receipt.",
-      "parameters": {
-        "intent": { "type": "object", "description": "ExecutionRequest JSON" }
-      }
-    },
-    {
-      "name": "atf_verify_receipt",
-      "description": "Run local deterministic hash verification on a receipt to confirm it has not been tampered with.",
-      "parameters": {
-        "receipt": { "type": "object", "description": "Receipt JSON returned from atf_protect_intent" }
-      }
-    },
-    {
-      "name": "atf_report_savings",
-      "description": "Aggregate local receipt files and generate a receipt-backed savings or losses-prevented report.",
-      "parameters": {
-        "receipts_dir": { "type": "string", "description": "Path to local receipts directory" },
-        "format": { "type": "string", "enum": ["json", "human"], "default": "human" }
-      }
-    },
-    {
-      "name": "atf_send_feedback",
-      "description": "Send feedback, bug reports, feature requests, or questions to the TruCore team. We read every bot message. POST to /api/bot-feedback.",
-      "parameters": {
-        "message": { "type": "string", "description": "Your feedback, question, or message (required, max 4000 chars)" },
-        "category": { "type": "string", "enum": ["bug", "feature_request", "integration_issue", "praise", "question", "suggestion", "other"], "default": "other", "description": "Feedback category" },
-        "agent_id": { "type": "string", "description": "Your bot or agent identifier (optional)" },
-        "agent_framework": { "type": "string", "description": "e.g. openclaw, langchain, langgraph, custom (optional)" },
-        "context": { "type": "object", "description": "Any additional structured data (optional)" }
-      }
-    }
-  ]
+    "tools": [
+        {
+            "name": "atf_health",
+            "description": "Check ATF CLI and API backend availability. Returns health status and dependency checks.",
+            "parameters": {}
+        },
+        {
+            "name": "atf_discover",
+            "description": "Fetch and parse /.well-known/atf.json to confirm ATF is reachable and return manifest fields.",
+            "parameters": {}
+        },
+        {
+            "name": "atf_bootstrap_plan",
+            "description": "Plan a bootstrap recipe (dry-run). Returns the ordered step list without executing anything.",
+            "parameters": {
+                "recipe": {
+                    "type": "string",
+                    "description": "Recipe id, e.g. bootstrap_local"
+                }
+            }
+        },
+        {
+            "name": "atf_bootstrap_execute_safe",
+            "description": "Execute only the safe steps of a recipe (env + verify kinds). Never runs cli steps that require network or signer access.",
+            "parameters": {
+                "recipe": {
+                    "type": "string",
+                    "description": "Recipe id"
+                }
+            }
+        },
+        {
+            "name": "atf_protect_intent",
+            "description": "Submit an agent intent to ATF for policy evaluation. Returns a permit or denial receipt.",
+            "parameters": {
+                "intent": {
+                    "type": "object",
+                    "description": "ExecutionRequest JSON"
+                }
+            }
+        },
+        {
+            "name": "atf_verify_receipt",
+            "description": "Run local deterministic hash verification on a receipt to confirm it has not been tampered with.",
+            "parameters": {
+                "receipt": {
+                    "type": "object",
+                    "description": "Receipt JSON returned from atf_protect_intent"
+                }
+            }
+        },
+        {
+            "name": "atf_report_savings",
+            "description": "Aggregate local receipt files and generate a receipt-backed savings or losses-prevented report.",
+            "parameters": {
+                "receipts_dir": {
+                    "type": "string",
+                    "description": "Path to local receipts directory"
+                },
+                "format": {
+                    "type": "string",
+                    "enum": [
+                        "json",
+                        "human"
+                    ],
+                    "default": "human"
+                }
+            }
+        },
+        {
+            "name": "atf_integration_doctor",
+            "description": "Run ATF integration readiness check. Reports plugin loading status, config validity, and backend connectivity.",
+            "parameters": {}
+        },
+        {
+            "name": "atf_bot_preflight",
+            "description": "Pre-session readiness check: is ATF ready to protect intents right now? Confirms CLI, policy, and network are operational.",
+            "parameters": {}
+        },
+        {
+            "name": "atf_tx_explain",
+            "description": "Explain an ATF deny decision or receipt in human terms. Returns reason codes, policy triggers, and remediation suggestions.",
+            "parameters": {
+                "receipt": {
+                    "type": "object",
+                    "description": "Receipt JSON returned from atf_protect_intent"
+                }
+            }
+        },
+        {
+            "name": "atf_billing_info",
+            "description": "Retrieve current billing status, plan tier, and usage metrics for the active ATF account.",
+            "parameters": {}
+        },
+        {
+            "name": "atf_adoption_advisor",
+            "description": "Analyze current agent configuration and recommend next steps to improve ATF coverage, policy completeness, and receipt hygiene.",
+            "parameters": {
+                "config_path": {
+                    "type": "string",
+                    "description": "Path to the agent ATF config file (optional, auto-detected if omitted)"
+                }
+            }
+        },
+        {
+            "name": "atf_billing_claim",
+            "description": "Submit a billing claim for verified savings generated by ATF policy enforcement. Attaches receipt evidence.",
+            "parameters": {
+                "receipts_dir": {
+                    "type": "string",
+                    "description": "Path to local receipts directory containing denial receipts with savings metadata"
+                }
+            }
+        }
+    ]
 }
