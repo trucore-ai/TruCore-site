@@ -146,21 +146,21 @@ export function DocsToc() {
     >
       {/* Desktop: sticky right column */}
       <div className="hidden xl:block">
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+        <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
           On this page
         </p>
-        <ul className="space-y-1 border-l border-white/10">
+        <ul className="space-y-0.5 border-l border-white/[0.06]">
           {items.map((item) => (
             <li key={item.id}>
               <a
                 href={`#${item.id}`}
                 onClick={(e) => handleClick(e, item.id)}
-                className={`block border-l-2 py-1 text-sm leading-snug transition-colors ${
+                className={`block border-l-2 py-1.5 text-[0.8125rem] leading-snug transition-all ${
                   item.level === 3 ? "pl-6" : "pl-4"
                 } ${
                   activeId === item.id
-                    ? "border-primary-400 font-medium text-primary-200"
-                    : "border-transparent text-slate-400 hover:border-slate-500 hover:text-slate-200"
+                    ? "-ml-px border-primary-400 font-medium text-primary-200"
+                    : "border-transparent text-slate-500 hover:border-slate-600 hover:text-slate-300"
                 }`}
               >
                 {item.text}

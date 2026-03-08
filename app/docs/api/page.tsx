@@ -19,10 +19,10 @@ const RESPONSE_FIELDS: { name: string; description: string }[] = [
 
 export default function DocsApiPage() {
   return (
-    <article className="space-y-10">
+    <article className="space-y-12">
       {/* ── Header ── */}
-      <header className="space-y-3">
-        <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+      <header className="space-y-4">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
           API Reference
         </p>
         <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
@@ -30,19 +30,20 @@ export default function DocsApiPage() {
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           Public endpoints for deterministic simulation and receipt generation.
+          Every response is reproducible and independently verifiable.
         </p>
       </header>
 
       {/* ── A) Base Endpoint ── */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <HeadingAnchor id="base-endpoint">Base Endpoint</HeadingAnchor>
-        <div className="max-w-3xl space-y-3 text-slate-300">
+        <div className="max-w-3xl space-y-4 text-slate-300">
           <p>
             Production base URL:
           </p>
-          <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-https://api.trucore.xyz
-          </pre>
+          <div className="rounded-xl border border-white/[0.08] bg-neutral-950/70 p-5" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02), 0 1px 3px rgba(0,0,0,0.3)' }}>
+            <pre className="font-mono text-[0.8125rem] text-primary-200">https://api.trucore.xyz</pre>
+          </div>
           <ul className="space-y-2">
             <li>The API is served behind a Caddy reverse proxy.</li>
             <li>HTTPS is required for all requests.</li>
@@ -51,21 +52,21 @@ https://api.trucore.xyz
       </section>
 
       {/* ── B) Endpoint: POST /v1/simulate ── */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <HeadingAnchor id="post-v1-simulate">POST /v1/simulate</HeadingAnchor>
-        <div className="max-w-3xl space-y-3 text-slate-300">
+        <div className="max-w-3xl space-y-4 text-slate-300">
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border border-white/10 bg-neutral-950/50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Method</p>
-              <p className="mt-1 font-mono text-sm font-semibold text-primary-200">POST</p>
+            <div className="docs-info-card">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Method</p>
+              <p className="mt-1.5 font-mono text-sm font-semibold text-primary-200">POST</p>
             </div>
-            <div className="rounded-lg border border-white/10 bg-neutral-950/50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Path</p>
-              <p className="mt-1 font-mono text-sm font-semibold text-primary-200">/v1/simulate</p>
+            <div className="docs-info-card">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Path</p>
+              <p className="mt-1.5 font-mono text-sm font-semibold text-primary-200">/v1/simulate</p>
             </div>
-            <div className="rounded-lg border border-white/10 bg-neutral-950/50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Alias</p>
-              <p className="mt-1 font-mono text-sm font-semibold text-primary-200">/api/simulate</p>
+            <div className="docs-info-card">
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Alias</p>
+              <p className="mt-1.5 font-mono text-sm font-semibold text-primary-200">/api/simulate</p>
             </div>
           </div>
           <p>
@@ -77,20 +78,20 @@ https://api.trucore.xyz
       </section>
 
       {/* ── C) Headers ── */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <HeadingAnchor id="headers">Headers</HeadingAnchor>
         <div className="max-w-3xl space-y-4 text-slate-300">
-          <div className="rounded-lg border border-white/10 bg-neutral-950/50 p-4">
+          <div className="docs-info-card">
             <p className="font-mono text-sm font-semibold text-primary-200">
               Content-Type: application/json
             </p>
-            <p className="mt-1 text-sm text-slate-400">Required.</p>
+            <p className="mt-1.5 text-sm text-slate-500">Required.</p>
           </div>
-          <div className="rounded-lg border border-white/10 bg-neutral-950/50 p-4">
+          <div className="docs-info-card">
             <p className="font-mono text-sm font-semibold text-primary-200">
               X-Request-ID
             </p>
-            <p className="mt-1 text-sm text-slate-300">
+            <p className="mt-1.5 text-sm text-slate-300">
               Optional string. Used for correlation and passed through into the receipt.
               If omitted, the server generates one automatically.
             </p>
@@ -99,17 +100,22 @@ https://api.trucore.xyz
       </section>
 
       {/* ── D) Request Body ── */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <HeadingAnchor id="request-body">Request Body</HeadingAnchor>
-        <div className="max-w-3xl space-y-3 text-slate-300">
-          <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
+        <div className="max-w-3xl space-y-4 text-slate-300">
+          <div className="overflow-hidden rounded-xl border border-white/[0.08]" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02), 0 1px 3px rgba(0,0,0,0.3)' }}>
+            <div className="flex items-center border-b border-white/[0.06] px-4 py-2.5" style={{ background: 'rgba(255,255,255,0.015)' }}>
+              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">JSON Body</span>
+            </div>
+            <pre className="p-5 font-mono text-[0.8125rem] leading-relaxed text-slate-200">
 {`{
   "preset": "swap_small"
 }`}
-          </pre>
+            </pre>
+          </div>
           <ul className="space-y-2">
             <li>
-              <code className="font-mono text-slate-200">preset</code> selects a deterministic test scenario.
+              <code className="rounded-md border border-white/[0.04] bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.8125rem] text-slate-200">preset</code> selects a deterministic test scenario.
             </li>
             <li>Future versions may support explicit payloads alongside presets.</li>
           </ul>
@@ -117,10 +123,14 @@ https://api.trucore.xyz
       </section>
 
       {/* ── E) Example Response ── */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <HeadingAnchor id="response">Example Response</HeadingAnchor>
-        <div className="max-w-3xl space-y-3">
-          <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
+        <div className="max-w-3xl">
+          <div className="overflow-hidden rounded-xl border border-white/[0.08]" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02), 0 1px 3px rgba(0,0,0,0.3)' }}>
+            <div className="flex items-center border-b border-white/[0.06] px-4 py-2.5" style={{ background: 'rgba(255,255,255,0.015)' }}>
+              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">200 OK</span>
+            </div>
+            <pre className="p-5 font-mono text-[0.8125rem] leading-relaxed text-slate-200">
 {`{
   "ok": true,
   "verified": true,
@@ -129,35 +139,36 @@ https://api.trucore.xyz
   "content_hash": "0xabc123...",
   "timestamp": "2026-02-27T18:42:11Z"
 }`}
-          </pre>
+            </pre>
+          </div>
         </div>
       </section>
 
       {/* ── Response Field Reference ── */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <HeadingAnchor id="field-reference">Response Field Reference</HeadingAnchor>
         <div className="grid gap-3 sm:grid-cols-2">
           {RESPONSE_FIELDS.map((f) => (
             <div
               key={f.name}
-              className="rounded-lg border border-white/10 bg-neutral-950/50 p-4"
+              className="docs-info-card"
             >
               <p className="font-mono text-sm font-semibold text-primary-200">
                 {f.name}
               </p>
-              <p className="mt-1 text-sm text-slate-300">{f.description}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{f.description}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── F) Determinism Guarantee ── */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <HeadingAnchor id="determinism">Determinism Guarantee</HeadingAnchor>
-        <div className="max-w-3xl space-y-3 text-slate-300">
+        <div className="max-w-3xl space-y-4 text-slate-300">
           <p>
             The same input combined with the same policy state always produces the
-            same <code className="font-mono text-slate-200">content_hash</code>.
+            same <code className="rounded-md border border-white/[0.04] bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.8125rem] text-slate-200">content_hash</code>.
             This is by design. ATF responses are deterministic and reproducible,
             which enables independent verification workflows across environments
             and toolchains.
@@ -166,78 +177,83 @@ https://api.trucore.xyz
       </section>
 
       {/* ── G) Error Handling ── */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <HeadingAnchor id="errors">Error Handling</HeadingAnchor>
-        <div className="max-w-3xl space-y-3">
-          <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
+        <div className="max-w-3xl space-y-4">
+          <div className="overflow-hidden rounded-xl border border-white/[0.08]" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02), 0 1px 3px rgba(0,0,0,0.3)' }}>
+            <div className="flex items-center border-b border-white/[0.06] px-4 py-2.5" style={{ background: 'rgba(255,255,255,0.015)' }}>
+              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Error Response</span>
+            </div>
+            <pre className="p-5 font-mono text-[0.8125rem] leading-relaxed text-slate-200">
 {`{
   "ok": false,
   "error": "invalid_preset"
 }`}
-          </pre>
+            </pre>
+          </div>
           <ul className="space-y-2 text-slate-300">
             <li>
-              <code className="font-mono text-slate-200">ok: false</code> indicates the request failed.
+              <code className="rounded-md border border-white/[0.04] bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.8125rem] text-slate-200">ok: false</code> indicates the request failed.
             </li>
             <li>
-              <code className="font-mono text-slate-200">error</code> provides a machine-readable reason string.
+              <code className="rounded-md border border-white/[0.04] bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.8125rem] text-slate-200">error</code> provides a machine-readable reason string.
             </li>
             <li>
-              <code className="font-mono text-slate-200">request_id</code> may still be included for correlation.
+              <code className="rounded-md border border-white/[0.04] bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.8125rem] text-slate-200">request_id</code> may still be included for correlation.
             </li>
           </ul>
         </div>
       </section>
 
       {/* ── H) Next Steps ── */}
-      <section className="space-y-4">
+      <section className="space-y-5">
         <HeadingAnchor id="next-steps">Next Steps</HeadingAnchor>
-        <ul className="space-y-3 text-slate-300">
-          <li>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="docs-info-card">
             <TrackedLink
               href="/docs/cli"
               eventName="docs_api_next_click"
               eventProps={{ target: "cli" }}
-              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+              className="text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
             >
               CLI Reference
-            </TrackedLink>{" "}
-            &mdash; run simulations and verify receipts from the command line.
-          </li>
-          <li>
+            </TrackedLink>
+            <p className="mt-1.5 text-sm text-slate-400">Run simulations and verify receipts from the command line.</p>
+          </div>
+          <div className="docs-info-card">
             <TrackedLink
               href="/docs/verify"
               eventName="docs_api_next_click"
               eventProps={{ target: "verify" }}
-              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+              className="text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
             >
               Verification
-            </TrackedLink>{" "}
-            &mdash; understand what content_hash proves and how to use receipt verification in production.
-          </li>
-          <li>
+            </TrackedLink>
+            <p className="mt-1.5 text-sm text-slate-400">Learn what content_hash proves and how to use receipt verification in production.</p>
+          </div>
+          <div className="docs-info-card">
             <TrackedLink
               href="/security"
               eventName="docs_api_next_click"
               eventProps={{ target: "security" }}
-              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+              className="text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
             >
               Security
-            </TrackedLink>{" "}
-            &mdash; review threat model, disclosure policy, and audit status.
-          </li>
-          <li>
+            </TrackedLink>
+            <p className="mt-1.5 text-sm text-slate-400">Review threat model, disclosure policy, and audit status.</p>
+          </div>
+          <div className="docs-info-card">
             <TrackedLink
               href="/#updates"
               eventName="docs_api_next_click"
               eventProps={{ target: "roadmap" }}
-              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+              className="text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
             >
               Roadmap
-            </TrackedLink>{" "}
-            &mdash; see planned phases and upcoming capabilities.
-          </li>
-        </ul>
+            </TrackedLink>
+            <p className="mt-1.5 text-sm text-slate-400">See planned phases and upcoming capabilities.</p>
+          </div>
+        </div>
       </section>
     </article>
   );

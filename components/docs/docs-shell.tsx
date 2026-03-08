@@ -20,15 +20,16 @@ type DocsShellProps = {
  */
 export function DocsShell({ children }: DocsShellProps) {
   return (
-    <div className="docs-shell mx-auto max-w-[90rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8 xl:grid-cols-[260px_minmax(0,1fr)_220px]">
+    <div className="docs-shell mx-auto max-w-[90rem] px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
+      <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[260px_minmax(0,1fr)_220px] xl:gap-14">
         {/* Left: sidebar (mobile drawer trigger + desktop sticky aside) */}
         <DocsNavSidebar />
 
         {/* Center: Content */}
         <div className="min-w-0">
-          <div className="mb-4">
+          <div className="mb-8">
             <DocsBreadcrumbs />
+            <div className="gradient-divider mt-5" aria-hidden="true" />
           </div>
 
           <div id="docs-content" className="docs-content prose-docs">

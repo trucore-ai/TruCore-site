@@ -155,7 +155,7 @@ export function DocsNavSidebar() {
             placeholder="Search docs..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-neutral-900/60 py-2 pl-9 pr-3 text-sm text-slate-200 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+            className="w-full rounded-lg border border-white/[0.08] bg-neutral-900/60 py-2.5 pl-9 pr-3 text-sm text-slate-200 placeholder:text-slate-500 transition-colors focus-visible:border-primary-300/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
           />
         </div>
       </div>
@@ -169,11 +169,11 @@ export function DocsNavSidebar() {
           const isOpen = openSections[section.title] ?? true;
 
           return (
-            <div key={section.title} className="mb-4">
+            <div key={section.title} className="mb-5">
               <button
                 type="button"
                 onClick={() => toggleSection(section.title)}
-                className="flex w-full items-center justify-between rounded px-1 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-slate-400 transition-colors hover:text-slate-200"
+                className="flex w-full items-center justify-between rounded-md px-1.5 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 transition-colors hover:text-slate-300"
                 aria-expanded={isOpen}
               >
                 <span>{section.title}</span>
@@ -190,7 +190,7 @@ export function DocsNavSidebar() {
               </button>
 
               {isOpen && (
-                <ul className="mt-1 space-y-0.5">
+                <ul className="mt-1.5 space-y-0.5 border-l border-white/[0.06] ml-1">
                   {section.items.map((item) => {
                     const active = isActivePath(pathname, item.href);
 
@@ -199,10 +199,10 @@ export function DocsNavSidebar() {
                         <Link
                           href={item.href}
                           onClick={onNavigate}
-                          className={`block rounded-md px-3 py-1.5 text-sm transition-colors ${
+                          className={`block rounded-md py-1.5 pl-4 pr-3 text-sm transition-all ${
                             active
-                              ? "bg-primary-500/15 font-medium text-primary-200"
-                              : "text-slate-300 hover:bg-white/5 hover:text-slate-100"
+                              ? "border-l-2 -ml-px border-primary-400 bg-primary-500/10 font-medium text-primary-200"
+                              : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
                           }`}
                         >
                           {item.title}

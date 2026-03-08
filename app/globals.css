@@ -83,6 +83,12 @@ body {
   }
 }
 
+@keyframes shimmer {
+  to {
+    transform: translateX(200%);
+  }
+}
+
 .depth-scene {
   transform-style: preserve-3d;
 }
@@ -531,41 +537,45 @@ body {
 
 .prose-docs {
   @apply text-slate-300 leading-relaxed;
+  font-size: 0.9375rem;
 }
 
 .prose-docs h1 {
   @apply text-3xl font-bold tracking-tight text-[#ffe0b2] sm:text-4xl;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .prose-docs h2 {
-  @apply text-2xl font-semibold text-slate-100;
-  margin-top: 2.5rem;
-  margin-bottom: 0.75rem;
+  @apply text-[1.375rem] font-semibold tracking-tight text-slate-100;
+  margin-top: 2.75rem;
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .prose-docs h3 {
   @apply text-lg font-semibold text-slate-200;
-  margin-top: 2rem;
-  margin-bottom: 0.5rem;
+  margin-top: 2.25rem;
+  margin-bottom: 0.625rem;
 }
 
 .prose-docs h4 {
   @apply text-base font-semibold text-slate-200;
-  margin-top: 1.5rem;
+  margin-top: 1.75rem;
   margin-bottom: 0.5rem;
 }
 
 .prose-docs p {
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
+  margin-top: 0.875rem;
+  margin-bottom: 0.875rem;
+  line-height: 1.75;
 }
 
 .prose-docs ul,
 .prose-docs ol {
-  @apply pl-5 space-y-1;
-  margin-top: 0.5rem;
-  margin-bottom: 0.75rem;
+  @apply pl-5 space-y-1.5;
+  margin-top: 0.625rem;
+  margin-bottom: 1rem;
 }
 
 .prose-docs ul {
@@ -578,47 +588,145 @@ body {
 
 .prose-docs li {
   @apply text-slate-300;
+  line-height: 1.7;
 }
 
 .prose-docs a {
   @apply font-semibold text-primary-200 transition-colors hover:text-primary-100;
+  text-decoration-line: underline;
+  text-decoration-color: rgba(var(--color-primary-200), 0.3);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.prose-docs a:hover {
+  text-decoration-color: rgba(var(--color-primary-100), 0.6);
 }
 
 .prose-docs code:not(pre code) {
-  @apply rounded bg-white/5 px-1.5 py-0.5 font-mono text-sm text-primary-200;
+  @apply rounded-md bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.8125rem] text-primary-200;
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .prose-docs pre {
-  @apply my-4 overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 font-mono text-sm leading-relaxed text-slate-200;
+  @apply my-5 overflow-x-auto rounded-xl border border-white/[0.08] bg-neutral-950/70 p-5 font-mono text-[0.8125rem] leading-relaxed text-slate-200;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .prose-docs blockquote {
-  @apply my-4 border-l-4 border-primary-400/30 pl-4 text-slate-400 italic;
+  @apply my-6 rounded-r-lg border-l-2 border-primary-400/40 bg-white/[0.02] py-4 pl-5 pr-4 text-slate-400 italic;
 }
 
 .prose-docs hr {
-  @apply my-8 border-white/10;
+  @apply my-10;
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(148, 163, 184, 0.1) 20%, rgba(148, 163, 184, 0.15) 50%, rgba(148, 163, 184, 0.1) 80%, transparent 100%);
 }
 
 .prose-docs table {
-  @apply my-4 w-full text-sm;
+  @apply my-5 w-full text-sm;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0.75rem;
+  overflow: hidden;
 }
 
 .prose-docs thead th {
-  @apply border-b border-white/15 px-3 py-2 text-left text-xs font-bold uppercase tracking-wider text-slate-400;
+  @apply px-4 py-3 text-left text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.prose-docs thead th:not(:last-child) {
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .prose-docs tbody td {
-  @apply border-b border-white/5 px-3 py-2 text-slate-300;
+  @apply px-4 py-3 text-slate-300;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.prose-docs tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.prose-docs tbody td:not(:last-child) {
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .prose-docs strong {
   @apply font-semibold text-slate-100;
 }
 
+/* First element in docs content should not have top margin */
+.prose-docs > :first-child {
+  margin-top: 0;
+}
+
 /* Docs breadcrumb spacing */
 .docs-breadcrumbs {
-  @apply mb-2;
+  @apply mb-3;
+}
+
+/* Docs section spacing utility */
+.docs-section {
+  @apply space-y-5;
+}
+
+.docs-section + .docs-section {
+  @apply mt-12;
+}
+
+/* ── Premium Design System Utilities ─────────────────────── */
+
+/* Subtle gradient divider line (replaces hard border-t/b) */
+.gradient-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(148, 163, 184, 0.08) 15%,
+    rgba(148, 163, 184, 0.14) 50%,
+    rgba(148, 163, 184, 0.08) 85%,
+    transparent 100%
+  );
+}
+
+/* Refined code panel wrapper for docs/API surfaces */
+.code-panel {
+  @apply relative rounded-xl border border-white/[0.08] bg-neutral-950/70;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.code-panel-header {
+  @apply flex items-center justify-between rounded-t-xl border-b border-white/[0.06] px-4 py-2.5;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.code-panel-header .code-panel-label {
+  @apply text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500;
+}
+
+/* Docs info card (used for field reference, data grouping) */
+.docs-info-card {
+  @apply rounded-xl border border-white/[0.08] bg-white/[0.02] p-5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  transition: border-color 0.2s ease;
+}
+
+.docs-info-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Dashboard-style section label */
+.section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgb(100 116 139);
 }
 
 @media (prefers-reduced-motion: reduce) {

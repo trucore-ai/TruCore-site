@@ -332,20 +332,20 @@ export function VerifyReceiptForm({
       : "Add full receipt JSON and click Verify to unlock deterministic recompute command.";
 
   return (
-    <div className="space-y-5 rounded-xl border border-white/10 bg-white/[0.03] p-5">
-      <div className="rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-        <p className="text-xs uppercase tracking-[0.12em] text-slate-400">What you&apos;re verifying</p>
-        <ul className="mt-2 space-y-2 text-sm text-slate-300">
+    <div className="space-y-6 rounded-xl border border-white/[0.08] bg-white/[0.02] p-6" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>
+      <div className="rounded-xl border border-white/[0.08] bg-neutral-950/60 p-5 text-sm text-slate-200">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">What you&apos;re verifying</p>
+        <ul className="mt-3 space-y-2.5 text-sm text-slate-400">
           <li>
-            <span className="font-semibold text-slate-100">Receipt hash (SHA-256):</span> deterministic fingerprint of
+            <span className="font-semibold text-slate-200">Receipt hash (SHA-256):</span> deterministic fingerprint of
             the receipt payload.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Ed25519 signature:</span> proof that the hash was signed by
+            <span className="font-semibold text-slate-200">Ed25519 signature:</span> proof that the hash was signed by
             the configured TruCore receipt signing key.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Deterministic recompute (optional):</span> available for
+            <span className="font-semibold text-slate-200">Deterministic recompute (optional):</span> available for
             supported demo receipt schemas only.
           </li>
         </ul>
@@ -365,7 +365,7 @@ export function VerifyReceiptForm({
             setSignatureError(null);
           }}
           placeholder="64-character hex hash"
-          className="w-full rounded border border-white/10 bg-neutral-950/70 px-3 py-2 font-mono text-sm text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+          className="w-full rounded-lg border border-white/[0.08] bg-neutral-950/70 px-4 py-2.5 font-mono text-sm text-slate-200 transition-colors focus-visible:border-primary-300/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
           spellCheck={false}
         />
       </div>
@@ -380,7 +380,7 @@ export function VerifyReceiptForm({
           onChange={(event) => setReceiptJson(event.target.value)}
           rows={10}
           placeholder='{"id":"demo-1","input":{...},"result":{...},"created_at":"..."}'
-          className="w-full resize-y rounded border border-white/10 bg-neutral-950/70 p-3 font-mono text-sm text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+          className="w-full resize-y rounded-lg border border-white/[0.08] bg-neutral-950/70 p-4 font-mono text-sm text-slate-200 transition-colors focus-visible:border-primary-300/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
           spellCheck={false}
         />
       </div>
@@ -397,7 +397,7 @@ export function VerifyReceiptForm({
 
       <div aria-live="polite" aria-atomic="true">
         {result ? (
-          <div className="rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
+          <div className="rounded-xl border border-white/[0.08] bg-neutral-950/60 p-5 text-sm text-slate-200">
             <p>
               format_valid:{" "}
               <span className="font-semibold text-slate-100">
@@ -431,9 +431,9 @@ export function VerifyReceiptForm({
         ) : null}
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
+      <div className="rounded-xl border border-white/[0.08] bg-neutral-950/60 p-5 text-sm text-slate-200">
         <div className="flex items-center gap-2">
-          <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Verify signature</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Verify signature</p>
           <button
             type="button"
             aria-label="About signature verification"
@@ -490,8 +490,8 @@ export function VerifyReceiptForm({
         ) : null}
       </div>
 
-      <div className="rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-        <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Verification Kit</p>
+      <div className="rounded-xl border border-white/[0.08] bg-neutral-950/60 p-5 text-sm text-slate-200">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Verification Kit</p>
         <p className="mt-2 text-slate-300">
           Copy these values and commands to verify this receipt independently in your local environment.
         </p>

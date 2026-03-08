@@ -12,17 +12,17 @@ const config: Record<AdmonitionVariant, { icon: string; defaultTitle: string; cl
   note: {
     icon: "ℹ",
     defaultTitle: "Note",
-    classes: "border-primary-400/30 bg-primary-500/5 text-primary-100",
+    classes: "border-primary-400/30 bg-primary-500/[0.04] text-primary-100",
   },
   warning: {
     icon: "⚠",
     defaultTitle: "Warning",
-    classes: "border-accent-400/30 bg-accent-500/5 text-accent-400",
+    classes: "border-accent-400/30 bg-accent-500/[0.04] text-accent-400",
   },
   tip: {
     icon: "💡",
     defaultTitle: "Tip",
-    classes: "border-emerald-400/30 bg-emerald-500/5 text-emerald-300",
+    classes: "border-emerald-400/30 bg-emerald-500/[0.04] text-emerald-300",
   },
 };
 
@@ -36,9 +36,9 @@ export function Admonition({ variant = "note", title, children }: AdmonitionProp
   return (
     <aside
       role="note"
-      className={`my-4 rounded-lg border-l-4 px-4 py-3 ${cfg.classes}`}
+      className={`my-5 rounded-xl border-l-4 px-5 py-4 ${cfg.classes}`}
     >
-      <p className="mb-1 flex items-center gap-2 text-sm font-semibold">
+      <p className="mb-1.5 flex items-center gap-2 text-sm font-semibold">
         <span aria-hidden="true">{cfg.icon}</span>
         {title ?? cfg.defaultTitle}
       </p>

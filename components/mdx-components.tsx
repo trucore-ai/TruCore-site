@@ -10,13 +10,14 @@ function Pre(props: ComponentPropsWithoutRef<"pre">) {
   return (
     <pre
       {...props}
-      className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-900/70 p-4 font-mono text-sm leading-relaxed text-slate-100"
+      className="overflow-x-auto rounded-xl border border-white/[0.08] bg-neutral-950/70 p-5 font-mono text-[0.8125rem] leading-relaxed text-slate-200"
+      style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02), 0 1px 3px rgba(0,0,0,0.3)' }}
     />
   );
 }
 
 function Code(props: ComponentPropsWithoutRef<"code">) {
-  return <code {...props} className="font-mono text-sm text-slate-100" />;
+  return <code {...props} className="font-mono text-[0.8125rem] text-slate-200" />;
 }
 
 export function Callout({ title, children }: CalloutProps) {

@@ -42,17 +42,19 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
   return (
     <Container>
       <Section className="fade-in-up">
-        <div className="max-w-3xl space-y-4">
+        <div className="max-w-3xl space-y-5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Verification Utility</p>
           <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">Verify Receipt Hash</h1>
-          <p className="text-xl leading-[1.5] text-slate-200">
+          <p className="text-xl leading-[1.5] text-slate-300">
             Validate receipt integrity with hash checks, signature verification, and deterministic demo recompute.
           </p>
-          <p className="text-sm text-slate-400">Developer utility for independent, copy-paste verification workflows.</p>
-          <p className="text-sm text-slate-300">
-            Need the normative contract, see{" "}
+          <p className="text-sm text-slate-500">Developer utility for independent, copy-paste verification workflows.</p>
+          <div className="gradient-divider" aria-hidden="true" />
+          <p className="text-sm text-slate-400">
+            Need the normative contract? See{" "}
             <Link
               href="/docs/receipt-specification-v1"
-              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+              className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
             >
               Receipt Specification v1
             </Link>
