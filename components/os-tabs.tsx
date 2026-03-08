@@ -29,7 +29,7 @@ export function OsTabs({ tabs, activeTab, onChange, ariaLabel = "Operating syste
             className={`rounded-lg border px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 ${
               isActive
                 ? "border-primary-400/40 bg-primary-500/15 text-primary-200"
-                : "border-white/[0.08] bg-white/[0.02] text-slate-500 hover:border-white/[0.14] hover:text-slate-300"
+                : "border-white/[0.08] bg-white/[0.02] text-slate-500 hover:border-white/[0.12] hover:text-slate-300"
             }`}
           >
             {tab.label}

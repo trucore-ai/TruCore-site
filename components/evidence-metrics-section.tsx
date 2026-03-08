@@ -31,16 +31,16 @@ const evidenceSignals = [
 
 export function EvidenceMetricsSection() {
   return (
-    <Section className="border-t border-white/10 fade-in-up">
+    <Section divider className="fade-in-up">
       <div className="mb-8 max-w-2xl">
-        <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+        <h2 className="text-4xl font-bold tracking-tight text-accent-300">
           Evidence &amp; Operational Signals
         </h2>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         {evidenceSignals.map((signal) => (
           <Card key={signal.title} className="h-full">
-            <h3 className="text-xl font-bold text-[#e8944a]">{signal.title}</h3>
+            <h3 className="text-xl font-bold text-accent-300">{signal.title}</h3>
             <p className="mt-2 text-lg leading-[1.5] text-slate-200">{signal.detail}</p>
             <TrackedLink
               href={signal.href}

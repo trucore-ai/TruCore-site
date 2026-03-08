@@ -32,7 +32,7 @@ export default function MediaPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             Media Kit
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
@@ -48,9 +48,9 @@ export default function MediaPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050]">Downloads</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">Downloads</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {mediaAssets.map((asset) => (
               <Card key={asset.href} className="h-full p-5">
@@ -77,17 +77,17 @@ export default function MediaPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-2">
+      <Section divider className="fade-in-up fade-delay-2">
         <div className="mx-auto max-w-3xl space-y-6">
           <Card>
-            <h2 className="text-2xl font-bold text-[#f0a050]">Brand usage</h2>
+            <h2 className="text-2xl font-bold text-accent-300">Brand usage</h2>
             <p className="mt-3 text-lg leading-[1.55] text-slate-200">
               Use provided assets without distortion or recoloring, keep clear spacing around marks,
               and avoid implying endorsement of third-party products without written approval.
             </p>
           </Card>
           <Card>
-            <h2 className="text-2xl font-bold text-[#f0a050]">Contact</h2>
+            <h2 className="text-2xl font-bold text-accent-300">Contact</h2>
             <p className="mt-3 text-lg leading-[1.55] text-slate-200">
               General press and company inquiries: <a href="mailto:info@trucore.xyz" className="font-semibold text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200">info@trucore.xyz</a>
             </p>

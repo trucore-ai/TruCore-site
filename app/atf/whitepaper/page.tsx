@@ -20,7 +20,7 @@ export default function WhitepaperPage() {
       <Section className="fade-in-up">
         <div className="max-w-3xl">
           <Badge className="mb-4">ATF</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl lg:text-7xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl lg:text-7xl">
             {whitepaperMeta.title}
           </h1>
           <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
@@ -47,9 +47,9 @@ export default function WhitepaperPage() {
       </Section>
 
       {whitepaperSections.map((section) => (
-        <Section key={section.id} className="border-t border-white/10 fade-in-up">
+        <Section key={section.id} divider className="fade-in-up">
           <div className="max-w-3xl">
-            <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+            <h2 className="text-4xl font-bold tracking-tight text-accent-300">
               {section.heading}
             </h2>
 
@@ -76,7 +76,7 @@ export default function WhitepaperPage() {
         </Section>
       ))}
 
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <Card className="max-w-3xl border-primary-300/25 bg-primary-500/10">
           <p className="text-lg leading-[1.6] text-slate-200">
             This is a short preview, not a full specification. It reflects the

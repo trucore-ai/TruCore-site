@@ -20,7 +20,7 @@ export default function DirectionPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             Long-Term Direction
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
@@ -31,10 +31,10 @@ export default function DirectionPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-6">
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Infrastructure First</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Infrastructure First</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>ATF is positioned as enforcement infrastructure, not an add-on control layer.</li>
               <li>Non-custodial, policy-first design keeps control boundaries explicit.</li>
@@ -43,7 +43,7 @@ export default function DirectionPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Capital Discipline</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Capital Discipline</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Growth priorities remain anchored in sustainability and execution quality.</li>
               <li>Versioned releases maintain predictable delivery and verification cadence.</li>
@@ -52,7 +52,7 @@ export default function DirectionPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Governance Philosophy</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Governance Philosophy</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Security before scale.</li>
               <li>Transparency before marketing.</li>
@@ -61,7 +61,7 @@ export default function DirectionPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Multi-Phase Evolution</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Multi-Phase Evolution</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Permit enforcement as the baseline trust boundary.</li>
               <li>Receipt anchoring for stronger verification and audit continuity.</li>
@@ -70,7 +70,7 @@ export default function DirectionPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Institutional Readiness</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Institutional Readiness</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Enterprise posture built around operational clarity and repeatable controls.</li>
               <li>Public process visibility supports due-diligence review.</li>

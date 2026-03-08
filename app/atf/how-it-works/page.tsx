@@ -91,7 +91,7 @@ export default function HowItWorksPage() {
             &larr; Back to ATF
           </Link>
           <Badge className="mb-4 block w-fit">Technical Deep Dive</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
             How ATF Works
           </h1>
           <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
@@ -103,9 +103,9 @@ export default function HowItWorksPage() {
       </Section>
 
       {/* ── A) Execution Lifecycle ── */}
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
             Execution Lifecycle
           </h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -155,7 +155,7 @@ export default function HowItWorksPage() {
                 <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-300/40 text-sm font-bold text-primary-100">
                   {item.step}
                 </div>
-                <h3 className="text-lg font-bold text-[#e8944a]">{item.title}</h3>
+                <h3 className="text-lg font-bold text-accent-300">{item.title}</h3>
                 <p className="mt-2 text-base leading-[1.5] text-slate-200">{item.desc}</p>
               </Card>
             </li>
@@ -164,9 +164,9 @@ export default function HowItWorksPage() {
       </Section>
 
       {/* ── B) Policy Engine Internals ── */}
-      <Section className="border-t border-white/10 fade-in-up fade-delay-2">
+      <Section divider className="fade-in-up fade-delay-2">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
             Policy Engine Internals
           </h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -178,7 +178,7 @@ export default function HowItWorksPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {policyInternals.map((p) => (
             <Card key={p.label} className="border-primary-300/25 bg-primary-500/10">
-              <h3 className="text-xl font-bold text-[#e8944a]">{p.label}</h3>
+              <h3 className="text-xl font-bold text-accent-300">{p.label}</h3>
               <p className="mt-2 text-lg leading-[1.5] text-slate-200">{p.desc}</p>
             </Card>
           ))}
@@ -186,9 +186,9 @@ export default function HowItWorksPage() {
       </Section>
 
       {/* ── C) Enforcement Model ── */}
-      <Section className="border-t border-white/10 fade-in-up fade-delay-3">
+      <Section divider className="fade-in-up fade-delay-3">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
             Enforcement Model
           </h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -200,7 +200,7 @@ export default function HowItWorksPage() {
         <div className="grid gap-4 md:grid-cols-2">
           {enforcementModel.map((e) => (
             <Card key={e.label} className="border-primary-300/25 bg-primary-500/10">
-              <h3 className="text-xl font-bold text-[#e8944a]">{e.label}</h3>
+              <h3 className="text-xl font-bold text-accent-300">{e.label}</h3>
               <p className="mt-2 text-lg leading-[1.5] text-slate-200">{e.desc}</p>
             </Card>
           ))}
@@ -208,9 +208,9 @@ export default function HowItWorksPage() {
       </Section>
 
       {/* ── D) Threat Mitigation Matrix ── */}
-      <Section className="border-t border-white/10 fade-in-up fade-delay-4">
+      <Section divider className="fade-in-up fade-delay-4">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
             Threat Mitigation Matrix
           </h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -233,7 +233,7 @@ export default function HowItWorksPage() {
             <tbody>
               {threatMatrix.map((row) => (
                 <tr key={row.threat} className="border-b border-white/5">
-                  <td className="px-6 py-4 text-lg font-semibold text-[#e8944a]">
+                  <td className="px-6 py-4 text-lg font-semibold text-accent-300">
                     {row.threat}
                   </td>
                   <td className="px-6 py-4 text-lg text-slate-200">

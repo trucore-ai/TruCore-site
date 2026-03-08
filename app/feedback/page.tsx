@@ -45,7 +45,7 @@ export default async function FeedbackPage({ searchParams }: FeedbackPageProps) 
         <div className="mx-auto max-w-4xl">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+              <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
                 ATF Feedback and Roadmap
               </h1>
               <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-300">
@@ -82,7 +82,7 @@ export default async function FeedbackPage({ searchParams }: FeedbackPageProps) 
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-4xl">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <Suspense fallback={null}>

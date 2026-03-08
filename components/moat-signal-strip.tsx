@@ -7,10 +7,13 @@ const moatSignals = [
 
 export function MoatSignalStrip() {
   return (
-    <section className="border-y border-white/10 py-4">
-      <div className="grid gap-2 text-sm text-slate-300 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="relative py-6">
+      <div className="gradient-divider absolute inset-x-0 top-0" aria-hidden="true" />
+      <div className="gradient-divider absolute inset-x-0 bottom-0" aria-hidden="true" />
+      <div className="grid gap-3 text-sm text-slate-400 sm:grid-cols-2 lg:grid-cols-4">
         {moatSignals.map((signal) => (
-          <p key={signal} className="font-medium">
+          <p key={signal} className="flex items-center gap-2 font-medium">
+            <span className="h-1 w-1 shrink-0 rounded-full bg-primary-400/50" aria-hidden="true" />
             {signal}
           </p>
         ))}

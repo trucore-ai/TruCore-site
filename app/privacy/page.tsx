@@ -14,7 +14,7 @@ export default function PrivacyPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             Privacy Policy
           </h1>
           <p className="mt-2 text-lg text-slate-400">
@@ -23,10 +23,10 @@ export default function PrivacyPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-8">
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               What We Collect
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
@@ -37,7 +37,7 @@ export default function PrivacyPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Analytics</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Analytics</h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
               We use Vercel Web Analytics, a privacy-first, cookie-free
               analytics service, to measure page views and understand how
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Waitlist Submissions
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
@@ -87,7 +87,7 @@ export default function PrivacyPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Data Deletion
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
@@ -103,7 +103,7 @@ export default function PrivacyPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Related Resources
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">

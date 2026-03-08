@@ -14,7 +14,7 @@ export default function AgentTransactionFirewallPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="max-w-4xl space-y-5">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
             What Is an Agent Transaction Firewall?
           </h1>
           <p className="text-xl leading-[1.55] text-slate-200 sm:text-2xl">
@@ -25,9 +25,9 @@ export default function AgentTransactionFirewallPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="max-w-4xl space-y-4">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050]">Definition</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">Definition</h2>
           <p className="text-lg leading-relaxed text-slate-200">
             The term <strong>Agent Transaction Firewall</strong> describes a deterministic control
             boundary that sits between an autonomous agent and protocol execution. The system does
@@ -37,9 +37,9 @@ export default function AgentTransactionFirewallPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="max-w-4xl space-y-4">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050]">Why It Exists</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">Why It Exists</h2>
           <ul className="space-y-3 text-lg leading-relaxed text-slate-200">
             <li>AI agents can initiate capital movement without human approval at execution time.</li>
             <li>Traditional authentication proves identity, but it does not enforce transaction safety.</li>
@@ -52,9 +52,9 @@ export default function AgentTransactionFirewallPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="max-w-4xl space-y-4">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050]">Core Components</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">Core Components</h2>
           <ol className="space-y-3 text-lg leading-relaxed text-slate-200">
             <li>
               <span className="font-semibold text-slate-100">Permit model:</span> signed,
@@ -77,9 +77,9 @@ export default function AgentTransactionFirewallPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="max-w-4xl space-y-4">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050]">How It Differs From</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">How It Differs From</h2>
           <div className="overflow-x-auto rounded-xl border border-white/10 bg-neutral-900/40">
             <table className="w-full min-w-[680px] text-left text-sm text-slate-200 sm:text-base">
               <thead className="border-b border-white/10 bg-white/[0.02] text-slate-100">
@@ -115,9 +115,9 @@ export default function AgentTransactionFirewallPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="max-w-4xl space-y-4">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050]">Minimal Architecture</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">Minimal Architecture</h2>
           <p className="text-lg leading-relaxed text-slate-200">
             In a minimal deployment, the <strong>agent transaction firewall</strong> sits between
             the agent and protocol, then emits a deterministic receipt.
@@ -171,9 +171,9 @@ export default function AgentTransactionFirewallPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="max-w-4xl space-y-4">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050]">Related Links</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">Related Links</h2>
           <ul className="space-y-2 text-lg text-slate-200">
             <li>
               <Link href="/atf" className="font-semibold text-primary-200 transition-colors hover:text-primary-100">

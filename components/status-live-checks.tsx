@@ -171,7 +171,7 @@ export function StatusLiveChecks() {
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-3xl font-bold text-[#f0a050]">Live Checks</h2>
+        <h2 className="text-3xl font-bold text-accent-300">Live Checks</h2>
         <Badge className={statusBadge.className}>{statusBadge.label}</Badge>
       </div>
 

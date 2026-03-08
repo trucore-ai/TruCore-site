@@ -21,9 +21,9 @@ const whyNowCards = [
 
 export function WhyNowSection() {
   return (
-    <Section className="border-t border-white/10 fade-in-up">
+    <Section divider className="fade-in-up">
       <div className="mb-8 max-w-3xl">
-        <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">Why Now</h2>
+        <h2 className="text-4xl font-bold tracking-tight text-accent-300">Why Now</h2>
         <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
           Autonomous finance is entering a phase where execution is real, adversaries are active,
           and risk surfaces compound quickly. The window to add hard enforcement is now.
@@ -32,7 +32,7 @@ export function WhyNowSection() {
       <div className="grid gap-4 md:grid-cols-3">
         {whyNowCards.map((card) => (
           <Card key={card.title}>
-            <h3 className="text-xl font-bold text-[#e8944a]">{card.title}</h3>
+            <h3 className="text-xl font-bold text-accent-300">{card.title}</h3>
             <p className="mt-2 text-lg leading-[1.5] text-slate-200">{card.description}</p>
           </Card>
         ))}

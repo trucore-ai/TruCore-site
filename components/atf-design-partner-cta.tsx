@@ -16,7 +16,7 @@ export function AtfDesignPartnerCta({ location = "atf_page" }: AtfDesignPartnerC
   };
 
   return (
-    <Section className="border-t border-white/10 fade-in-up">
+    <Section divider className="fade-in-up">
       <Card className="bg-accent-500/10 border-accent-500/30 p-8 sm:p-10">
         <h2 className="text-4xl font-bold text-accent-300">
           Seeking Design Partners

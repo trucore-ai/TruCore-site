@@ -44,7 +44,7 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
       <Section className="fade-in-up">
         <div className="max-w-3xl space-y-5">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Verification Utility</p>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">Verify Receipt Hash</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">Verify Receipt Hash</h1>
           <p className="text-xl leading-[1.5] text-slate-300">
             Validate receipt integrity with hash checks, signature verification, and deterministic demo recompute.
           </p>

@@ -81,7 +81,7 @@ export default function DetailsPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
             Deep Dive
           </p>
-          <h1 className="mt-2 text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="mt-2 text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             How ATF Works
           </h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
@@ -99,9 +99,9 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Problem Statement ── */}
-      <Section id="problem" className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section id="problem" divider className="fade-in-up fade-delay-1">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">The Problem</h2>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">The Problem</h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
             Autonomous AI agents are executing financial transactions with
             increasing frequency and complexity. Current infrastructure assumes
@@ -134,9 +134,9 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Threat Model ── */}
-      <Section id="threats" className="border-t border-white/10 fade-in-up fade-delay-2">
+      <Section id="threats" divider className="fade-in-up fade-delay-2">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">Threat Model</h2>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">Threat Model</h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
             ATF is designed to mitigate the following categories of risk in
             agent-driven financial systems.
@@ -145,7 +145,7 @@ export default function DetailsPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {threatVectors.map((tv) => (
             <Card key={tv.threat}>
-              <h3 className="text-xl font-bold text-[#e8944a]">{tv.threat}</h3>
+              <h3 className="text-xl font-bold text-accent-300">{tv.threat}</h3>
               <p className="mt-2 text-lg leading-[1.5] text-slate-200">{tv.impact}</p>
             </Card>
           ))}
@@ -153,12 +153,12 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── ATF vs LLM Firewalls ── */}
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="mx-auto max-w-4xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">ATF vs LLM Firewalls</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">ATF vs LLM Firewalls</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <Card className="h-full">
-              <h3 className="text-2xl font-bold text-[#e8944a]">LLM firewalls</h3>
+              <h3 className="text-2xl font-bold text-accent-300">LLM firewalls</h3>
               <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
                 <li>Prompt boundary protection</li>
                 <li>Input and output filtering</li>
@@ -166,7 +166,7 @@ export default function DetailsPage() {
               </ul>
             </Card>
             <Card className="h-full">
-              <h3 className="text-2xl font-bold text-[#e8944a]">ATF</h3>
+              <h3 className="text-2xl font-bold text-accent-300">ATF</h3>
               <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
                 <li>Pre-execution economic invariants</li>
                 <li>Deterministic decisioning</li>
@@ -178,9 +178,9 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Architecture Overview ── */}
-      <Section id="architecture" className="border-t border-white/10 fade-in-up fade-delay-3">
+      <Section id="architecture" divider className="fade-in-up fade-delay-3">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">Architecture Overview</h2>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">Architecture Overview</h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
             ATF is composed of four coordinated layers that enforce policy from
             intent through settlement.
@@ -193,7 +193,7 @@ export default function DetailsPage() {
                 <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-primary-300/40 text-sm font-bold text-primary-100">
                   {i + 1}
                 </div>
-                <h3 className="text-2xl font-bold text-[#e8944a]">{layer.label}</h3>
+                <h3 className="text-2xl font-bold text-accent-300">{layer.label}</h3>
                 <p className="mt-2 text-xl leading-[1.5] text-slate-200">{layer.description}</p>
               </Card>
             </Tilt>
@@ -202,9 +202,9 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Architecture Diagram (SVG) ── */}
-      <Section className="border-t border-white/10 fade-in-up fade-delay-4">
+      <Section divider className="fade-in-up fade-delay-4">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
             Architecture Diagram
           </h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -275,9 +275,9 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Execution Flow ── */}
-      <Section id="flow" className="border-t border-white/10 fade-in-up fade-delay-5">
+      <Section id="flow" divider className="fade-in-up fade-delay-5">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
             Execution Flow
           </h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -299,7 +299,7 @@ export default function DetailsPage() {
                   <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary-300/40 text-sm font-bold text-primary-100">
                     {item.step}
                   </div>
-                  <h3 className="text-lg font-bold text-[#e8944a]">{item.title}</h3>
+                  <h3 className="text-lg font-bold text-accent-300">{item.title}</h3>
                   <p className="mt-2 text-base leading-[1.5] text-slate-200">{item.desc}</p>
                 </Card>
               </Tilt>
@@ -309,9 +309,9 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Hard Invariants ── */}
-      <Section id="invariants" className="border-t border-white/10 fade-in-up">
+      <Section id="invariants" divider className="fade-in-up">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">Hard Invariants</h2>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">Hard Invariants</h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
             Non-negotiable constraints enforced on every transaction. These
             cannot be bypassed, overridden, or weakened at runtime.
@@ -327,7 +327,7 @@ export default function DetailsPage() {
             { label: "Domain separation", desc: "Each permit is scoped to TruCore ATF + a specific environment. Cross-domain reuse is invalid." },
           ].map((inv) => (
             <Card key={inv.label}>
-              <h3 className="text-xl font-bold text-[#e8944a]">{inv.label}</h3>
+              <h3 className="text-xl font-bold text-accent-300">{inv.label}</h3>
               <p className="mt-2 text-lg leading-[1.5] text-slate-200">{inv.desc}</p>
             </Card>
           ))}
@@ -335,9 +335,9 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Permit Example ── */}
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">Permit Example</h2>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">Permit Example</h2>
           <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
             A minimal, illustrative permit payload. Real permits are signed and
             carry additional metadata. No secrets are shown here.
@@ -367,9 +367,9 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Built for trading bots ── */}
-      <Section id="trading-bots" className="border-t border-white/10 fade-in-up fade-delay-4">
+      <Section id="trading-bots" divider className="fade-in-up fade-delay-4">
         <div className="mx-auto max-w-4xl rounded-xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
             Built for trading bots
           </h2>
           <p className="mt-3 text-xl leading-[1.5] text-slate-200">
@@ -426,11 +426,11 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Capabilities ── */}
-      <Section id="capabilities" className="border-t border-white/10 fade-in-up">
+      <Section id="capabilities" divider className="fade-in-up">
         <div className="mx-auto max-w-5xl space-y-6">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary-300">Capabilities</p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            <h2 className="mt-2 text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
               Guardrails across every execution path
             </h2>
             <p className="mt-3 text-lg text-slate-300">
@@ -441,7 +441,7 @@ export default function DetailsPage() {
           <div className="grid gap-5 sm:grid-cols-2">
             <Tilt maxTilt={5}>
               <Card className="h-full">
-                <h3 className="text-xl font-bold text-[#e8944a]">Swap Guardrails</h3>
+                <h3 className="text-xl font-bold text-accent-300">Swap Guardrails</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   Pre-flight slippage caps, protocol allowlists, and minimum-out checks on every swap. Jupiter enforced in V1.
                 </p>
@@ -451,7 +451,7 @@ export default function DetailsPage() {
 
             <Tilt maxTilt={5}>
               <Card className="h-full">
-                <h3 className="text-xl font-bold text-[#e8944a]">Lending Guardrails</h3>
+                <h3 className="text-xl font-bold text-accent-300">Lending Guardrails</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   Collateral limits and risk parameter enforcement for Solend and supported lending protocols. Unauthorized programs are blocked.
                 </p>
@@ -462,7 +462,7 @@ export default function DetailsPage() {
             <Tilt maxTilt={5}>
               <Card className="h-full">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-xl font-bold text-[#e8944a]">Perps Enforcement</h3>
+                  <h3 className="text-xl font-bold text-accent-300">Perps Enforcement</h3>
                   <span className="inline-flex items-center rounded-full border border-amber-400/40 bg-amber-900/30 px-2 py-0.5 text-[10px] font-bold text-amber-300">Feature-gated</span>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">Adapters implemented. OFF by default. Fail-closed on unknown operations.</p>
@@ -477,7 +477,7 @@ export default function DetailsPage() {
 
             <Tilt maxTilt={5}>
               <Card className="h-full">
-                <h3 className="text-xl font-bold text-[#e8944a]">Solana DEX Guardrails</h3>
+                <h3 className="text-xl font-bold text-accent-300">Solana DEX Guardrails</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   Slippage caps, allowlists, unverified route deny. Deterministic receipts for every swap decision.
                 </p>
@@ -487,7 +487,7 @@ export default function DetailsPage() {
 
             <Tilt maxTilt={5}>
               <Card className="h-full">
-                <h3 className="text-xl font-bold text-[#e8944a]">Deterministic Receipts</h3>
+                <h3 className="text-xl font-bold text-accent-300">Deterministic Receipts</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">
                   Cryptographic receipts for every policy evaluation, approval, rejection, and settlement event. Tamper-evident and auditable post-trade.
                 </p>
@@ -528,14 +528,14 @@ export default function DetailsPage() {
       <AtfComparison />
 
       {/* ── Positioning ── */}
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="mx-auto max-w-4xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
             Why Not Just an API Gateway?
           </h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <Card className="h-full">
-              <h3 className="text-2xl font-bold text-[#e8944a]">API Gateway</h3>
+              <h3 className="text-2xl font-bold text-accent-300">API Gateway</h3>
               <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
                 <li>Routes requests</li>
                 <li>Authenticates identity</li>
@@ -543,7 +543,7 @@ export default function DetailsPage() {
               </ul>
             </Card>
             <Card className="h-full">
-              <h3 className="text-2xl font-bold text-[#e8944a]">ATF</h3>
+              <h3 className="text-2xl font-bold text-accent-300">ATF</h3>
               <ul className="mt-3 space-y-2 text-lg leading-[1.5] text-slate-200">
                 <li>Evaluates capital constraints</li>
                 <li>Enforces deterministic policy</li>
@@ -568,9 +568,9 @@ export default function DetailsPage() {
       <TransparencyMetrics />
 
       {/* ── Enterprise Procurement Ready ── */}
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
             Enterprise Procurement Ready
           </h2>
           <ul className="mt-4 list-disc space-y-2 pl-6 text-lg leading-[1.5] text-slate-200">
@@ -584,9 +584,9 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Built for the Long Term ── */}
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
             Built for the Long Term
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
@@ -597,9 +597,9 @@ export default function DetailsPage() {
       </Section>
 
       {/* ── Build With ATF ── */}
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <div className="mx-auto max-w-3xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">Build With ATF</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">Build With ATF</h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
             ATF is designed as an enforcement layer for AI agents and DeFi systems. Explore integration patterns and policy examples.
           </p>

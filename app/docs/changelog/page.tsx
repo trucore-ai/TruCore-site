@@ -15,7 +15,7 @@ export default function DocsChangelogPage() {
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
           Release Notes
         </p>
-        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+        <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
           Changelog
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">

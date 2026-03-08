@@ -33,7 +33,7 @@ function phaseColor(phase: Phase) {
         ring: "border-accent-400/50",
         bg: "bg-accent-400/10",
         dot: "bg-accent-400",
-        text: "text-[#f0a050]",
+        text: "text-accent-300",
         detail: "text-accent-400/70",
         line: "bg-accent-400/30",
       };
@@ -42,7 +42,7 @@ function phaseColor(phase: Phase) {
         ring: "border-accent-400/40",
         bg: "bg-accent-400/10",
         dot: "bg-accent-400",
-        text: "text-[#f0a050]",
+        text: "text-accent-300",
         detail: "text-accent-400/70",
         line: "bg-accent-400/30",
       };

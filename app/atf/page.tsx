@@ -81,7 +81,7 @@ export default function ATFPage() {
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
               Developer Security Infrastructure
             </p>
-            <h1 className="mt-3 max-w-4xl text-4xl font-bold tracking-tight text-[#ffe0b2] md:text-6xl">
+            <h1 className="mt-3 max-w-4xl text-4xl font-bold tracking-tight text-accent-200 md:text-6xl">
               Agent Transaction Firewall
             </h1>
             <p className="mt-6 max-w-3xl text-xl leading-[1.6] text-slate-200">
@@ -153,9 +153,9 @@ export default function ATFPage() {
       </Section>
 
       {/* ── 2. Run This First: doctor ── */}
-      <Section id="doctor" className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section id="doctor" divider className="fade-in-up fade-delay-1">
         <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             Run This First
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
@@ -172,7 +172,7 @@ export default function ATFPage() {
         </div>
 
         <div className="mt-8 max-w-3xl">
-          <h3 className="text-lg font-semibold text-[#ffe0b2]">What it checks</h3>
+          <h3 className="text-lg font-bold text-accent-300">What it checks</h3>
           <ul className="mt-3 space-y-2 text-sm text-slate-200">
             <li className="flex items-start gap-2">
               <span className="mt-0.5 text-primary-200">&#x2713;</span>
@@ -203,8 +203,8 @@ export default function ATFPage() {
 
         {/* ── Example doctor JSON ── */}
         <div className="mt-8 max-w-3xl">
-          <h3 className="text-lg font-semibold text-[#ffe0b2]">Example output</h3>
-          <pre className="mt-3 overflow-x-auto rounded-xl border border-white/10 bg-neutral-950/60 p-4 font-mono text-xs text-slate-200 whitespace-pre-wrap break-words">
+          <h3 className="text-lg font-bold text-accent-300">Example output</h3>
+          <pre className="mt-3 overflow-x-auto rounded-xl border border-white/[0.08] bg-neutral-950/70 p-4 font-mono text-xs text-slate-200 whitespace-pre-wrap break-words">
 {`{
   "ok": true,
   "profile": "devnet-burner",
@@ -226,9 +226,9 @@ export default function ATFPage() {
       </Section>
 
       {/* ── 3. Devnet Burner Quickstart ── */}
-      <Section id="burner" className="border-t border-white/10 fade-in-up fade-delay-2">
+      <Section id="burner" divider className="fade-in-up fade-delay-2">
         <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             Devnet Burner Quickstart
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
@@ -295,9 +295,9 @@ export default function ATFPage() {
       </Section>
 
       {/* ── 4. Helius Setup ── */}
-      <Section id="helius" className="border-t border-white/10 fade-in-up fade-delay-3">
+      <Section id="helius" divider className="fade-in-up fade-delay-3">
         <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             Helius Setup: Profiles + Secrets + RPC Ping
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
@@ -343,9 +343,9 @@ export default function ATFPage() {
       </Section>
 
       {/* ── 5. Simulate > Verify > Execute Flow ── */}
-      <Section id="flow" className="border-t border-white/10 fade-in-up fade-delay-4">
+      <Section id="flow" divider className="fade-in-up fade-delay-4">
         <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             Simulate, Verify, Execute
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
@@ -371,9 +371,9 @@ export default function ATFPage() {
       </Section>
 
       {/* ── 6. Toolbox ── */}
-      <Section id="toolbox" className="border-t border-white/10 fade-in-up fade-delay-5">
+      <Section id="toolbox" divider className="fade-in-up fade-delay-5">
         <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             Toolbox
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
@@ -384,7 +384,7 @@ export default function ATFPage() {
         <div className="grid gap-6 sm:grid-cols-2">
           {toolboxGroups.map((group) => (
             <Card key={group.title}>
-              <h3 className="text-lg font-semibold text-[#ffe0b2]">
+              <h3 className="text-lg font-bold text-accent-300">
                 {group.title}
               </h3>
               <ul className="mt-3 space-y-2">
@@ -401,16 +401,16 @@ export default function ATFPage() {
       </Section>
 
       {/* ── 7. Designed for Bots, Agents, Custodians ── */}
-      <Section id="designed-for" className="border-t border-white/10 fade-in-up fade-delay-6">
+      <Section id="designed-for" divider className="fade-in-up fade-delay-6">
         <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             Designed for Production Bots, AI Agents, and Custodians
           </h2>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
           <Card>
-            <h3 className="text-lg font-semibold text-[#ffe0b2]">Non-Custodial</h3>
+            <h3 className="text-lg font-bold text-accent-300">Non-Custodial</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
               ATF never holds your private keys. Signing happens on your machine,
               in your environment. The platform enforces policy, not custody.
@@ -418,7 +418,7 @@ export default function ATFPage() {
           </Card>
 
           <Card>
-            <h3 className="text-lg font-semibold text-[#ffe0b2]">Profile Separation</h3>
+            <h3 className="text-lg font-bold text-accent-300">Profile Separation</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
               Named profiles isolate dev, test, and production environments.
               Different RPC endpoints, wallets, and policies per profile keep
@@ -427,7 +427,7 @@ export default function ATFPage() {
           </Card>
 
           <Card>
-            <h3 className="text-lg font-semibold text-[#ffe0b2]">Deterministic Receipts</h3>
+            <h3 className="text-lg font-bold text-accent-300">Deterministic Receipts</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
               Every decision produces a{" "}
               <code className="text-primary-200/90">content_hash</code> computed
@@ -437,7 +437,7 @@ export default function ATFPage() {
           </Card>
 
           <Card>
-            <h3 className="text-lg font-semibold text-[#ffe0b2]">Safe Defaults</h3>
+            <h3 className="text-lg font-bold text-accent-300">Safe Defaults</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
               Fail-closed enforcement, automatic secret redaction, and explicit
               network selection mean accidents cost nothing while you iterate. The
@@ -448,9 +448,9 @@ export default function ATFPage() {
       </Section>
 
       {/* ── 8. Roadmap Note (v2) ── */}
-      <Section id="roadmap" className="border-t border-white/10 fade-in-up">
+      <Section id="roadmap" divider className="fade-in-up">
         <div className="max-w-3xl">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             What Comes Next
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
@@ -462,9 +462,9 @@ export default function ATFPage() {
       </Section>
 
       {/* ── 9. Footer CTA ── */}
-      <Section id="get-started" className="border-t border-white/10 fade-in-up">
+      <Section id="get-started" divider className="fade-in-up">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             Get Started
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-200">
@@ -517,9 +517,9 @@ export default function ATFPage() {
       </Section>
 
       {/* ── Get Updates ── */}
-      <Section id="updates" className="border-t border-white/10 fade-in-up">
+      <Section id="updates" divider className="fade-in-up">
         <div className="mx-auto max-w-xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-[#f0a050]">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             Get Updates
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-200">

@@ -16,7 +16,7 @@ export default function DocsVerifyPage() {
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
           Verification Reference
         </p>
-        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+        <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
           Verification
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">

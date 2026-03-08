@@ -33,7 +33,7 @@ export default function DocsPermitSchemaV1Page() {
     <article className="space-y-8">
       <header className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Schema</p>
-        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">ATF Permit Schema v1</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">ATF Permit Schema v1</h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           This page documents a versioned demo permit shape for ATF integrations. It is designed to be clear,
           copyable, and deterministic for evaluation and receipts.

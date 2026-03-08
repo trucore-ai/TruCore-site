@@ -195,8 +195,8 @@ export default function RootLayout({
         {showAnalytics ? <Analytics /> : null}
         <HeroBackgroundPulses />
         <div className="relative z-10 flex min-h-screen flex-col">
-          <header className="glass-surface border-b border-white/10 bg-neutral-900/45 backdrop-blur-md">
-            <Container className="flex flex-col items-center gap-1 py-2 sm:h-16 sm:flex-row sm:justify-between sm:gap-0 sm:py-0">
+          <header className="glass-surface relative bg-neutral-900/45 backdrop-blur-md">
+            <Container className="flex flex-col items-center gap-1 py-2.5 sm:h-[4.25rem] sm:flex-row sm:justify-between sm:gap-0 sm:py-0">
               <Link
                 href="/"
                 aria-label="TruCore home"
@@ -216,55 +216,57 @@ export default function RootLayout({
               </Link>
               <nav
                 aria-label="Primary"
-                className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs font-medium text-slate-100 sm:gap-x-4 sm:text-sm md:gap-x-6 md:text-base"
+                className="flex flex-wrap items-center justify-center gap-x-0.5 gap-y-1 text-xs font-medium text-slate-300 sm:gap-x-1 sm:text-sm md:text-[0.9375rem]"
               >
                 <Link
                   href="/#hero"
-                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Home
                 </Link>
                 <Link
                   href="/atf"
-                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   ATF
                 </Link>
                 <Link
                   href="/receipts"
-                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Receipts
                 </Link>
                 <Link
                   href="/#verify"
-                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Verify
                 </Link>
                 <Link
                   href="/#integrations"
-                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Integrations
                 </Link>
                 <Link
                   href="/#why-trucore"
-                  className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Why TruCore
                 </Link>
               </nav>
             </Container>
+            <div className="gradient-divider absolute inset-x-0 bottom-0" aria-hidden="true" />
           </header>
 
           <main id="main" className="flex-1">
             {children}
           </main>
 
-          <footer id="footer" className="glass-surface border-t border-white/10 bg-gradient-to-b from-neutral-900/35 to-neutral-950/80 backdrop-blur-sm">
-            <Container className="py-8 text-sm text-slate-400">
-              <div className="border-t border-white/15 pt-7">
+          <footer id="footer" className="glass-surface relative bg-gradient-to-b from-neutral-900/35 to-neutral-950/80 backdrop-blur-sm">
+            <div className="gradient-divider absolute inset-x-0 top-0" aria-hidden="true" />
+            <Container className="py-10 text-sm text-slate-400">
+              <div className="pt-2">
                 <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,2fr)]">
                   <div className="space-y-5">
                     <Link
@@ -307,7 +309,7 @@ export default function RootLayout({
 
                   <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="border-l border-white/10 pl-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Product</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Product</p>
                       <div className="mt-3 space-y-2">
                         <Link href="/atf" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF</Link>
                         <Link href="/atf/primer" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF Primer</Link>
@@ -317,7 +319,7 @@ export default function RootLayout({
                     </div>
 
                     <div className="border-l border-white/10 pl-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Resources</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Resources</p>
                       <div className="mt-3 space-y-2">
                         <Link href="/docs" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Docs</Link>
                         <Link href="/docs/cli" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF CLI</Link>
@@ -333,7 +335,7 @@ export default function RootLayout({
                     </div>
 
                     <div className="border-l border-white/10 pl-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Company</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Company</p>
                       <div className="mt-3 space-y-2">
                         <Link href="/status" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Status</Link>
                         <Link href="/docs/changelog" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Changelog</Link>
@@ -343,7 +345,7 @@ export default function RootLayout({
                     </div>
 
                     <div className="border-l border-white/10 pl-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-300">Support</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Support</p>
                       <div className="mt-3 space-y-2">
                         <Link href="/terms" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Terms</Link>
                         <Link href="/privacy" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Privacy</Link>
@@ -364,7 +366,7 @@ export default function RootLayout({
                   <span className="text-slate-600">.well-known/atf.json manifest</span>
                 </div>
 
-                <div className="mt-7 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-8 flex flex-col gap-3 border-t border-white/[0.06] pt-6 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-3 text-slate-400">
                     <Link href="/docs/permit-schema-v1" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Permit Schema v1</Link>
                     <span aria-hidden="true" className="text-slate-600">|</span>

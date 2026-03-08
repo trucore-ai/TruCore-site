@@ -39,9 +39,9 @@ const readinessCards = [
 
 export function AtfReadiness() {
   return (
-    <Section className="border-t border-white/10 fade-in-up">
+    <Section divider className="fade-in-up">
       <div className="mb-8 max-w-2xl">
-        <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+        <h2 className="text-4xl font-bold tracking-tight text-accent-300">
           Production Readiness
         </h2>
       </div>
@@ -51,7 +51,7 @@ export function AtfReadiness() {
             key={card.title}
             className={`glass-panel h-full rounded-xl border-t-2 ${card.accent} p-6`}
           >
-            <h3 className="text-lg font-bold text-[#e8944a]">
+            <h3 className="text-lg font-bold text-accent-300">
               {card.title}
             </h3>
             <ul className="mt-3 space-y-2">

@@ -11,9 +11,9 @@ const commitments = [
 
 export function SecurityCommitments() {
   return (
-    <Section className="border-t border-white/10 fade-in-up">
+    <Section divider className="fade-in-up">
       <div className="mb-8 max-w-2xl">
-        <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+        <h2 className="text-4xl font-bold tracking-tight text-accent-300">
           Security Commitments
         </h2>
         <p className="mt-4 text-2xl leading-[1.4] text-slate-200">

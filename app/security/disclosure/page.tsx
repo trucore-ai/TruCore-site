@@ -17,7 +17,7 @@ export default function SecurityDisclosurePage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             Responsible Disclosure
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
@@ -36,10 +36,10 @@ export default function SecurityDisclosurePage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-6">
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Policy</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Policy</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>90-day coordinated disclosure window.</li>
               <li>48-hour initial acknowledgement target.</li>
@@ -48,7 +48,7 @@ export default function SecurityDisclosurePage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">In Scope</h2>
+            <h2 className="text-3xl font-bold text-accent-300">In Scope</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>TruCore web application routes.</li>
               <li>Public and authenticated API endpoints.</li>
@@ -56,7 +56,7 @@ export default function SecurityDisclosurePage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Out of Scope Examples</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Out of Scope Examples</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Denial-of-service and traffic flooding.</li>
               <li>Social engineering, phishing, or physical attacks.</li>

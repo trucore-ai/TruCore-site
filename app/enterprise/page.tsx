@@ -17,7 +17,7 @@ export default function EnterprisePage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             Enterprise &amp; Institutional Readiness
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
@@ -29,10 +29,10 @@ export default function EnterprisePage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-6">
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Deployment Model</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Deployment Model</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Stateless API architecture with deterministic evaluation paths.</li>
               <li>No custody model, policy enforcement without holding customer assets.</li>
@@ -41,7 +41,7 @@ export default function EnterprisePage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Data Handling</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Data Handling</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>No PII required for public simulation workflows.</li>
               <li>Aggregated metrics are used for public transparency reporting.</li>
@@ -50,7 +50,7 @@ export default function EnterprisePage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Security Posture</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Security Posture</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Content Security Policy enforcement and script control boundaries.</li>
               <li>Session hardening with scoped cookies and secure defaults.</li>
@@ -60,7 +60,7 @@ export default function EnterprisePage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Roadmap Direction</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Roadmap Direction</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Vault + Guardrails program with a design-first rollout model.</li>
               <li>Policy attestation registry for stronger external verification.</li>
@@ -69,7 +69,7 @@ export default function EnterprisePage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Engagement Path</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Engagement Path</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Pilot scope definition against target controls and policy model.</li>
               <li>Sandbox key issuance for controlled integration validation.</li>

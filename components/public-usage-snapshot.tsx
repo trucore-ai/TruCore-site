@@ -60,9 +60,9 @@ export function PublicUsageSnapshot() {
   const current = metrics ?? fallbackMetrics;
 
   return (
-    <Section className="border-t border-white/10 fade-in-up">
+    <Section divider className="fade-in-up">
       <div className="mb-8 max-w-3xl">
-        <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+        <h2 className="text-4xl font-bold tracking-tight text-accent-300">
           Live Operational Snapshot
         </h2>
         <p className="mt-3 text-base text-slate-300">Aggregated, non-identifiable metrics.</p>

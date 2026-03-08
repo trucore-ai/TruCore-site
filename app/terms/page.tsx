@@ -14,7 +14,7 @@ export default function TermsPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             Terms of Use
           </h1>
           <p className="mt-2 text-lg text-slate-400">
@@ -23,10 +23,10 @@ export default function TermsPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-8">
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Informational Site
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
@@ -37,7 +37,7 @@ export default function TermsPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">No Warranties</h2>
+            <h2 className="text-3xl font-bold text-accent-300">No Warranties</h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
               This site and its content are provided &quot;as is&quot; without
               warranty of any kind, express or implied. TruCore makes no
@@ -47,7 +47,7 @@ export default function TermsPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Financial Decisions
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
@@ -58,7 +58,7 @@ export default function TermsPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Changes</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Changes</h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
               These terms are subject to change at any time without notice. Your
               continued use of the site constitutes acceptance of any

@@ -17,7 +17,7 @@ export default function ProcessPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             How ATF Is Built and Maintained
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
@@ -28,10 +28,10 @@ export default function ProcessPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-6">
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Development Discipline</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Development Discipline</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Explicit version tagging for every release.</li>
               <li>CI enforcement for lint, unit tests, and e2e coverage.</li>
@@ -41,7 +41,7 @@ export default function ProcessPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Security Hardening</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Security Hardening</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Content Security Policy enforcement with strict directives.</li>
               <li>Cookie scoping and secure session boundaries.</li>
@@ -51,7 +51,7 @@ export default function ProcessPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Release Process</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Release Process</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Tagged releases follow semantic pattern v0.x.y.</li>
               <li>Production smoke checks run before release completion.</li>
@@ -60,7 +60,7 @@ export default function ProcessPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Transparency</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Transparency</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Public service health visibility via the status page.</li>
               <li>Responsible disclosure channel for coordinated reporting.</li>
@@ -69,7 +69,7 @@ export default function ProcessPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Why Process Matters</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Why Process Matters</h2>
             <p className="mt-4 text-xl leading-[1.5] text-slate-300">
               Long-term infrastructure outcomes depend on repeatable process discipline. Clear
               release controls, verifiable checkpoints, and explicit operational standards keep ATF

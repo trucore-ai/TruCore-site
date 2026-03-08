@@ -1,4 +1,5 @@
 import { Section } from "@/components/ui/section";
+import { TrackedLink } from "@/components/tracked-link";
 
 const phases = [
   {
@@ -29,9 +30,9 @@ const phases = [
 
 export function AtfRoadmap() {
   return (
-    <Section className="border-t border-white/10 fade-in-up">
+    <Section divider className="fade-in-up">
       <div className="mb-8 max-w-2xl">
-        <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+        <h2 className="text-4xl font-bold tracking-tight text-accent-300">
           Roadmap
         </h2>
         <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -60,11 +61,22 @@ export function AtfRoadmap() {
               <p className="text-sm font-bold uppercase tracking-wider text-primary-300">
                 {p.phase}
               </p>
-              <h3 className="mt-1 text-xl font-bold text-[#e8944a]">{p.title}</h3>
+              <h3 className="mt-1 text-xl font-bold text-accent-300">{p.title}</h3>
               <p className="mt-1 text-lg leading-[1.5] text-slate-200">{p.description}</p>
             </li>
           ))}
         </ol>
+      </div>
+
+      <div className="mt-10">
+        <TrackedLink
+          href="/atf/roadmap"
+          eventName="roadmap_view_click"
+          eventProps={{ location: "atf_page" }}
+          className="inline-flex items-center gap-2 text-lg font-semibold text-primary-200 transition-colors hover:text-primary-100"
+        >
+          View full roadmap &rarr;
+        </TrackedLink>
       </div>
     </Section>
   );

@@ -16,7 +16,7 @@ export default function ContactPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             Contact
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
@@ -26,11 +26,11 @@ export default function ContactPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-8">
           {/* General */}
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               General Inquiries
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
@@ -48,7 +48,7 @@ export default function ContactPage() {
 
           {/* Security */}
           <Card className="border-primary-300/25 bg-primary-500/10">
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Security &amp; Vulnerability Reports
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
@@ -74,7 +74,7 @@ export default function ContactPage() {
 
           {/* Social */}
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Social Channels
             </h2>
             <div className="mt-4 flex flex-wrap gap-4">

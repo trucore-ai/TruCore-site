@@ -38,7 +38,7 @@ export default function ReceiptsPage() {
       <Section className="fade-in-up">
         <div className="max-w-3xl">
           <Badge className="mb-4">Public Explorer</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
             Receipts Explorer
           </h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">

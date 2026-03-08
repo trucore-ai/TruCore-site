@@ -21,7 +21,7 @@ export default function RoadmapPage() {
       <Section className="fade-in-up">
         <div className="max-w-3xl">
           <Badge className="mb-4">Public Roadmap</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
             ATF Roadmap
           </h1>
           <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
@@ -35,10 +35,10 @@ export default function RoadmapPage() {
       {groups.map((group) => (
         <Section
           key={group.scope}
-          className="border-t border-white/10 fade-in-up"
+          divider className="fade-in-up"
         >
           <div className="mb-6 max-w-2xl">
-            <h2 className="text-3xl font-bold tracking-tight text-[#f0a050]">
+            <h2 className="text-3xl font-bold tracking-tight text-accent-300">
               {group.label}
             </h2>
           </div>
@@ -49,7 +49,7 @@ export default function RoadmapPage() {
                 className="border-primary-300/25 bg-primary-500/10"
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
-                  <h3 className="text-xl font-bold text-[#e8944a]">
+                  <h3 className="text-xl font-bold text-accent-300">
                     {item.title}
                   </h3>
                   <RoadmapStatusBadge status={item.status} />

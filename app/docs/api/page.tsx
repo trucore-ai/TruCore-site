@@ -25,7 +25,7 @@ export default function DocsApiPage() {
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
           API Reference
         </p>
-        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+        <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
           ATF API
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">

@@ -194,7 +194,7 @@ function MobileToc({ items, activeId, onNavigate }: MobileTocProps) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between rounded-lg border border-white/10 bg-neutral-900/50 px-4 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:border-white/20 hover:text-slate-100"
+        className="flex w-full items-center justify-between rounded-lg border border-white/[0.08] bg-neutral-900/50 px-4 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:border-white/[0.12] hover:text-slate-100"
         aria-expanded={open}
       >
         <span>On this page</span>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { sections } from "@/lib/docs-nav";
 
@@ -17,7 +18,7 @@ export default function DocsHubPage() {
     <div className="space-y-10">
       <header className="space-y-4">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">ATF Docs</p>
-        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">Documentation</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">Documentation</h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           Start with a practical quickstart, then dive into policy primitives and permit construction.
           The docs are intentionally concise so teams can evaluate integration fit quickly.
@@ -56,10 +57,10 @@ export default function DocsHubPage() {
         <div className="gradient-divider mt-2" aria-hidden="true" />
       </header>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {docsCards.map((item) => (
           <Card key={item.href} className="group h-full p-6 transition-colors hover:border-white/[0.12]">
-            <h2 className="text-xl font-semibold tracking-tight text-[#f0a050]">{item.title}</h2>
+            <h2 className="text-xl font-bold tracking-tight text-accent-300">{item.title}</h2>
             <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.description}</p>
             <Link
               href={item.href}
@@ -78,12 +79,9 @@ export default function DocsHubPage() {
         <p className="mt-3 text-slate-400">
           Apply to the design partner program to help shape policy and permit ergonomics for production teams.
         </p>
-        <Link
-          href="/atf/apply"
-          className="mt-5 inline-flex items-center justify-center rounded-lg bg-accent-500 px-5 py-3 text-sm font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
-        >
+        <Button href="/atf/apply" size="sm" className="mt-5">
           Apply as Design Partner
-        </Link>
+        </Button>
       </section>
     </div>
   );

@@ -19,7 +19,7 @@ export default function SwapPermitsGuidePage() {
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
           CLI &rsaquo; Guides &rsaquo; Swap Permits
         </p>
-        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+        <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
           Swap Permit Parameters
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">

@@ -17,7 +17,7 @@ export default function SecurityOverviewPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             Security Overview
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
@@ -31,10 +31,10 @@ export default function SecurityOverviewPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-6">
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Architecture Philosophy
             </h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
@@ -46,7 +46,7 @@ export default function SecurityOverviewPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Operational Controls
             </h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
@@ -59,7 +59,7 @@ export default function SecurityOverviewPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Data Handling</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Data Handling</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Minimal PII collection.</li>
               <li>No resale of data.</li>
@@ -68,7 +68,7 @@ export default function SecurityOverviewPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Release Discipline</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Release Discipline</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Versioned releases (v0.x.y).</li>
               <li>Tagged and logged.</li>

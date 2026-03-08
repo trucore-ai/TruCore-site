@@ -226,7 +226,7 @@ export function DocsNavSidebar() {
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-neutral-900/50 px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-white/20 hover:text-slate-100"
+          className="inline-flex items-center gap-2 rounded-lg border border-white/[0.08] bg-neutral-900/50 px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-white/[0.12] hover:text-slate-100"
           aria-label="Open documentation navigation"
         >
           <svg

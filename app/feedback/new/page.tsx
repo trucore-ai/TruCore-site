@@ -45,7 +45,7 @@ export default async function NewFeedbackPage() {
             Back to board
           </Link>
 
-          <h1 className="text-3xl font-bold tracking-tight text-[#ffe0b2] sm:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-accent-200 sm:text-4xl">
             Submit Feedback
           </h1>
           <p className="mt-3 text-lg text-slate-300">
@@ -54,7 +54,7 @@ export default async function NewFeedbackPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-2xl">
           <FeedbackForm />
         </div>

@@ -46,7 +46,7 @@ export default function EcommercePilotPage() {
       <Section className="fade-in-up">
         <div className="max-w-4xl">
           <Badge className="mb-4">Vertical Pilot</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
             ATF Pilot for E-Commerce &amp; AI-Driven Checkout
           </h1>
           <p className="mt-5 max-w-3xl text-2xl leading-[1.4] text-slate-200">
@@ -56,13 +56,13 @@ export default function EcommercePilotPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <PilotKpiStrip />
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-2">
+      <Section divider className="fade-in-up fade-delay-2">
         <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">Problem</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">Problem</h2>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           {problemPoints.map((point) => (
@@ -73,9 +73,9 @@ export default function EcommercePilotPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-2">
+      <Section divider className="fade-in-up fade-delay-2">
         <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">What ATF Enforces</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">What ATF Enforces</h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           {enforcementPoints.map((point) => (
@@ -86,9 +86,9 @@ export default function EcommercePilotPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-3">
+      <Section divider className="fade-in-up fade-delay-3">
         <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">Measurable KPIs</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">Measurable KPIs</h2>
           <p className="mt-3 text-lg text-slate-300">
             KPI outputs are pilot-measured. No performance claims are implied before live pilot data.
           </p>
@@ -102,9 +102,9 @@ export default function EcommercePilotPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-3">
+      <Section divider className="fade-in-up fade-delay-3">
         <div className="mb-8 max-w-3xl">
-          <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
             Pilot Structure (30-60 days)
           </h2>
         </div>

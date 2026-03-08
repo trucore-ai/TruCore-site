@@ -15,7 +15,7 @@ export default function BuildWithAtfPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">Build With ATF</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">Build With ATF</h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
             ATF is an enforcement layer for agent-driven finance. This page outlines structured,
             low-risk ways to build integrations, tooling, and reusable policy design surfaces.
@@ -23,10 +23,10 @@ export default function BuildWithAtfPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto grid max-w-4xl gap-6">
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Who Should Build With ATF</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Who Should Build With ATF</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Agent framework developers</li>
               <li>DeFi protocol integrators</li>
@@ -35,7 +35,7 @@ export default function BuildWithAtfPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">What You Can Build</h2>
+            <h2 className="text-3xl font-bold text-accent-300">What You Can Build</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Policy templates</li>
               <li>Agent middleware hooks</li>
@@ -45,7 +45,7 @@ export default function BuildWithAtfPage() {
           </Card>
 
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Example Contribution Paths</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Example Contribution Paths</h2>
             <ul className="mt-4 list-disc space-y-2 pl-6 text-xl text-slate-300">
               <li>Submit policy template PR</li>
               <li>Publish ATF-compatible agent demo</li>

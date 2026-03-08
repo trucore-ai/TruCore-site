@@ -117,8 +117,8 @@ export function BlogFilterBar({ posts }: BlogFilterBarProps) {
               <p className="text-sm font-semibold uppercase tracking-[0.08em] text-slate-400">
                 {formatDate(post.date)}
               </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-[#e8944a]">
-                <Link href={`/blog/${post.slug}`} className="transition-colors hover:text-[#f0a050]">
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-accent-300">
+                <Link href={`/blog/${post.slug}`} className="transition-colors hover:text-accent-300">
                   {post.title}
                 </Link>
               </h2>

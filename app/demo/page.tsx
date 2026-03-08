@@ -33,7 +33,7 @@ export default function DemoPage() {
       <Section className="fade-in-up">
         <div className="max-w-3xl">
           <Badge className="mb-4">Public Demo Surface</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">Demo Live</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">Demo Live</h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
             Demo receipts stream (deterministic). No wallets. No partner data.
           </p>

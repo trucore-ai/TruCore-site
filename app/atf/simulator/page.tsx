@@ -15,7 +15,7 @@ export default function AtfSimulatorPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="max-w-4xl space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
             ATF Policy Simulator
           </h1>
           <p className="text-xl leading-[1.5] text-slate-200 sm:text-2xl">
@@ -28,7 +28,7 @@ export default function AtfSimulatorPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <Suspense
           fallback={<p className="text-sm text-slate-300">Loading simulator...</p>}
         >

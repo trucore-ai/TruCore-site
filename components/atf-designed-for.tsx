@@ -30,9 +30,9 @@ const personas = [
 
 export function AtfDesignedFor() {
   return (
-    <Section className="border-t border-white/10 fade-in-up">
+    <Section divider className="fade-in-up">
       <div className="mb-8 max-w-2xl">
-        <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+        <h2 className="text-4xl font-bold tracking-tight text-accent-300">
           Designed For
         </h2>
         <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -43,7 +43,7 @@ export function AtfDesignedFor() {
       <div className="grid gap-4 md:grid-cols-3">
         {personas.map((p) => (
           <Card key={p.title} className="border-primary-300/25 bg-primary-500/10">
-            <h3 className="text-xl font-bold text-[#e8944a]">{p.title}</h3>
+            <h3 className="text-xl font-bold text-accent-300">{p.title}</h3>
             <ul className="mt-3 space-y-2">
               {p.bullets.map((b) => (
                 <li key={b} className="flex items-start gap-2 text-lg leading-[1.5] text-slate-200">

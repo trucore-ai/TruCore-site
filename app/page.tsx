@@ -10,6 +10,7 @@ import { WhyNowSection } from "@/components/why-now-section";
 import { EnforcementProofSection } from "@/components/enforcement-proof-section";
 import { SecurityIntegrityStrip } from "@/components/security-integrity-strip";
 import { MoatSignalStrip } from "@/components/moat-signal-strip";
+import { LiveStatusStrip } from "@/components/home/live-status-strip";
 import { TrackedLink } from "@/components/tracked-link";
 import { Tilt } from "@/components/ui/tilt";
 import truCoreBanner from "@/images/TruCore-banner-new.png";
@@ -46,8 +47,8 @@ export default function Home() {
   return (
     <Container>
       {/* ── Hero ── */}
-      <Section id="hero" className="fade-in-up">
-        <div className="relative max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/35 p-6 sm:p-8">
+      <Section id="hero" className="fade-in-up pb-8 sm:pb-10">
+        <div className="relative max-w-4xl overflow-hidden rounded-2xl border border-white/[0.07] bg-neutral-950/40 p-8 shadow-elevated sm:p-12 lg:p-14">
           <div className="hero-legibility-overlay" aria-hidden="true" />
           <Image
             src={truCoreBanner}
@@ -65,24 +66,24 @@ export default function Home() {
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
               Solana-first agent controls, multi-chain next
             </p>
-            <h1 className="mt-2 text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
+            <h1 className="mt-4 text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
               Guardrails for automated finance.
             </h1>
-            <p className="mt-4 text-2xl font-semibold text-amber-200/90">
+            <p className="mt-6 text-2xl font-semibold text-amber-200/90">
               Don&apos;t let your bot blow up your wallet.
             </p>
-            <p className="mt-3 text-xl leading-[1.4] text-slate-200 sm:text-2xl">
+            <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
               ATF enforces spend limits, protocol allowlists, and slippage caps on every transaction.
               Your agents move fast without going off the rails.
             </p>
 
             {/* CTAs */}
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-10 flex flex-wrap items-center gap-5">
               <TrackedLink
                 href="/atf/simulator"
                 eventName="hero_simulator_click"
                 eventProps={{ location: "atf_hero" }}
-                className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-xl font-semibold transition-colors bg-accent-500 text-neutral-950 hover:bg-accent-400"
+                className="inline-flex items-center justify-center rounded-xl px-8 py-4 text-xl font-semibold shadow-glow-accent transition-all bg-accent-500 text-neutral-950 hover:bg-accent-400 hover:shadow-lg"
               >
                 Try sandbox
               </TrackedLink>
@@ -96,7 +97,7 @@ export default function Home() {
               </TrackedLink>
             </div>
 
-            <p className="mt-4 text-base text-slate-300">
+            <p className="mt-6 text-base text-slate-300/80">
               Non-custodial. Helius-first RPC. Cryptographic receipts prove every enforcement decision.
             </p>
 
@@ -147,21 +148,24 @@ export default function Home() {
               </TrackedLink>
             </div>
 
-            <p className="mt-4 text-sm font-medium text-slate-400">
-              Last updated: {lastUpdated}
-            </p>
           </div>
         </div>
       </Section>
 
-      <Section className="pt-0">
+      {/* ── Trust Signals & Live Status ── */}
+      <div className="space-y-3 pb-8 sm:pb-10">
         <SecurityIntegrityStrip />
-      </Section>
+        <LiveStatusStrip />
+        <p className="pt-1 text-right text-xs text-slate-500/60">
+          Last updated: {lastUpdated}
+        </p>
+      </div>
 
       {/* ── What ATF Enforces ── */}
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+          <p className="section-label mb-3">Enforcement Model</p>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
             What ATF Enforces
           </h2>
         </div>
@@ -174,7 +178,7 @@ export default function Home() {
           ].map((item) => (
             <Tilt key={item.title} maxTilt={6}>
               <Card className="h-full">
-                <h3 className="text-xl font-bold text-[#e8944a]">{item.title}</h3>
+                <h3 className="text-xl font-bold text-accent-300">{item.title}</h3>
                 <p className="mt-2 text-lg leading-[1.5] text-slate-200">{item.desc}</p>
               </Card>
             </Tilt>
@@ -183,9 +187,10 @@ export default function Home() {
       </Section>
 
       {/* ── Explore ── */}
-      <Section id="integrations" className="border-t border-white/10 fade-in-up fade-delay-2">
+      <Section id="integrations" divider className="fade-in-up fade-delay-2">
         <div className="mb-8 max-w-2xl">
-          <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">Explore</h2>
+          <p className="section-label mb-3">Resources & Documentation</p>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">Explore</h2>
           <p className="mt-3 text-xl leading-[1.5] text-slate-200">
             Everything you need to evaluate and integrate ATF.
           </p>
@@ -255,7 +260,7 @@ export default function Home() {
                 className="block h-full"
               >
                 <Card className="h-full transition-colors hover:border-primary-300/30">
-                  <h3 className="text-lg font-bold text-[#e8944a]">{card.title}</h3>
+                  <h3 className="text-lg font-bold text-accent-300">{card.title}</h3>
                   <p className="mt-2 text-base leading-[1.5] text-slate-300">{card.desc}</p>
                   <span className="mt-3 inline-flex text-sm font-semibold text-primary-200">
                     Explore &rarr;
@@ -282,17 +287,6 @@ export default function Home() {
 
       {/* ── Roadmap ── */}
       <AtfRoadmap />
-
-      <Section className="fade-in-up">
-        <TrackedLink
-          href="/atf/roadmap"
-          eventName="roadmap_view_click"
-          eventProps={{ location: "atf_page" }}
-          className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
-        >
-          View Full Roadmap &rarr;
-        </TrackedLink>
-      </Section>
 
       {/* ── Waitlist / Design Partner CTA ── */}
       <div id="waitlist">

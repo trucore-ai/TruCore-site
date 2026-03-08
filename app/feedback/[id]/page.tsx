@@ -95,7 +95,7 @@ export default async function FeedbackDetailPage({
                 <FeedbackStatusBadge status={item.status} />
               </div>
 
-              <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#ffe0b2] sm:text-4xl">
+              <h1 className="mt-3 text-3xl font-bold tracking-tight text-accent-200 sm:text-4xl">
                 {item.title}
               </h1>
 
@@ -133,7 +133,7 @@ export default async function FeedbackDetailPage({
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-8">
           <div className="glass-panel rounded-xl p-6">
             <div className="prose prose-invert max-w-none text-slate-200">

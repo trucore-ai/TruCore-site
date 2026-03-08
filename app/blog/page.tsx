@@ -38,7 +38,7 @@ export default async function BlogIndexPage() {
       <Section className="fade-in-up">
         <div className="max-w-3xl">
           <Badge className="mb-4">Blog</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl lg:text-7xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl lg:text-7xl">
             TruCore Technical Posts
           </h1>
           <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
@@ -67,7 +67,7 @@ export default async function BlogIndexPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <BlogFilterBar posts={allPosts} />
       </Section>
     </Container>

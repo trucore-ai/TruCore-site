@@ -31,9 +31,9 @@ const metrics = [
 
 export function TransparencyMetrics() {
   return (
-    <Section className="border-t border-white/10 fade-in-up">
+    <Section divider className="fade-in-up">
       <div className="mb-8 max-w-2xl">
-        <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+        <h2 className="text-4xl font-bold tracking-tight text-accent-300">
           Transparency Metrics
         </h2>
         <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
@@ -47,7 +47,7 @@ export function TransparencyMetrics() {
             <p className="text-sm font-bold uppercase tracking-wider text-primary-300">
               {m.label}
             </p>
-            <p className="mt-2 text-2xl font-bold text-[#e8944a]">{m.value}</p>
+            <p className="mt-2 text-2xl font-bold text-accent-300">{m.value}</p>
             <p className="mt-1 text-base leading-[1.5] text-slate-300">
               {m.description}
             </p>

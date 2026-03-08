@@ -24,9 +24,9 @@ const RESULT_JSON = `{
 
 export function EnforcementProofSection() {
   return (
-    <Section className="border-t border-white/10 fade-in-up">
+    <Section divider className="fade-in-up">
       <div className="mb-8 max-w-3xl">
-        <h2 className="text-4xl font-bold tracking-tight text-[#f0a050]">
+        <h2 className="text-4xl font-bold tracking-tight text-accent-300">
           Deterministic Enforcement Proof
         </h2>
         <p className="mt-4 text-xl leading-[1.5] text-slate-200">

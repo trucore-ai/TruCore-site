@@ -38,7 +38,7 @@ export default function LaunchPage() {
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
           <Badge className="mb-4">Launch</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
             Infrastructure for Autonomous Finance
           </h1>
           <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
@@ -100,7 +100,7 @@ export default function LaunchPage() {
 
       <PublicMetricsStrip />
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 rounded-xl border border-white/10 bg-neutral-900/40 p-6">
           <p className="text-lg font-medium text-slate-200">Building an agent? Start with the docs.</p>
           <TrackedLink

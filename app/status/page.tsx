@@ -25,7 +25,7 @@ export default function StatusPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             System Status
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
@@ -34,11 +34,11 @@ export default function StatusPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-8">
           {/* Current Status */}
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Current Status
             </h2>
             <div className="mt-4 space-y-3">
@@ -58,7 +58,7 @@ export default function StatusPage() {
 
           {/* Monitoring */}
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">Monitoring</h2>
+            <h2 className="text-3xl font-bold text-accent-300">Monitoring</h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
               We monitor{" "}
               <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-base text-primary-200">
@@ -76,7 +76,7 @@ export default function StatusPage() {
 
           {/* Incident Reporting */}
           <Card>
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Incident Reporting
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
@@ -94,7 +94,7 @@ export default function StatusPage() {
 
           {/* Security Incidents */}
           <Card className="border-primary-300/25 bg-primary-500/10">
-            <h2 className="text-3xl font-bold text-[#f0a050]">
+            <h2 className="text-3xl font-bold text-accent-300">
               Security Incidents
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">

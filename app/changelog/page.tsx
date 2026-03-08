@@ -15,7 +15,7 @@ export default function ChangelogPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             Changelog
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
@@ -24,7 +24,7 @@ export default function ChangelogPage() {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up fade-delay-1">
+      <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-6">
           {changelog.map((entry) => (
             <Card key={entry.date + entry.title}>
@@ -35,7 +35,7 @@ export default function ChangelogPage() {
                 >
                   {entry.date}
                 </time>
-                <h2 className="text-2xl font-bold text-[#f0a050]">
+                <h2 className="text-2xl font-bold text-accent-300">
                   {entry.title}
                 </h2>
               </div>

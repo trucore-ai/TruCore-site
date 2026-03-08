@@ -58,7 +58,7 @@ export default function ManifestoPage() {
     <Container>
       <Section>
         <div className="mx-auto max-w-4xl">
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
             The Case for Agent Transaction Firewalls
           </h1>
           <p className="mt-5 text-xl leading-[1.5] text-slate-200 sm:text-2xl">
@@ -73,7 +73,7 @@ export default function ManifestoPage() {
       {principles.map((section) => (
         <Section key={section.title} className="border-t border-white/10">
           <div className="mx-auto max-w-4xl">
-            <h2 className="text-3xl font-bold tracking-tight text-[#f0a050] sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
               {section.title}
             </h2>
             <ul className="mt-5 space-y-3 text-lg leading-[1.5] text-slate-200 sm:text-xl">
@@ -90,7 +90,7 @@ export default function ManifestoPage() {
 
       <Section className="border-t border-white/10">
         <div className="mx-auto max-w-4xl rounded-xl border border-white/10 bg-white/[0.02] p-6">
-          <h2 className="text-2xl font-bold tracking-tight text-[#f0a050] sm:text-3xl">
+          <h2 className="text-2xl font-bold tracking-tight text-accent-300 sm:text-3xl">
             Continue Reading
           </h2>
           <div className="mt-4 flex flex-wrap gap-4 text-lg font-semibold">

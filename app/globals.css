@@ -541,7 +541,7 @@ body {
 }
 
 .prose-docs h1 {
-  @apply text-3xl font-bold tracking-tight text-[#ffe0b2] sm:text-4xl;
+  @apply text-3xl font-bold tracking-tight text-accent-200 sm:text-4xl;
   margin-bottom: 1.25rem;
 }
 
@@ -723,7 +723,7 @@ body {
 /* Dashboard-style section label */
 .section-label {
   font-size: 0.6875rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: rgb(100 116 139);

@@ -84,7 +84,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <Section className="fade-in-up">
         <div className="max-w-3xl">
           <Badge className="mb-4">Blog</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-6xl">
+          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
             {post.title}
           </h1>
           <p className="mt-4 text-lg font-semibold uppercase tracking-[0.08em] text-slate-400">
@@ -101,13 +101,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up">
-        <article className="prose prose-invert max-w-3xl prose-headings:text-[#e8944a] prose-p:text-xl prose-p:leading-[1.6] prose-p:text-slate-200 prose-strong:text-[#ffe0b2]">
+      <Section divider className="fade-in-up">
+        <article className="prose prose-invert max-w-3xl prose-headings:text-accent-300 prose-p:text-xl prose-p:leading-[1.6] prose-p:text-slate-200 prose-strong:text-accent-200">
           <Content components={mdxComponents} />
         </article>
       </Section>
 
-      <Section className="border-t border-white/10 fade-in-up">
+      <Section divider className="fade-in-up">
         <BlogPostCta />
 
         <div className="mt-8">

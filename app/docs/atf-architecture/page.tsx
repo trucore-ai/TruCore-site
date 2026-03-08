@@ -13,7 +13,7 @@ export default function DocsAtfArchitecturePage() {
     <article className="space-y-10">
       <header className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">ATF Architecture</p>
-        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+        <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
           ATF Architecture &amp; Enforcement Model
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">

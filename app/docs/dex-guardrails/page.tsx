@@ -16,7 +16,7 @@ export default function DocsDexGuardrailsPage() {
     <article className="space-y-8">
       <header className="space-y-3">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Enforcement</p>
-        <h1 className="text-4xl font-bold tracking-tight text-[#ffe0b2] sm:text-5xl">
+        <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
           DEX Guardrails
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">

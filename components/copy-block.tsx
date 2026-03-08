@@ -39,7 +39,7 @@ export function CopyBlock({
   };
 
   return (
-    <div className="mt-4 rounded-xl border border-white/[0.08] bg-neutral-950/60 p-4">
+    <div className="mt-4 rounded-xl border border-white/[0.08] bg-neutral-950/70 p-4">
       {label ? (
         <div className="mb-2.5 flex items-center justify-between">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">{label}</p>
