@@ -22,18 +22,23 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { TrackedLink } from "@/components/tracked-link";
 import type {
   SystemHealth,
-  KpiSummary,
-  EnforcementOverview,
+  LiveKpiItem,
+  LiveEnforcement,
   DashboardResult,
 } from "@/lib/dashboard-client";
 import type { PublicMetrics } from "@/lib/public-metrics";
 
 /* ── Types ────────────────────────────────────────────────── */
 
+/**
+ * The API returns LiveKpiItem[] and LiveEnforcement from the
+ * summary-derived bundle. We accept those shapes directly
+ * instead of the legacy KpiSummary / EnforcementOverview types.
+ */
 type StripData = {
   health: DashboardResult<SystemHealth>;
-  kpis: DashboardResult<KpiSummary>;
-  enforcement: DashboardResult<EnforcementOverview>;
+  kpis: DashboardResult<LiveKpiItem[]>;
+  enforcement: DashboardResult<LiveEnforcement>;
 };
 
 /* ── Constants ────────────────────────────────────────────── */
@@ -44,6 +49,7 @@ const PUBLIC_POLL_MS = 60_000;
 /* ── Helpers ──────────────────────────────────────────────── */
 
 function compactNum(n: number): string {
+  if (n == null || Number.isNaN(n)) return "—";
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return n.toLocaleString();
@@ -231,14 +237,32 @@ export function LiveStatusStrip() {
       : 0;
   const totalChecks =
     data?.health?.ok ? data.health.data.checks.length : 0;
-  const requests24h =
-    data?.kpis?.ok ? data.kpis.data.total_requests_24h : null;
-  const enforcements24h =
-    data?.kpis?.ok ? data.kpis.data.total_enforcements_24h : null;
+
+  // KPIs arrive as LiveKpiItem[] from the summary-derived bundle.
+  // Extract values by label, falling back to null when absent.
+  const kpiArr = data?.kpis?.ok ? data.kpis.data : [];
+  const kpiByLabel = (label: string): number | null => {
+    const item = kpiArr.find(
+      (k) => k.label.toLowerCase() === label.toLowerCase(),
+    );
+    if (!item) return null;
+    return typeof item.value === "number"
+      ? item.value
+      : Number(item.value) || null;
+  };
+
+  const requests24h = kpiByLabel("Total Requests (24h)") ?? kpiByLabel("Requests (24h)");
+  const enforcements24h = kpiByLabel("Total Enforcements (24h)") ?? kpiByLabel("Enforcements (24h)");
+  const uptimePct = kpiByLabel("Uptime %") ?? kpiByLabel("Uptime");
+
+  // Enforcement arrives as LiveEnforcement (auth_failures_total, etc).
+  // Derive a "blocked" count from the available counters.
   const blockedCount =
-    data?.enforcement?.ok ? data.enforcement.data.total_blocked : null;
-  const uptimePct =
-    data?.kpis?.ok ? data.kpis.data.uptime_pct : null;
+    data?.enforcement?.ok
+      ? (data.enforcement.data.auth_failures_total ?? 0) +
+        (data.enforcement.data.rate_limit_rejections_total ?? 0) +
+        (data.enforcement.data.quota_violations_total ?? 0)
+      : null;
 
   /* ── Resolve public metrics ────────────────────────────── */
   const pm = publicMetrics;
@@ -302,7 +326,7 @@ export function LiveStatusStrip() {
           {uptimePct !== null && (
             <MetricPill
               label="Uptime"
-              value={`${uptimePct.toFixed(2)}%`}
+              value={`${Number(uptimePct).toFixed(2)}%`}
               accent="text-emerald-300"
             />
           )}

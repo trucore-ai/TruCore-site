@@ -25,6 +25,7 @@ import { EnforcementOverview } from "@/components/dashboard/enforcement-overview
 import { ActivityChart } from "@/components/dashboard/activity-chart";
 import { TenantTable } from "@/components/dashboard/tenant-table";
 import { ErrorPanel } from "@/components/dashboard/error-panel";
+import { UnavailablePanel } from "@/components/dashboard/unavailable-panel";
 import {
   KpiGridSkeleton,
   HealthStripSkeleton,
@@ -160,6 +161,14 @@ export function DashboardShell({ initial }: Props) {
 
 /* ── Helper: render data/error/loading per section ────────── */
 
+/**
+ * Patterns that indicate a section is simply not available in the
+ * current ATF deployment, not a real operational failure. These
+ * should show a calm neutral state rather than a red error card.
+ */
+const EXPECTED_UNAVAILABLE_RE =
+  /not available|HTTP 404|not found|not supported|not yet/i;
+
 function renderSection<T>(
   result: DashboardResult<T>,
   skeleton: React.ReactNode,
@@ -167,6 +176,9 @@ function renderSection<T>(
 ): React.ReactNode {
   if (!result) return skeleton;
   if (!result.ok) {
+    if (EXPECTED_UNAVAILABLE_RE.test(result.error)) {
+      return <UnavailablePanel />;
+    }
     return <ErrorPanel message={result.error} />;
   }
   return render(result.data);
