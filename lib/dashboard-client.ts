@@ -9,6 +9,8 @@ import { z } from "zod";
  *  runtime when the contract drifts.
  *
  *  The base URL is read from NEXT_PUBLIC_ATF_DASHBOARD_URL.
+ *  Protected dashboard requests are authenticated with the
+ *  server-only ATF_API_KEY env var (sent as x-api-key header).
  *  All fetches set a 5 s cache window to match the ATF-side
  *  caching contract for UI polling.
  * ──────────────────────────────────────────────────────────── */
@@ -191,9 +193,14 @@ async function dashboardFetch<T>(
 ): Promise<DashboardResult<T>> {
   try {
     const base = getBaseUrl();
+    const headers: Record<string, string> = { Accept: "application/json" };
+    const apiKey = process.env.ATF_API_KEY;
+    if (apiKey) {
+      headers["x-api-key"] = apiKey;
+    }
     const res = await fetch(`${base}${path}`, {
       next: { revalidate: 5 },
-      headers: { Accept: "application/json" },
+      headers,
     });
     if (!res.ok) {
       return { ok: false, error: `HTTP ${res.status}: ${res.statusText}` };
