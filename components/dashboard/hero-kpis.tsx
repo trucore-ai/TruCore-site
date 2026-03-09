@@ -11,6 +11,12 @@
  * ──────────────────────────────────────────────────────────── */
 
 import type { LiveKpiItem, LiveTrend } from "@/lib/dashboard-client";
+import {
+  deriveTrendSummary,
+  trendText,
+  trendIndicator,
+  trendDeltaLabel,
+} from "@/lib/trend";
 
 function compactNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -63,7 +69,7 @@ function KpiCard({ kpi }: { kpi: LiveKpiItem }) {
         </p>
         {kpi.trend && <TrendBadge direction={kpi.trend} />}
       </div>
-      <p className="mt-2.5 text-[1.625rem] font-bold tabular-nums tracking-tight leading-none text-slate-50">
+      <p className="mt-2 text-2xl font-bold tabular-nums tracking-tight leading-none text-slate-50">
         {formatValue(kpi.value, kpi.unit ?? "")}
       </p>
     </div>
@@ -104,22 +110,30 @@ function TrendBadge({ direction }: { direction: string }) {
 /* ── Trend summary strip ──────────────────────────────────── */
 
 function TrendStrip({ trend }: { trend: LiveTrend }) {
+  const summary = deriveTrendSummary(trend);
+
   const items = [
-    { label: "Requests (1h)", value: trend.requests_last_hour },
-    { label: "Receipts (1h)", value: trend.receipts_written_last_hour },
-    { label: "Enforcements (1h)", value: trend.enforcement_last_hour },
+    { label: "Requests (1h)", value: trend.requests_last_hour, delta: summary.requestPace },
+    { label: "Receipts (1h)", value: trend.receipts_written_last_hour, delta: summary.receiptPace },
+    { label: "Enforcements (1h)", value: trend.enforcement_last_hour, delta: summary.enforcementPresence },
     { label: "Requests today", value: trend.requests_today },
     { label: "Receipts today", value: trend.receipts_written_today },
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 dashboard-sub-panel px-4 py-2.5">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 dashboard-sub-panel px-4 py-2">
       {items.map((item) => (
         <span key={item.label} className="text-[11px] text-slate-500">
           {item.label}{" "}
           <span className="font-semibold tabular-nums text-slate-300">
             {compactNum(item.value)}
           </span>
+          {item.delta && item.delta !== "unchanged" && item.delta !== "unavailable" && (
+            <span className={`ml-1 ${trendText[item.delta]}`}>
+              <span aria-hidden="true">{trendIndicator[item.delta]}</span>
+              <span className="sr-only">{trendDeltaLabel[item.delta]}</span>
+            </span>
+          )}
         </span>
       ))}
     </div>

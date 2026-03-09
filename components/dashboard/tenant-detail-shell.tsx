@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TenantDetail, DashboardResult } from "@/lib/dashboard-client";
 import { TenantDetailHero } from "@/components/dashboard/tenant-detail-hero";
+import { TenantOperatorSummary } from "@/components/dashboard/tenant-operator-summary";
 import { QuotaBreakdownCard } from "@/components/dashboard/quota-breakdown-card";
 import { TenantUsageSummary } from "@/components/dashboard/tenant-usage-summary";
 import { TenantPosturePanel } from "@/components/dashboard/tenant-posture-panel";
@@ -21,6 +22,8 @@ import {
   UsageSummarySkeleton,
   PosturePanelSkeleton,
 } from "@/components/dashboard/loading-skeletons";
+import { SectionExplainer } from "@/components/dashboard/section-explainer";
+import { formatSecondsAgo } from "@/lib/freshness";
 
 /* ── Types ────────────────────────────────────────────────── */
 
@@ -36,6 +39,7 @@ const POLL_MS = 5_000;
 export function TenantDetailShell({ tenantId, initial }: Props) {
   const [result, setResult] = useState<DashboardResult<TenantDetail>>(initial);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [secondsAgo, setSecondsAgo] = useState(0);
   const mountedRef = useRef(true);
 
   const refresh = useCallback(async () => {
@@ -64,10 +68,18 @@ export function TenantDetailShell({ tenantId, initial }: Props) {
     };
   }, [refresh]);
 
+  /* ── Ticking freshness counter ──────────────────────────── */
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSecondsAgo(Math.floor((Date.now() - lastRefresh.getTime()) / 1_000));
+    }, 1_000);
+    return () => clearInterval(id);
+  }, [lastRefresh]);
+
   /* ── Error state ──────────────────────────────────────── */
   if (!result.ok) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-6">
         <ErrorPanel
           title="Unable to load tenant details"
           message={result.error}
@@ -75,7 +87,7 @@ export function TenantDetailShell({ tenantId, initial }: Props) {
 
         {/* Skeleton placeholder to maintain visual structure */}
         <TenantDetailHeroSkeleton />
-        <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
+        <div className="grid gap-5 lg:grid-cols-2 lg:gap-6">
           <QuotaBreakdownSkeleton />
           <UsageSummarySkeleton />
         </div>
@@ -88,7 +100,7 @@ export function TenantDetailShell({ tenantId, initial }: Props) {
 
   /* ── Loaded state ─────────────────────────────────────── */
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Live indicator */}
       <div className="flex items-center justify-end gap-2 rounded-full border border-primary-300/10 bg-primary-500/[0.04] px-3.5 py-1.5 self-end w-fit ml-auto">
         <span className="relative flex h-2 w-2">
@@ -96,37 +108,84 @@ export function TenantDetailShell({ tenantId, initial }: Props) {
           <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
         </span>
         <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
-          Live &middot; Updated{" "}
-          {lastRefresh.toLocaleTimeString(undefined, {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          })}
+          Live &middot; Updated {formatSecondsAgo(secondsAgo)} &middot; Polling every 5s
         </span>
       </div>
+
+      <p className="text-[10px] leading-relaxed text-slate-600 text-right">
+        Tenant detail derived from current service state and activity signals
+      </p>
 
       {/* Hero identity card */}
       <section aria-label="Tenant identity">
         <TenantDetailHero tenant={tenant} />
       </section>
 
+      {/* Operator summary strip */}
+      <section aria-label="Tenant operator summary">
+        <TenantOperatorSummary tenant={tenant} />
+      </section>
+
       {/* Quotas + Usage (2-col on lg) */}
-      <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
+      <div className="grid gap-5 lg:grid-cols-2 lg:gap-6">
         <section aria-label="Effective quotas">
-          <QuotaBreakdownCard quotas={tenant.quotas} />
+          <QuotaBreakdownCard quotas={tenant.quotas} usage24h={tenant.usage_24h} />
+          <SectionExplainer label="About quotas">
+            <p>
+              Effective tenant limits and the source of each value, including
+              defaults, env overrides, or tenant-specific overrides.
+            </p>
+            <p>
+              Quotas define the hard operational boundaries applied to a
+              tenant.
+            </p>
+            <p>
+              Focus on the effective value first, then use the source label to
+              understand whether the limit comes from baseline policy or an
+              explicit override.
+            </p>
+          </SectionExplainer>
         </section>
         <section aria-label="Usage summary">
           <TenantUsageSummary
             usage24h={tenant.usage_24h}
             usage7d={tenant.usage_7d}
           />
+          <SectionExplainer label="About usage">
+            <p>
+              Request, enforcement, block, and latency activity for the
+              selected tenant across current reporting windows.
+            </p>
+            <p>
+              Usage shows whether a tenant is active, how heavily they are
+              interacting with the system, and whether policy pressure is
+              increasing.
+            </p>
+            <p>
+              Compare short-window and longer-window usage to spot bursts,
+              sustained load, or unusually quiet periods.
+            </p>
+          </SectionExplainer>
         </section>
       </div>
 
       {/* Posture panel */}
       <section aria-label="Operational posture">
         <TenantPosturePanel posture={tenant.posture_summary} />
+        <SectionExplainer label="About posture">
+          <p>
+            A summarized operational posture score plus warnings that indicate
+            elevated attention areas.
+          </p>
+          <p>
+            Posture helps operators quickly judge whether a tenant appears
+            stable, constrained, or risky.
+          </p>
+          <p>
+            Use warnings as the primary signal. The score is a summary aid,
+            not a replacement for the underlying activity and quota context.
+          </p>
+        </SectionExplainer>
       </section>
 
       {/* Metadata (if present) */}
@@ -136,8 +195,8 @@ export function TenantDetailShell({ tenantId, initial }: Props) {
             <h2 className="text-sm font-semibold text-slate-100">
               Control-Plane Metadata
             </h2>
-            <div className="gradient-divider mt-4" />
-            <div className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="gradient-divider mt-3.5" />
+            <div className="mt-3.5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {Object.entries(tenant.metadata).map(([key, value]) => (
                 <div
                   key={key}

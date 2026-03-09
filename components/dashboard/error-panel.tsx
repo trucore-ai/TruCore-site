@@ -34,7 +34,7 @@ export function ErrorPanel({
             {message}
           </p>
           <p className="mt-2 text-[10px] text-red-400/50">
-            Data will refresh automatically when connectivity is restored.
+            Will retry automatically on the next polling interval.
           </p>
         </div>
       </div>

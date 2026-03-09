@@ -164,6 +164,6 @@ describe("TenantTable", () => {
 
   it("renders empty state for zero tenants", () => {
     render(<TenantTable tenants={[]} total={0} />);
-    expect(screen.getByText("No tenants found")).toBeInTheDocument();
+    expect(screen.getByText("No tenants registered")).toBeInTheDocument();
   });
 });

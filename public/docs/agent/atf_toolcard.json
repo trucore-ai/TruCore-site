@@ -4,6 +4,56 @@
     "plugin_version": "0.2.3",
     "description": "OpenClaw plugin for TruCore ATF. Provides thirteen typed tools for agent discovery, health, bootstrap, intent protection, receipt verification, savings reporting, integration doctor, preflight, explain, billing, and adoption advising. Version 0.2.3 adds a recursive schema guard and fixes three nested object-schema issues for strict gateway compatibility.",
     "docs_url": "/docs/agent-discovery",
+    "observability": {
+        "dashboard_snapshot": "/api/agent/dashboard",
+        "tenant_detail": "/api/agent/tenant?id=TENANT_ID",
+        "stream_endpoint": "/api/agent/stream",
+        "docs": "/docs/agent-observability",
+        "schema_version": "1.1.0",
+        "stream_event_types": [
+            "dashboard_snapshot",
+            "attention_queue_update",
+            "top_changes_update",
+            "tenant_review_required",
+            "system_degraded",
+            "receipt_pipeline_idle"
+        ],
+        "machine_contract": {
+            "automation_block": true,
+            "canonical_enums": [
+                "summary.priority_level",
+                "health.panel_status",
+                "enforcement.intensity",
+                "trends.request_pace",
+                "trends.receipt_pace",
+                "tenant.recency",
+                "freshness.freshness",
+                "freshness.provenance",
+                "posture.panel_status",
+                "attention_queue[].target"
+            ],
+            "automation_booleans": {
+                "dashboard": [
+                    "automation.requires_review",
+                    "automation.is_idle",
+                    "automation.is_degraded",
+                    "automation.is_offline",
+                    "automation.has_enforcement_activity",
+                    "automation.has_recent_activity",
+                    "automation.has_persistent_warning"
+                ],
+                "tenant": [
+                    "automation.requires_review",
+                    "automation.is_suspended",
+                    "automation.has_quota_pressure",
+                    "automation.has_posture_warnings",
+                    "automation.has_enforcement_activity",
+                    "automation.is_idle"
+                ]
+            },
+            "prefer_over_display_strings": true
+        }
+    },
     "contact": {
         "x": "https://x.com/TruCore_AI",
         "github": "https://github.com/TruCore-AI",

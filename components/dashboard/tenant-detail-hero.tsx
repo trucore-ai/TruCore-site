@@ -69,7 +69,7 @@ export function TenantDetailHero({ tenant }: TenantDetailHeroProps) {
         {/* Name + status row */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="truncate text-[1.75rem] font-bold tracking-tight text-slate-50">
+            <h1 className="truncate text-2xl font-bold tracking-tight text-slate-50">
               {tenant.name}
             </h1>
             <p className="mt-1.5 font-mono text-xs text-slate-600">
@@ -83,10 +83,10 @@ export function TenantDetailHero({ tenant }: TenantDetailHeroProps) {
         </div>
 
         {/* Separator */}
-        <div className="mt-6 h-px bg-white/[0.05]" />
+        <div className="gradient-divider mt-5" />
 
         {/* Meta strip */}
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetaItem
             label="Plan Tier"
             value={tenant.plan_tier}
@@ -108,8 +108,8 @@ export function TenantDetailHero({ tenant }: TenantDetailHeroProps) {
           tenant.requests_last_hour != null ||
           tenant.receipts_written_today != null) && (
           <>
-            <div className="mt-5 h-px bg-white/[0.04]" />
-            <div className="mt-5 grid gap-5 sm:grid-cols-3">
+            <div className="gradient-divider mt-4" />
+            <div className="mt-4 grid gap-4 sm:grid-cols-3">
               {tenant.requests_today != null && (
                 <MetaItem
                   label="Requests Today"
