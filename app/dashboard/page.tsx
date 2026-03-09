@@ -1,14 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
-import {
-  fetchHealth,
-  fetchKpis,
-  fetchEnforcement,
-  fetchActivity,
-  fetchTenants,
-  fetchDashboardSummary,
-} from "@/lib/dashboard-client";
+import { fetchFullDashboard } from "@/lib/dashboard-client";
 import {
   DashboardShell,
   type DashboardData,
@@ -18,6 +11,8 @@ import {
  *  /dashboard - ATF Operator Dashboard
  *
  *  Server-side initial data fetch with 5 s ISR revalidation.
+ *  Uses the consolidated /dashboard/summary + /dashboard/tenants
+ *  endpoints to derive all panel data.
  *  The DashboardShell client component takes over with live
  *  polling after hydration.
  * ──────────────────────────────────────────────────────────── */
@@ -31,23 +26,15 @@ export const metadata: Metadata = {
 export const revalidate = 5;
 
 export default async function DashboardPage() {
-  const [health, kpis, enforcement, activity, tenants, summary] =
-    await Promise.all([
-      fetchHealth(),
-      fetchKpis(),
-      fetchEnforcement(),
-      fetchActivity(),
-      fetchTenants(),
-      fetchDashboardSummary(),
-    ]);
+  const bundle = await fetchFullDashboard();
 
   const initial: DashboardData = {
-    health,
-    kpis,
-    enforcement,
-    activity,
-    tenants,
-    summary,
+    health: bundle.health,
+    kpis: bundle.kpis,
+    enforcement: bundle.enforcement,
+    activity: bundle.activity,
+    tenants: bundle.tenants,
+    summary: bundle.summary,
   };
 
   return (

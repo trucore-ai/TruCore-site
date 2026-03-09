@@ -5,6 +5,7 @@ import {
   EnforcementOverviewSchema,
   ActivityTrendsSchema,
   TenantsResponseSchema,
+  DashboardSummarySchema,
 } from "@/lib/dashboard-client";
 
 /* ────────────────────────────────────────────────────────────────
@@ -209,6 +210,50 @@ describe("TenantsResponseSchema", () => {
 
   it("accepts empty tenants array", () => {
     const result = TenantsResponseSchema.safeParse({ tenants: [], total: 0 });
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("DashboardSummarySchema", () => {
+  it("accepts a minimal summary with just trend data", () => {
+    const result = DashboardSummarySchema.safeParse({
+      trend: {
+        rolling_hour: { requests: 100, enforcements: 5, blocks: 1, avg_latency_ms: 3.2, receipts_issued: 50 },
+        rolling_hour_prev: { requests: 90, enforcements: 4, blocks: 0, avg_latency_ms: 3.5, receipts_issued: 45 },
+        daily: { requests: 2400, enforcements: 120, blocks: 10, avg_latency_ms: 3.8, receipts_issued: 1200 },
+        daily_prev: { requests: 2200, enforcements: 100, blocks: 8, avg_latency_ms: 4.0, receipts_issued: 1100 },
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a comprehensive summary with all panel data", () => {
+    const result = DashboardSummarySchema.safeParse({
+      trend: {
+        rolling_hour: { requests: 100, enforcements: 5, blocks: 1, avg_latency_ms: 3.2, receipts_issued: 50 },
+        rolling_hour_prev: { requests: 90, enforcements: 4, blocks: 0, avg_latency_ms: 3.5, receipts_issued: 45 },
+        daily: { requests: 2400, enforcements: 120, blocks: 10, avg_latency_ms: 3.8, receipts_issued: 1200 },
+        daily_prev: { requests: 2200, enforcements: 100, blocks: 8, avg_latency_ms: 4.0, receipts_issued: 1100 },
+      },
+      health: validHealth,
+      kpis: validKpis,
+      enforcement: validEnforcement,
+      activity: validActivity,
+      tenants: validTenants,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an empty object (all fields optional)", () => {
+    const result = DashboardSummarySchema.safeParse({});
+    expect(result.success).toBe(true);
+  });
+
+  it("passes through unknown extra fields from ATF", () => {
+    const result = DashboardSummarySchema.safeParse({
+      some_future_field: "hello",
+      another_one: 42,
+    });
     expect(result.success).toBe(true);
   });
 });

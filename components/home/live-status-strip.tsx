@@ -357,7 +357,7 @@ export function LiveStatusStrip() {
                 value={compactNum(pm.receipts_verified_total)}
                 subtitle={
                   pm.verification_summary
-                    ? `${compactNum(pm.verification_summary.verified)} passed`
+                    ? `${compactNum(pm.verification_summary.receipts_verified)} verified`
                     : undefined
                 }
                 small

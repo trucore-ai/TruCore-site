@@ -10,14 +10,20 @@ import { z } from "zod";
  *
  *  The base URL is read from NEXT_PUBLIC_ATF_DASHBOARD_URL (same
  *  base as the dashboard client).
+ *
+ *  ATF responses are wrapped in a standard envelope:
+ *    { status, summary?, result, _meta? }
+ *  The fetch helper unwraps the envelope automatically and
+ *  validates `result` against the expected Zod schema.
  * ──────────────────────────────────────────────────────────── */
 
 // ── Schema ───────────────────────────────────────────────────
 
 export const VerificationSummarySchema = z.object({
-  verified: z.number(),
-  failed: z.number(),
-  pending: z.number(),
+  receipts_written: z.number(),
+  receipts_verified: z.number(),
+  permits_issued: z.number(),
+  intents_approved: z.number(),
 });
 
 export type VerificationSummary = z.infer<typeof VerificationSummarySchema>;
@@ -56,6 +62,25 @@ function getBaseUrl(): string {
   return url.replace(/\/+$/, "");
 }
 
+/**
+ * ATF wraps every response in a standard envelope:
+ *   { status: string, summary?: string, result: T, _meta?: object }
+ *
+ * If the parsed JSON matches this shape, return `result`.
+ * Otherwise return the raw JSON for backward compatibility.
+ */
+function unwrapEnvelope(json: unknown): unknown {
+  if (
+    typeof json === "object" &&
+    json !== null &&
+    "result" in json &&
+    "status" in json
+  ) {
+    return (json as Record<string, unknown>).result;
+  }
+  return json;
+}
+
 export async function fetchPublicMetrics(): Promise<PublicMetricsResult> {
   try {
     const base = getBaseUrl();
@@ -67,7 +92,8 @@ export async function fetchPublicMetrics(): Promise<PublicMetricsResult> {
       return { ok: false, error: `HTTP ${res.status}: ${res.statusText}` };
     }
     const json: unknown = await res.json();
-    const parsed = PublicMetricsSchema.safeParse(json);
+    const payload = unwrapEnvelope(json);
+    const parsed = PublicMetricsSchema.safeParse(payload);
     if (!parsed.success) {
       return {
         ok: false,

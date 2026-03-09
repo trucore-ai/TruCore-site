@@ -12,13 +12,21 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 
 const DASHBOARD_URL = "https://atf.example.com";
 
-/** Minimal valid /dashboard/health response. */
+/** Minimal valid /dashboard/health response (raw payload). */
 const healthPayload = {
   status: "healthy",
   uptime_seconds: 86400,
   version: "1.43.0",
   started_at: "2026-03-07T12:00:00Z",
   checks: [],
+};
+
+/** Envelope-wrapped health response (as ATF production returns it). */
+const healthEnvelope = {
+  status: "ok",
+  summary: "System health retrieved",
+  result: healthPayload,
+  _meta: { timestamp: "2026-03-08T00:00:00Z" },
 };
 
 // ── Setup / teardown ─────────────────────────────────────────
@@ -46,7 +54,7 @@ describe("dashboardFetch auth header", () => {
     process.env.ATF_API_KEY = "tk_live_test123";
 
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(healthPayload), {
+      new Response(JSON.stringify(healthEnvelope), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
@@ -70,7 +78,7 @@ describe("dashboardFetch auth header", () => {
     delete process.env.ATF_API_KEY;
 
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(healthPayload), {
+      new Response(JSON.stringify(healthEnvelope), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
@@ -102,6 +110,46 @@ describe("dashboardFetch auth header", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error).toContain("401");
+    }
+  });
+
+  it("unwraps ATF envelope and extracts result", async () => {
+    process.env.ATF_API_KEY = "tk_live_test123";
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(healthEnvelope), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const { fetchHealth } = await import("@/lib/dashboard-client");
+    const result = await fetchHealth();
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.status).toBe("healthy");
+      expect(result.data.uptime_seconds).toBe(86400);
+      expect(result.data.version).toBe("1.43.0");
+    }
+  });
+
+  it("handles raw (non-envelope) responses for backward compat", async () => {
+    delete process.env.ATF_API_KEY;
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(healthPayload), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const { fetchHealth } = await import("@/lib/dashboard-client");
+    const result = await fetchHealth();
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.status).toBe("healthy");
     }
   });
 

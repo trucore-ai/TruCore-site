@@ -11,6 +11,12 @@ import { z } from "zod";
  *  The base URL is read from NEXT_PUBLIC_ATF_DASHBOARD_URL.
  *  Protected dashboard requests are authenticated with the
  *  server-only ATF_API_KEY env var (sent as x-api-key header).
+ *
+ *  ATF responses are wrapped in a standard envelope:
+ *    { status, summary?, result, _meta? }
+ *  The fetch helper unwraps the envelope automatically and
+ *  validates `result` against the expected Zod schema.
+ *
  *  All fetches set a 5 s cache window to match the ATF-side
  *  caching contract for UI polling.
  * ──────────────────────────────────────────────────────────── */
@@ -25,6 +31,25 @@ function getBaseUrl(): string {
     );
   }
   return url.replace(/\/+$/, "");
+}
+
+/**
+ * ATF wraps every response in a standard envelope:
+ *   { status: string, summary?: string, result: T, _meta?: object }
+ *
+ * If the parsed JSON matches this shape, return `result`.
+ * Otherwise return the raw JSON for backward compatibility.
+ */
+function unwrapEnvelope(json: unknown): unknown {
+  if (
+    typeof json === "object" &&
+    json !== null &&
+    "result" in json &&
+    "status" in json
+  ) {
+    return (json as Record<string, unknown>).result;
+  }
+  return json;
 }
 
 // ── Schemas ──────────────────────────────────────────────────
@@ -160,9 +185,16 @@ export const TrendSnapshotSchema = z.object({
   daily_prev: TrendBucketSchema,
 });
 
-export const DashboardSummarySchema = z.object({
-  trend: TrendSnapshotSchema,
-});
+export const DashboardSummarySchema = z
+  .object({
+    trend: TrendSnapshotSchema.optional(),
+    health: SystemHealthSchema.optional(),
+    kpis: KpiSummarySchema.optional(),
+    enforcement: EnforcementOverviewSchema.optional(),
+    activity: ActivityTrendsSchema.optional(),
+    tenants: TenantsResponseSchema.optional(),
+  })
+  .passthrough();
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -206,7 +238,8 @@ async function dashboardFetch<T>(
       return { ok: false, error: `HTTP ${res.status}: ${res.statusText}` };
     }
     const json: unknown = await res.json();
-    const parsed = schema.safeParse(json);
+    const payload = unwrapEnvelope(json);
+    const parsed = schema.safeParse(payload);
     if (!parsed.success) {
       return {
         ok: false,
@@ -259,4 +292,47 @@ export function fetchDashboardSummary(): Promise<
   DashboardResult<DashboardSummary>
 > {
   return dashboardFetch("/dashboard/summary", DashboardSummarySchema);
+}
+
+// ── Consolidated dashboard bundle ────────────────────────────
+
+/**
+ * Fetch a complete dashboard data bundle by calling the
+ * consolidated /dashboard/summary endpoint (which is confirmed
+ * live in production) plus /dashboard/tenants.
+ *
+ * Panel data (health, kpis, enforcement, activity) is derived
+ * from the summary result when available, avoiding 404s from
+ * individual endpoints that may not be deployed yet.
+ */
+export async function fetchFullDashboard(): Promise<{
+  health: DashboardResult<SystemHealth>;
+  kpis: DashboardResult<KpiSummary>;
+  enforcement: DashboardResult<EnforcementOverview>;
+  activity: DashboardResult<ActivityTrends>;
+  tenants: DashboardResult<TenantsResponse>;
+  summary: DashboardResult<DashboardSummary>;
+}> {
+  const [summary, tenants] = await Promise.all([
+    fetchDashboardSummary(),
+    fetchTenants(),
+  ]);
+
+  const derive = <T>(
+    extractor: (s: DashboardSummary) => T | undefined,
+  ): DashboardResult<T> => {
+    if (!summary.ok) return { ok: false, error: summary.error };
+    const data = extractor(summary.data);
+    if (!data) return { ok: false, error: "Not available in dashboard summary" };
+    return { ok: true, data };
+  };
+
+  return {
+    health: derive((s) => s.health),
+    kpis: derive((s) => s.kpis),
+    enforcement: derive((s) => s.enforcement),
+    activity: derive((s) => s.activity),
+    tenants: tenants.ok ? tenants : derive((s) => s.tenants),
+    summary,
+  };
 }
