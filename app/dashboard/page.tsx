@@ -35,6 +35,7 @@ export default async function DashboardPage() {
     activity: bundle.activity,
     tenants: bundle.tenants,
     summary: bundle.summary,
+    trend: bundle.trend,
   };
 
   return (

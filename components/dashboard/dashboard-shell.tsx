@@ -11,8 +11,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   SystemHealth,
-  KpiSummary,
-  EnforcementOverview as EnforcementData,
+  LiveKpiItem,
+  LiveEnforcement,
+  LiveTrend,
   ActivityTrends,
   TenantsResponse,
   DashboardSummary,
@@ -36,11 +37,12 @@ import {
 
 export type DashboardData = {
   health: DashboardResult<SystemHealth>;
-  kpis: DashboardResult<KpiSummary>;
-  enforcement: DashboardResult<EnforcementData>;
+  kpis: DashboardResult<LiveKpiItem[]>;
+  enforcement: DashboardResult<LiveEnforcement>;
   activity: DashboardResult<ActivityTrends>;
   tenants: DashboardResult<TenantsResponse>;
-  summary?: DashboardResult<DashboardSummary>;
+  summary: DashboardResult<DashboardSummary>;
+  trend?: DashboardResult<LiveTrend>;
 };
 
 type Props = {
@@ -119,8 +121,8 @@ export function DashboardShell({ initial }: Props) {
       <section aria-label="Key performance indicators">
         {renderSection(data.kpis, <KpiGridSkeleton />, (d) => (
           <HeroKpis
-            data={d}
-            trend={data.summary?.ok ? data.summary.data.trend : undefined}
+            kpis={d}
+            trend={data.trend?.ok ? data.trend.data : undefined}
           />
         ))}
       </section>

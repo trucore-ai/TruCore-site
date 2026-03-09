@@ -2,55 +2,15 @@
  *  HeroKpis - primary KPI cards
  *
  *  Top-of-page summary cards showing the most critical ATF
- *  metrics. Designed for instant comprehension: big numbers,
+ *  metrics.  Designed for instant comprehension: big numbers,
  *  clear labels, subtle context lines.
  *
- *  When TrendSnapshot data is available, each card shows a
- *  small rolling-hour delta badge for request momentum.
+ *  Renders directly from the live ATF kpis array (each item is
+ *  { label, value, unit, trend }) and an optional flat trend
+ *  snapshot for the supplementary "last hour / today" strip.
  * ──────────────────────────────────────────────────────────── */
 
-import type { KpiSummary, TrendSnapshot, TrendBucket } from "@/lib/dashboard-client";
-
-type KpiDef = {
-  key: keyof KpiSummary;
-  label: string;
-  format: (v: number) => string;
-  detail: (v: KpiSummary) => string;
-  accent?: string;
-  /** Field in TrendBucket to compute the rolling-hour delta for this KPI */
-  trendKey?: keyof TrendBucket;
-};
-
-const kpis: KpiDef[] = [
-  {
-    key: "total_requests_24h",
-    label: "Requests (24h)",
-    format: compactNum,
-    detail: (d) => `${compactNum(d.total_enforcements_24h)} enforced`,
-    trendKey: "requests",
-  },
-  {
-    key: "active_tenants",
-    label: "Active Tenants",
-    format: (v) => v.toLocaleString(),
-    detail: () => "Currently active",
-  },
-  {
-    key: "avg_latency_ms",
-    label: "Avg Latency",
-    format: (v) => `${v.toFixed(1)}ms`,
-    detail: (d) => `p99 ${d.p99_latency_ms.toFixed(0)}ms`,
-    accent: "text-primary-300",
-    trendKey: "avg_latency_ms",
-  },
-  {
-    key: "uptime_pct",
-    label: "Uptime",
-    format: (v) => `${v.toFixed(2)}%`,
-    detail: (d) => `${d.error_rate_pct.toFixed(2)}% error rate`,
-    accent: "text-emerald-300",
-  },
-];
+import type { LiveKpiItem, LiveTrend } from "@/lib/dashboard-client";
 
 function compactNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -58,82 +18,76 @@ function compactNum(n: number): string {
   return n.toLocaleString();
 }
 
-/** Compute percentage change between two values. Returns null if base is zero. */
-function pctDelta(current: number, previous: number): number | null {
-  if (previous === 0) return current > 0 ? 100 : null;
-  return ((current - previous) / previous) * 100;
+/** Format a KPI value for display. Handles both string and number values. */
+function formatValue(value: string | number, unit: string): string {
+  if (typeof value === "number") {
+    const formatted = compactNum(value);
+    return unit ? `${formatted} ${unit}` : formatted;
+  }
+  return unit ? `${value} ${unit}` : value;
 }
 
 type HeroKpisProps = {
-  data: KpiSummary;
-  trend?: TrendSnapshot;
+  kpis: LiveKpiItem[];
+  trend?: LiveTrend;
 };
 
-export function HeroKpis({ data, trend }: HeroKpisProps) {
+export function HeroKpis({ kpis, trend }: HeroKpisProps) {
+  const gridCols =
+    kpis.length <= 2
+      ? "sm:grid-cols-2"
+      : kpis.length === 3
+        ? "sm:grid-cols-3"
+        : "sm:grid-cols-2 lg:grid-cols-4";
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {kpis.map((kpi) => {
-        const delta =
-          trend && kpi.trendKey
-            ? pctDelta(
-                trend.rolling_hour[kpi.trendKey],
-                trend.rolling_hour_prev[kpi.trendKey],
-              )
-            : null;
-
-        /* For latency, lower is better, so flip the sentiment */
-        const invertSentiment = kpi.trendKey === "avg_latency_ms";
-
-        return (
-          <div
-            key={kpi.key}
-            className="group relative overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 transition-all duration-200 hover:border-white/[0.12] hover:bg-white/[0.04] hover:shadow-md hover:shadow-black/15 focus-within:ring-2 focus-within:ring-primary-400/30"
-          >
-            {/* subtle top highlight */}
-            <div
-              className="pointer-events-none absolute inset-x-0 top-0 h-px"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent 0%, rgba(180,220,248,0.08) 30%, rgba(200,235,255,0.14) 50%, rgba(180,220,248,0.08) 70%, transparent 100%)",
-              }}
-            />
-
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 transition-colors duration-200 group-hover:text-slate-400">
-                {kpi.label}
-              </p>
-              {delta != null && (
-                <TrendBadge delta={delta} invert={invertSentiment} />
-              )}
-            </div>
-            <p
-              className={`mt-2.5 text-[1.625rem] font-bold tabular-nums tracking-tight leading-none ${kpi.accent ?? "text-slate-50"}`}
-            >
-              {kpi.format(data[kpi.key])}
-            </p>
-            <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
-              {kpi.detail(data)}
-            </p>
-          </div>
-        );
-      })}
+    <div className="space-y-4">
+      <div className={`grid gap-4 ${gridCols}`}>
+        {kpis.map((kpi) => (
+          <KpiCard key={kpi.label} kpi={kpi} />
+        ))}
+      </div>
+      {trend && <TrendStrip trend={trend} />}
     </div>
   );
 }
 
-/* ── Rolling-hour trend badge ─────────────────────────────── */
+/* ── Individual KPI card ──────────────────────────────────── */
 
-function TrendBadge({
-  delta,
-  invert = false,
-}: {
-  delta: number;
-  invert?: boolean;
-}) {
-  const isPositive = invert ? delta < 0 : delta > 0;
-  const isNeutral = Math.abs(delta) < 0.5;
+function KpiCard({ kpi }: { kpi: LiveKpiItem }) {
+  return (
+    <div className="group relative overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 transition-all duration-200 hover:border-white/[0.12] hover:bg-white/[0.04] hover:shadow-md hover:shadow-black/15 focus-within:ring-2 focus-within:ring-primary-400/30">
+      {/* subtle top highlight */}
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0%, rgba(180,220,248,0.08) 30%, rgba(200,235,255,0.14) 50%, rgba(180,220,248,0.08) 70%, transparent 100%)",
+        }}
+      />
 
-  if (isNeutral) {
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 transition-colors duration-200 group-hover:text-slate-400">
+          {kpi.label}
+        </p>
+        {kpi.trend && <TrendBadge direction={kpi.trend} />}
+      </div>
+      <p className="mt-2.5 text-[1.625rem] font-bold tabular-nums tracking-tight leading-none text-slate-50">
+        {formatValue(kpi.value, kpi.unit ?? "")}
+      </p>
+    </div>
+  );
+}
+
+/* ── KPI-level trend badge ────────────────────────────────── */
+
+function TrendBadge({ direction }: { direction: string }) {
+  const lower = direction.toLowerCase();
+  const isUp = lower === "up" || lower === "rising";
+  const isDown = lower === "down" || lower === "falling";
+  const isStable = lower === "stable" || lower === "flat" || lower === "";
+
+  if (isStable || (!isUp && !isDown)) {
     return (
       <span className="inline-flex items-center gap-0.5 rounded-full bg-white/[0.04] px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-slate-500">
         &ndash;
@@ -141,17 +95,42 @@ function TrendBadge({
     );
   }
 
-  const color = isPositive
+  const color = isUp
     ? "text-emerald-400 bg-emerald-400/10"
     : "text-amber-400 bg-amber-400/10";
-  const arrow = delta > 0 ? "\u2191" : "\u2193";
+  const arrow = isUp ? "\u2191" : "\u2193";
 
   return (
     <span
       className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium tabular-nums ${color}`}
-      title={`Rolling-hour change: ${delta > 0 ? "+" : ""}${delta.toFixed(1)}%`}
+      title={`Trend: ${direction}`}
     >
-      {arrow} {Math.abs(delta).toFixed(0)}%
+      {arrow} {direction}
     </span>
+  );
+}
+
+/* ── Trend summary strip ──────────────────────────────────── */
+
+function TrendStrip({ trend }: { trend: LiveTrend }) {
+  const items = [
+    { label: "Requests (1h)", value: trend.requests_last_hour },
+    { label: "Receipts (1h)", value: trend.receipts_written_last_hour },
+    { label: "Enforcements (1h)", value: trend.enforcement_last_hour },
+    { label: "Requests today", value: trend.requests_today },
+    { label: "Receipts today", value: trend.receipts_written_today },
+  ];
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-lg border border-white/[0.05] bg-white/[0.015] px-4 py-2.5">
+      {items.map((item) => (
+        <span key={item.label} className="text-[11px] text-slate-500">
+          {item.label}{" "}
+          <span className="font-semibold tabular-nums text-slate-300">
+            {compactNum(item.value)}
+          </span>
+        </span>
+      ))}
+    </div>
   );
 }

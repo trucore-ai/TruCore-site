@@ -1,14 +1,16 @@
 /* ────────────────────────────────────────────────────────────────
  *  EnforcementOverview - policy enforcement posture
  *
- *  Shows totals (evaluated, blocked, allowed, flagged) as a
- *  summary row, a visual block-rate bar, and the top enforcement
- *  rules in a compact list.
+ *  Shows the enforcement counters that the live ATF summary
+ *  provides: auth failures, rate-limit rejections, quota
+ *  violations, and reprovision operations.
+ *
+ *  The component renders a clean summary of available totals
+ *  and gracefully omits sub-panels (top rules, block-rate bar)
+ *  that are not part of the current production contract.
  * ──────────────────────────────────────────────────────────── */
 
-import type { EnforcementOverview as EnforcementData } from "@/lib/dashboard-client";
-import { StatusChip } from "@/components/dashboard/status-chip";
-import { EmptyState } from "@/components/dashboard/empty-state";
+import type { LiveEnforcement } from "@/lib/dashboard-client";
 
 function compactNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -16,28 +18,58 @@ function compactNum(n: number): string {
   return n.toLocaleString();
 }
 
-type EnforcementOverviewProps = { data: EnforcementData };
+type EnforcementOverviewProps = { data: LiveEnforcement };
 
 const summaryItems: {
   key: keyof Pick<
-    EnforcementData,
-    "total_evaluated" | "total_blocked" | "total_allowed" | "total_flagged"
+    LiveEnforcement,
+    | "auth_failures_total"
+    | "rate_limit_rejections_total"
+    | "quota_violations_total"
+    | "reprovision_operations_total"
   >;
   label: string;
   color: string;
 }[] = [
-  { key: "total_evaluated", label: "Evaluated", color: "text-slate-100" },
-  { key: "total_blocked", label: "Blocked", color: "text-red-300" },
-  { key: "total_allowed", label: "Allowed", color: "text-emerald-300" },
-  { key: "total_flagged", label: "Flagged", color: "text-amber-300" },
+  {
+    key: "auth_failures_total",
+    label: "Auth Failures",
+    color: "text-red-300",
+  },
+  {
+    key: "rate_limit_rejections_total",
+    label: "Rate Limit",
+    color: "text-amber-300",
+  },
+  {
+    key: "quota_violations_total",
+    label: "Quota Violations",
+    color: "text-orange-300",
+  },
+  {
+    key: "reprovision_operations_total",
+    label: "Reprovisions",
+    color: "text-primary-300",
+  },
 ];
 
 export function EnforcementOverview({ data }: EnforcementOverviewProps) {
+  const total =
+    data.auth_failures_total +
+    data.rate_limit_rejections_total +
+    data.quota_violations_total +
+    data.reprovision_operations_total;
+
   return (
     <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 sm:p-6">
-      <h2 className="text-sm font-semibold text-slate-100">
-        Enforcement Posture
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold text-slate-100">
+          Enforcement Posture
+        </h2>
+        <span className="text-[11px] font-semibold tabular-nums text-slate-400">
+          {compactNum(total)} total
+        </span>
+      </div>
 
       {/* Summary metrics row */}
       <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -55,56 +87,57 @@ export function EnforcementOverview({ data }: EnforcementOverviewProps) {
         ))}
       </div>
 
-      {/* Block rate bar */}
-      <div className="mt-6">
-        <div className="flex items-center justify-between text-[11px] text-slate-500">
-          <span>Block rate</span>
-          <span className="font-semibold tabular-nums text-slate-300">
-            {data.block_rate_pct.toFixed(1)}%
-          </span>
+      {/* Enforcement bar (total as context) */}
+      {total > 0 && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
+            <span>Breakdown</span>
+          </div>
+          <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-white/[0.06]">
+            {summaryItems.map((item) => {
+              const pct = total > 0 ? (data[item.key] / total) * 100 : 0;
+              if (pct === 0) return null;
+              return (
+                <div
+                  key={item.key}
+                  className={`h-full transition-all duration-700 first:rounded-l-full last:rounded-r-full ${barColor(item.key)}`}
+                  style={{ width: `${pct}%` }}
+                  title={`${item.label}: ${compactNum(data[item.key])} (${pct.toFixed(1)}%)`}
+                />
+              );
+            })}
+          </div>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/[0.06]">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-red-500/80 to-red-400/60 transition-all duration-700"
-            style={{ width: `${Math.min(data.block_rate_pct, 100)}%` }}
-          />
-        </div>
-      </div>
+      )}
 
       {/* Separator */}
       <div className="mt-5 h-px bg-white/[0.05]" />
 
-      {/* Top rules */}
-      {data.top_rules.length === 0 ? (
-        <div className="mt-5">
-          <EmptyState
-            title="No enforcement rules triggered"
-            description="No policy rules have been activated in the current reporting window."
-          />
-        </div>
-      ) : (
-        <div className="mt-5 space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
-            Top Rules
-          </p>
-          {data.top_rules.map((rule) => (
-            <div
-              key={rule.rule}
-              className="flex items-center justify-between rounded-lg border border-white/[0.04] bg-white/[0.015] px-4 py-3 transition-all duration-200 hover:border-white/[0.08] hover:bg-white/[0.03]"
-            >
-              <span className="truncate text-sm font-medium text-slate-200">
-                {rule.rule}
-              </span>
-              <div className="ml-3 flex flex-shrink-0 items-center gap-3">
-                <span className="text-xs font-mono tabular-nums text-slate-400">
-                  {compactNum(rule.hits)}
-                </span>
-                <StatusChip status={rule.action} />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Info note about extended enforcement data */}
+      <p className="mt-4 text-[11px] leading-relaxed text-slate-600">
+        Detailed rule-level enforcement analytics are available in the ATF
+        operator CLI. Run{" "}
+        <code className="rounded bg-white/[0.04] px-1 py-0.5 font-mono text-[10px] text-slate-400">
+          atf enforcement report
+        </code>{" "}
+        for the full breakdown.
+      </p>
     </div>
   );
+}
+
+/** Map enforcement keys to bar segment colors */
+function barColor(key: string): string {
+  switch (key) {
+    case "auth_failures_total":
+      return "bg-red-500/70";
+    case "rate_limit_rejections_total":
+      return "bg-amber-500/70";
+    case "quota_violations_total":
+      return "bg-orange-500/70";
+    case "reprovision_operations_total":
+      return "bg-primary-500/70";
+    default:
+      return "bg-slate-500/70";
+  }
 }

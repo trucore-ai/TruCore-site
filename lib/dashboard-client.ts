@@ -168,7 +168,7 @@ export const TenantDetailSchema = z.object({
   last_activity_ts: z.string().nullable().optional(),
 });
 
-// ── Trend Snapshot (v1.45.0) ─────────────────────────────────
+// ── Legacy Trend Snapshot (kept for backward compat) ─────────
 
 export const TrendBucketSchema = z.object({
   requests: z.number(),
@@ -185,14 +185,49 @@ export const TrendSnapshotSchema = z.object({
   daily_prev: TrendBucketSchema,
 });
 
+// ── Live ATF /dashboard/summary schemas ──────────────────────
+//
+// These match the production ATF contract (v1.45+).
+// The summary endpoint returns a flat result object with
+// overall_status, build, startup, backends, enforcement,
+// kpis (array), trend (flat counters), and warnings.
+
+export const LiveKpiItemSchema = z.object({
+  label: z.string(),
+  value: z.union([z.string(), z.number()]),
+  unit: z.string().optional(),
+  trend: z.string().optional(),
+});
+
+export const LiveEnforcementSchema = z
+  .object({
+    auth_failures_total: z.number(),
+    rate_limit_rejections_total: z.number(),
+    quota_violations_total: z.number(),
+    reprovision_operations_total: z.number(),
+  })
+  .passthrough();
+
+export const LiveTrendSchema = z
+  .object({
+    requests_last_hour: z.number(),
+    receipts_written_last_hour: z.number(),
+    enforcement_last_hour: z.number(),
+    requests_today: z.number(),
+    receipts_written_today: z.number(),
+  })
+  .passthrough();
+
 export const DashboardSummarySchema = z
   .object({
-    trend: TrendSnapshotSchema.optional(),
-    health: SystemHealthSchema.optional(),
-    kpis: KpiSummarySchema.optional(),
-    enforcement: EnforcementOverviewSchema.optional(),
-    activity: ActivityTrendsSchema.optional(),
-    tenants: TenantsResponseSchema.optional(),
+    overall_status: z.string().optional(),
+    build: z.unknown().optional(),
+    startup: z.unknown().optional(),
+    backends: z.unknown().optional(),
+    enforcement: LiveEnforcementSchema.optional(),
+    kpis: z.array(LiveKpiItemSchema).optional(),
+    trend: LiveTrendSchema.optional(),
+    warnings: z.array(z.unknown()).optional(),
   })
   .passthrough();
 
@@ -211,6 +246,9 @@ export type PostureWarning = z.infer<typeof PostureWarningSchema>;
 export type TenantDetail = z.infer<typeof TenantDetailSchema>;
 export type TrendBucket = z.infer<typeof TrendBucketSchema>;
 export type TrendSnapshot = z.infer<typeof TrendSnapshotSchema>;
+export type LiveKpiItem = z.infer<typeof LiveKpiItemSchema>;
+export type LiveEnforcement = z.infer<typeof LiveEnforcementSchema>;
+export type LiveTrend = z.infer<typeof LiveTrendSchema>;
 export type DashboardSummary = z.infer<typeof DashboardSummarySchema>;
 
 // ── Fetch helper ─────────────────────────────────────────────
@@ -296,22 +334,79 @@ export function fetchDashboardSummary(): Promise<
 
 // ── Consolidated dashboard bundle ────────────────────────────
 
+// ── Health adapter ────────────────────────────────────────────
+//
+// The live /dashboard/summary does not include a nested `health`
+// object.  Instead it exposes top-level fields: overall_status,
+// build, startup, and backends.  We adapt those into a
+// SystemHealth shape so the HealthStrip component can render
+// without changes.
+
+function adaptHealthFromSummary(
+  summary: DashboardResult<DashboardSummary>,
+): DashboardResult<SystemHealth> {
+  if (!summary.ok) return { ok: false, error: summary.error };
+  const s = summary.data;
+
+  const statusMap: Record<string, "healthy" | "degraded" | "down"> = {
+    ok: "healthy",
+    healthy: "healthy",
+    degraded: "degraded",
+    down: "down",
+    error: "down",
+  };
+
+  const checks: SystemHealth["checks"] = [];
+  if (s.backends && typeof s.backends === "object" && !Array.isArray(s.backends)) {
+    for (const [name, val] of Object.entries(
+      s.backends as Record<string, unknown>,
+    )) {
+      const isOk =
+        val === "ok" ||
+        val === "healthy" ||
+        val === "pass" ||
+        val === true;
+      checks.push({ name, status: isOk ? "pass" : "warn", latency_ms: 0 });
+    }
+  }
+
+  return {
+    ok: true,
+    data: {
+      status:
+        statusMap[String(s.overall_status ?? "").toLowerCase()] ?? "degraded",
+      uptime_seconds: 0,
+      version: typeof s.build === "string" ? s.build : "live",
+      started_at:
+        typeof s.startup === "string"
+          ? s.startup
+          : new Date().toISOString(),
+      checks,
+    },
+  };
+}
+
 /**
  * Fetch a complete dashboard data bundle by calling the
  * consolidated /dashboard/summary endpoint (which is confirmed
  * live in production) plus /dashboard/tenants.
  *
- * Panel data (health, kpis, enforcement, activity) is derived
- * from the summary result when available, avoiding 404s from
- * individual endpoints that may not be deployed yet.
+ * Panel data is derived from the summary result:
+ * - health: adapted from overall_status / build / backends
+ * - kpis:   live kpis array of { label, value, unit, trend }
+ * - enforcement: live enforcement counters
+ * - trend:  live flat trend counters
+ * - activity: not available in the summary endpoint
+ * - tenants: from the separate /dashboard/tenants call
  */
 export async function fetchFullDashboard(): Promise<{
   health: DashboardResult<SystemHealth>;
-  kpis: DashboardResult<KpiSummary>;
-  enforcement: DashboardResult<EnforcementOverview>;
+  kpis: DashboardResult<LiveKpiItem[]>;
+  enforcement: DashboardResult<LiveEnforcement>;
   activity: DashboardResult<ActivityTrends>;
   tenants: DashboardResult<TenantsResponse>;
   summary: DashboardResult<DashboardSummary>;
+  trend: DashboardResult<LiveTrend>;
 }> {
   const [summary, tenants] = await Promise.all([
     fetchDashboardSummary(),
@@ -323,16 +418,21 @@ export async function fetchFullDashboard(): Promise<{
   ): DashboardResult<T> => {
     if (!summary.ok) return { ok: false, error: summary.error };
     const data = extractor(summary.data);
-    if (!data) return { ok: false, error: "Not available in dashboard summary" };
+    if (!data)
+      return { ok: false, error: "Not available in dashboard summary" };
     return { ok: true, data };
   };
 
   return {
-    health: derive((s) => s.health),
+    health: adaptHealthFromSummary(summary),
     kpis: derive((s) => s.kpis),
     enforcement: derive((s) => s.enforcement),
-    activity: derive((s) => s.activity),
-    tenants: tenants.ok ? tenants : derive((s) => s.tenants),
+    activity: {
+      ok: false,
+      error: "Activity trends not available in summary endpoint",
+    },
+    tenants,
     summary,
+    trend: derive((s) => s.trend),
   };
 }

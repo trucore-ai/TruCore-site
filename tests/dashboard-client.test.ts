@@ -6,6 +6,9 @@ import {
   ActivityTrendsSchema,
   TenantsResponseSchema,
   DashboardSummarySchema,
+  LiveKpiItemSchema,
+  LiveEnforcementSchema,
+  LiveTrendSchema,
 } from "@/lib/dashboard-client";
 
 /* ────────────────────────────────────────────────────────────────
@@ -215,31 +218,45 @@ describe("TenantsResponseSchema", () => {
 });
 
 describe("DashboardSummarySchema", () => {
-  it("accepts a minimal summary with just trend data", () => {
+  it("accepts a live ATF summary with all fields", () => {
     const result = DashboardSummarySchema.safeParse({
-      trend: {
-        rolling_hour: { requests: 100, enforcements: 5, blocks: 1, avg_latency_ms: 3.2, receipts_issued: 50 },
-        rolling_hour_prev: { requests: 90, enforcements: 4, blocks: 0, avg_latency_ms: 3.5, receipts_issued: 45 },
-        daily: { requests: 2400, enforcements: 120, blocks: 10, avg_latency_ms: 3.8, receipts_issued: 1200 },
-        daily_prev: { requests: 2200, enforcements: 100, blocks: 8, avg_latency_ms: 4.0, receipts_issued: 1100 },
+      overall_status: "ok",
+      build: "1.45.0",
+      startup: "2026-03-08T00:00:00Z",
+      backends: { postgres: "ok", redis: "ok" },
+      enforcement: {
+        auth_failures_total: 3,
+        rate_limit_rejections_total: 12,
+        quota_violations_total: 1,
+        reprovision_operations_total: 0,
       },
+      kpis: [
+        { label: "Requests (24h)", value: 142500, unit: "", trend: "up" },
+        { label: "Active Tenants", value: 18, unit: "", trend: "stable" },
+        { label: "Avg Latency", value: "4.2ms", unit: "", trend: "down" },
+        { label: "Uptime", value: "99.98%", unit: "", trend: "stable" },
+      ],
+      trend: {
+        requests_last_hour: 5200,
+        receipts_written_last_hour: 2400,
+        enforcement_last_hour: 12,
+        requests_today: 142500,
+        receipts_written_today: 68000,
+      },
+      warnings: [],
     });
     expect(result.success).toBe(true);
   });
 
-  it("accepts a comprehensive summary with all panel data", () => {
+  it("accepts a minimal summary with only trend data", () => {
     const result = DashboardSummarySchema.safeParse({
       trend: {
-        rolling_hour: { requests: 100, enforcements: 5, blocks: 1, avg_latency_ms: 3.2, receipts_issued: 50 },
-        rolling_hour_prev: { requests: 90, enforcements: 4, blocks: 0, avg_latency_ms: 3.5, receipts_issued: 45 },
-        daily: { requests: 2400, enforcements: 120, blocks: 10, avg_latency_ms: 3.8, receipts_issued: 1200 },
-        daily_prev: { requests: 2200, enforcements: 100, blocks: 8, avg_latency_ms: 4.0, receipts_issued: 1100 },
+        requests_last_hour: 100,
+        receipts_written_last_hour: 50,
+        enforcement_last_hour: 2,
+        requests_today: 2400,
+        receipts_written_today: 1200,
       },
-      health: validHealth,
-      kpis: validKpis,
-      enforcement: validEnforcement,
-      activity: validActivity,
-      tenants: validTenants,
     });
     expect(result.success).toBe(true);
   });
@@ -253,6 +270,118 @@ describe("DashboardSummarySchema", () => {
     const result = DashboardSummarySchema.safeParse({
       some_future_field: "hello",
       another_one: 42,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts kpis as an array of items", () => {
+    const result = DashboardSummarySchema.safeParse({
+      kpis: [
+        { label: "Requests", value: 100, unit: "req/s", trend: "up" },
+        { label: "Latency", value: "3.2ms" },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects kpis as an object (old schema shape)", () => {
+    const result = DashboardSummarySchema.safeParse({
+      kpis: { total_requests_24h: 100 },
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("LiveKpiItemSchema", () => {
+  it("accepts a complete KPI item", () => {
+    const result = LiveKpiItemSchema.safeParse({
+      label: "Requests (24h)",
+      value: 142500,
+      unit: "",
+      trend: "up",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts string values", () => {
+    const result = LiveKpiItemSchema.safeParse({
+      label: "Latency",
+      value: "4.2ms",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("allows omitted unit and trend", () => {
+    const result = LiveKpiItemSchema.safeParse({
+      label: "Uptime",
+      value: 99.98,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.unit).toBeUndefined();
+      expect(result.data.trend).toBeUndefined();
+    }
+  });
+
+  it("rejects missing label", () => {
+    const result = LiveKpiItemSchema.safeParse({ value: 100 });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("LiveEnforcementSchema", () => {
+  it("accepts a complete enforcement payload", () => {
+    const result = LiveEnforcementSchema.safeParse({
+      auth_failures_total: 3,
+      rate_limit_rejections_total: 12,
+      quota_violations_total: 1,
+      reprovision_operations_total: 0,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects missing fields", () => {
+    const result = LiveEnforcementSchema.safeParse({});
+    expect(result.success).toBe(false);
+  });
+
+  it("passes through extra fields", () => {
+    const result = LiveEnforcementSchema.safeParse({
+      auth_failures_total: 1,
+      rate_limit_rejections_total: 0,
+      quota_violations_total: 0,
+      reprovision_operations_total: 0,
+      some_future_counter: 42,
+    });
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("LiveTrendSchema", () => {
+  it("accepts a complete trend payload", () => {
+    const result = LiveTrendSchema.safeParse({
+      requests_last_hour: 5200,
+      receipts_written_last_hour: 2400,
+      enforcement_last_hour: 12,
+      requests_today: 142500,
+      receipts_written_today: 68000,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects missing fields", () => {
+    const result = LiveTrendSchema.safeParse({});
+    expect(result.success).toBe(false);
+  });
+
+  it("passes through extra fields", () => {
+    const result = LiveTrendSchema.safeParse({
+      requests_last_hour: 100,
+      receipts_written_last_hour: 50,
+      enforcement_last_hour: 2,
+      requests_today: 2400,
+      receipts_written_today: 1200,
+      some_future_field: "hello",
     });
     expect(result.success).toBe(true);
   });

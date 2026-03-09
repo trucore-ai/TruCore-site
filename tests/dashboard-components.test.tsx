@@ -6,7 +6,7 @@ import { ErrorPanel } from "@/components/dashboard/error-panel";
 import { HeroKpis } from "@/components/dashboard/hero-kpis";
 import { HealthStrip } from "@/components/dashboard/health-strip";
 import { TenantTable } from "@/components/dashboard/tenant-table";
-import type { KpiSummary, SystemHealth, TenantSummary } from "@/lib/dashboard-client";
+import type { SystemHealth, TenantSummary, LiveKpiItem } from "@/lib/dashboard-client";
 
 /* ────────────────────────────────────────────────────────────────
  *  Dashboard component render tests
@@ -17,16 +17,12 @@ import type { KpiSummary, SystemHealth, TenantSummary } from "@/lib/dashboard-cl
 
 // ── Fixtures ─────────────────────────────────────────────────
 
-const kpiFixture: KpiSummary = {
-  total_requests_24h: 142_500,
-  total_enforcements_24h: 3_200,
-  active_tenants: 18,
-  avg_latency_ms: 4.2,
-  p99_latency_ms: 28.5,
-  receipts_issued_24h: 9_800,
-  uptime_pct: 99.98,
-  error_rate_pct: 0.02,
-};
+const kpiFixture: LiveKpiItem[] = [
+  { label: "Requests (24h)", value: 142_500, unit: "", trend: "up" },
+  { label: "Active Tenants", value: 18, unit: "", trend: "stable" },
+  { label: "Avg Latency", value: "4.2ms", unit: "", trend: "down" },
+  { label: "Uptime", value: "99.98%", unit: "", trend: "stable" },
+];
 
 const healthFixture: SystemHealth = {
   status: "healthy",
@@ -106,7 +102,7 @@ describe("ErrorPanel", () => {
 
 describe("HeroKpis", () => {
   it("renders all four KPI cards", () => {
-    render(<HeroKpis data={kpiFixture} />);
+    render(<HeroKpis kpis={kpiFixture} />);
     expect(screen.getByText("Requests (24h)")).toBeInTheDocument();
     expect(screen.getByText("Active Tenants")).toBeInTheDocument();
     expect(screen.getByText("Avg Latency")).toBeInTheDocument();
@@ -114,12 +110,12 @@ describe("HeroKpis", () => {
   });
 
   it("formats large numbers compactly", () => {
-    render(<HeroKpis data={kpiFixture} />);
+    render(<HeroKpis kpis={kpiFixture} />);
     expect(screen.getByText("142.5K")).toBeInTheDocument();
   });
 
   it("shows uptime percentage", () => {
-    render(<HeroKpis data={kpiFixture} />);
+    render(<HeroKpis kpis={kpiFixture} />);
     expect(screen.getByText("99.98%")).toBeInTheDocument();
   });
 });
