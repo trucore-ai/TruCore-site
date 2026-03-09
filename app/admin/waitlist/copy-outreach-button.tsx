@@ -12,7 +12,7 @@ function buildTemplate(name: string) {
     ``,
     `A couple quick questions so we can qualify fit:`,
     `1) What agent stack are you running today (framework + signer)?`,
-    `2) Which actions matter most in V1 (Jupiter swaps, Solend lending, both)?`,
+    `2) Which integrations matter most to your workflow (Jupiter/Orca/Raydium swaps, Solend/Marginfi/Kamino lending, perps)?`,
     `3) What guardrails are you most concerned about (slippage, limits, allowlists, receipts, other)?`,
     ``,
     `If you're open to a short call, share 2-3 times that work this week.`,

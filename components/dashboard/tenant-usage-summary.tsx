@@ -56,7 +56,7 @@ export function TenantUsageSummary({
   usage7d,
 }: TenantUsageSummaryProps) {
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 sm:p-6">
+    <div className="dashboard-panel p-5 sm:p-6">
       <h2 className="text-sm font-semibold text-slate-100">Usage Summary</h2>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -82,7 +82,7 @@ function UsagePeriodCard({
       : "0.0";
 
   return (
-    <div className="rounded-lg border border-white/[0.05] bg-white/[0.015] p-4 transition-all duration-200 hover:border-white/[0.08] hover:bg-white/[0.025]">
+    <div className="dashboard-sub-panel p-4">
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
           {label}

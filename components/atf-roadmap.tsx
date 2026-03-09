@@ -6,13 +6,13 @@ const phases = [
     phase: "Phase 1",
     title: "V1 Guardrails (Solana core)",
     description:
-      "Policy engine, permit gateway, execution validator, and receipt ledger for Solana with Jupiter, Solend, and feature-gated perps integrations.",
+      "Policy engine, permit gateway, execution validator, and receipt ledger for Solana. Jupiter, Orca, Raydium (swaps), Solend, Marginfi, Kamino (lending), and feature-gated perps integrations. Comprehensive CLI, API, agent tooling, example projects, and deployable services.",
   },
   {
     phase: "Phase 2",
     title: "On-chain attestation registry",
     description:
-      "Publish policy evaluations and execution receipts to an on-chain registry for transparent, verifiable audit.",
+      "Publish policy evaluations and execution receipts to an on-chain registry for transparent, verifiable audit. Solana programs deployed to devnet.",
   },
   {
     phase: "Phase 3",
@@ -24,7 +24,7 @@ const phases = [
     phase: "Phase 4",
     title: "Multi-chain expansion",
     description:
-      "Extend ATF enforcement to additional chains and protocol integrations beyond Solana.",
+      "Hyperliquid enforcement is feature-gated today. Base support is coming soon. Additional chains and protocol integrations follow as each layer is proven.",
   },
 ];
 

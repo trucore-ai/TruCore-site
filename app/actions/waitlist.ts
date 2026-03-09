@@ -15,7 +15,7 @@ const MAX_USE_CASE_LEN = 500;
 const COOLDOWN_SECONDS = 30;
 const COOLDOWN_COOKIE = "wl_ts";
 
-const VALID_INTEGRATIONS = ["jupiter", "solend"] as const;
+const VALID_INTEGRATIONS = ["jupiter", "orca", "raydium", "solend", "marginfi", "kamino", "drift", "mango", "hyperliquid"] as const;
 const VALID_TX_BUCKETS = ["lt_10k", "10k_100k", "100k_1m", "gt_1m"] as const;
 const VALID_BUILD_STAGES = ["idea", "prototype", "prod"] as const;
 const MAX_PROJECT_NAME_LEN = 80;

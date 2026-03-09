@@ -4,12 +4,14 @@ import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { AtfV1Scope } from "@/components/atf-v1-scope";
+import { EcosystemIntegrations } from "@/components/ecosystem-integrations";
 import { AtfRoadmap } from "@/components/atf-roadmap";
 import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
 import { WhyNowSection } from "@/components/why-now-section";
 import { EnforcementProofSection } from "@/components/enforcement-proof-section";
 import { SecurityIntegrityStrip } from "@/components/security-integrity-strip";
 import { MoatSignalStrip } from "@/components/moat-signal-strip";
+import { ProductionReadinessStrip } from "@/components/production-readiness-strip";
 import { LiveStatusStrip } from "@/components/home/live-status-strip";
 import { TrackedLink } from "@/components/tracked-link";
 import { Tilt } from "@/components/ui/tilt";
@@ -48,7 +50,7 @@ export default function Home() {
     <Container>
       {/* ── Hero ── */}
       <Section id="hero" className="fade-in-up pb-8 sm:pb-10">
-        <div className="relative max-w-4xl overflow-hidden rounded-2xl border border-white/[0.07] bg-neutral-950/40 p-8 shadow-elevated sm:p-12 lg:p-14">
+        <div className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-neutral-950/40 p-8 shadow-elevated sm:p-12 lg:p-14">
           <div className="hero-legibility-overlay" aria-hidden="true" />
           <Image
             src={truCoreBanner}
@@ -64,7 +66,7 @@ export default function Home() {
           />
           <div className="relative z-10 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
-              Solana-first agent controls, multi-chain next
+              Solana-native enforcement, multi-chain expanding
             </p>
             <h1 className="mt-4 text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
               Guardrails for automated finance.
@@ -156,6 +158,9 @@ export default function Home() {
       <div className="space-y-3 pb-8 sm:pb-10">
         <SecurityIntegrityStrip />
         <LiveStatusStrip />
+        <p className="mt-2 text-center text-[13px] leading-relaxed text-slate-400/70">
+          Solana-native enforcement infrastructure with live API, tamper-evident receipts, and deployable control-plane services.
+        </p>
         <p className="pt-1 text-right text-xs text-slate-500/60">
           Last updated: {lastUpdated}
         </p>
@@ -172,7 +177,7 @@ export default function Home() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             { title: "Spend Caps", desc: "Max SOL or token spend per tx and per window." },
-            { title: "Protocol Allowlist", desc: "V1: Jupiter (swaps) and Solend (lending). Perps venues feature-gated, off by default." },
+            { title: "Protocol Allowlist", desc: "Jupiter, Orca, and Raydium (swaps). Solend, Marginfi, and Kamino (lending). Perps venues feature-gated, off by default." },
             { title: "Slippage Bounds", desc: "Hard max slippage and minimum-out checks." },
             { title: "TTL + Nonce", desc: "Permits expire fast and cannot be replayed." },
           ].map((item) => (
@@ -185,6 +190,15 @@ export default function Home() {
           ))}
         </div>
       </Section>
+
+      {/* ── V1 Scope ── */}
+      <EcosystemIntegrations />
+
+      {/* ── Production Readiness ── */}
+      <ProductionReadinessStrip />
+
+      {/* ── V1 Scope (Chains, Controls, Platform Surface) ── */}
+      <AtfV1Scope />
 
       {/* ── Explore ── */}
       <Section id="integrations" divider className="fade-in-up fade-delay-2">
@@ -205,7 +219,7 @@ export default function Home() {
             },
             {
               title: "Capabilities",
-              desc: "Swap, lending, perps, and DEX guardrails with deterministic receipts.",
+              desc: "Swap, lending, and perps guardrails across 10 venue integrations. Deterministic receipts for every decision.",
               href: "/details#capabilities",
               event: "explore_capabilities_click",
             },
@@ -223,13 +237,19 @@ export default function Home() {
             },
             {
               title: "CLI Reference",
-              desc: "Install, configure, and run ATF from the command line.",
+              desc: "Comprehensive CLI covering profiles, transactions, receipts, policy validation, bot protection, and more.",
               href: "/docs/cli",
               event: "explore_cli_click",
             },
             {
+              title: "Agent Tooling",
+              desc: "Native agent tools, OpenClaw plugin, bootstrap recipes, and self-integration for autonomous workflows.",
+              href: "/docs/agent-discovery",
+              event: "explore_agent_tooling_click",
+            },
+            {
               title: "Build With ATF",
-              desc: "Integration patterns, policy examples, and the e-commerce pilot.",
+              desc: "Integration patterns, policy examples, production-ready example projects, and deployable services.",
               href: "/build-with-atf",
               event: "explore_build_click",
             },
@@ -247,7 +267,7 @@ export default function Home() {
             },
             {
               title: "Docs",
-              desc: "Quickstart, policy model, API reference, and changelog.",
+              desc: "Quickstart, policy model, API reference, CLI guides, and changelog.",
               href: "/docs",
               event: "explore_docs_click",
             },
@@ -271,9 +291,6 @@ export default function Home() {
           ))}
         </div>
       </Section>
-
-      {/* ── V1 Scope ── */}
-      <AtfV1Scope />
 
       {/* ── Why TruCore ── */}
       <div id="why-trucore">

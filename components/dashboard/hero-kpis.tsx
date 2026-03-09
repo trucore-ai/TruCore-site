@@ -56,16 +56,7 @@ export function HeroKpis({ kpis, trend }: HeroKpisProps) {
 
 function KpiCard({ kpi }: { kpi: LiveKpiItem }) {
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 transition-all duration-200 hover:border-white/[0.12] hover:bg-white/[0.04] hover:shadow-md hover:shadow-black/15 focus-within:ring-2 focus-within:ring-primary-400/30">
-      {/* subtle top highlight */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(180,220,248,0.08) 30%, rgba(200,235,255,0.14) 50%, rgba(180,220,248,0.08) 70%, transparent 100%)",
-        }}
-      />
-
+    <div className="group dashboard-panel p-5 transition-all duration-200 focus-within:ring-2 focus-within:ring-primary-400/30">
       <div className="flex items-start justify-between gap-2">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 transition-colors duration-200 group-hover:text-slate-400">
           {kpi.label}
@@ -122,7 +113,7 @@ function TrendStrip({ trend }: { trend: LiveTrend }) {
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-lg border border-white/[0.05] bg-white/[0.015] px-4 py-2.5">
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 dashboard-sub-panel px-4 py-2.5">
       {items.map((item) => (
         <span key={item.label} className="text-[11px] text-slate-500">
           {item.label}{" "}

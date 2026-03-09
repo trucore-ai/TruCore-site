@@ -54,11 +54,13 @@ export default function DocsDexGuardrailsPage() {
         <div className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4">
           <pre className="text-sm text-slate-200 leading-relaxed">{`swap:
   dex_allowlist:
-    - jupiter     # initial DEX path in v1
+    - jupiter
+    - orca
+    - raydium
   deny_unlisted_dex: true`}</pre>
         </div>
         <p className="text-slate-300">
-          <strong className="text-slate-100">Jupiter</strong> is the initial supported DEX path in
+          <strong className="text-slate-100">Jupiter, Orca, and Raydium</strong> are the supported DEX paths in
           ATF v1. Additional venues will be added as adapters are validated and audited.
         </p>
       </section>
@@ -147,6 +149,8 @@ npx @trucore/atf@${cliTag} simulate --json '{
   enabled: true
   dex_allowlist:
     - jupiter
+    - orca
+    - raydium
   deny_unlisted_dex: true
   deny_unverified_routes: true
   max_slippage_bps: 100

@@ -84,7 +84,7 @@ export default function DocsQuickstartPage() {
           <p className="text-slate-300">Declare protocol scope and hard limits before the agent acts.</p>
           <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
 {`policy = createPolicy({
-  protocols: ["jupiter", "solend"],
+  protocols: ["jupiter", "orca", "raydium", "solend", "marginfi", "kamino"],
   maxSpendUsd: 5000,
   maxSlippageBps: 50
 })`}

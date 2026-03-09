@@ -62,15 +62,8 @@ export function TenantDetailHero({ tenant }: TenantDetailHeroProps) {
     tierColors[tenant.plan_tier.toLowerCase()] ?? "text-primary-300";
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.025] shadow-sm shadow-black/10">
-      {/* Top gradient highlight */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(180,220,248,0.08) 30%, rgba(200,235,255,0.14) 50%, rgba(180,220,248,0.08) 70%, transparent 100%)",
-        }}
-      />
+    <div className="dashboard-panel">
+      {/* Top gradient highlight is handled by dashboard-panel::before */}
 
       <div className="p-6 sm:p-8">
         {/* Name + status row */}

@@ -86,7 +86,7 @@ export function TenantPosturePanel({ posture }: TenantPosturePanelProps) {
   const visual = getScoreVisual(posture.score);
 
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 sm:p-6">
+    <div className="dashboard-panel p-5 sm:p-6">
       <h2 className="text-sm font-semibold text-slate-100">
         Operational Posture
       </h2>

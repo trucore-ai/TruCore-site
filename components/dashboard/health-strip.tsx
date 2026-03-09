@@ -23,8 +23,7 @@ type HealthStripProps = { data: SystemHealth };
 
 export function HealthStrip({ data }: HealthStripProps) {
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 sm:p-6">
-      {/* Header row */}
+    <div className="dashboard-panel p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <h2 className="text-sm font-semibold text-slate-100">
@@ -49,7 +48,7 @@ export function HealthStrip({ data }: HealthStripProps) {
       </div>
 
       {/* Separator */}
-      <div className="mt-4 h-px bg-white/[0.05]" />
+      <div className="gradient-divider mt-4" />
 
       {/* Dependency checks */}
       {data.checks.length === 0 ? (
@@ -64,7 +63,7 @@ export function HealthStrip({ data }: HealthStripProps) {
           {data.checks.map((check) => (
             <div
               key={check.name}
-              className="flex items-center justify-between rounded-lg border border-white/[0.05] bg-white/[0.015] px-4 py-3.5 transition-all duration-200 hover:border-white/[0.08] hover:bg-white/[0.03]"
+              className="dashboard-sub-panel flex items-center justify-between px-4 py-3.5"
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-slate-200">

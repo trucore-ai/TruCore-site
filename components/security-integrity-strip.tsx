@@ -25,8 +25,8 @@ const SECURITY_SIGNALS = [
 
 export function SecurityIntegrityStrip() {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.015]">
-      <ul className="grid divide-y divide-white/10 text-sm text-slate-200 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x lg:divide-white/10">
+    <div className="rounded-xl border border-primary-300/10 bg-primary-500/[0.03]">
+      <ul className="grid divide-y divide-white/[0.06] text-sm text-slate-200 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x lg:divide-white/[0.06]">
         {SECURITY_SIGNALS.map((signal) => (
           <li key={signal.label} className="px-4 py-3">
             <TrackedLink

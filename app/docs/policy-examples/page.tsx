@@ -13,7 +13,7 @@ const swapGuardrailPolicy = `{
   "constraints": {
     "max_notional_usd": 50000,
     "max_slippage_bps": 75,
-    "protocol_allowlist": ["jupiter"]
+    "protocol_allowlist": ["jupiter", "orca", "raydium"]
   }
 }`;
 
@@ -23,7 +23,7 @@ const lendingExposureCapPolicy = `{
   "constraints": {
     "max_position_usd": 250000,
     "max_protocol_exposure_pct": 35,
-    "protocol_allowlist": ["solend"]
+    "protocol_allowlist": ["solend", "marginfi", "kamino"]
   }
 }`;
 

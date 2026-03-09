@@ -9,7 +9,14 @@ const ROLES = ["Builder", "Founder", "Researcher", "Security", "Other"] as const
 
 const INTEGRATION_OPTIONS = [
   { value: "jupiter", label: "Jupiter (swaps)" },
+  { value: "orca", label: "Orca (swaps)" },
+  { value: "raydium", label: "Raydium (swaps)" },
   { value: "solend", label: "Solend (lending)" },
+  { value: "marginfi", label: "Marginfi (lending)" },
+  { value: "kamino", label: "Kamino (lending, feature-gated)" },
+  { value: "drift", label: "Drift v2 (perps, feature-gated)" },
+  { value: "mango", label: "Mango v4 (perps, feature-gated)" },
+  { value: "hyperliquid", label: "Hyperliquid (perps, feature-gated)" },
 ] as const;
 
 const TX_VOLUME_OPTIONS = [

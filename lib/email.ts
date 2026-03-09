@@ -93,7 +93,7 @@ Thanks for applying to the TruCore ATF design partner program. I'd love to learn
 
 Can you share a bit about:
 1. Your agent framework and signer setup
-2. Primary actions you're targeting (Jupiter, Solend, etc.)
+2. Primary actions you're targeting (Jupiter, Orca, Raydium swaps, Solend/Marginfi/Kamino lending, perps)
 3. Key risk concerns (slippage, limits, allowlists, receipts)
 4. Target volume and automation cadence
 
@@ -165,7 +165,7 @@ export async function sendUserConfirmation(email: string, intent?: string): Prom
         <p style="margin-top:20px;"><strong>Quick intake questions</strong> (reply to this email):</p>
         <ol style="margin-top:8px;padding-left:20px;line-height:1.8;color:#333;">
           <li>What agent framework and signer are you using?</li>
-          <li>What are your primary actions? (e.g. Jupiter swaps, Solend lending)</li>
+          <li>What are your primary actions? (e.g. Jupiter/Orca/Raydium swaps, Solend/Marginfi lending)</li>
           <li>What risk concerns matter most? (slippage, limits, allowlists, receipts)</li>
           <li>What is your target volume and automation cadence?</li>
         </ol>

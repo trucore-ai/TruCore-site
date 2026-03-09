@@ -50,7 +50,7 @@ export default function DocsAtfArchitecturePage() {
   "constraints": {
     "max_notional_usd": 10000,
     "max_slippage_bps": 40,
-    "protocol_allowlist": ["jupiter", "solend"]
+    "protocol_allowlist": ["jupiter", "orca", "raydium", "solend", "marginfi", "kamino"]
   },
   "issued_at": "2026-02-23T18:40:00Z",
   "expires_at": "2026-02-23T18:41:00Z",

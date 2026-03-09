@@ -21,7 +21,7 @@ const permitExample = `{
     "amount_max": 1000,
     "max_slippage_bps": 300,
     "ttl_seconds_max": 300,
-    "protocol_allowlist": ["jupiter"]
+    "protocol_allowlist": ["jupiter", "orca", "raydium"]
   },
   "nonce": "demo-nonce-0001",
   "issued_at": "2026-02-24T00:00:00Z",

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 const whoThisIsFor = [
   "Teams deploying autonomous trading or yield strategies on Solana.",
-  "Projects integrating Jupiter, Solend, or similar DeFi protocols with AI agents.",
+  "Projects integrating Jupiter, Orca, Raydium, Solend, Marginfi, Kamino, or similar DeFi protocols with AI agents.",
   "Builders who need deterministic policy checks and verifiable receipts before going to production.",
 ];
 

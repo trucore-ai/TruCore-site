@@ -61,7 +61,7 @@ export function EnforcementOverview({ data }: EnforcementOverviewProps) {
     data.reprovision_operations_total;
 
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 sm:p-6">
+    <div className="dashboard-panel p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-slate-100">
           Enforcement Posture
@@ -111,7 +111,7 @@ export function EnforcementOverview({ data }: EnforcementOverviewProps) {
       )}
 
       {/* Separator */}
-      <div className="mt-5 h-px bg-white/[0.05]" />
+      <div className="gradient-divider mt-5" />
 
       {/* Info note about extended enforcement data */}
       <p className="mt-4 text-[11px] leading-relaxed text-slate-600">

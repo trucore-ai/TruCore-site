@@ -67,7 +67,7 @@ export default function PrivacyPage() {
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
               If you apply as a design partner, we additionally collect your
               project or company name, integration interests (e.g. Jupiter,
-              Solend), expected transaction volume range, and current build
+              Orca, Raydium, Solend, Marginfi, Kamino, perps venues), expected transaction volume range, and current build
               stage. These fields help us prioritize outreach and are stored
               alongside your waitlist record under the same policies described
               above. After submission, a link to an external scheduling tool may

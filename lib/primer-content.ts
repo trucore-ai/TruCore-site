@@ -45,11 +45,12 @@ export const primerSections: PrimerSection[] = [
     id: "v1-scope",
     heading: "V1 Scope",
     paragraphs: [
-      "V1 targets Solana with two protocol integrations:",
+      "V1 targets Solana with nine venue integrations across three categories:",
     ],
     bullets: [
-      "Jupiter: swap enforcement with slippage bounds and minimum-out checks.",
-      "Solend: lending enforcement with collateral ratio and liquidation safeguards.",
+      "DEX: Jupiter, Orca, Raydium. Swap enforcement with slippage bounds and minimum-out checks.",
+      "Lending: Solend, Marginfi, and Kamino (feature-gated). Collateral ratio and liquidation safeguards.",
+      "Perps: Drift v2, Mango v4, Hyperliquid (feature-gated). Leverage caps, market allowlists, and notional limits.",
     ],
   },
   {
@@ -60,7 +61,7 @@ export const primerSections: PrimerSection[] = [
     ],
     bullets: [
       "Spend cap: max value per transaction and per rolling time window.",
-      "Protocol allowlist: only pre-approved programs may be invoked. V1: Jupiter, Solend. Perps adapters feature-gated, off by default.",
+      "Protocol allowlist: only pre-approved programs may be invoked. Jupiter, Orca, Raydium (swaps), Solend, Marginfi (lending), and Kamino (feature-gated). Perps adapters feature-gated, off by default.",
       "Slippage max: price deviation hard-capped with enforced minimum output.",
       "Cooldown period: minimum interval between high-risk actions.",
       "Permit TTL + nonce: permits expire fast and carry single-use nonces.",

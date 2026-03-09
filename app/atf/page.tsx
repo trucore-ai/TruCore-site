@@ -12,11 +12,11 @@ import { getAtfCliVersion } from "@/lib/version";
 export const metadata: Metadata = {
   title: "ATF Developer Platform | Agent Transaction Firewall",
   description:
-    "ATF is a non-custodial developer platform for building and operating transactional bots and AI agents on Solana. Profiles, Helius-first RPC, devnet burner mode, transaction tooling, and cryptographically verifiable receipts.",
+    "ATF is a non-custodial developer platform for building and operating transactional bots and AI agents on Solana. Comprehensive CLI, public API, native agent tools, profiles, Helius-first RPC, devnet burner mode, and cryptographically verifiable receipts.",
   openGraph: {
     title: "ATF Developer Platform | Agent Transaction Firewall",
     description:
-      "Non-custodial developer security infrastructure for Solana bots, AI agents, and custodians. Deterministic enforcement + verifiable receipts.",
+      "Non-custodial developer security infrastructure for Solana bots, AI agents, and custodians. Comprehensive CLI, API, agent tooling, and verifiable receipts.",
     images: [
       {
         url: "/atf/opengraph-image",
@@ -49,9 +49,19 @@ const toolboxGroups = [
     ],
   },
   {
+    title: "Profiles & Config",
+    commands: [
+      { name: "profile create", desc: "Create a named profile for an environment" },
+      { name: "profile select", desc: "Switch active profile" },
+      { name: "profile config", desc: "Set RPC URL, secrets, and network" },
+      { name: "config init", desc: "Initialize ATF global configuration" },
+    ],
+  },
+  {
     title: "Network",
     commands: [
       { name: "rpc ping", desc: "Verify RPC connectivity and latency" },
+      { name: "burner enable", desc: "Create an ephemeral devnet wallet" },
     ],
   },
   {
@@ -63,9 +73,33 @@ const toolboxGroups = [
     ],
   },
   {
-    title: "Verification",
+    title: "Policy & Simulation",
+    commands: [
+      { name: "policy validate", desc: "Validate a policy YAML offline" },
+      { name: "bot protect", desc: "Wrap a bot transaction with ATF enforcement" },
+      { name: "bot init", desc: "Scaffold a new bot config from a template" },
+    ],
+  },
+  {
+    title: "Verification & Receipts",
     commands: [
       { name: "receipts verify", desc: "Verify deterministic receipt integrity locally" },
+      { name: "report savings", desc: "Generate receipt-backed savings report" },
+    ],
+  },
+  {
+    title: "Perps (feature-gated)",
+    commands: [
+      { name: "perps protect", desc: "Enforce perps policy before order submission" },
+      { name: "perps explain", desc: "Show human-readable perps intent analysis" },
+      { name: "perps fixtures", desc: "Print canonical venue-specific test fixtures" },
+    ],
+  },
+  {
+    title: "Agent & Discovery",
+    commands: [
+      { name: "bootstrap", desc: "Self-integrate using a bootstrap recipe" },
+      { name: "integration-doctor", desc: "Diagnose integration health and configuration" },
     ],
   },
 ];
@@ -86,9 +120,9 @@ export default function ATFPage() {
             </h1>
             <p className="mt-6 max-w-3xl text-xl leading-[1.6] text-slate-200">
               ATF is a non-custodial developer platform for building and operating
-              transactional bots and AI agents on Solana. Profiles, Helius-first
-              RPC, devnet burner mode, transaction tooling, and cryptographically
-              verifiable receipts.
+              transactional bots and AI agents on Solana. Comprehensive CLI tooling,
+              public API, native agent tools, profiles, Helius-first RPC, devnet
+              burner mode, and cryptographically verifiable receipts.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -377,7 +411,9 @@ export default function ATFPage() {
             Toolbox
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            Everything the CLI ships today, grouped by workflow.
+            A representative sample of what the CLI ships today, grouped by workflow.
+            The full CLI covers profiles, transactions, policy validation, bot
+            protection, perps enforcement, agent discovery, and more.
           </p>
         </div>
 

@@ -25,7 +25,7 @@ export const sections: DocsNavSection[] = [
         title: "ATF CLI",
         href: "/docs/cli",
         description:
-          "Complete CLI reference: doctor, burner, transactions, receipts, and more.",
+          "Comprehensive CLI reference: profiles, transactions, policy validation, bot protection, receipts, perps enforcement, agent discovery, and more.",
       },
       {
         title: "ATF API",

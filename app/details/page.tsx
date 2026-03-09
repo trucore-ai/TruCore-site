@@ -290,7 +290,7 @@ export default function DetailsPage() {
             { step: 1, title: "Agent proposes intent", desc: "The AI agent submits its intended action (e.g., swap, lend) to the ATF pipeline." },
             { step: 2, title: "Policy evaluation", desc: "The Policy Engine evaluates intent against configured rules and constructs constraints." },
             { step: 3, title: "Permit issued", desc: "The Permit Gateway issues a signed, time-bound permit with TTL + nonce." },
-            { step: 4, title: "Bounded execution", desc: "The Executor performs the transaction within permit bounds (e.g., Jupiter swap, Solend action)." },
+            { step: 4, title: "Bounded execution", desc: "The Executor performs the transaction within permit bounds (e.g., Jupiter swap, Solend deposit, Kamino supply, Orca route)." },
             { step: 5, title: "Receipt emitted", desc: "A cryptographic receipt is generated (hashes, policy ID, outcome) and stored." },
           ].map((item) => (
             <li key={item.step}>
@@ -320,7 +320,7 @@ export default function DetailsPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
             { label: "Spend cap", desc: "Maximum value per transaction and per rolling time window. Exceeding either limit blocks execution." },
-            { label: "Protocol allowlist", desc: "Pre-approved programs only. V1: Jupiter, Solend. Perps adapters (Drift v2, Mango v4, Hyperliquid) are feature-gated, off by default. All other program IDs are rejected." },
+            { label: "Protocol allowlist", desc: "Pre-approved programs only. Jupiter, Orca, and Raydium (swaps). Solend, Marginfi, and Kamino (lending). Perps adapters (Drift v2, Mango v4, Hyperliquid) are feature-gated, off by default. All other program IDs are rejected." },
             { label: "Slippage max", desc: "Price deviation hard-capped (e.g., ≤ 30 bps) with enforced minimum output amount." },
             { label: "Cooldown period", desc: "Minimum interval between high-risk actions prevents rapid-fire exploitation." },
             { label: "Permit TTL + nonce", desc: "Permits expire (e.g., 60 s) and carry single-use nonces to prevent replay." },
@@ -443,7 +443,7 @@ export default function DetailsPage() {
               <Card className="h-full">
                 <h3 className="text-xl font-bold text-accent-300">Swap Guardrails</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">
-                  Pre-flight slippage caps, protocol allowlists, and minimum-out checks on every swap. Jupiter enforced in V1.
+                  Pre-flight slippage caps, protocol allowlists, and minimum-out checks on every swap. Jupiter enforced natively.
                 </p>
                 <TrackedLink href="/docs/policy-model" eventName="capabilities_swap_click" eventProps={{ location: "details_capabilities" }} className="mt-4 inline-flex text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100">Policy docs &rarr;</TrackedLink>
               </Card>
@@ -453,7 +453,7 @@ export default function DetailsPage() {
               <Card className="h-full">
                 <h3 className="text-xl font-bold text-accent-300">Lending Guardrails</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-300">
-                  Collateral limits and risk parameter enforcement for Solend and supported lending protocols. Unauthorized programs are blocked.
+                  Collateral limits and risk parameter enforcement for Solend and Kamino (feature-gated). Unauthorized programs are blocked.
                 </p>
                 <TrackedLink href="/docs/policy-model" eventName="capabilities_lending_click" eventProps={{ location: "details_capabilities" }} className="mt-4 inline-flex text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100">Policy docs &rarr;</TrackedLink>
               </Card>

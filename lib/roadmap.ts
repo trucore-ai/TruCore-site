@@ -68,7 +68,7 @@ export const roadmapItems: RoadmapItem[] = [
     id: "router-program",
     title: "Router Program",
     description:
-      "Smart routing layer for multi-protocol execution, coordinating transactions across Jupiter, Solend, perps venues, and future integrations under unified policy control.",
+      "Smart routing layer for multi-protocol execution, coordinating transactions across Jupiter, Orca, Raydium, Solend, Marginfi, perps venues, and future integrations under unified policy control.",
     status: "planned",
     scope: "ecosystem",
   },

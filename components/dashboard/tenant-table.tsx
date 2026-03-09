@@ -41,7 +41,7 @@ type TenantTableProps = {
 export function TenantTable({ tenants, total }: TenantTableProps) {
   if (tenants.length === 0) {
     return (
-      <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 sm:p-6">
+      <div className="dashboard-panel p-5 sm:p-6">
         <h2 className="text-sm font-semibold text-slate-100">Tenants</h2>
         <div className="mt-4">
           <EmptyState
@@ -54,7 +54,7 @@ export function TenantTable({ tenants, total }: TenantTableProps) {
   }
 
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 sm:p-6">
+    <div className="dashboard-panel p-5 sm:p-6">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-slate-100">Tenants</h2>
         <span className="text-[11px] font-medium tabular-nums text-slate-500">
@@ -63,7 +63,7 @@ export function TenantTable({ tenants, total }: TenantTableProps) {
       </div>
 
       {/* Separator */}
-      <div className="mt-4 h-px bg-white/[0.05]" />
+      <div className="gradient-divider mt-4" />
 
       {/* Desktop table */}
       <div className="mt-4 hidden sm:block overflow-x-auto">
@@ -124,7 +124,7 @@ export function TenantTable({ tenants, total }: TenantTableProps) {
           <Link
             key={t.id}
             href={`/dashboard/tenants/${encodeURIComponent(t.id)}`}
-            className="block rounded-lg border border-white/[0.05] bg-white/[0.015] p-4 transition-all duration-200 hover:border-white/[0.08] hover:bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/40"
+            className="block dashboard-sub-panel p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/40"
           >
             <div className="flex items-center justify-between gap-3">
               <p className="truncate text-sm font-medium text-slate-200">

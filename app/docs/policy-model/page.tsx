@@ -54,7 +54,7 @@ export default function DocsPolicyModelPage() {
         <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
 {`{
   "policyId": "pol_live_treasury_v1",
-  "protocolAllowlists": ["jupiter", "solend"],
+  "protocolAllowlists": ["jupiter", "orca", "raydium", "solend", "marginfi", "kamino"],
   "spendLimits": {
     "perTransactionUsd": 2500,
     "perHourUsd": 10000

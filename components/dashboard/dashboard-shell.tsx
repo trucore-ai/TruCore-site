@@ -99,7 +99,7 @@ export function DashboardShell({ initial }: Props) {
               ATF system health, enforcement posture, and tenant overview
             </p>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5">
+          <div className="flex items-center gap-2 rounded-full border border-primary-300/10 bg-primary-500/[0.04] px-3.5 py-1.5">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
@@ -115,7 +115,7 @@ export function DashboardShell({ initial }: Props) {
             </span>
           </div>
         </div>
-        <div className="mt-6 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+        <div className="gradient-divider mt-6" />
       </div>
 
       {/* ── Hero KPIs ───────────────────────────────────────── */}

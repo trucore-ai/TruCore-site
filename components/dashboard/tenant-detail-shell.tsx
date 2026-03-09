@@ -90,7 +90,7 @@ export function TenantDetailShell({ tenantId, initial }: Props) {
   return (
     <div className="space-y-8">
       {/* Live indicator */}
-      <div className="flex items-center justify-end gap-2 rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1.5 self-end w-fit ml-auto">
+      <div className="flex items-center justify-end gap-2 rounded-full border border-primary-300/10 bg-primary-500/[0.04] px-3.5 py-1.5 self-end w-fit ml-auto">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
@@ -132,16 +132,16 @@ export function TenantDetailShell({ tenantId, initial }: Props) {
       {/* Metadata (if present) */}
       {tenant.metadata && Object.keys(tenant.metadata).length > 0 && (
         <section aria-label="Control-plane metadata">
-          <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-5 shadow-sm shadow-black/10 sm:p-6">
+          <div className="dashboard-panel p-5 sm:p-6">
             <h2 className="text-sm font-semibold text-slate-100">
               Control-Plane Metadata
             </h2>
-            <div className="mt-4 h-px bg-white/[0.05]" />
+            <div className="gradient-divider mt-4" />
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
               {Object.entries(tenant.metadata).map(([key, value]) => (
                 <div
                   key={key}
-                  className="rounded-lg border border-white/[0.04] bg-white/[0.015] px-4 py-3.5 transition-all duration-200 hover:border-white/[0.08] hover:bg-white/[0.03]"
+                  className="dashboard-sub-panel px-4 py-3.5"
                 >
                   <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                     {key.replace(/_/g, " ")}
