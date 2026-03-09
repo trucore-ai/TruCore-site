@@ -1,9 +1,13 @@
 /* ────────────────────────────────────────────────────────────────
- *  LiveStatusStrip - compact homepage status preview
+ *  LiveStatusStrip - compact homepage status + public infra metrics
  *
- *  Surfaces a few high-signal ATF metrics and links to the full
- *  /dashboard page. Polls /api/dashboard/refresh on a relaxed
- *  30 s cadence (the marketing page does not need 5 s latency).
+ *  Top row: system health, 24 h dashboard KPIs, and CTA.
+ *  Bottom row: all-time public infrastructure signals from the
+ *  ATF /metrics/public-summary endpoint, giving visitors a
+ *  confidence-building "live infrastructure" view.
+ *
+ *  Dashboard data polls every 30 s (needs freshness).
+ *  Public metrics poll every 60 s (cache-friendly, relaxed).
  *
  *  Design principles:
  *   - Subtle, confidence-building, not an ops console
@@ -22,6 +26,7 @@ import type {
   EnforcementOverview,
   DashboardResult,
 } from "@/lib/dashboard-client";
+import type { PublicMetrics } from "@/lib/public-metrics";
 
 /* ── Types ────────────────────────────────────────────────── */
 
@@ -33,7 +38,8 @@ type StripData = {
 
 /* ── Constants ────────────────────────────────────────────── */
 
-const POLL_MS = 30_000;
+const DASHBOARD_POLL_MS = 30_000;
+const PUBLIC_POLL_MS = 60_000;
 
 /* ── Helpers ──────────────────────────────────────────────── */
 
@@ -41,6 +47,27 @@ function compactNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return n.toLocaleString();
+}
+
+function friendlyUptime(seconds: number): string {
+  const d = Math.floor(seconds / 86_400);
+  const h = Math.floor((seconds % 86_400) / 3_600);
+  const m = Math.floor((seconds % 3_600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function relativeTime(iso: string): string {
+  try {
+    const diff = Date.now() - new Date(iso).getTime();
+    if (diff < 60_000) return "just now";
+    if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+    if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+    return `${Math.floor(diff / 86_400_000)}d ago`;
+  } catch {
+    return "";
+  }
 }
 
 const healthLabel: Record<string, string> = {
@@ -66,9 +93,12 @@ const healthText: Record<string, string> = {
 export function LiveStatusStrip() {
   const [data, setData] = useState<StripData | null>(null);
   const [error, setError] = useState(false);
+  const [publicMetrics, setPublicMetrics] = useState<PublicMetrics | null>(null);
   const mountedRef = useRef(true);
 
-  const refresh = useCallback(async () => {
+  /* ── Dashboard fetch ───────────────────────────────────── */
+
+  const refreshDashboard = useCallback(async () => {
     try {
       const res = await fetch("/api/dashboard/refresh", {
         cache: "no-store",
@@ -87,10 +117,23 @@ export function LiveStatusStrip() {
     }
   }, []);
 
+  /* ── Public metrics fetch ──────────────────────────────── */
+
+  const refreshPublic = useCallback(async () => {
+    try {
+      const res = await fetch("/api/metrics/public-summary");
+      if (!res.ok) return;
+      const json = (await res.json()) as PublicMetrics;
+      if (mountedRef.current) setPublicMetrics(json);
+    } catch {
+      /* silent: public metrics are additive, not critical */
+    }
+  }, []);
+
   useEffect(() => {
     mountedRef.current = true;
 
-    const start = async () => {
+    const startDashboard = async () => {
       try {
         const res = await fetch("/api/dashboard/refresh", {
           cache: "no-store",
@@ -109,13 +152,27 @@ export function LiveStatusStrip() {
       }
     };
 
-    start();
-    const id = setInterval(refresh, POLL_MS);
+    const startPublic = async () => {
+      try {
+        const res = await fetch("/api/metrics/public-summary");
+        if (!res.ok) return;
+        const json = (await res.json()) as PublicMetrics;
+        if (mountedRef.current) setPublicMetrics(json);
+      } catch {
+        /* silent */
+      }
+    };
+
+    startDashboard();
+    startPublic();
+    const dashId = setInterval(refreshDashboard, DASHBOARD_POLL_MS);
+    const pubId = setInterval(refreshPublic, PUBLIC_POLL_MS);
     return () => {
       mountedRef.current = false;
-      clearInterval(id);
+      clearInterval(dashId);
+      clearInterval(pubId);
     };
-  }, [refresh]);
+  }, [refreshDashboard, refreshPublic]);
 
   /* ── Loading state ─────────────────────────────────────── */
   if (!data && !error) {
@@ -165,7 +222,7 @@ export function LiveStatusStrip() {
     );
   }
 
-  /* ── Resolve values ────────────────────────────────────── */
+  /* ── Resolve dashboard values ──────────────────────────── */
   const healthStatus =
     data?.health?.ok ? data.health.data.status : "unknown";
   const passedChecks =
@@ -183,6 +240,10 @@ export function LiveStatusStrip() {
   const uptimePct =
     data?.kpis?.ok ? data.kpis.data.uptime_pct : null;
 
+  /* ── Resolve public metrics ────────────────────────────── */
+  const pm = publicMetrics;
+  const pubUpdated = pm?.last_updated ? relativeTime(pm.last_updated) : "";
+
   return (
     <div
       className="group relative overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.025] transition-colors duration-300 hover:border-white/[0.12] hover:bg-white/[0.04]"
@@ -199,6 +260,7 @@ export function LiveStatusStrip() {
         }}
       />
 
+      {/* ── Top row: health + 24 h KPIs + CTA ────────────── */}
       <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-4 px-5 py-4 sm:px-6">
         {/* ── Health indicator ─────────────────────────────── */}
         <div className="flex items-center gap-3">
@@ -257,6 +319,83 @@ export function LiveStatusStrip() {
           <span aria-hidden="true">&rarr;</span>
         </TrackedLink>
       </div>
+
+      {/* ── Bottom row: public infrastructure metrics ─────── */}
+      {pm && (
+        <>
+          <div
+            className="mx-5 h-px sm:mx-6"
+            aria-hidden="true"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.06) 70%, transparent 100%)",
+            }}
+          />
+          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-2 px-5 pb-3.5 pt-3 sm:px-6">
+            <div className="flex items-center gap-2">
+              <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400/50" aria-hidden="true" />
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                Infrastructure
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:gap-x-7">
+              <MetricPill
+                label="Protected Requests"
+                value={compactNum(pm.protected_requests_total)}
+                small
+              />
+              {pm.receipts_written_total != null && (
+                <MetricPill
+                  label="Receipts Written"
+                  value={compactNum(pm.receipts_written_total)}
+                  small
+                />
+              )}
+              <MetricPill
+                label="Receipts Verified"
+                value={compactNum(pm.receipts_verified_total)}
+                subtitle={
+                  pm.verification_summary
+                    ? `${compactNum(pm.verification_summary.verified)} passed`
+                    : undefined
+                }
+                small
+              />
+              {pm.requests_last_hour != null && (
+                <MetricPill
+                  label="Requests (1h)"
+                  value={compactNum(pm.requests_last_hour)}
+                  accent="text-sky-300"
+                  small
+                />
+              )}
+              <MetricPill
+                label="Uptime"
+                value={
+                  pm.uptime_seconds != null
+                    ? friendlyUptime(pm.uptime_seconds)
+                    : `${pm.uptime_percent.toFixed(2)}%`
+                }
+                accent="text-emerald-300"
+                small
+              />
+              <MetricPill
+                label="Avg Latency"
+                value={`${pm.avg_request_latency_ms.toFixed(1)}ms`}
+                accent="text-primary-300"
+                small
+              />
+            </div>
+
+            {pubUpdated && (
+              <p className="text-[10px] text-slate-600">
+                {pubUpdated}
+              </p>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -267,19 +406,28 @@ type MetricPillProps = {
   label: string;
   value: string;
   accent?: string;
+  /** Optional secondary detail line */
+  subtitle?: string;
+  /** Render at slightly smaller size for the secondary row */
+  small?: boolean;
 };
 
-function MetricPill({ label, value, accent }: MetricPillProps) {
+function MetricPill({ label, value, accent, subtitle, small }: MetricPillProps) {
   return (
     <div className="min-w-0">
       <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
         {label}
       </p>
       <p
-        className={`mt-0.5 text-base font-semibold tabular-nums tracking-tight ${accent ?? "text-slate-100"}`}
+        className={`mt-0.5 font-semibold tabular-nums tracking-tight ${
+          small ? "text-sm" : "text-base"
+        } ${accent ?? "text-slate-100"}`}
       >
         {value}
       </p>
+      {subtitle && (
+        <p className="mt-0.5 text-[9px] text-slate-600">{subtitle}</p>
+      )}
     </div>
   );
 }

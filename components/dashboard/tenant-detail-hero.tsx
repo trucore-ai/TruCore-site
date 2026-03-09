@@ -3,12 +3,20 @@
  *
  *  Premium header card for the tenant drill-down page.
  *  Shows the tenant name, ID, plan tier, status badge, key count,
- *  creation date, and last seen timestamp. Designed to give
- *  operators instant context before scanning the detail panels.
+ *  creation date, last seen timestamp, and v1.45.0 activity
+ *  signals (requests today, last hour, receipts today, last
+ *  activity). Designed to give operators instant context before
+ *  scanning the detail panels.
  * ──────────────────────────────────────────────────────────── */
 
 import type { TenantDetail } from "@/lib/dashboard-client";
 import { StatusChip } from "@/components/dashboard/status-chip";
+
+function compactNum(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
+}
 
 function relativeTime(iso: string | null): string {
   if (!iso) return "Never";
@@ -98,9 +106,41 @@ export function TenantDetailHero({ tenant }: TenantDetailHeroProps) {
           <MetaItem label="Created" value={formatDate(tenant.created_at)} />
           <MetaItem
             label="Last Seen"
-            value={relativeTime(tenant.last_seen)}
+            value={relativeTime(tenant.last_activity_ts ?? tenant.last_seen)}
           />
         </div>
+
+        {/* v1.45.0 activity strip (only when data is present) */}
+        {(tenant.requests_today != null ||
+          tenant.requests_last_hour != null ||
+          tenant.receipts_written_today != null) && (
+          <>
+            <div className="mt-5 h-px bg-white/[0.04]" />
+            <div className="mt-5 grid gap-5 sm:grid-cols-3">
+              {tenant.requests_today != null && (
+                <MetaItem
+                  label="Requests Today"
+                  value={compactNum(tenant.requests_today)}
+                  className="text-slate-100"
+                />
+              )}
+              {tenant.requests_last_hour != null && (
+                <MetaItem
+                  label="Requests (1h)"
+                  value={compactNum(tenant.requests_last_hour)}
+                  className="text-sky-300"
+                />
+              )}
+              {tenant.receipts_written_today != null && (
+                <MetaItem
+                  label="Receipts Today"
+                  value={compactNum(tenant.receipts_written_today)}
+                  className="text-slate-100"
+                />
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

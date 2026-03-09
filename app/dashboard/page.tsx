@@ -7,6 +7,7 @@ import {
   fetchEnforcement,
   fetchActivity,
   fetchTenants,
+  fetchDashboardSummary,
 } from "@/lib/dashboard-client";
 import {
   DashboardShell,
@@ -30,13 +31,15 @@ export const metadata: Metadata = {
 export const revalidate = 5;
 
 export default async function DashboardPage() {
-  const [health, kpis, enforcement, activity, tenants] = await Promise.all([
-    fetchHealth(),
-    fetchKpis(),
-    fetchEnforcement(),
-    fetchActivity(),
-    fetchTenants(),
-  ]);
+  const [health, kpis, enforcement, activity, tenants, summary] =
+    await Promise.all([
+      fetchHealth(),
+      fetchKpis(),
+      fetchEnforcement(),
+      fetchActivity(),
+      fetchTenants(),
+      fetchDashboardSummary(),
+    ]);
 
   const initial: DashboardData = {
     health,
@@ -44,6 +47,7 @@ export default async function DashboardPage() {
     enforcement,
     activity,
     tenants,
+    summary,
   };
 
   return (

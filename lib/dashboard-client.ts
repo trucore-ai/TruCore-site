@@ -134,6 +134,32 @@ export const TenantDetailSchema = z.object({
     warnings: z.array(PostureWarningSchema),
   }),
   metadata: z.record(z.string()).optional(),
+  /* v1.45.0 additive fields (optional for backward compat) */
+  requests_today: z.number().optional(),
+  requests_last_hour: z.number().optional(),
+  receipts_written_today: z.number().optional(),
+  last_activity_ts: z.string().nullable().optional(),
+});
+
+// ── Trend Snapshot (v1.45.0) ─────────────────────────────────
+
+export const TrendBucketSchema = z.object({
+  requests: z.number(),
+  enforcements: z.number(),
+  blocks: z.number(),
+  avg_latency_ms: z.number(),
+  receipts_issued: z.number(),
+});
+
+export const TrendSnapshotSchema = z.object({
+  rolling_hour: TrendBucketSchema,
+  rolling_hour_prev: TrendBucketSchema,
+  daily: TrendBucketSchema,
+  daily_prev: TrendBucketSchema,
+});
+
+export const DashboardSummarySchema = z.object({
+  trend: TrendSnapshotSchema,
 });
 
 // ── Types ────────────────────────────────────────────────────
@@ -149,6 +175,9 @@ export type QuotaEntry = z.infer<typeof QuotaEntrySchema>;
 export type UsageBucket = z.infer<typeof UsageBucketSchema>;
 export type PostureWarning = z.infer<typeof PostureWarningSchema>;
 export type TenantDetail = z.infer<typeof TenantDetailSchema>;
+export type TrendBucket = z.infer<typeof TrendBucketSchema>;
+export type TrendSnapshot = z.infer<typeof TrendSnapshotSchema>;
+export type DashboardSummary = z.infer<typeof DashboardSummarySchema>;
 
 // ── Fetch helper ─────────────────────────────────────────────
 
@@ -217,4 +246,10 @@ export function fetchTenantDetail(
     `/dashboard/tenants/${encodeURIComponent(tenantId)}`,
     TenantDetailSchema,
   );
+}
+
+export function fetchDashboardSummary(): Promise<
+  DashboardResult<DashboardSummary>
+> {
+  return dashboardFetch("/dashboard/summary", DashboardSummarySchema);
 }

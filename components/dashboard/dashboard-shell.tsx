@@ -15,6 +15,7 @@ import type {
   EnforcementOverview as EnforcementData,
   ActivityTrends,
   TenantsResponse,
+  DashboardSummary,
   DashboardResult,
 } from "@/lib/dashboard-client";
 import { HeroKpis } from "@/components/dashboard/hero-kpis";
@@ -39,6 +40,7 @@ export type DashboardData = {
   enforcement: DashboardResult<EnforcementData>;
   activity: DashboardResult<ActivityTrends>;
   tenants: DashboardResult<TenantsResponse>;
+  summary?: DashboardResult<DashboardSummary>;
 };
 
 type Props = {
@@ -116,7 +118,10 @@ export function DashboardShell({ initial }: Props) {
       {/* ── Hero KPIs ───────────────────────────────────────── */}
       <section aria-label="Key performance indicators">
         {renderSection(data.kpis, <KpiGridSkeleton />, (d) => (
-          <HeroKpis data={d} />
+          <HeroKpis
+            data={d}
+            trend={data.summary?.ok ? data.summary.data.trend : undefined}
+          />
         ))}
       </section>
 
