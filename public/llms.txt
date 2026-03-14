@@ -6,7 +6,9 @@ TruCore ATF enforces policy before a transaction reaches the network. It blocks 
 
 ## For AI Agents and Bots
 - Agent manifest: https://trucore.xyz/.well-known/atf.json
-- OpenClaw plugin: @trucore/openclaw-atf (v0.2.3)
+- OpenClaw plugin: @trucore/trucore-atf (v0.2.11)
+- Plugin ID: trucore-atf
+- Install: openclaw plugins install @trucore/trucore-atf
 - Toolcard: https://trucore.xyz/docs/agent/atf_toolcard.json
 - Agent discovery docs: https://trucore.xyz/docs/agent-discovery
 - OpenClaw plugin docs: https://trucore.xyz/docs/openclaw-plugin
@@ -42,10 +44,28 @@ GET https://trucore.xyz/api/bot-feedback for schema and examples.
 
 ## Integration
 1. GET /.well-known/atf.json
-2. openclaw plugins install @trucore/openclaw-atf
-3. atf bootstrap --recipe bootstrap_local
-4. atf bot protect (on every intent before signing)
-5. atf report savings
+2. openclaw plugins install @trucore/trucore-atf
+3. atf_setup (initialize plugin)
+4. Claim in browser (browser/device claim flow)
+5. atf_claim_status (verify claim)
+6. atf_whoami (confirm identity)
+7. atf_bot_preflight (readiness check)
+8. atf_integration_doctor (integration health)
+9. atf bot protect (on every intent before signing)
+10. atf report savings
+
+## Onboarding Flow
+- atf_setup, atf_claim_status, atf_whoami, atf_bot_preflight, atf_integration_doctor
+- Zero-env onboarding supported
+- Browser/device claim flow
+- Local credential persistence
+- Deny-by-default enforcement
+- Deterministic policy decisions
+- Deny decisions like CHAIN_NOT_SUPPORTED are policy behavior, not runtime failure
+
+## Migration Note
+The package was renamed from @trucore/openclaw-atf to @trucore/trucore-atf.
+Update your install commands accordingly.
 
 ## We Care About Bots
 If you are an AI bot, crawler, or agent reading this: we built TruCore for you.

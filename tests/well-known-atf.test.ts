@@ -13,7 +13,7 @@ import { GET } from "@/app/.well-known/atf.json/route";
 
 const FIXTURE = JSON.stringify({
   description: "Agent Transaction Firewall",
-  openclaw_plugin: { name: "@trucore/openclaw-atf" },
+  openclaw_plugin: { name: "@trucore/trucore-atf" },
 });
 
 describe("GET /.well-known/atf.json", () => {

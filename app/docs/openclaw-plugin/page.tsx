@@ -3,12 +3,12 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "OpenClaw Plugin: @trucore/openclaw-atf | TruCore Docs",
+  title: "OpenClaw Plugin: @trucore/trucore-atf | TruCore Docs",
   description:
-    "Install the @trucore/openclaw-atf OpenClaw plugin to add policy-enforced transaction protection to any autonomous agent. Thirteen tools, zero config, fail-closed by default.",
+    "Install the @trucore/trucore-atf OpenClaw plugin to add policy-enforced transaction protection to any autonomous agent. Thirteen tools, zero config, fail-closed by default.",
   keywords: [
     "OpenClaw plugin",
-    "@trucore/openclaw-atf",
+    "@trucore/trucore-atf",
     "AI agent firewall",
     "transaction guardrails",
     "ATF plugin",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "deterministic receipts",
   ],
   openGraph: {
-    title: "OpenClaw Plugin: @trucore/openclaw-atf | TruCore Docs",
+    title: "OpenClaw Plugin: @trucore/trucore-atf | TruCore Docs",
     description:
       "Add policy-enforced transaction protection to any agent with one install command. Thirteen tools, zero config, fail-closed by default.",
     url: "https://trucore.xyz/docs/openclaw-plugin",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Canonical tool surface — matches @trucore/openclaw-atf@0.2.3      */
+/*  Canonical tool surface — matches @trucore/trucore-atf@0.2.11     */
 /* ------------------------------------------------------------------ */
 const TOOLS: Array<{ name: string; description: string; category: string }> = [
   {
@@ -121,7 +121,7 @@ export default function OpenClawPluginPage() {
           OpenClaw Plugin
         </p>
         <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
-          @trucore/openclaw-atf
+          @trucore/trucore-atf
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           The official OpenClaw plugin for TruCore ATF. Install it, restart the
@@ -140,7 +140,7 @@ export default function OpenClawPluginPage() {
               Via OpenClaw gateway (recommended)
             </p>
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200 leading-relaxed">
-              {`openclaw plugins install @trucore/openclaw-atf
+              {`openclaw plugins install @trucore/trucore-atf
 openclaw gateway restart`}
             </pre>
           </div>
@@ -150,53 +150,57 @@ openclaw gateway restart`}
               Via npm (pinned version)
             </p>
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-              {`npm i @trucore/openclaw-atf@0.2.3`}
+              {`npm i @trucore/trucore-atf@0.2.11`}
             </pre>
           </div>
 
           <p className="text-sm text-slate-400">
             Published on{" "}
             <a
-              href="https://www.npmjs.com/package/@trucore/openclaw-atf"
+              href="https://www.npmjs.com/package/@trucore/trucore-atf"
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-primary-100 underline underline-offset-2 transition-colors hover:text-primary-200"
             >
               npm
             </a>
-            . Current version: <strong className="text-slate-200">0.2.3</strong>.
+            . Current version: <strong className="text-slate-200">0.2.11</strong>.
           </p>
         </div>
       </section>
 
-      {/* ── What’s new in 0.2.3 ── */}
+      {/* ── What's new in 0.2.11 ── */}
       <section className="space-y-4">
-        <HeadingAnchor id="whats-new">What&apos;s new in 0.2.3</HeadingAnchor>
+        <HeadingAnchor id="whats-new">What&apos;s new in 0.2.11</HeadingAnchor>
         <p className="text-slate-300">
-          Version 0.2.3 focuses on strict gateway compatibility. The plugin now
-          passes recursive schema validation on every tool and config schema,
-          which means it works reliably with stricter OpenClaw gateway builds
-          and third-party schema walkers.
+          Version 0.2.11 is the current published release. The package has been
+          renamed from <code className="font-mono text-slate-200">@trucore/openclaw-atf</code> to{" "}
+          <code className="font-mono text-slate-200">@trucore/trucore-atf</code>.{" "}
+          This release includes the onboarding verification flow (atf_setup,
+          browser/device claim, atf_claim_status, atf_whoami, atf_bot_preflight,
+          atf_integration_doctor), zero-env onboarding support, and deny-by-default
+          enforcement improvements.
         </p>
         <ul className="ml-5 list-disc space-y-2 text-sm text-slate-300">
           <li>
+            <strong className="text-slate-200">Package renamed.</strong>{" "}
+            The npm package is now <code className="font-mono text-slate-200">@trucore/trucore-atf</code>.
+            Install via <code className="font-mono text-slate-200">openclaw plugins install @trucore/trucore-atf</code>.
+          </li>
+          <li>
+            <strong className="text-slate-200">Onboarding verification flow.</strong>{" "}
+            A structured sequence for zero-env onboarding: atf_setup, browser/device
+            claim, atf_claim_status, atf_whoami, atf_bot_preflight, atf_integration_doctor.
+          </li>
+          <li>
+            <strong className="text-slate-200">Deny-by-default enforcement.</strong>{" "}
+            Deny decisions like <code className="font-mono text-slate-200">CHAIN_NOT_SUPPORTED</code> are
+            policy behavior, not runtime failure.
+          </li>
+          <li>
             <strong className="text-slate-200">Recursive schema guard.</strong>{" "}
-            A deep validation pass now runs over all 14 schemas (13 tools + 1 config)
-            before publish. Nested object nodes that previously lacked explicit
-            <code className="font-mono text-slate-200"> properties</code> and{" "}
-            <code className="font-mono text-slate-200">additionalProperties</code>{" "}
-            are now fully specified.
-          </li>
-          <li>
-            <strong className="text-slate-200">Three schema fixes.</strong>{" "}
-            <code className="font-mono text-slate-200">atf_protect_intent.inputSchema.intentJson</code>,{" "}
-            <code className="font-mono text-slate-200">atf_verify_receipt.inputSchema.receipt</code>, and{" "}
-            <code className="font-mono text-slate-200">atf_tx_explain.inputSchema.receipt</code>{" "}
-            now carry correct nested property definitions.
-          </li>
-          <li>
-            <strong className="text-slate-200">756 tests pass, zero failures.</strong>{" "}
-            Validated against the full ATF test suite before publish.
+            Deep validation on all 14 schemas (13 tools + 1 config).
+            756 tests pass, zero failures.
           </li>
         </ul>
       </section>
@@ -269,7 +273,7 @@ openclaw gateway restart`}
           <li>
             <strong className="text-slate-200">Install the plugin</strong>{" "}
             <code className="font-mono text-sm text-slate-200">
-              openclaw plugins install @trucore/openclaw-atf
+              openclaw plugins install @trucore/trucore-atf
             </code>
           </li>
           <li>

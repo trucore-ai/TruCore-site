@@ -1,11 +1,13 @@
-docs: align site with @trucore/openclaw-atf@0.2.3, add schema-hardening notes
+docs: align site with @trucore/trucore-atf@0.2.11, expand bot-facing plugin discovery
 
-- Bump openclaw_plugin version to 0.2.3 in atf.json, atf_toolcard.json, and all install snippets
-- Add whats-new-in-0.2.3 section to /docs/openclaw-plugin with schema-hardening summary
-- Add strict schema compatibility callout to /docs/agent-discovery with fix details
-- Update atf_toolcard.json description to mention recursive schema guard
-- Fix stale tool count in llms.txt from 7 to 13 and add openclaw-plugin docs link
-- Update version assertion in tool-name-consistency test to 0.2.3
-- Zero stale version references remain across codebase
-
-Lint: 0 errors, 0 warnings. Build: 121/121 pages. Tests: 213/213 pass.
+- Rename package from @trucore/openclaw-atf to @trucore/trucore-atf across all assets
+- Bump openclaw_plugin version to 0.2.11 in atf.json, atf_toolcard.json, and all install snippets
+- Add onboarding_flow, expected_behavior, verification_sequence, and deny_behavior_note to manifest
+- Create public/docs/agent/openclaw_plugin.json and openclaw_install.json for expanded discovery
+- Update /docs/agent-discovery with onboarding verification sequence and version note
+- Update /docs/openclaw-plugin with package rename and 0.2.11 release notes
+- Add minimal OpenClaw plugin mention to /docs/integration-pattern
+- Update llms.txt with full onboarding flow and migration note
+- Update atf_toolcard.json with new package fields, onboarding, and behavior metadata
+- Update version assertions in tool-name-consistency test to 0.2.11
+- Add migration.previous_package_name across all discovery JSON for backward compat

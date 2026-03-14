@@ -115,7 +115,7 @@ export const sections: DocsNavSection[] = [
         title: "OpenClaw Plugin",
         href: "/docs/openclaw-plugin",
         description:
-          "Install @trucore/openclaw-atf, review thirteen tools, safety defaults, and configuration options.",
+          "Install @trucore/trucore-atf, review thirteen tools, safety defaults, and configuration options.",
       },
       {
         title: "Agent Discovery",

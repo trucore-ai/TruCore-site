@@ -140,6 +140,30 @@ export default function DocsIntegrationPatternPage() {
           </ul>
         </div>
       </section>
+
+      {/* ── OpenClaw Plugin (minimal human-facing note) ── */}
+      <section className="space-y-3 border-t border-white/10 pt-8">
+        <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+          OpenClaw Plugin
+        </p>
+        <p className="text-sm text-slate-300">
+          For OpenClaw-based agents, ATF is available as a plugin. Install it
+          and the gateway handles policy enforcement automatically.
+        </p>
+        <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
+          {`openclaw plugins install @trucore/trucore-atf`}
+        </pre>
+        <p className="text-sm text-slate-400">
+          See{" "}
+          <Link
+            href="/docs/openclaw-plugin"
+            className="font-semibold text-primary-100 underline underline-offset-2 transition-colors hover:text-primary-200"
+          >
+            OpenClaw Plugin docs
+          </Link>{" "}
+          for tools, configuration, and the full onboarding flow.
+        </p>
+      </section>
     </article>
   );
 }

@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Agent Discovery: OpenClaw Plugin and Agent Manifest | TruCore",
     description:
-      "Machine-readable ATF manifest at /.well-known/atf.json. OpenClaw Plugin @trucore/openclaw-atf, recipes_v2, and deterministic receipts-backed savings reports.",
+      "Machine-readable ATF manifest at /.well-known/atf.json. OpenClaw Plugin @trucore/trucore-atf, recipes_v2, and deterministic receipts-backed savings reports.",
     url: "https://trucore.xyz/docs/agent-discovery",
     images: ["/opengraph-image"],
   },
@@ -152,7 +152,7 @@ const jsonLdSoftwareApplication = JSON.stringify({
     sameAs: [
       "https://github.com/TruCore-AI",
       "https://x.com/TruCore_AI",
-      "https://www.npmjs.com/package/@trucore/openclaw-atf",
+      "https://www.npmjs.com/package/@trucore/trucore-atf",
     ],
   },
 });
@@ -166,7 +166,7 @@ const jsonLdOrganization = JSON.stringify({
   sameAs: [
     "https://github.com/TruCore-AI",
     "https://x.com/TruCore_AI",
-    "https://www.npmjs.com/package/@trucore/openclaw-atf",
+    "https://www.npmjs.com/package/@trucore/trucore-atf",
   ],
 });
 
@@ -221,8 +221,16 @@ export default function AgentDiscoveryPage() {
 GET https://trucore.xyz/.well-known/atf.json
 
 # 2. Install the OpenClaw Plugin
-openclaw plugins install @trucore/openclaw-atf
+openclaw plugins install @trucore/trucore-atf
 openclaw gateway restart
+
+# Onboarding verification sequence
+atf_setup
+# Complete claim in browser
+atf_claim_status
+atf_whoami
+atf_bot_preflight
+atf_integration_doctor
 
 # 3. Bootstrap recipes
 atf bootstrap --format json --recipe bootstrap_local
@@ -344,7 +352,7 @@ POST https://trucore.xyz/api/bot-feedback
               [
                 "openclaw-plugin-integration",
                 "OpenClaw Plugin integration",
-                "Native @trucore/openclaw-atf plugin exposing thirteen typed tools for ATF discovery, bootstrap, protect, verify, report, health, integration doctor, preflight, explain, billing, and adoption advising.",
+                "Native @trucore/trucore-atf plugin exposing thirteen typed tools for ATF discovery, bootstrap, protect, verify, report, health, integration doctor, preflight, explain, billing, and adoption advising.",
               ],
             ].map(([id, label, desc]) => (
               <li key={id} className="flex flex-col gap-0.5 px-5 py-3">
@@ -443,7 +451,7 @@ POST https://trucore.xyz/api/bot-feedback
         {/* ── OpenClaw plugin ── */}
         <section className="space-y-5">
           <HeadingAnchor id="openclaw-plugin">
-            OpenClaw plugin: <code className="font-mono">@trucore/openclaw-atf</code>
+            OpenClaw plugin: <code className="font-mono">@trucore/trucore-atf</code>
           </HeadingAnchor>
           <p className="text-slate-300">
             The canonical way to integrate ATF with OpenClaw agents is the official
@@ -456,10 +464,10 @@ POST https://trucore.xyz/api/bot-feedback
             </p>
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
               {`# npm (versioned)
-npm i @trucore/openclaw-atf@0.2.3
+npm i @trucore/trucore-atf@0.2.11
 
 # Or via OpenClaw gateway:
-openclaw plugins install @trucore/openclaw-atf
+openclaw plugins install @trucore/trucore-atf
 openclaw gateway restart`}
             </pre>
           </div>
@@ -500,26 +508,41 @@ openclaw gateway restart`}
             </div>
           </div>
 
-          {/* Schema hardening (0.2.3) */}
+          {/* Version note (0.2.11) */}
           <div className="rounded-lg border border-emerald-400/20 bg-emerald-900/10 p-4 space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.1em] text-emerald-300">
-              Strict schema compatibility (0.2.3)
+              Current version: 0.2.11
             </p>
             <p className="text-sm text-slate-300">
-              Starting with 0.2.3, the plugin ships a recursive schema guard that
-              validates all 14 schemas (13 tool inputSchemas + 1 configSchema)
-              before every publish. Three nested object-schema issues were fixed:
+              Version 0.2.11 is the current published release. The package has been
+              renamed from <code className="font-mono text-slate-200">@trucore/openclaw-atf</code> to{" "}
+              <code className="font-mono text-slate-200">@trucore/trucore-atf</code>.
+              Update your install commands accordingly.
             </p>
-            <ul className="ml-5 list-disc space-y-1 text-sm text-slate-400">
-              <li><code className="font-mono text-slate-200">atf_protect_intent.inputSchema.intentJson</code></li>
-              <li><code className="font-mono text-slate-200">atf_verify_receipt.inputSchema.receipt</code></li>
-              <li><code className="font-mono text-slate-200">atf_tx_explain.inputSchema.receipt</code></li>
-            </ul>
+          </div>
+
+          {/* Onboarding verification sequence */}
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
+              Onboarding verification sequence
+            </p>
+            <p className="text-sm text-slate-300">
+              After installing the plugin, agents should follow this verification
+              sequence. Zero-env onboarding is supported: no environment variables
+              are required to get started.
+            </p>
+            <ol className="ml-5 list-decimal space-y-1 text-sm text-slate-300">
+              <li><code className="font-mono text-slate-200">atf_setup</code> &mdash; initialize plugin and local config</li>
+              <li>Complete claim in browser (browser/device claim flow)</li>
+              <li><code className="font-mono text-slate-200">atf_claim_status</code> &mdash; verify the claim was accepted</li>
+              <li><code className="font-mono text-slate-200">atf_whoami</code> &mdash; confirm identity and credential persistence</li>
+              <li><code className="font-mono text-slate-200">atf_bot_preflight</code> &mdash; run pre-session readiness check</li>
+              <li><code className="font-mono text-slate-200">atf_integration_doctor</code> &mdash; full integration health check</li>
+            </ol>
             <p className="text-sm text-slate-400">
-              All object nodes now carry explicit <code className="font-mono text-slate-200">properties</code> and{" "}
-              <code className="font-mono text-slate-200">additionalProperties</code> fields.
-              The plugin should no longer crash strict gateway schema walkers.
-              756 tests pass, 0 failures.
+              Deny decisions like <code className="font-mono text-slate-200">CHAIN_NOT_SUPPORTED</code> are
+              policy behavior, not runtime failure. Agents should interpret deny
+              reason codes as expected policy enforcement.
             </p>
           </div>
 
@@ -766,8 +789,8 @@ ATF_ENABLE_HYPERLIQUID_POLICY=1`}
                 "GET https://trucore.xyz/.well-known/atf.json — parse manifest_hash and recipes_v2.",
               ],
               [
-                "Install @trucore/openclaw-atf",
-                "openclaw plugins install @trucore/openclaw-atf && openclaw gateway restart",
+                "Install @trucore/trucore-atf",
+                "openclaw plugins install @trucore/trucore-atf && openclaw gateway restart",
               ],
               [
                 "Run atf bootstrap",

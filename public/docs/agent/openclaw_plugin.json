@@ -1,0 +1,73 @@
+{
+    "schema_version": "1",
+    "package_name": "@trucore/trucore-atf",
+    "plugin_id": "trucore-atf",
+    "version": "0.2.11",
+    "product": "TruCore ATF OpenClaw Plugin",
+    "description": "OpenClaw plugin for TruCore ATF. Policy-enforced transaction protection for autonomous agents. Thirteen typed tools, zero config, fail-closed by default.",
+    "install_command": "openclaw plugins install @trucore/trucore-atf",
+    "npm_install": "npm i @trucore/trucore-atf@0.2.11",
+    "docs_url": "/docs/agent-discovery",
+    "toolcard_url": "/docs/agent/atf_toolcard.json",
+    "manifest_url": "/.well-known/atf.json",
+    "migration": {
+        "previous_package_name": "@trucore/openclaw-atf",
+        "current_package_name": "@trucore/trucore-atf",
+        "note": "The package was renamed from @trucore/openclaw-atf to @trucore/trucore-atf. Update your install commands accordingly."
+    },
+    "onboarding_flow": [
+        "atf_setup",
+        "atf_claim_status",
+        "atf_whoami",
+        "atf_bot_preflight",
+        "atf_integration_doctor"
+    ],
+    "expected_behavior": {
+        "zero_env_onboarding": true,
+        "browser_device_claim_flow": true,
+        "local_credential_persistence": true,
+        "deny_by_default_enforcement": true,
+        "deterministic_policy_decisions": true
+    },
+    "deny_behavior_note": "Deny decisions such as CHAIN_NOT_SUPPORTED are policy behavior, not runtime failure. Agents should interpret deny reason codes as expected policy enforcement.",
+    "verification_sequence": [
+        {"step": 1, "command": "atf_setup", "description": "Initialize plugin and local config"},
+        {"step": 2, "action": "claim_in_browser", "description": "Complete browser/device claim flow"},
+        {"step": 3, "command": "atf_claim_status", "description": "Verify claim was accepted"},
+        {"step": 4, "command": "atf_whoami", "description": "Confirm identity and credential persistence"},
+        {"step": 5, "command": "atf_bot_preflight", "description": "Run pre-session readiness check"},
+        {"step": 6, "command": "atf_integration_doctor", "description": "Full integration health check"}
+    ],
+    "safety_defaults": {
+        "allowNetwork": false,
+        "allowExecuteSafe": true,
+        "tools_optional": true
+    },
+    "tools": [
+        "atf_health",
+        "atf_discover",
+        "atf_bootstrap_plan",
+        "atf_bootstrap_execute_safe",
+        "atf_protect_intent",
+        "atf_verify_receipt",
+        "atf_report_savings",
+        "atf_integration_doctor",
+        "atf_bot_preflight",
+        "atf_tx_explain",
+        "atf_billing_info",
+        "atf_adoption_advisor",
+        "atf_billing_claim"
+    ],
+    "version_guidance": {
+        "current": "0.2.11",
+        "minimum_recommended": "0.2.11",
+        "install_latest": "openclaw plugins install @trucore/trucore-atf",
+        "install_pinned": "npm i @trucore/trucore-atf@0.2.11"
+    },
+    "contact": {
+        "x": "https://x.com/TruCore_AI",
+        "github": "https://github.com/TruCore-AI",
+        "bot_feedback": "https://trucore.xyz/api/bot-feedback",
+        "human_feedback": "https://trucore.xyz/feedback"
+    }
+}

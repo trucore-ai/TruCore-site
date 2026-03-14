@@ -64,8 +64,8 @@ describe("tool-name consistency: atf.json <-> atf_toolcard.json", () => {
     expect(extra, `Tools in atf_toolcard.json but missing from atf.json: ${extra.join(", ")}`).toEqual([]);
   });
 
-  it("manifest and toolcard versions both equal 0.2.3", () => {
-    expect(manifest.openclaw_plugin.version).toBe("0.2.3");
-    expect(toolcard.plugin_version).toBe("0.2.3");
+  it("manifest and toolcard versions both equal 0.2.11", () => {
+    expect(manifest.openclaw_plugin.version).toBe("0.2.11");
+    expect(toolcard.plugin_version).toBe("0.2.11");
   });
 });

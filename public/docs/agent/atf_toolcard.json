@@ -1,8 +1,32 @@
 {
     "schema_version": "1",
-    "plugin": "@trucore/openclaw-atf",
-    "plugin_version": "0.2.3",
-    "description": "OpenClaw plugin for TruCore ATF. Provides thirteen typed tools for agent discovery, health, bootstrap, intent protection, receipt verification, savings reporting, integration doctor, preflight, explain, billing, and adoption advising. Version 0.2.3 adds a recursive schema guard and fixes three nested object-schema issues for strict gateway compatibility.",
+    "plugin": "@trucore/trucore-atf",
+    "plugin_id": "trucore-atf",
+    "plugin_version": "0.2.11",
+    "description": "OpenClaw plugin for TruCore ATF. Provides thirteen typed tools for agent discovery, health, bootstrap, intent protection, receipt verification, savings reporting, integration doctor, preflight, explain, billing, and adoption advising. Install via: openclaw plugins install @trucore/trucore-atf",
+    "install_command": "openclaw plugins install @trucore/trucore-atf",
+    "package_name": "@trucore/trucore-atf",
+    "onboarding_flow": ["atf_setup", "atf_claim_status", "atf_whoami", "atf_bot_preflight", "atf_integration_doctor"],
+    "expected_behavior": {
+        "zero_env_onboarding": true,
+        "browser_device_claim_flow": true,
+        "local_credential_persistence": true,
+        "deny_by_default_enforcement": true,
+        "deterministic_policy_decisions": true
+    },
+    "verification_sequence": [
+        {"step": 1, "command": "atf_setup", "description": "Initialize plugin and local config"},
+        {"step": 2, "action": "claim_in_browser", "description": "Complete browser/device claim flow"},
+        {"step": 3, "command": "atf_claim_status", "description": "Verify claim was accepted"},
+        {"step": 4, "command": "atf_whoami", "description": "Confirm identity and credential persistence"},
+        {"step": 5, "command": "atf_bot_preflight", "description": "Run pre-session readiness check"},
+        {"step": 6, "command": "atf_integration_doctor", "description": "Full integration health check"}
+    ],
+    "deny_behavior_note": "Deny decisions such as CHAIN_NOT_SUPPORTED are policy behavior, not runtime failure. Agents should interpret deny reason codes as expected policy enforcement.",
+    "migration": {
+        "previous_package_name": "@trucore/openclaw-atf",
+        "current_package_name": "@trucore/trucore-atf"
+    },
     "docs_url": "/docs/agent-discovery",
     "observability": {
         "dashboard_snapshot": "/api/agent/dashboard",
