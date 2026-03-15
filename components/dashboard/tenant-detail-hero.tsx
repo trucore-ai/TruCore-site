@@ -11,6 +11,10 @@
 
 import type { TenantDetail } from "@/lib/dashboard-client";
 import { StatusChip } from "@/components/dashboard/status-chip";
+import {
+  hasPremiumAnalytics,
+  premiumAnalyticsLabel,
+} from "@/lib/premium-analytics";
 
 function compactNum(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -102,6 +106,36 @@ export function TenantDetailHero({ tenant }: TenantDetailHeroProps) {
             value={relativeTime(tenant.last_activity_ts ?? tenant.last_seen)}
           />
         </div>
+
+        {/* Premium analytics entitlement badge (operator-only) */}
+        {tenant.premium_analytics && (
+          <>
+            <div className="gradient-divider mt-4" />
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <MetaItem
+                label="Premium Analytics"
+                value={premiumAnalyticsLabel(tenant.premium_analytics.state)}
+                className={
+                  hasPremiumAnalytics(
+                    tenant.premium_analytics as {
+                      enabled: boolean;
+                      state: "inactive" | "preview" | "paid" | "bundled" | "expired";
+                      source: string;
+                      expires_at?: number;
+                    },
+                  )
+                    ? "text-emerald-300"
+                    : "text-slate-500"
+                }
+              />
+              <MetaItem
+                label="Entitlement Source"
+                value={tenant.premium_analytics.source}
+                className="text-slate-400"
+              />
+            </div>
+          </>
+        )}
 
         {/* v1.45.0 activity strip (only when data is present) */}
         {(tenant.requests_today != null ||

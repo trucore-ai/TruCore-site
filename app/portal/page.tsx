@@ -7,6 +7,8 @@ import {
   resolvePartnerPortalSession,
 } from "@/lib/partner-portal";
 import { PortalVerifyPanel } from "@/components/portal-verify-panel";
+import { PortalPremiumSection } from "@/components/portal-premium-section";
+import { resolvePortalPremium } from "@/lib/premium-analytics";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -46,6 +48,7 @@ export default async function PartnerPortalPage() {
 
   const keyRows = await listPartnerKeysAndUsage(session.ownerEmail);
   const projectName = session.ownerProject || "Unspecified";
+  const premiumEntitlement = resolvePortalPremium(session.ownerEmail);
 
   return (
     <main className="min-h-screen bg-neutral-950 px-6 py-8 text-slate-100 md:px-10 md:py-10">
@@ -54,6 +57,9 @@ export default async function PartnerPortalPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-2">
               <h1 className="text-3xl font-bold tracking-tight">Partner Portal</h1>
+              <p className="text-sm text-slate-300">
+                Your tenant-scoped view &mdash; everything shown here belongs to your account and your protected activity only. No other tenant&apos;s data is visible.
+              </p>
               <p className="text-sm text-slate-300">Use your API key with x-api-key to access /api/simulate.</p>
               <p className="text-sm text-slate-300">Your current tier: Partner Sandbox (120 req/min).</p>
               <p className="text-sm text-slate-300">Rate-limit headers: X-RateLimit-Limit/Remaining/Reset.</p>
@@ -81,6 +87,7 @@ export default async function PartnerPortalPage() {
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">API Keys</h2>
+          <p className="text-xs text-slate-500">Only keys belonging to your tenant are shown. Other tenants cannot see or access your keys. Keys are never displayed in full after creation.</p>
           <div className="overflow-x-auto rounded-lg border border-white/10">
             <table className="w-full text-sm">
               <thead>
@@ -125,6 +132,7 @@ export default async function PartnerPortalPage() {
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">Usage Snapshots</h2>
+          <p className="text-xs text-slate-500">Metrics and usage counts shown here reflect your tenant&apos;s protected activity only. Platform-wide aggregates are not visible in this view.</p>
           <div className="overflow-x-auto rounded-lg border border-white/10">
             <table className="w-full text-sm">
               <thead>
@@ -209,6 +217,37 @@ export default async function PartnerPortalPage() {
         </section>
 
         <PortalVerifyPanel />
+
+        {/* ── Future premium analytics sections ─────────────────
+         *  Gated by entitlement. Preview/paid/bundled tenants
+         *  see these. Inactive tenants silently see nothing —
+         *  no paywall, no upgrade prompt.
+         *
+         *  Currently all portal tenants are design-partner preview
+         *  so every section is visible. When monetization activates,
+         *  resolvePortalPremium() will return inactive for
+         *  non-paying tenants and these sections disappear quietly.
+         *
+         *  Sections planned for this area:
+         *  - Enhanced Usage Trends (time-series visualization)
+         *  - Source Attribution (SDK / integration path insight)
+         *  - Advanced Posture Context (warnings, security score)
+         *  - Extended History (30d+ data windows)
+         * ────────────────────────────────────────────────────── */}
+        <PortalPremiumSection entitlement={premiumEntitlement}>
+          <section className="space-y-3 rounded-xl border border-white/10 bg-white/[0.02] p-5">
+            <h2 className="text-xl font-semibold">Advanced Analytics</h2>
+            <p className="text-sm text-slate-300">
+              Deeper usage trends, source attribution, and posture
+              insights for your tenant&apos;s protected activity.
+            </p>
+            <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-6 text-center">
+              <p className="text-xs text-slate-500">
+                Advanced analytics panels will appear here as they become available.
+              </p>
+            </div>
+          </section>
+        </PortalPremiumSection>
       </div>
     </main>
   );
