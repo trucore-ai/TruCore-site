@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { listPartnerKeysAndUsage } from "@/lib/db";
 import {
   PARTNER_PORTAL_COOKIE_NAME,
   resolvePartnerPortalSession,
 } from "@/lib/partner-portal";
+import { derivePortalActivationState } from "@/lib/portal-activation";
+import { PortalActivationGuide } from "@/components/portal-activation-guide";
 import { PortalVerifyPanel } from "@/components/portal-verify-panel";
 import { PortalPremiumSection } from "@/components/portal-premium-section";
 import { resolvePortalPremium } from "@/lib/premium-analytics";
@@ -50,6 +51,7 @@ export default async function PartnerPortalPage() {
   const keyRows = await listPartnerKeysAndUsage(session.ownerEmail);
   const projectName = session.ownerProject || "Unspecified";
   const premiumEntitlement = resolvePortalPremium(session.ownerEmail);
+  const activation = derivePortalActivationState(keyRows);
 
   return (
     <main className="min-h-screen bg-neutral-950 px-6 py-8 text-slate-100 md:px-10 md:py-10">
@@ -86,47 +88,8 @@ export default async function PartnerPortalPage() {
           </div>
         </header>
 
-        {/* ── Getting Started — activation checklist ── */}
-        <section className="space-y-4 rounded-xl border border-accent-500/20 bg-accent-500/[0.04] p-5">
-          <h2 className="text-xl font-semibold text-accent-300">Getting started</h2>
-          <p className="text-sm text-slate-300">
-            You have portal access. Follow these steps to complete your first protected trade and verify a receipt.
-          </p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Link
-              href="/docs/5-minute-quickstart"
-              className="block rounded-lg border border-white/10 bg-neutral-900/50 p-4 transition-colors hover:border-primary-300/30"
-            >
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-accent-400/40 text-xs font-bold text-accent-300">1</span>
-              <p className="mt-2 font-semibold text-accent-300">Run your first request</p>
-              <p className="mt-1 text-xs text-slate-400">Use the curl example below or follow the 5-minute quickstart.</p>
-            </Link>
-            <Link
-              href="/docs/first-protected-trade"
-              className="block rounded-lg border border-white/10 bg-neutral-900/50 p-4 transition-colors hover:border-primary-300/30"
-            >
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-accent-400/40 text-xs font-bold text-accent-300">2</span>
-              <p className="mt-2 font-semibold text-accent-300">Protect your first trade</p>
-              <p className="mt-1 text-xs text-slate-400">Submit a real intent via HTTP, Python, TypeScript, CLI, or OpenClaw.</p>
-            </Link>
-            <Link
-              href="/verify"
-              className="block rounded-lg border border-white/10 bg-neutral-900/50 p-4 transition-colors hover:border-primary-300/30"
-            >
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-accent-400/40 text-xs font-bold text-accent-300">3</span>
-              <p className="mt-2 font-semibold text-accent-300">Verify your receipt</p>
-              <p className="mt-1 text-xs text-slate-400">Paste your content_hash into the verifier to confirm integrity.</p>
-            </Link>
-            <Link
-              href="/builders"
-              className="block rounded-lg border border-white/10 bg-neutral-900/50 p-4 transition-colors hover:border-primary-300/30"
-            >
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-accent-400/40 text-xs font-bold text-accent-300">4</span>
-              <p className="mt-2 font-semibold text-accent-300">Explore builder resources</p>
-              <p className="mt-1 text-xs text-slate-400">API reference, CLI, policy model, integration patterns, and more.</p>
-            </Link>
-          </div>
-        </section>
+        {/* ── Activation-aware guidance — adapts to portal state ── */}
+        <PortalActivationGuide activation={activation} />
 
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">API Keys</h2>
