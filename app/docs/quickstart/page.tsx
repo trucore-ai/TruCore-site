@@ -44,6 +44,16 @@ export default function DocsQuickstartPage() {
           calling <code className="font-mono text-slate-200">/api/simulate</code>. Keys are issued and managed by
           TruCore, and revoked keys return <code className="font-mono text-slate-200">401 invalid_api_key</code>.
         </p>
+        <p className="text-slate-300">
+          Already have a key?{" "}
+          <Link
+            href="/portal"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            Open your portal
+          </Link>{" "}
+          to view your keys and usage.
+        </p>
         <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
 {`curl -sS https://trucore.xyz/api/simulate \\
   -H "content-type: application/json" \\
@@ -128,6 +138,20 @@ if (!validation.ok) reject(validation.reason)`}
 })`}
           </pre>
         </div>
+      </section>
+
+      <section className="space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-5">
+        <HeadingAnchor id="protect-a-real-intent">Protect a real bot intent</HeadingAnchor>
+        <p className="text-slate-300">
+          Ready to go beyond the simulator? Follow the{" "}
+          <Link
+            href="/docs/first-protected-trade"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            First Protected Trade
+          </Link>
+          {" "}guide for the full protect → receipt → verify flow using HTTP, Python, TypeScript, CLI, or OpenClaw.
+        </p>
       </section>
 
       <section className="space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-5">

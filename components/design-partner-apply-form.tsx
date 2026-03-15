@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { joinWaitlist, type WaitlistResult } from "@/app/actions/waitlist";
 import { Button } from "@/components/ui/button";
 import { trackEvent } from "@/lib/analytics";
@@ -104,6 +105,34 @@ export function DesignPartnerApplyForm() {
             business day.
           </p>
         )}
+
+        {/* ── While you wait — activation next steps ── */}
+        <div className="mt-4 border-t border-white/10 pt-4">
+          <p className="text-sm font-semibold text-slate-200">While you wait, get started:</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <Link
+              href="/atf/simulator"
+              className="block rounded-lg border border-white/10 bg-neutral-900/50 p-3 transition-colors hover:border-primary-300/30"
+            >
+              <p className="text-sm font-semibold text-accent-300">Try the sandbox</p>
+              <p className="mt-0.5 text-xs text-slate-400">No key required. Simulate a policy check now.</p>
+            </Link>
+            <Link
+              href="/docs/first-protected-trade"
+              className="block rounded-lg border border-white/10 bg-neutral-900/50 p-3 transition-colors hover:border-primary-300/30"
+            >
+              <p className="text-sm font-semibold text-accent-300">First protected trade</p>
+              <p className="mt-0.5 text-xs text-slate-400">See the full protect → receipt → verify flow.</p>
+            </Link>
+            <Link
+              href="/docs/5-minute-quickstart"
+              className="block rounded-lg border border-white/10 bg-neutral-900/50 p-3 transition-colors hover:border-primary-300/30"
+            >
+              <p className="text-sm font-semibold text-accent-300">5-minute quickstart</p>
+              <p className="mt-0.5 text-xs text-slate-400">Run one request and see deterministic output.</p>
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

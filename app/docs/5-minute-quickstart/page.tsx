@@ -39,6 +39,23 @@ export default function DocsFiveMinuteQuickstartPage() {
         <p className="text-slate-300">
           You can also use the public tier without a key at 30 requests per minute.
         </p>
+        <p className="text-slate-300">
+          Already have a key?{" "}
+          <Link
+            href="/portal"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            Open your portal
+          </Link>{" "}
+          to see your keys and usage, or skip to{" "}
+          <Link
+            href="/docs/first-protected-trade"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            First Protected Trade
+          </Link>
+          .
+        </p>
       </section>
 
       <section className="space-y-4">
@@ -100,6 +117,17 @@ export default function DocsFiveMinuteQuickstartPage() {
         <HeadingAnchor id="why-this-matters">4. Why This Matters</HeadingAnchor>
         <p className="text-slate-300">
           ATF enforces policy before execution and generates deterministic receipts for auditability.
+        </p>
+        <p className="text-slate-300">
+          <strong className="text-slate-100">Ready to protect a real bot intent?</strong>{" "}
+          Follow the{" "}
+          <Link
+            href="/docs/first-protected-trade"
+            className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+          >
+            First Protected Trade
+          </Link>
+          {" "}guide for the full protect → receipt → verify flow with HTTP, Python, TypeScript, CLI, or OpenClaw.
         </p>
         <p className="text-slate-300">
           Continue with{" "}

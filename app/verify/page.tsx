@@ -3,6 +3,7 @@ import Link from "next/link";
 import { VerifyReceiptForm } from "@/components/verify-receipt-form";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
+import { TrackedLink } from "@/components/tracked-link";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -69,6 +70,54 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
           initialFrom={initialFrom}
           shouldAutofetchSignature={shouldAutofetchSignature}
         />
+      </Section>
+
+      {/* ── Next steps ── */}
+      <Section divider className="fade-in-up fade-delay-2">
+        <div className="max-w-3xl">
+          <h2 className="text-2xl font-bold tracking-tight text-accent-300">What to do next</h2>
+          <p className="mt-2 text-sm text-slate-400">
+            Haven&apos;t protected a trade yet? Start with the golden path. Already verified? Explore deeper integration.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <TrackedLink
+              href="/docs/first-protected-trade"
+              eventName="verify_next_golden_path_click"
+              eventProps={{ location: "verify_page" }}
+              className="block rounded-lg border border-accent-500/20 bg-accent-500/[0.04] p-4 transition-colors hover:border-primary-300/30"
+            >
+              <span className="font-semibold text-accent-300">First protected trade</span>
+              <span className="mt-1 block text-sm text-slate-400">Protect an intent, get a receipt, verify it. Start here if you haven&apos;t yet.</span>
+            </TrackedLink>
+            <TrackedLink
+              href="/portal"
+              eventName="verify_next_portal_click"
+              eventProps={{ location: "verify_page" }}
+              className="block rounded-lg border border-white/10 bg-neutral-900/50 p-4 transition-colors hover:border-primary-300/30"
+            >
+              <span className="font-semibold text-accent-300">Your portal</span>
+              <span className="mt-1 block text-sm text-slate-400">View your API keys, usage, and verify receipts from your own activity.</span>
+            </TrackedLink>
+            <TrackedLink
+              href="/docs/receipt-specification-v1"
+              eventName="verify_next_receipt_spec_click"
+              eventProps={{ location: "verify_page" }}
+              className="block rounded-lg border border-white/10 bg-neutral-900/50 p-4 transition-colors hover:border-primary-300/30"
+            >
+              <span className="font-semibold text-accent-300">Receipt specification</span>
+              <span className="mt-1 block text-sm text-slate-400">Normative contract, hash rules, version policy.</span>
+            </TrackedLink>
+            <TrackedLink
+              href="/builders"
+              eventName="verify_next_builders_click"
+              eventProps={{ location: "verify_page" }}
+              className="block rounded-lg border border-white/10 bg-neutral-900/50 p-4 transition-colors hover:border-primary-300/30"
+            >
+              <span className="font-semibold text-accent-300">For bot builders</span>
+              <span className="mt-1 block text-sm text-slate-400">Integration paths, resources, and early access.</span>
+            </TrackedLink>
+          </div>
+        </div>
       </Section>
     </Container>
   );
