@@ -5,6 +5,16 @@ import {
   type AcquisitionFunnelSnapshot,
   type AcquisitionRecentRow,
 } from "@/lib/db";
+import {
+  enrichWithGuidance,
+  computeActionSummary,
+  computePrioritySummary,
+  ACTION_CONFIG,
+  PRIORITY_CONFIG,
+  type AcquisitionRowWithGuidance,
+  type FollowUpAction,
+  type FollowUpPriority,
+} from "@/lib/acquisition-followup";
 
 /* ────────────────────────────────────────────────────────────────
  *  /admin/acquisition — Operator Acquisition Funnel
@@ -26,6 +36,11 @@ export default async function AdminAcquisitionPage() {
   if (!isValid) redirect("/admin/login");
 
   const data = await getAcquisitionFunnelSnapshot();
+
+  /* ── Derive follow-up guidance for each recent lead ──── */
+  const guidedRows = enrichWithGuidance(data.recent);
+  const actionSummary = computeActionSummary(guidedRows);
+  const prioritySummary = computePrioritySummary(guidedRows);
 
   return (
     <div className="min-h-screen bg-neutral-950 p-6 text-slate-100 md:p-10">
@@ -114,6 +129,48 @@ export default async function AdminAcquisitionPage() {
           />
         </div>
       </div>
+
+      {/* ── Follow-up guidance summary ────────────────────── */}
+      {guidedRows.length > 0 && (
+        <div className="mb-8">
+          <SectionHeading>Operator Follow-Up Guidance</SectionHeading>
+          <p className="mt-1 text-[10px] text-slate-600">
+            Deterministic next-action recommendations for recent leads.
+            Based on API key status, portal status, build stage, and intent.
+          </p>
+
+          {/* Priority breakdown */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {prioritySummary.map((ps) => (
+              <span
+                key={ps.priority}
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs"
+              >
+                <span className={`inline-block h-2 w-2 rounded-full ${ps.color}`} />
+                <span className="font-semibold text-slate-200">{ps.count}</span>
+                <span className="text-slate-400">{ps.label}</span>
+              </span>
+            ))}
+          </div>
+
+          {/* Action breakdown */}
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {actionSummary.map((as) => (
+              <div
+                key={as.action}
+                className="rounded-lg border border-white/10 bg-neutral-900/60 px-3 py-2"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${as.color}`}>
+                    {as.label}
+                  </span>
+                </div>
+                <p className="mt-1 text-lg font-semibold text-slate-100">{as.count}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Activation linkage ────────────────────────────── */}
       <div className="mb-8">
@@ -301,14 +358,15 @@ export default async function AdminAcquisitionPage() {
         />
       </div>
 
-      {/* ── Recent submissions (enriched) ─────────────────── */}
+      {/* ── Recent submissions (enriched with follow-up guidance) ── */}
       <div className="mb-8">
-        <SectionHeading>Recent Submissions</SectionHeading>
+        <SectionHeading>Recent Submissions — With Follow-Up Guidance</SectionHeading>
         <p className="mt-1 text-[10px] text-slate-600">
-          Last 30 signups with activation badges. High-signal applicants worth
-          direct follow-up are marked with quality indicators.
+          Last 30 signups sorted by follow-up priority. Each row shows a
+          deterministic recommended next action based on API key status,
+          portal access, build stage, and intent.
         </p>
-        <RecentTable rows={data.recent} />
+        <RecentTable rows={guidedRows} />
       </div>
 
       {/* ── Interpretation note ───────────────────────────── */}
@@ -525,7 +583,7 @@ function ActivationBadges({ row }: { row: AcquisitionRecentRow }) {
   );
 }
 
-function RecentTable({ rows }: { rows: AcquisitionRecentRow[] }) {
+function RecentTable({ rows }: { rows: AcquisitionRowWithGuidance[] }) {
   if (rows.length === 0) {
     return <p className="mt-2 text-sm text-slate-400">No submissions yet.</p>;
   }
@@ -535,15 +593,15 @@ function RecentTable({ rows }: { rows: AcquisitionRecentRow[] }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-white/10 bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">
+            <th className="px-4 py-3">Priority</th>
+            <th className="px-4 py-3">Next Action</th>
             <th className="px-4 py-3">Time</th>
             <th className="px-4 py-3">Email</th>
             <th className="px-4 py-3">Intent</th>
             <th className="px-4 py-3">Source</th>
             <th className="px-4 py-3">Build Stage</th>
-            <th className="px-4 py-3">Integrations</th>
             <th className="px-4 py-3">Activation</th>
             <th className="px-4 py-3">Status</th>
-            <th className="px-4 py-3">Project</th>
           </tr>
         </thead>
         <tbody>
@@ -552,6 +610,12 @@ function RecentTable({ rows }: { rows: AcquisitionRecentRow[] }) {
               key={i}
               className="border-b border-white/5 last:border-b-0"
             >
+              <td className="px-4 py-3">
+                <PriorityChip priority={row.guidance.priority} />
+              </td>
+              <td className="px-4 py-3">
+                <NextActionBadge action={row.guidance.action} reason={row.guidance.reason} />
+              </td>
               <td className="whitespace-nowrap px-4 py-3 text-slate-400">
                 {fmtDate(row.created_at)}
               </td>
@@ -585,34 +649,10 @@ function RecentTable({ rows }: { rows: AcquisitionRecentRow[] }) {
                 )}
               </td>
               <td className="px-4 py-3">
-                {row.integrations_interest && row.integrations_interest.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {row.integrations_interest.slice(0, 3).map((int) => (
-                      <span
-                        key={int}
-                        className="inline-block rounded bg-white/5 px-1.5 py-0.5 text-[9px] text-slate-400"
-                      >
-                        {int}
-                      </span>
-                    ))}
-                    {row.integrations_interest.length > 3 && (
-                      <span className="text-[9px] text-slate-600">
-                        +{row.integrations_interest.length - 3}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-slate-600">—</span>
-                )}
-              </td>
-              <td className="px-4 py-3">
                 <ActivationBadges row={row} />
               </td>
               <td className="px-4 py-3">
                 <StatusBadge status={row.status} />
-              </td>
-              <td className="px-4 py-3 text-slate-400">
-                {row.project_name ?? "—"}
               </td>
             </tr>
           ))}
@@ -636,6 +676,34 @@ function StatusBadge({ status }: { status: string }) {
       className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${color}`}
     >
       {status}
+    </span>
+  );
+}
+
+function PriorityChip({ priority }: { priority: FollowUpPriority }) {
+  const cfg = PRIORITY_CONFIG[priority];
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className={`inline-block h-2 w-2 rounded-full ${cfg.dot}`} />
+      <span className={`text-xs font-semibold ${cfg.color}`}>{cfg.label}</span>
+    </span>
+  );
+}
+
+function NextActionBadge({
+  action,
+  reason,
+}: {
+  action: FollowUpAction;
+  reason: string;
+}) {
+  const cfg = ACTION_CONFIG[action];
+  return (
+    <span
+      className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${cfg.color}`}
+      title={reason}
+    >
+      {cfg.icon} {cfg.label}
     </span>
   );
 }

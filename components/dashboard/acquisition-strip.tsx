@@ -16,6 +16,11 @@ import {
   getAcquisitionFunnelSnapshot,
   type AcquisitionFunnelSnapshot,
 } from "@/lib/db";
+import {
+  enrichWithGuidance,
+  computePrioritySummary,
+  PRIORITY_CONFIG,
+} from "@/lib/acquisition-followup";
 
 export async function AcquisitionStrip() {
   let data: AcquisitionFunnelSnapshot | null = null;
@@ -40,6 +45,10 @@ export async function AcquisitionStrip() {
     data.total_signups > 0
       ? ((data.signups_with_api_key / data.total_signups) * 100).toFixed(1)
       : "0";
+
+  /* Derive follow-up priority summary for recent leads */
+  const guidedRows = enrichWithGuidance(data.recent);
+  const prioritySummary = computePrioritySummary(guidedRows);
 
   return (
     <div className="space-y-3">
@@ -78,6 +87,23 @@ export async function AcquisitionStrip() {
           hint="Has API key but not portal-active"
         />
       </div>
+
+      {/* Follow-up priority summary */}
+      {prioritySummary.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+          <span className="font-medium text-slate-400">Follow-up:</span>
+          {prioritySummary.map((ps) => (
+            <span
+              key={ps.priority}
+              className="inline-flex items-center gap-1 rounded bg-white/5 px-1.5 py-0.5"
+            >
+              <span className={`inline-block h-1.5 w-1.5 rounded-full ${ps.color}`} />
+              <span className="font-semibold text-slate-400">{ps.count}</span>
+              <span>{PRIORITY_CONFIG[ps.priority as keyof typeof PRIORITY_CONFIG].label}</span>
+            </span>
+          ))}
+        </div>
+      )}
 
       {data.top_sources.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
