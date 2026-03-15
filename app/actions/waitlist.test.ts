@@ -101,6 +101,7 @@ describe("joinWaitlist", () => {
       message: "You're on the list. We'll share early-access updates soon.",
       intent: "standard",
       schedulingUrl: undefined,
+      emailEnabled: false,
     });
 
     expect(mocks.ensureWaitlistTableMock).toHaveBeenCalledTimes(1);
@@ -178,6 +179,7 @@ describe("joinWaitlist", () => {
       message: "Application received. We'll follow up shortly.",
       intent: "design_partner",
       schedulingUrl: "https://cal.example.com/trucore",
+      emailEnabled: false,
     });
 
     expect(mocks.upsertWaitlistSignupMock).toHaveBeenCalledWith(
@@ -228,6 +230,113 @@ describe("joinWaitlist", () => {
     expect(mocks.upsertWaitlistSignupMock).toHaveBeenCalledTimes(1);
     expect(mocks.sendAdminNotificationMock).toHaveBeenCalledTimes(1);
     expect(mocks.sendUserConfirmationMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns emailEnabled=true when RESEND_API_KEY is configured", async () => {
+    process.env.RESEND_API_KEY = "re_test_key";
+
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "email-enabled@example.com",
+        intent: "standard",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.emailEnabled).toBe(true);
+
+    delete process.env.RESEND_API_KEY;
+  });
+
+  it("returns emailEnabled=false when RESEND_API_KEY is absent", async () => {
+    delete process.env.RESEND_API_KEY;
+
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "email-disabled@example.com",
+        intent: "standard",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.emailEnabled).toBe(false);
+  });
+
+  it("returns schedulingUrl only for design_partner when configured", async () => {
+    process.env.DESIGN_PARTNER_SCHEDULING_URL = "https://cal.example.com/trucore";
+
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "sched@example.com",
+        intent: "standard",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.schedulingUrl).toBeUndefined();
+  });
+
+  it("omits schedulingUrl for design_partner when not configured", async () => {
+    delete process.env.DESIGN_PARTNER_SCHEDULING_URL;
+
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "nosched@example.com",
+        role: "Founder",
+        intent: "design_partner",
+        projectName: "No Sched Corp",
+        integrationsInterest: ["jupiter"],
+        txVolumeBucket: "lt_10k",
+        buildStage: "idea",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.intent).toBe("design_partner");
+    expect(result.schedulingUrl).toBeUndefined();
+  });
+
+  it("returns full capability set when all services configured", async () => {
+    process.env.RESEND_API_KEY = "re_test_key";
+    process.env.DESIGN_PARTNER_SCHEDULING_URL = "https://cal.example.com/trucore";
+
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "fullcap@example.com",
+        role: "Founder",
+        intent: "design_partner",
+        projectName: "Full Cap Corp",
+        integrationsInterest: ["jupiter", "solend"],
+        txVolumeBucket: "100k_1m",
+        buildStage: "prototype",
+      }),
+    );
+
+    expect(result).toEqual({
+      ok: true,
+      message: "Application received. We'll follow up shortly.",
+      intent: "design_partner",
+      schedulingUrl: "https://cal.example.com/trucore",
+      emailEnabled: true,
+    });
+
+    delete process.env.RESEND_API_KEY;
+  });
+
+  it("fails gracefully when database is unavailable", async () => {
+    mocks.ensureWaitlistTableMock.mockRejectedValue(new Error("connection refused"));
+
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "dbdown@example.com",
+        intent: "standard",
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.message).toContain("Something went wrong");
+    expect(mocks.sendAdminNotificationMock).not.toHaveBeenCalled();
+    expect(mocks.sendUserConfirmationMock).not.toHaveBeenCalled();
   });
 
   it("blocks submissions during cooldown window", async () => {

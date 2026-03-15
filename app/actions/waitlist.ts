@@ -5,6 +5,7 @@ import { ensureWaitlistTable, upsertWaitlistSignup } from "@/lib/db";
 import { sha256 } from "@/lib/hash";
 import { sendAdminNotification, sendUserConfirmation } from "@/lib/email";
 import { parseUtmCookieValue, UTM_COOKIE_NAME } from "@/lib/utm";
+import { getWaitlistConfigStatus } from "@/lib/waitlist-config";
 
 /* ---------- constants ---------- */
 
@@ -32,6 +33,7 @@ export type WaitlistResult = {
   message: string;
   intent?: WaitlistIntent;
   schedulingUrl?: string;
+  emailEnabled?: boolean;
 };
 
 /* ---------- action ---------- */
@@ -133,6 +135,20 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
   const userAgent = (hdrs.get("user-agent") ?? "").slice(0, 256) || null;
   const utm = parseUtmCookieValue(cookieStore.get(UTM_COOKIE_NAME)?.value);
 
+  /* ---- pre-flight config diagnostics (server log only) ---- */
+  const cfg = getWaitlistConfigStatus();
+  if (!cfg.database) {
+    console.error(
+      "[waitlist] database_missing: POSTGRES_URL / DATABASE_URL not configured. Submission will fail.",
+    );
+  }
+  if (!cfg.email) {
+    console.warn("[waitlist] email_disabled: RESEND_API_KEY not configured. Confirmation emails will be skipped.");
+  }
+  if (!cfg.scheduling) {
+    console.warn("[waitlist] scheduling_link_missing: DESIGN_PARTNER_SCHEDULING_URL not configured. Scheduling CTA hidden.");
+  }
+
   /* ---- persist ---- */
   try {
     await ensureWaitlistTable();
@@ -200,6 +216,7 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
         intent === "design_partner"
           ? (process.env.DESIGN_PARTNER_SCHEDULING_URL ?? undefined)
           : undefined,
+      emailEnabled: cfg.email,
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "unknown";
@@ -208,11 +225,15 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
     // Config errors: log full message (contains no secrets, only env var names).
     // DB errors: log the error name + first 120 chars to avoid leaking query details.
     console.error(
-      `[waitlist] Submission failed: ${
+      `[waitlist] submission_failed: ${
         isConfigError
           ? msg
           : `DB error: ${(error instanceof Error ? error.name : "Error")}: ${msg.slice(0, 120)}`
       }`,
+    );
+    // Log config snapshot alongside failures for faster triage
+    console.error(
+      `[waitlist] config_snapshot: database=${cfg.database} email=${cfg.email} scheduling=${cfg.scheduling}`,
     );
     return {
       ok: false,

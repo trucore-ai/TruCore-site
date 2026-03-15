@@ -69,40 +69,44 @@ export function DesignPartnerApplyForm() {
           &#10003; Application received
         </p>
 
-        <p className="text-lg text-slate-200">
-          Next: book a 15-minute fit check so we can learn about your setup and
-          share what ATF can do for your stack.
-        </p>
-
         {state.schedulingUrl ? (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <a
-              href={state.schedulingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() =>
-                trackEvent("design_partner_book_click", {
-                  location: "atf_apply_success",
-                })
-              }
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-accent-500 px-6 text-lg font-semibold text-white shadow-md transition-all hover:bg-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-neutral-950"
-            >
-              Book a fit check
-            </a>
-            <span className="text-sm text-slate-400">
-              Prefer email?{" "}
+          <>
+            <p className="text-lg text-slate-200">
+              Next: book a 15-minute fit check so we can learn about your setup
+              and share what ATF can do for your stack.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <a
-                href="mailto:info@trucore.xyz"
-                className="font-medium text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
+                href={state.schedulingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() =>
+                  trackEvent("design_partner_book_click", {
+                    location: "atf_apply_success",
+                  })
+                }
+                className="inline-flex h-12 items-center justify-center rounded-xl bg-accent-500 px-6 text-lg font-semibold text-white shadow-md transition-all hover:bg-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-neutral-950"
               >
-                Reply to your confirmation.
+                Book a fit check
               </a>
-            </span>
-          </div>
+              {state.emailEnabled && (
+                <span className="text-sm text-slate-400">
+                  Prefer email?{" "}
+                  <a
+                    href="mailto:info@trucore.xyz"
+                    className="font-medium text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
+                  >
+                    Reply to your confirmation.
+                  </a>
+                </span>
+              )}
+            </div>
+          </>
         ) : (
-          <p className="text-sm text-slate-400">
-            Scheduling link unavailable. We&apos;ll email you within one
-            business day.
+          <p className="text-lg text-slate-200">
+            {state.emailEnabled
+              ? "We\u2019ll follow up by email within one business day."
+              : "We\u2019ll follow up within one business day."}
           </p>
         )}
 
