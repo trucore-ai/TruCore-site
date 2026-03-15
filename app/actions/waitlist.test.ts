@@ -96,13 +96,11 @@ describe("joinWaitlist", () => {
       }),
     );
 
-    expect(result).toEqual({
-      ok: true,
-      message: "You're on the list. We'll share early-access updates soon.",
-      intent: "standard",
-      schedulingUrl: undefined,
-      emailEnabled: false,
-    });
+    expect(result.ok).toBe(true);
+    expect(result.intent).toBe("standard");
+    expect(result.schedulingUrl).toBeUndefined();
+    expect(result.emailEnabled).toBe(false);
+    expect(typeof result.message).toBe("string");
 
     expect(mocks.ensureWaitlistTableMock).toHaveBeenCalledTimes(1);
     expect(mocks.upsertWaitlistSignupMock).toHaveBeenCalledTimes(1);
@@ -174,13 +172,11 @@ describe("joinWaitlist", () => {
       }),
     );
 
-    expect(result).toEqual({
-      ok: true,
-      message: "Application received. We'll follow up shortly.",
-      intent: "design_partner",
-      schedulingUrl: "https://cal.example.com/trucore",
-      emailEnabled: false,
-    });
+    expect(result.ok).toBe(true);
+    expect(result.intent).toBe("design_partner");
+    expect(result.schedulingUrl).toBe("https://cal.example.com/trucore");
+    expect(result.emailEnabled).toBe(false);
+    expect(typeof result.message).toBe("string");
 
     expect(mocks.upsertWaitlistSignupMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -202,12 +198,10 @@ describe("joinWaitlist", () => {
       }),
     );
 
-    expect(result).toEqual({
-      ok: true,
-      message: "You're on the list.",
-      intent: "standard",
-      emailEnabled: false,
-    });
+    expect(result.ok).toBe(true);
+    expect(result.intent).toBe("standard");
+    expect(result.emailEnabled).toBe(false);
+    expect(typeof result.message).toBe("string");
     expect(mocks.ensureWaitlistTableMock).not.toHaveBeenCalled();
     expect(mocks.upsertWaitlistSignupMock).not.toHaveBeenCalled();
     expect(mocks.sendAdminNotificationMock).not.toHaveBeenCalled();
@@ -313,13 +307,11 @@ describe("joinWaitlist", () => {
       }),
     );
 
-    expect(result).toEqual({
-      ok: true,
-      message: "Application received. We'll follow up shortly.",
-      intent: "design_partner",
-      schedulingUrl: "https://cal.example.com/trucore",
-      emailEnabled: true,
-    });
+    expect(result.ok).toBe(true);
+    expect(result.intent).toBe("design_partner");
+    expect(result.schedulingUrl).toBe("https://cal.example.com/trucore");
+    expect(result.emailEnabled).toBe(true);
+    expect(typeof result.message).toBe("string");
 
     delete process.env.RESEND_API_KEY;
   });

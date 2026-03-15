@@ -11,7 +11,12 @@ export function getSecurityHeaderRules() {
   return [
     {
       source: "/admin/:path*",
-      headers: SENSITIVE_ROUTE_ROBOTS_HEADERS,
+      headers: [
+        ...SENSITIVE_ROUTE_ROBOTS_HEADERS,
+        ...SENSITIVE_ROUTE_NO_STORE_HEADERS,
+        { key: "X-Content-Type-Options", value: "nosniff" },
+        { key: "Referrer-Policy", value: "same-origin" },
+      ],
     },
     {
       source: "/portal/:path*",

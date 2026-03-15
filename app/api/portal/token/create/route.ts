@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { assertAdminSession } from "@/lib/admin-auth";
 import { assertRateLimit } from "@/lib/rate-limit";
 import { logAdminAction } from "@/lib/audit-log";
 import {
   PARTNER_PORTAL_TOKEN_TTL_SECONDS_DEFAULT,
   createPartnerPortalAccess,
 } from "@/lib/partner-portal";
-
-const NO_STORE_HEADERS = {
-  "Cache-Control": "no-store",
-};
+import { withAdminApiAuth } from "@/lib/admin-api-auth";
 
 type CreateTokenBody = {
   owner_email?: unknown;
@@ -46,17 +42,13 @@ function parseCreateBody(payload: unknown): {
   };
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAdminApiAuth(async (request: NextRequest) => {
   try {
-    await assertAdminSession();
     assertRateLimit("admin:portal");
   } catch {
     return NextResponse.json(
       { error: "not_found" },
-      {
-        status: 404,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 404 },
     );
   }
 
@@ -66,10 +58,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: "invalid_request" },
-      {
-        status: 400,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 400 },
     );
   }
 
@@ -77,10 +66,7 @@ export async function POST(request: NextRequest) {
   if (!parsed) {
     return NextResponse.json(
       { error: "invalid_request" },
-      {
-        status: 400,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 400 },
     );
   }
 
@@ -118,18 +104,12 @@ export async function POST(request: NextRequest) {
         raw_token: created.rawToken,
         portal_link: portalLink.toString(),
       },
-      {
-        status: 201,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 201 },
     );
   } catch {
     return NextResponse.json(
       { error: "portal_token_create_failed" },
-      {
-        status: 500,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 500 },
     );
   }
-}
+});

@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { assertAdminSession } from "@/lib/admin-auth";
 import { revokeApiKey } from "@/lib/api-keys";
 import { assertRateLimit } from "@/lib/rate-limit";
 import { logAdminAction } from "@/lib/audit-log";
-
-const NO_STORE_HEADERS = {
-  "Cache-Control": "no-store",
-};
+import { withAdminApiAuth } from "@/lib/admin-api-auth";
 
 function getRedirectTarget(request: NextRequest): URL {
   const referer = request.headers.get("referer");
@@ -32,26 +28,17 @@ function isFormRequest(request: NextRequest): boolean {
   );
 }
 
-function responseNotFound(request: NextRequest) {
-  if (isFormRequest(request)) {
-    return NextResponse.redirect(new URL("/admin/login", request.url), 303);
-  }
-
-  return NextResponse.json(
-    { error: "not_found" },
-    {
-      status: 404,
-      headers: NO_STORE_HEADERS,
-    },
-  );
-}
-
-export async function POST(request: NextRequest) {
+export const POST = withAdminApiAuth(async (request: NextRequest) => {
   try {
-    await assertAdminSession();
     assertRateLimit("admin:keys");
   } catch {
-    return responseNotFound(request);
+    if (isFormRequest(request)) {
+      return NextResponse.redirect(new URL("/admin/login", request.url), 303);
+    }
+    return NextResponse.json(
+      { error: "not_found" },
+      { status: 404 },
+    );
   }
 
   let id = "";
@@ -77,10 +64,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { error: "missing_id" },
-      {
-        status: 400,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 400 },
     );
   }
 
@@ -99,9 +83,6 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(
     { ok: true, revoked },
-    {
-      status: 200,
-      headers: NO_STORE_HEADERS,
-    },
+    { status: 200 },
   );
-}
+});

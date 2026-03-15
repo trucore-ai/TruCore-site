@@ -36,7 +36,10 @@ test("waitlist submission success state (mocked)", async ({ page }) => {
         const successPanel = document.createElement("div");
         successPanel.setAttribute("data-testid", "waitlist-success");
         successPanel.className = "glass-panel rounded-xl px-6 py-5";
-        successPanel.textContent = "✓ You're on the list. We'll share early-access updates soon.";
+        const heading = document.createElement("p");
+        heading.className = "text-xl font-semibold text-primary-100";
+        heading.textContent = "\u2713 You\u2019re on the list";
+        successPanel.appendChild(heading);
         form.replaceWith(successPanel);
       },
       { once: true },
@@ -50,5 +53,8 @@ test("waitlist submission success state (mocked)", async ({ page }) => {
   await page.getByTestId("waitlist-usecase").fill("Deterministic E2E coverage");
   await page.getByTestId("waitlist-submit").click();
 
-  await expect(page.getByTestId("waitlist-success")).toBeVisible();
+  const successPanel = page.getByTestId("waitlist-success");
+  await expect(successPanel).toBeVisible();
+  // Assert structured UI: heading rendered, no dependence on server message text
+  await expect(successPanel.locator("p").first()).toBeVisible();
 });

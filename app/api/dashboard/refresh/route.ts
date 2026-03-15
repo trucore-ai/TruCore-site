@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchFullDashboard } from "@/lib/dashboard-client";
-import { getAdminSessionFromCookies } from "@/lib/admin-auth";
+import { withAdminApiAuth } from "@/lib/admin-api-auth";
 
 /* ────────────────────────────────────────────────────────────────
  *  GET /api/dashboard/refresh
@@ -18,17 +18,8 @@ import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const isValid = await getAdminSessionFromCookies();
-  if (!isValid) {
-    return new NextResponse(null, { status: 404 });
-  }
-
+export const GET = withAdminApiAuth(async () => {
   const bundle = await fetchFullDashboard();
 
-  return NextResponse.json(bundle, {
-    headers: {
-      "Cache-Control": "no-store, max-age=0",
-    },
-  });
-}
+  return NextResponse.json(bundle);
+}, { csrf: false });

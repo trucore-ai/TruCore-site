@@ -1,10 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   isAdminKeyValid,
+  createSessionToken,
   ADMIN_COOKIE_NAME,
   getAdminSessionCookieOptions,
 } from "@/lib/admin-auth";
 import { logAdminAction } from "@/lib/audit-log";
+import {
+  checkLoginThrottle,
+  recordLoginFailure,
+  clearLoginFailures,
+} from "@/lib/login-throttle";
+import { logSecurityEvent } from "@/lib/security-log";
+import { ADMIN_RESPONSE_HEADERS } from "@/lib/admin-api-auth";
+
+function getRequestIp(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  return forwarded?.split(",")[0]?.trim() ?? request.headers.get("x-real-ip") ?? "unknown";
+}
+
+function isOriginValid(request: NextRequest): boolean {
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+  try {
+    return origin === request.nextUrl.origin;
+  } catch {
+    return false;
+  }
+}
 
 const LOGIN_HTML = `<!DOCTYPE html>
 <html lang="en">
@@ -48,21 +71,53 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const ip = getRequestIp(request);
+
+  /* ── CSRF / Origin check ── */
+  if (!isOriginValid(request)) {
+    logSecurityEvent("csrf_origin_rejected", {
+      ip,
+      meta: { method: "POST", path: "/admin/login" },
+    });
+    return new NextResponse(null, {
+      status: 404,
+      headers: ADMIN_RESPONSE_HEADERS,
+    });
+  }
+
   const formData = await request.formData();
   const key = formData.get("key") as string | null;
 
-  if (!isAdminKeyValid(key)) {
+  /* ── rate-limit check ── */
+  const cooldownSeconds = checkLoginThrottle(ip);
+  if (cooldownSeconds > 0) {
+    logSecurityEvent("login_rate_limited", { ip });
     return new NextResponse(null, { status: 404 });
   }
 
+  if (!isAdminKeyValid(key)) {
+    const locked = recordLoginFailure(ip);
+    logSecurityEvent("login_failure", {
+      ip,
+      meta: locked > 0 ? { cooldown_triggered: true } : undefined,
+    });
+    return new NextResponse(null, { status: 404 });
+  }
+
+  /* ── success ── */
+  clearLoginFailures(ip);
+  logSecurityEvent("login_success", { ip });
+
   await logAdminAction({ action: "admin_login" });
+
+  const token = createSessionToken();
 
   const response = NextResponse.redirect(
     new URL("/admin/waitlist", request.url),
     303,
   );
 
-  response.cookies.set(ADMIN_COOKIE_NAME, key!, {
+  response.cookies.set(ADMIN_COOKIE_NAME, token, {
     ...getAdminSessionCookieOptions(),
   });
 

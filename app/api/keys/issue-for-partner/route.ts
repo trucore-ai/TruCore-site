@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { assertAdminSession } from "@/lib/admin-auth";
 import { createKeyForOwner } from "@/lib/api-keys";
 import { assertRateLimit } from "@/lib/rate-limit";
 import { logAdminAction } from "@/lib/audit-log";
-
-const NO_STORE_HEADERS = {
-  "Cache-Control": "no-store",
-};
+import { withAdminApiAuth } from "@/lib/admin-api-auth";
 
 type IssueRequestBody = {
   email?: unknown;
@@ -39,17 +35,13 @@ function parseBody(payload: unknown): {
   };
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAdminApiAuth(async (request: NextRequest) => {
   try {
-    await assertAdminSession();
     assertRateLimit("admin:keys");
   } catch {
     return NextResponse.json(
       { error: "not_found" },
-      {
-        status: 404,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 404 },
     );
   }
 
@@ -59,10 +51,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: "invalid_request" },
-      {
-        status: 400,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 400 },
     );
   }
 
@@ -70,10 +59,7 @@ export async function POST(request: NextRequest) {
   if (!parsedBody) {
     return NextResponse.json(
       { error: "invalid_request" },
-      {
-        status: 400,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 400 },
     );
   }
 
@@ -108,18 +94,12 @@ export async function POST(request: NextRequest) {
         },
         raw_key: issued.rawKey,
       },
-      {
-        status: 201,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 201 },
     );
   } catch {
     return NextResponse.json(
       { error: "key_issue_failed" },
-      {
-        status: 500,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 500 },
     );
   }
-}
+});

@@ -89,6 +89,7 @@ describe("partner key issuance", () => {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        "origin": "http://localhost",
       },
       body: JSON.stringify({
         email: "qualified@example.com",

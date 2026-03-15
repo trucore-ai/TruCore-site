@@ -50,6 +50,47 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
             Validate receipt integrity with hash checks, signature verification, and deterministic demo recompute.
           </p>
           <p className="text-sm text-slate-500">Developer utility for independent, copy-paste verification workflows.</p>
+
+          {/* ── Proof-first explainer ── */}
+          <div className="rounded-lg border border-accent-500/20 bg-accent-500/[0.04] p-4 space-y-2">
+            <p className="text-sm font-semibold text-accent-300">What does verification prove?</p>
+            <p className="text-sm leading-relaxed text-slate-300">
+              Every policy-governed execution produces a deterministic receipt. Verification confirms
+              that a specific execution occurred under a declared policy, with an independently
+              recomputable hash. Receipts are useful for bot operators, agent builders, and
+              integrators who need inspectable, shareable proof of execution behavior.
+            </p>
+          </div>
+
+          {/* ── What verification is useful for ── */}
+          <div className="space-y-1.5">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">What verification is useful for</p>
+            <ul className="list-disc pl-4 space-y-1 text-sm text-slate-400">
+              <li>Confirm a protected execution happened under a specific policy</li>
+              <li>Inspect execution receipts and recompute hashes independently</li>
+              <li>Share reproducible proof with teammates, auditors, or partners</li>
+            </ul>
+          </div>
+
+          {/* ── Cold-traffic nudge ── */}
+          <p className="text-sm text-slate-400">
+            Don&apos;t have a receipt yet?{" "}
+            <Link
+              href="/docs/first-protected-trade"
+              className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+            >
+              Run your first protected trade
+            </Link>{" "}
+            to generate one, or explore the{" "}
+            <Link
+              href="/builders"
+              className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+            >
+              builder resources
+            </Link>
+            .
+          </p>
+
           <div className="gradient-divider" aria-hidden="true" />
           <p className="text-sm text-slate-400">
             Need the normative contract? See{" "}

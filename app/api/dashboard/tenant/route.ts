@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchTenantDetail } from "@/lib/dashboard-client";
-import { getAdminSessionFromCookies } from "@/lib/admin-auth";
+import { withAdminApiAuth } from "@/lib/admin-api-auth";
 
 /* ────────────────────────────────────────────────────────────────
  *  GET /api/dashboard/tenant?id=<tenantId>
@@ -15,12 +15,7 @@ import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
-  const isValid = await getAdminSessionFromCookies();
-  if (!isValid) {
-    return new NextResponse(null, { status: 404 });
-  }
-
+export const GET = withAdminApiAuth(async (req: NextRequest) => {
   const tenantId = req.nextUrl.searchParams.get("id");
 
   if (!tenantId) {
@@ -32,9 +27,5 @@ export async function GET(req: NextRequest) {
 
   const result = await fetchTenantDetail(tenantId);
 
-  return NextResponse.json(result, {
-    headers: {
-      "Cache-Control": "no-store, max-age=0",
-    },
-  });
-}
+  return NextResponse.json(result);
+}, { csrf: false });

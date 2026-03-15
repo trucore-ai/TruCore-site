@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { assertAdminSession } from "@/lib/admin-auth";
 import { createApiKey } from "@/lib/api-keys";
 import { assertRateLimit } from "@/lib/rate-limit";
 import { logAdminAction } from "@/lib/audit-log";
-
-const NO_STORE_HEADERS = {
-  "Cache-Control": "no-store",
-};
+import { withAdminApiAuth } from "@/lib/admin-api-auth";
 
 function parseNameFromRequestBody(value: unknown): string {
   if (!value || typeof value !== "object") return "Partner Key";
@@ -15,17 +11,13 @@ function parseNameFromRequestBody(value: unknown): string {
   return raw.trim().slice(0, 120) || "Partner Key";
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAdminApiAuth(async (request: NextRequest) => {
   try {
-    await assertAdminSession();
     assertRateLimit("admin:keys");
   } catch {
     return NextResponse.json(
       { error: "not_found" },
-      {
-        status: 404,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 404 },
     );
   }
 
@@ -42,10 +34,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json(
       { error: "invalid_request" },
-      {
-        status: 400,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 400 },
     );
   }
 
@@ -73,18 +62,12 @@ export async function POST(request: NextRequest) {
         },
         raw_key: created.rawKey,
       },
-      {
-        status: 201,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 201 },
     );
   } catch {
     return NextResponse.json(
       { error: "key_creation_failed" },
-      {
-        status: 500,
-        headers: NO_STORE_HEADERS,
-      },
+      { status: 500 },
     );
   }
-}
+});
