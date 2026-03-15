@@ -166,6 +166,15 @@ export const TenantDetailSchema = z.object({
   requests_last_hour: z.number().optional(),
   receipts_written_today: z.number().optional(),
   last_activity_ts: z.string().nullable().optional(),
+  /* v1.47.0 premium analytics entitlement (optional for backward compat) */
+  premium_analytics: z
+    .object({
+      enabled: z.boolean(),
+      state: z.string(),
+      source: z.string(),
+      expires_at: z.number().optional(),
+    })
+    .optional(),
 });
 
 // ── Legacy Trend Snapshot (kept for backward compat) ─────────
@@ -231,6 +240,59 @@ export const DashboardSummarySchema = z
   })
   .passthrough();
 
+// ── Adoption funnel schemas ──────────────────────────────────
+//
+// Platform-scoped adoption metrics from /dashboard/adoption.
+// Read-only, operator-facing, never exposed to tenant users.
+
+export const TenantActivationSnapshotSchema = z.object({
+  tenant_id: z.string(),
+  display_name: z.string(),
+  plan_tier: z.string(),
+  status: z.string(),
+  created_at: z.string().nullable(),
+  last_activity_ts: z.string().nullable(),
+  has_first_protect: z.boolean(),
+  has_first_receipt: z.boolean(),
+  has_first_verify: z.boolean(),
+  requests_total: z.number(),
+  receipts_written_total: z.number(),
+  receipts_verified_total: z.number(),
+  // Refined adoption fields (v1.46)
+  first_seen_at: z.string().nullable().optional(),
+  last_seen_at: z.string().nullable().optional(),
+  protect_count: z.number().optional(),
+  receipt_count: z.number().optional(),
+  verify_count: z.number().optional(),
+  repeat_active_7d: z.boolean().optional(),
+  dominant_source: z.string().optional(),
+  source_mix: z.record(z.number()).optional(),
+  activation_stage: z.string().optional(),
+  dormant_days: z.number().optional(),
+  stalled_stage: z.string().optional(),
+  // Premium analytics entitlement (v1.47)
+  premium_analytics_state: z.string().optional(),
+});
+
+export const AdoptionFunnelSchema = z.object({
+  total_tenants: z.number(),
+  active_tenants: z.number(),
+  suspended_tenants: z.number(),
+  tenants_with_requests: z.number(),
+  tenants_with_receipts: z.number(),
+  tenants_with_verifies: z.number(),
+  repeat_active_tenants: z.number().optional(),
+  stalled_tenants: z.number().optional(),
+  dormant_tenants: z.number().optional(),
+  total_api_keys_active: z.number(),
+  total_requests: z.number(),
+  total_receipts_written: z.number(),
+  total_receipts_verified: z.number(),
+  endpoint_mix: z.record(z.number()),
+  source_summary: z.record(z.number()).optional(),
+  tenant_snapshots: z.array(TenantActivationSnapshotSchema),
+});
+
 // ── Types ────────────────────────────────────────────────────
 
 export type SystemHealth = z.infer<typeof SystemHealthSchema>;
@@ -250,6 +312,8 @@ export type LiveKpiItem = z.infer<typeof LiveKpiItemSchema>;
 export type LiveEnforcement = z.infer<typeof LiveEnforcementSchema>;
 export type LiveTrend = z.infer<typeof LiveTrendSchema>;
 export type DashboardSummary = z.infer<typeof DashboardSummarySchema>;
+export type TenantActivationSnapshot = z.infer<typeof TenantActivationSnapshotSchema>;
+export type AdoptionFunnel = z.infer<typeof AdoptionFunnelSchema>;
 
 // ── Fetch helper ─────────────────────────────────────────────
 
@@ -332,6 +396,10 @@ export function fetchDashboardSummary(): Promise<
   return dashboardFetch("/dashboard/summary", DashboardSummarySchema);
 }
 
+export function fetchAdoption(): Promise<DashboardResult<AdoptionFunnel>> {
+  return dashboardFetch("/dashboard/adoption", AdoptionFunnelSchema);
+}
+
 // ── Consolidated dashboard bundle ────────────────────────────
 
 // ── Health adapter ────────────────────────────────────────────
@@ -407,10 +475,12 @@ export async function fetchFullDashboard(): Promise<{
   tenants: DashboardResult<TenantsResponse>;
   summary: DashboardResult<DashboardSummary>;
   trend: DashboardResult<LiveTrend>;
+  adoption: DashboardResult<AdoptionFunnel>;
 }> {
-  const [summary, tenants] = await Promise.all([
+  const [summary, tenants, adoption] = await Promise.all([
     fetchDashboardSummary(),
     fetchTenants(),
+    fetchAdoption(),
   ]);
 
   const derive = <T>(
@@ -434,5 +504,6 @@ export async function fetchFullDashboard(): Promise<{
     tenants,
     summary,
     trend: derive((s) => s.trend),
+    adoption,
   };
 }
