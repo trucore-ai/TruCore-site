@@ -220,6 +220,31 @@ export default function BuildersPage() {
             Developer resources
           </h2>
         </div>
+        <Link
+          href="/openclaw"
+          className="mb-4 block rounded-lg border border-primary-300/25 bg-primary-500/10 p-5 transition-colors hover:border-primary-300/40"
+        >
+          <h3 className="text-lg font-bold text-accent-300">OpenClaw Integration</h3>
+          <p className="mt-1 text-base leading-[1.5] text-slate-200">
+            Route OpenClaw agent transactions through the Agent Transaction Firewall
+            to enforce policies and generate deterministic execution receipts.
+          </p>
+          <span className="mt-2 inline-block text-sm font-semibold text-primary-200">
+            Learn more &rarr;
+          </span>
+        </Link>
+        <Link
+          href="/quickstart"
+          className="mb-4 block rounded-lg border border-primary-300/25 bg-primary-500/10 p-5 transition-colors hover:border-primary-300/40"
+        >
+          <h3 className="text-lg font-bold text-accent-300">Quickstart</h3>
+          <p className="mt-1 text-base leading-[1.5] text-slate-200">
+            Copy-paste your first protected transaction in under 60 seconds.
+          </p>
+          <span className="mt-2 inline-block text-sm font-semibold text-primary-200">
+            Start now &rarr;
+          </span>
+        </Link>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {quickLinks.map((link) => (
             <TrackedLink

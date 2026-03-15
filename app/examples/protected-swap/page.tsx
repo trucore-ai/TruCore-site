@@ -133,6 +133,20 @@ export default function ProtectedSwapExamplePage() {
             </div>
           </section>
 
+          {/* ── Quickstart callout ── */}
+          <div className="rounded-lg border border-primary-300/20 bg-primary-500/[0.06] p-4">
+            <p className="text-sm text-slate-300">
+              Prefer the shortest path?{" "}
+              <Link
+                href="/quickstart"
+                className="font-semibold text-primary-200 underline decoration-primary-300/30 underline-offset-2 transition-colors hover:text-primary-100 hover:decoration-primary-200/50"
+              >
+                Quickstart
+              </Link>{" "}
+              — copy-paste a protected transaction in under 60 seconds.
+            </p>
+          </div>
+
           {/* ── Navigation links ── */}
           <section className="space-y-3">
             <h2 className="text-2xl font-semibold text-slate-100">

@@ -148,6 +148,24 @@ await verify(sig, receiptHash);`}
         </div>
       </Section>
 
+      {/* ── Quickstart callout ── */}
+      <Section divider className="fade-in-up">
+        <div className="mx-auto max-w-3xl">
+          <div className="rounded-lg border border-primary-300/20 bg-primary-500/[0.06] p-5">
+            <p className="text-lg text-slate-200">
+              Want to test before integrating?{" "}
+              <Link
+                href="/quickstart"
+                className="font-semibold text-primary-200 underline decoration-primary-300/30 underline-offset-2 transition-colors hover:text-primary-100 hover:decoration-primary-200/50"
+              >
+                Quickstart
+              </Link>{" "}
+              — copy-paste a protected transaction in under 60 seconds.
+            </p>
+          </div>
+        </div>
+      </Section>
+
       {/* ── References ── */}
       <Section divider className="fade-in-up fade-delay-4">
         <div className="mx-auto max-w-3xl">

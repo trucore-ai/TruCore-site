@@ -178,6 +178,17 @@ export default function HowItWorksPage() {
                 Bot Integration Guide &rarr;
               </Link>
             </li>
+            <li>
+              <Link
+                href="/quickstart"
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                Quickstart &rarr;
+              </Link>
+              <span className="text-base text-slate-400">
+                {" "}— copy-paste a protected transaction in under 60 seconds
+              </span>
+            </li>
           </ul>
         </div>
       </Section>
