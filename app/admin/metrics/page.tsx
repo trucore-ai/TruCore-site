@@ -1,6 +1,4 @@
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 import type { WaitlistMetricsSnapshot } from "@/lib/db";
 import { MetricsSummaryCard } from "@/components/metrics-summary-card";
 
@@ -33,9 +31,6 @@ async function fetchMetrics(): Promise<WaitlistMetricsSnapshot> {
 }
 
 export default async function AdminMetricsPage() {
-  const isValid = await getAdminSessionFromCookies();
-  if (!isValid) redirect("/admin/login");
-
   const metrics = await fetchMetrics();
 
   return (

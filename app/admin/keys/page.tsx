@@ -1,7 +1,5 @@
-import { redirect } from "next/navigation";
 import { AdminCreateKeyForm } from "@/components/admin-create-key-form";
 import { PartnerPortalLinkButton } from "@/components/partner-portal-link-button";
-import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 import { listApiKeysWithUsageSummary, listLatestActivePortalTokensForOwners } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -20,9 +18,6 @@ function fmtDate(iso: string) {
 }
 
 export default async function AdminKeysPage() {
-  const isValid = await getAdminSessionFromCookies();
-  if (!isValid) redirect("/admin/login");
-
   const keys = await listApiKeysWithUsageSummary(200, { includeRevoked: true });
   const ownerEmails = Array.from(new Set(keys.map((key) => key.owner_email?.toLowerCase()).filter(Boolean) as string[]));
   const activePortalTokens = await listLatestActivePortalTokensForOwners(ownerEmails);

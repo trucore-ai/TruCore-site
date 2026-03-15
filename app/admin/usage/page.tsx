@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 import { listApiKeysWithUsageSummary } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -27,9 +25,6 @@ function parseIncludeRevoked(raw: string | string[] | undefined): boolean {
 }
 
 export default async function AdminUsagePage({ searchParams }: PageProps) {
-  const isValid = await getAdminSessionFromCookies();
-  if (!isValid) redirect("/admin/login");
-
   const params = await searchParams;
   const includeRevoked = parseIncludeRevoked(params.includeRevoked);
 

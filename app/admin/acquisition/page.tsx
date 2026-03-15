@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 import {
   getAcquisitionFunnelSnapshot,
   type AcquisitionFunnelSnapshot,
@@ -46,9 +44,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AdminAcquisitionPage() {
-  const isValid = await getAdminSessionFromCookies();
-  if (!isValid) redirect("/admin/login");
-
   const data = await getAcquisitionFunnelSnapshot();
 
   /* ── Derive follow-up guidance for each recent lead ──── */

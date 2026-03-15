@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 import { listAuditLogEntries, type AuditLogRow } from "@/lib/audit-log";
 
 /* ---------- helpers ---------- */
@@ -49,9 +47,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AdminAuditPage() {
-  const isValid = await getAdminSessionFromCookies();
-  if (!isValid) redirect("/admin/login");
-
   const entries: AuditLogRow[] = await listAuditLogEntries(50);
 
   return (

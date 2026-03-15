@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 import { listCspReports, type CspReportRow } from "@/lib/db";
 
 /* ---------- helpers ---------- */
@@ -43,9 +41,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AdminCspPage() {
-  const isValid = await getAdminSessionFromCookies();
-  if (!isValid) redirect("/admin/login");
-
   const reports: CspReportRow[] = await listCspReports(50);
 
   return (

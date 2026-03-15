@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { getAdminSessionFromCookies } from "@/lib/admin-auth";
 import {
   listRecentWaitlistSignups,
   listActiveApiKeyOwnerEmails,
@@ -70,9 +68,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AdminWaitlistPage({ searchParams }: PageProps) {
-  const isValid = await getAdminSessionFromCookies();
-  if (!isValid) redirect("/admin/login");
-
   const params = await searchParams;
   const intent = parseIntent(params.intent);
   const limit = parseLimit(params.limit);
