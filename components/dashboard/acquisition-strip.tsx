@@ -55,7 +55,7 @@ export async function AcquisitionStrip() {
         </a>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-9">
         <Chip label="Total" value={data.total_signups} />
         <Chip label="7d" value={data.signups_7d} accent />
         <Chip label="30d" value={data.signups_30d} />
@@ -66,6 +66,16 @@ export async function AcquisitionStrip() {
           label="Link rate"
           valueStr={`${linkageRate}%`}
           hint="Signups → API key"
+        />
+        <Chip
+          label="No key yet"
+          value={data.stalled_before_api_key}
+          hint="Signed up but no API key"
+        />
+        <Chip
+          label="Key, no portal"
+          value={data.stalled_before_portal}
+          hint="Has API key but not portal-active"
         />
       </div>
 

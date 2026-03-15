@@ -995,6 +995,11 @@ export type AcquisitionRecentRow = {
   status: string;
   project_name: string | null;
   utm_source: string | null;
+  build_stage: string | null;
+  integrations_interest: string[] | null;
+  tx_volume_bucket: string | null;
+  has_api_key: boolean;
+  has_portal_token: boolean;
 };
 
 export type AcquisitionFunnelSnapshot = {
@@ -1034,6 +1039,34 @@ export type AcquisitionFunnelSnapshot = {
 
   /** Activation linkage: signups that have an active portal token */
   signups_with_portal_token: number;
+
+  /** Stall-state funnel: signed up but never got API key */
+  stalled_before_api_key: number;
+
+  /** Stall-state funnel: got API key but not portal-active */
+  stalled_before_portal: number;
+
+  /** Build stage distribution */
+  by_build_stage: Array<{ stage: string; count: number }>;
+
+  /** Integration interest distribution */
+  by_integration_interest: Array<{ interest: string; count: number }>;
+
+  /** Build stage → activation cross-tab */
+  build_stage_activation: Array<{
+    stage: string;
+    total: number;
+    with_api_key: number;
+    with_portal: number;
+  }>;
+
+  /** UTM source → activation cross-tab */
+  source_activation: Array<{
+    source: string;
+    total: number;
+    with_api_key: number;
+    with_portal: number;
+  }>;
 };
 
 /**
@@ -1091,10 +1124,26 @@ export async function getAcquisitionFunnelSnapshot(): Promise<AcquisitionFunnelS
   `;
 
   const recentRows = await sql`
-    SELECT created_at, email, intent, source, status, project_name, utm_source
-    FROM waitlist_signups
-    ORDER BY created_at DESC
-    LIMIT 15;
+    SELECT
+      w.created_at, w.email, w.intent, w.source, w.status, w.project_name,
+      w.utm_source, w.build_stage, w.integrations_interest, w.tx_volume_bucket,
+      CASE WHEN k.owner_email IS NOT NULL THEN true ELSE false END AS has_api_key,
+      CASE WHEN t.owner_email IS NOT NULL THEN true ELSE false END AS has_portal_token
+    FROM waitlist_signups w
+    LEFT JOIN LATERAL (
+      SELECT DISTINCT ON (1) ak.owner_email
+      FROM api_keys ak
+      WHERE LOWER(ak.owner_email) = LOWER(w.email) AND ak.revoked_at IS NULL
+      LIMIT 1
+    ) k ON true
+    LEFT JOIN LATERAL (
+      SELECT DISTINCT ON (1) pt.owner_email
+      FROM partner_portal_tokens pt
+      WHERE LOWER(pt.owner_email) = LOWER(w.email) AND pt.revoked_at IS NULL AND pt.expires_at > now()
+      LIMIT 1
+    ) t ON true
+    ORDER BY w.created_at DESC
+    LIMIT 30;
   `;
 
   /* Activation linkage: count signups whose email matches an active API key */
@@ -1114,6 +1163,80 @@ export async function getAcquisitionFunnelSnapshot(): Promise<AcquisitionFunnelS
       ON LOWER(w.email) = LOWER(t.owner_email)
       AND t.revoked_at IS NULL
       AND t.expires_at > now();
+  `;
+
+  /* Stall-state funnel counts */
+  const stallRows = await sql`
+    SELECT
+      COUNT(*) FILTER (
+        WHERE NOT EXISTS (
+          SELECT 1 FROM api_keys ak
+          WHERE LOWER(ak.owner_email) = LOWER(w.email) AND ak.revoked_at IS NULL
+        )
+      )::int AS stalled_before_api_key,
+      COUNT(*) FILTER (
+        WHERE EXISTS (
+          SELECT 1 FROM api_keys ak
+          WHERE LOWER(ak.owner_email) = LOWER(w.email) AND ak.revoked_at IS NULL
+        )
+        AND NOT EXISTS (
+          SELECT 1 FROM partner_portal_tokens pt
+          WHERE LOWER(pt.owner_email) = LOWER(w.email) AND pt.revoked_at IS NULL AND pt.expires_at > now()
+        )
+      )::int AS stalled_before_portal
+    FROM waitlist_signups w;
+  `;
+
+  /* Build stage distribution */
+  const buildStageRows = await sql`
+    SELECT COALESCE(build_stage, 'unknown') AS stage, COUNT(*)::int AS count
+    FROM waitlist_signups
+    GROUP BY COALESCE(build_stage, 'unknown')
+    ORDER BY count DESC, stage ASC;
+  `;
+
+  /* Integration interest distribution (unnest array) */
+  const integrationRows = await sql`
+    SELECT interest, COUNT(*)::int AS count
+    FROM waitlist_signups, UNNEST(integrations_interest) AS interest
+    WHERE integrations_interest IS NOT NULL AND array_length(integrations_interest, 1) > 0
+    GROUP BY interest
+    ORDER BY count DESC, interest ASC
+    LIMIT 15;
+  `;
+
+  /* Build stage → activation cross-tab */
+  const buildStageActivationRows = await sql`
+    SELECT
+      COALESCE(w.build_stage, 'unknown') AS stage,
+      COUNT(*)::int AS total,
+      COUNT(DISTINCT CASE WHEN k.owner_email IS NOT NULL THEN w.email END)::int AS with_api_key,
+      COUNT(DISTINCT CASE WHEN t.owner_email IS NOT NULL THEN w.email END)::int AS with_portal
+    FROM waitlist_signups w
+    LEFT JOIN api_keys k
+      ON LOWER(w.email) = LOWER(k.owner_email) AND k.revoked_at IS NULL
+    LEFT JOIN partner_portal_tokens t
+      ON LOWER(w.email) = LOWER(t.owner_email) AND t.revoked_at IS NULL AND t.expires_at > now()
+    GROUP BY COALESCE(w.build_stage, 'unknown')
+    ORDER BY total DESC, stage ASC;
+  `;
+
+  /* Source → activation cross-tab (by source field) */
+  const sourceActivationRows = await sql`
+    SELECT
+      COALESCE(w.source, 'unknown') AS source,
+      COUNT(*)::int AS total,
+      COUNT(DISTINCT CASE WHEN k.owner_email IS NOT NULL THEN w.email END)::int AS with_api_key,
+      COUNT(DISTINCT CASE WHEN t.owner_email IS NOT NULL THEN w.email END)::int AS with_portal
+    FROM waitlist_signups w
+    LEFT JOIN api_keys k
+      ON LOWER(w.email) = LOWER(k.owner_email) AND k.revoked_at IS NULL
+    LEFT JOIN partner_portal_tokens t
+      ON LOWER(w.email) = LOWER(t.owner_email) AND t.revoked_at IS NULL AND t.expires_at > now()
+    WHERE w.source IS NOT NULL AND TRIM(w.source) <> ''
+    GROUP BY COALESCE(w.source, 'unknown')
+    ORDER BY total DESC, source ASC
+    LIMIT 10;
   `;
 
   const totals = totalsRows[0] as Record<string, unknown>;
@@ -1152,8 +1275,35 @@ export async function getAcquisitionFunnelSnapshot(): Promise<AcquisitionFunnelS
       status: String(row.status ?? "new"),
       project_name: row.project_name ? String(row.project_name) : null,
       utm_source: row.utm_source ? String(row.utm_source) : null,
+      build_stage: row.build_stage ? String(row.build_stage) : null,
+      integrations_interest: Array.isArray(row.integrations_interest) ? (row.integrations_interest as string[]) : null,
+      tx_volume_bucket: row.tx_volume_bucket ? String(row.tx_volume_bucket) : null,
+      has_api_key: row.has_api_key === true || row.has_api_key === "t",
+      has_portal_token: row.has_portal_token === true || row.has_portal_token === "t",
     })),
     signups_with_api_key: toInt((apiKeyLinkageRows[0] as Record<string, unknown>).linked),
     signups_with_portal_token: toInt((portalLinkageRows[0] as Record<string, unknown>).linked),
+    stalled_before_api_key: toInt((stallRows[0] as Record<string, unknown>).stalled_before_api_key),
+    stalled_before_portal: toInt((stallRows[0] as Record<string, unknown>).stalled_before_portal),
+    by_build_stage: (buildStageRows as Array<Record<string, unknown>>).map((row) => ({
+      stage: String(row.stage),
+      count: toInt(row.count),
+    })),
+    by_integration_interest: (integrationRows as Array<Record<string, unknown>>).map((row) => ({
+      interest: String(row.interest),
+      count: toInt(row.count),
+    })),
+    build_stage_activation: (buildStageActivationRows as Array<Record<string, unknown>>).map((row) => ({
+      stage: String(row.stage),
+      total: toInt(row.total),
+      with_api_key: toInt(row.with_api_key),
+      with_portal: toInt(row.with_portal),
+    })),
+    source_activation: (sourceActivationRows as Array<Record<string, unknown>>).map((row) => ({
+      source: String(row.source),
+      total: toInt(row.total),
+      with_api_key: toInt(row.with_api_key),
+      with_portal: toInt(row.with_portal),
+    })),
   };
 }

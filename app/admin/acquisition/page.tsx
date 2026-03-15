@@ -11,7 +11,9 @@ import {
  *
  *  Internal-only view of top-of-funnel builder acquisition signals.
  *  Shows signup volume, time-windowed trends, source/UTM breakdowns,
- *  pipeline progression, recent submissions, and activation linkage.
+ *  pipeline progression, recent submissions with activation badges,
+ *  lead quality distribution, stall-state funnel, and source→activation
+ *  cross-tabulations.
  *
  *  Gated behind admin session. Never shown to public users.
  * ──────────────────────────────────────────────────────────── */
@@ -34,8 +36,8 @@ export default async function AdminAcquisitionPage() {
             Acquisition Funnel
           </h1>
           <p className="mt-1 text-xs text-slate-500">
-            Top-of-funnel builder interest, application volume, and
-            activation linkage — operator only
+            Top-of-funnel builder interest, lead quality, activation linkage
+            &amp; stall-state visibility — operator only
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -78,6 +80,41 @@ export default async function AdminAcquisitionPage() {
         </div>
       </div>
 
+      {/* ── Stall-state funnel ────────────────────────────── */}
+      <div className="mb-8">
+        <SectionHeading>Stall-State Funnel</SectionHeading>
+        <p className="mt-1 text-[10px] text-slate-600">
+          Where leads stall between signup and product activation.
+          Email-based linkage — partial but directional.
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StallCard
+            label="No API key yet"
+            value={data.stalled_before_api_key}
+            total={data.total_signups}
+            color="text-red-400"
+          />
+          <StallCard
+            label="API key, no portal"
+            value={data.stalled_before_portal}
+            total={data.total_signups}
+            color="text-amber-400"
+          />
+          <StallCard
+            label="Have API key"
+            value={data.signups_with_api_key}
+            total={data.total_signups}
+            color="text-emerald-400"
+          />
+          <StallCard
+            label="Portal active"
+            value={data.signups_with_portal_token}
+            total={data.total_signups}
+            color="text-cyan-400"
+          />
+        </div>
+      </div>
+
       {/* ── Activation linkage ────────────────────────────── */}
       <div className="mb-8">
         <SectionHeading>Acquisition → Activation Linkage</SectionHeading>
@@ -109,7 +146,134 @@ export default async function AdminAcquisitionPage() {
         </div>
       </div>
 
-      {/* ── Source breakdowns (2-col) ─────────────────────── */}
+      {/* ── Lead quality distribution ─────────────────────── */}
+      <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Build stage distribution */}
+        {data.by_build_stage.length > 0 && (
+          <div className="overflow-hidden rounded-lg border border-white/10">
+            <div className="border-b border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200">
+              Build Stage Distribution
+            </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">
+                  <th className="px-4 py-3">Stage</th>
+                  <th className="px-4 py-3 text-right">Count</th>
+                  <th className="px-4 py-3 text-right">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.by_build_stage.map((row) => (
+                  <tr key={row.stage} className="border-b border-white/5 last:border-b-0">
+                    <td className="px-4 py-3 text-slate-200">
+                      <BuildStageBadge stage={row.stage} />
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-slate-100">{row.count}</td>
+                    <td className="px-4 py-3 text-right text-slate-400">{pct(row.count, data.total_signups) ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Integration interest distribution */}
+        {data.by_integration_interest.length > 0 && (
+          <div className="overflow-hidden rounded-lg border border-white/10">
+            <div className="border-b border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-200">
+              Integration Interests
+            </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">
+                  <th className="px-4 py-3">Integration</th>
+                  <th className="px-4 py-3 text-right">Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.by_integration_interest.map((row) => (
+                  <tr key={row.interest} className="border-b border-white/5 last:border-b-0">
+                    <td className="px-4 py-3 text-slate-200">{row.interest}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-slate-100">{row.count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* ── Build stage → activation cross-tab ────────────── */}
+      {data.build_stage_activation.length > 0 && (
+        <div className="mb-8">
+          <SectionHeading>Build Stage → Activation</SectionHeading>
+          <p className="mt-1 text-[10px] text-slate-600">
+            Are in-production builders converting better than idea-stage builders?
+          </p>
+          <div className="mt-3 overflow-x-auto rounded-lg border border-white/10">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">
+                  <th className="px-4 py-3">Build Stage</th>
+                  <th className="px-4 py-3 text-right">Signups</th>
+                  <th className="px-4 py-3 text-right">With API Key</th>
+                  <th className="px-4 py-3 text-right">With Portal</th>
+                  <th className="px-4 py-3 text-right">API Key %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.build_stage_activation.map((row) => (
+                  <tr key={row.stage} className="border-b border-white/5 last:border-b-0">
+                    <td className="px-4 py-3 text-slate-200">
+                      <BuildStageBadge stage={row.stage} />
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-slate-100">{row.total}</td>
+                    <td className="px-4 py-3 text-right text-slate-200">{row.with_api_key}</td>
+                    <td className="px-4 py-3 text-right text-slate-200">{row.with_portal}</td>
+                    <td className="px-4 py-3 text-right text-slate-400">{pct(row.with_api_key, row.total) ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Source → activation cross-tab ─────────────────── */}
+      {data.source_activation.length > 0 && (
+        <div className="mb-8">
+          <SectionHeading>Source → Activation</SectionHeading>
+          <p className="mt-1 text-[10px] text-slate-600">
+            Which signup sources produce the best downstream activation?
+          </p>
+          <div className="mt-3 overflow-x-auto rounded-lg border border-white/10">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">
+                  <th className="px-4 py-3">Source</th>
+                  <th className="px-4 py-3 text-right">Signups</th>
+                  <th className="px-4 py-3 text-right">With API Key</th>
+                  <th className="px-4 py-3 text-right">With Portal</th>
+                  <th className="px-4 py-3 text-right">API Key %</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.source_activation.map((row) => (
+                  <tr key={row.source} className="border-b border-white/5 last:border-b-0">
+                    <td className="px-4 py-3 text-slate-200">{row.source}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-slate-100">{row.total}</td>
+                    <td className="px-4 py-3 text-right text-slate-200">{row.with_api_key}</td>
+                    <td className="px-4 py-3 text-right text-slate-200">{row.with_portal}</td>
+                    <td className="px-4 py-3 text-right text-slate-400">{pct(row.with_api_key, row.total) ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── Source breakdowns (3-col) ─────────────────────── */}
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <RankTable
           title="Entry Path (source)"
@@ -137,9 +301,13 @@ export default async function AdminAcquisitionPage() {
         />
       </div>
 
-      {/* ── Recent submissions ────────────────────────────── */}
+      {/* ── Recent submissions (enriched) ─────────────────── */}
       <div className="mb-8">
         <SectionHeading>Recent Submissions</SectionHeading>
+        <p className="mt-1 text-[10px] text-slate-600">
+          Last 30 signups with activation badges. High-signal applicants worth
+          direct follow-up are marked with quality indicators.
+        </p>
         <RecentTable rows={data.recent} />
       </div>
 
@@ -149,10 +317,13 @@ export default async function AdminAcquisitionPage() {
         Activation linkage is email-based. Builders who sign up on the
         site and later register an ATF API key with the same email are
         counted as linked. Not all ATF tenants enter via the waitlist,
-        and not all waitlist entries result in ATF activation. This view
-        is directional, not exhaustive. Vercel Analytics events
-        (builder page views, tracked link clicks) are not joined here —
-        they live in the Vercel dashboard.
+        and not all waitlist entries result in ATF activation. Stall-state
+        counts are derived from the same email-based linkage. Build stage
+        and integration interest are self-reported by the applicant.
+        Source → activation cross-tabs help identify which channels produce
+        the best downstream outcomes, but sample sizes may be small.
+        Vercel Analytics events (builder page views, tracked link clicks)
+        are not joined here — they live in the Vercel dashboard.
       </div>
     </div>
   );
@@ -216,6 +387,32 @@ function FunnelStep({
   );
 }
 
+function StallCard({
+  label,
+  value,
+  total,
+  color,
+}: {
+  label: string;
+  value: number;
+  total: number;
+  color: string;
+}) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-neutral-900/60 px-4 py-3">
+      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className={`text-xl font-semibold ${color}`}>{value}</span>
+        {total > 0 && (
+          <span className="text-xs text-slate-500">
+            {((value / total) * 100).toFixed(1)}%
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function LinkageCard({
   label,
   value,
@@ -243,6 +440,23 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
     <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
       {children}
     </h2>
+  );
+}
+
+const BUILD_STAGE_COLORS: Record<string, string> = {
+  idea: "bg-slate-500/20 text-slate-400",
+  prototype: "bg-blue-500/20 text-blue-400",
+  in_production: "bg-emerald-500/20 text-emerald-300",
+  unknown: "bg-white/5 text-slate-500",
+};
+
+function BuildStageBadge({ stage }: { stage: string }) {
+  const color = BUILD_STAGE_COLORS[stage] ?? BUILD_STAGE_COLORS.unknown;
+  const display = stage === "in_production" ? "production" : stage;
+  return (
+    <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${color}`}>
+      {display}
+    </span>
   );
 }
 
@@ -289,6 +503,28 @@ function RankTable({
   );
 }
 
+function ActivationBadges({ row }: { row: AcquisitionRecentRow }) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {row.has_api_key && (
+        <span className="inline-block rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-300">
+          API key
+        </span>
+      )}
+      {row.has_portal_token && (
+        <span className="inline-block rounded-full bg-cyan-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-cyan-300">
+          Portal
+        </span>
+      )}
+      {!row.has_api_key && !row.has_portal_token && (
+        <span className="inline-block rounded-full bg-red-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-red-400/70">
+          Pre-activation
+        </span>
+      )}
+    </div>
+  );
+}
+
 function RecentTable({ rows }: { rows: AcquisitionRecentRow[] }) {
   if (rows.length === 0) {
     return <p className="mt-2 text-sm text-slate-400">No submissions yet.</p>;
@@ -303,7 +539,9 @@ function RecentTable({ rows }: { rows: AcquisitionRecentRow[] }) {
             <th className="px-4 py-3">Email</th>
             <th className="px-4 py-3">Intent</th>
             <th className="px-4 py-3">Source</th>
-            <th className="px-4 py-3">UTM</th>
+            <th className="px-4 py-3">Build Stage</th>
+            <th className="px-4 py-3">Integrations</th>
+            <th className="px-4 py-3">Activation</th>
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3">Project</th>
           </tr>
@@ -333,9 +571,42 @@ function RecentTable({ rows }: { rows: AcquisitionRecentRow[] }) {
               </td>
               <td className="px-4 py-3 text-slate-400">
                 {row.source ?? "—"}
+                {row.utm_source && (
+                  <span className="ml-1 text-[9px] text-slate-600">
+                    ({row.utm_source})
+                  </span>
+                )}
               </td>
-              <td className="px-4 py-3 text-slate-400">
-                {row.utm_source ?? "—"}
+              <td className="px-4 py-3">
+                {row.build_stage ? (
+                  <BuildStageBadge stage={row.build_stage} />
+                ) : (
+                  <span className="text-slate-600">—</span>
+                )}
+              </td>
+              <td className="px-4 py-3">
+                {row.integrations_interest && row.integrations_interest.length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {row.integrations_interest.slice(0, 3).map((int) => (
+                      <span
+                        key={int}
+                        className="inline-block rounded bg-white/5 px-1.5 py-0.5 text-[9px] text-slate-400"
+                      >
+                        {int}
+                      </span>
+                    ))}
+                    {row.integrations_interest.length > 3 && (
+                      <span className="text-[9px] text-slate-600">
+                        +{row.integrations_interest.length - 3}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-slate-600">—</span>
+                )}
+              </td>
+              <td className="px-4 py-3">
+                <ActivationBadges row={row} />
               </td>
               <td className="px-4 py-3">
                 <StatusBadge status={row.status} />
