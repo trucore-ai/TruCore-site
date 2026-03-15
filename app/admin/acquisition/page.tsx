@@ -15,6 +15,10 @@ import {
   type FollowUpAction,
   type FollowUpPriority,
 } from "@/lib/acquisition-followup";
+import {
+  PLAYBOOK_MAP,
+  type PlaybookEntry,
+} from "@/lib/acquisition-playbook";
 
 /* ────────────────────────────────────────────────────────────────
  *  /admin/acquisition — Operator Acquisition Funnel
@@ -171,6 +175,82 @@ export default async function AdminAcquisitionPage() {
           </div>
         </div>
       )}
+
+      {/* ── Operator playbook reference ───────────────────── */}
+      <div className="mb-8">
+        <SectionHeading>Operator Follow-Up Playbook</SectionHeading>
+        <p className="mt-1 text-[10px] text-slate-600">
+          Quick reference: each next action mapped to the recommended resource(s) to send.
+          Internal-only — not shown to leads.
+        </p>
+        <div className="mt-3 overflow-x-auto rounded-lg border border-white/10">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/10 bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">
+                <th className="px-4 py-3">Next Action</th>
+                <th className="px-4 py-3">What It Means</th>
+                <th className="px-4 py-3">Primary Link</th>
+                <th className="px-4 py-3">Secondary Link</th>
+                <th className="px-4 py-3">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(Object.entries(PLAYBOOK_MAP) as [FollowUpAction, PlaybookEntry][]).map(
+                ([action, entry]) => (
+                  <tr
+                    key={action}
+                    className="border-b border-white/5 last:border-b-0"
+                  >
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${ACTION_CONFIG[action].color}`}
+                      >
+                        {ACTION_CONFIG[action].icon} {ACTION_CONFIG[action].label}
+                      </span>
+                    </td>
+                    <td className="max-w-[200px] px-4 py-3 text-xs text-slate-400">
+                      {entry.description}
+                    </td>
+                    <td className="px-4 py-3">
+                      {entry.primary ? (
+                        <a
+                          href={entry.primary.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded bg-primary-500/10 px-2 py-0.5 text-xs font-medium text-primary-300 transition hover:bg-primary-500/20"
+                        >
+                          {entry.primary.label}
+                          <span className="text-[9px] text-slate-500">{entry.primary.href}</span>
+                        </a>
+                      ) : (
+                        <span className="text-slate-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {entry.secondary ? (
+                        <a
+                          href={entry.secondary.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded bg-white/5 px-2 py-0.5 text-xs font-medium text-slate-300 transition hover:bg-white/10"
+                        >
+                          {entry.secondary.label}
+                          <span className="text-[9px] text-slate-500">{entry.secondary.href}</span>
+                        </a>
+                      ) : (
+                        <span className="text-slate-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-slate-500">
+                      {entry.note ?? "—"}
+                    </td>
+                  </tr>
+                ),
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {/* ── Activation linkage ────────────────────────────── */}
       <div className="mb-8">
@@ -595,6 +675,7 @@ function RecentTable({ rows }: { rows: AcquisitionRowWithGuidance[] }) {
           <tr className="border-b border-white/10 bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">
             <th className="px-4 py-3">Priority</th>
             <th className="px-4 py-3">Next Action</th>
+            <th className="px-4 py-3">Recommended Links</th>
             <th className="px-4 py-3">Time</th>
             <th className="px-4 py-3">Email</th>
             <th className="px-4 py-3">Intent</th>
@@ -615,6 +696,9 @@ function RecentTable({ rows }: { rows: AcquisitionRowWithGuidance[] }) {
               </td>
               <td className="px-4 py-3">
                 <NextActionBadge action={row.guidance.action} reason={row.guidance.reason} />
+              </td>
+              <td className="px-4 py-3">
+                <PlaybookLinks action={row.guidance.action} />
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-slate-400">
                 {fmtDate(row.created_at)}
@@ -705,6 +789,39 @@ function NextActionBadge({
     >
       {cfg.icon} {cfg.label}
     </span>
+  );
+}
+
+function PlaybookLinks({ action }: { action: FollowUpAction }) {
+  const entry = PLAYBOOK_MAP[action];
+  if (!entry.primary && !entry.secondary) {
+    return <span className="text-[10px] text-slate-600">{entry.note ?? "—"}</span>;
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      {entry.primary && (
+        <a
+          href={entry.primary.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-0.5 rounded bg-primary-500/10 px-1.5 py-0.5 text-[10px] font-medium text-primary-300 transition hover:bg-primary-500/20"
+          title={entry.primary.href}
+        >
+          {entry.primary.label}
+        </a>
+      )}
+      {entry.secondary && (
+        <a
+          href={entry.secondary.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-0.5 rounded bg-white/5 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 transition hover:bg-white/10"
+          title={entry.secondary.href}
+        >
+          {entry.secondary.label}
+        </a>
+      )}
+    </div>
   );
 }
 
