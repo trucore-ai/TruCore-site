@@ -19,6 +19,16 @@ import {
   PLAYBOOK_MAP,
   type PlaybookEntry,
 } from "@/lib/acquisition-playbook";
+import {
+  enrichWithProgress,
+  computeProgressStateSummary,
+  computeProgressSignalSummary,
+  PROGRESS_STATE_CONFIG,
+  PROGRESS_SIGNAL_CONFIG,
+  type AcquisitionRowWithProgress,
+  type ProgressState,
+  type ProgressSignal,
+} from "@/lib/acquisition-progress";
 
 /* ────────────────────────────────────────────────────────────────
  *  /admin/acquisition — Operator Acquisition Funnel
@@ -45,6 +55,16 @@ export default async function AdminAcquisitionPage() {
   const guidedRows = enrichWithGuidance(data.recent);
   const actionSummary = computeActionSummary(guidedRows);
   const prioritySummary = computePrioritySummary(guidedRows);
+
+  /* ── Derive progress states for each recent lead ──── */
+  const progressRows = enrichWithProgress(data.recent);
+  const progressStateSummary = computeProgressStateSummary(progressRows);
+  const progressSignalSummary = computeProgressSignalSummary(progressRows);
+
+  /* Build a progress lookup by email for table rendering */
+  const progressByEmail = new Map(
+    progressRows.map((r) => [r.email, r.progress]),
+  );
 
   return (
     <div className="min-h-screen bg-neutral-950 p-6 text-slate-100 md:p-10">
@@ -133,6 +153,48 @@ export default async function AdminAcquisitionPage() {
           />
         </div>
       </div>
+
+      {/* ── Progress state summary ─────────────────────────── */}
+      {progressRows.length > 0 && (
+        <div className="mb-8">
+          <SectionHeading>Progress Visibility</SectionHeading>
+          <p className="mt-1 text-[10px] text-slate-600">
+            Current progress state of recent leads. Derived from API key and
+            portal token status. Stall detection uses signup age (&gt;7 days
+            without advancing). Limitation: no timestamps for when keys/portal
+            were acquired — &quot;progressing&quot; reflects current state, not recency.
+          </p>
+
+          {/* Progress state breakdown (milestone-based) */}
+          <div className="mt-3 grid grid-cols-3 gap-3">
+            {progressStateSummary.map((ps) => (
+              <div
+                key={ps.state}
+                className="rounded-lg border border-white/10 bg-neutral-900/60 px-4 py-3 text-center"
+              >
+                <span className="text-lg">{ps.icon}</span>
+                <p className="mt-1 text-xl font-semibold text-slate-100">{ps.count}</p>
+                <p className="mt-0.5 text-[10px] uppercase tracking-wide text-slate-400">
+                  {ps.label}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Progress signal breakdown (temporal context) */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {progressSignalSummary.map((ps) => (
+              <span
+                key={ps.signal}
+                className={`inline-flex items-center gap-1.5 rounded-full border border-white/10 px-2.5 py-1 text-xs ${ps.color}`}
+              >
+                <span className="font-semibold">{ps.count}</span>
+                <span className="text-slate-400">{ps.label}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Follow-up guidance summary ────────────────────── */}
       {guidedRows.length > 0 && (
@@ -446,7 +508,7 @@ export default async function AdminAcquisitionPage() {
           deterministic recommended next action based on API key status,
           portal access, build stage, and intent.
         </p>
-        <RecentTable rows={guidedRows} />
+        <RecentTable rows={guidedRows} progressByEmail={progressByEmail} />
       </div>
 
       {/* ── Interpretation note ───────────────────────────── */}
@@ -663,7 +725,13 @@ function ActivationBadges({ row }: { row: AcquisitionRecentRow }) {
   );
 }
 
-function RecentTable({ rows }: { rows: AcquisitionRowWithGuidance[] }) {
+function RecentTable({
+  rows,
+  progressByEmail,
+}: {
+  rows: AcquisitionRowWithGuidance[];
+  progressByEmail: Map<string, { state: ProgressState; signal: ProgressSignal }>;
+}) {
   if (rows.length === 0) {
     return <p className="mt-2 text-sm text-slate-400">No submissions yet.</p>;
   }
@@ -673,6 +741,7 @@ function RecentTable({ rows }: { rows: AcquisitionRowWithGuidance[] }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-white/10 bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">
+            <th className="px-4 py-3">Progress</th>
             <th className="px-4 py-3">Priority</th>
             <th className="px-4 py-3">Next Action</th>
             <th className="px-4 py-3">Recommended Links</th>
@@ -691,6 +760,9 @@ function RecentTable({ rows }: { rows: AcquisitionRowWithGuidance[] }) {
               key={i}
               className="border-b border-white/5 last:border-b-0"
             >
+              <td className="px-4 py-3">
+                <ProgressBadge email={row.email} progressByEmail={progressByEmail} />
+              </td>
               <td className="px-4 py-3">
                 <PriorityChip priority={row.guidance.priority} />
               </td>
@@ -742,6 +814,35 @@ function RecentTable({ rows }: { rows: AcquisitionRowWithGuidance[] }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function ProgressBadge({
+  email,
+  progressByEmail,
+}: {
+  email: string;
+  progressByEmail: Map<string, { state: ProgressState; signal: ProgressSignal }>;
+}) {
+  const info = progressByEmail.get(email);
+  if (!info) {
+    return <span className="text-slate-600">—</span>;
+  }
+  const stateCfg = PROGRESS_STATE_CONFIG[info.state];
+  const signalCfg = PROGRESS_SIGNAL_CONFIG[info.signal];
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span
+        className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${stateCfg.color}`}
+      >
+        {stateCfg.icon} {stateCfg.label}
+      </span>
+      <span
+        className={`inline-block rounded-full px-1.5 py-0.5 text-[9px] ${signalCfg.color}`}
+      >
+        {signalCfg.shortLabel}
+      </span>
     </div>
   );
 }

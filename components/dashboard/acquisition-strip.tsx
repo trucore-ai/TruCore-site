@@ -21,6 +21,11 @@ import {
   computePrioritySummary,
   PRIORITY_CONFIG,
 } from "@/lib/acquisition-followup";
+import {
+  enrichWithProgress,
+  computeProgressStateSummary,
+  PROGRESS_STATE_CONFIG,
+} from "@/lib/acquisition-progress";
 
 export async function AcquisitionStrip() {
   let data: AcquisitionFunnelSnapshot | null = null;
@@ -49,6 +54,10 @@ export async function AcquisitionStrip() {
   /* Derive follow-up priority summary for recent leads */
   const guidedRows = enrichWithGuidance(data.recent);
   const prioritySummary = computePrioritySummary(guidedRows);
+
+  /* Derive progress state summary for recent leads */
+  const progressRows = enrichWithProgress(data.recent);
+  const progressStateSummary = computeProgressStateSummary(progressRows);
 
   return (
     <div className="space-y-3">
@@ -87,6 +96,23 @@ export async function AcquisitionStrip() {
           hint="Has API key but not portal-active"
         />
       </div>
+
+      {/* Progress state cue */}
+      {progressStateSummary.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+          <span className="font-medium text-slate-400">Progress:</span>
+          {progressStateSummary.map((ps) => (
+            <span
+              key={ps.state}
+              className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 ${PROGRESS_STATE_CONFIG[ps.state as keyof typeof PROGRESS_STATE_CONFIG].color}`}
+            >
+              <span>{ps.icon}</span>
+              <span className="font-semibold">{ps.count}</span>
+              <span>{ps.label}</span>
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Follow-up priority summary */}
       {prioritySummary.length > 0 && (
