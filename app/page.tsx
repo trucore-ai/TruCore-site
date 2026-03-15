@@ -78,6 +78,9 @@ export default function Home() {
               ATF enforces spend limits, protocol allowlists, and slippage caps on every transaction.
               Your agents move fast without going off the rails.
             </p>
+            <p className="mt-3 text-base text-slate-400">
+              Built for trading bot developers, AI agent builders, and DeFi protocol integrators on Solana.
+            </p>
 
             {/* CTAs */}
             <div className="mt-10 flex flex-wrap items-center gap-5">
@@ -90,12 +93,12 @@ export default function Home() {
                 Try sandbox
               </TrackedLink>
               <TrackedLink
-                href="/atf/apply"
-                eventName="hero_pilot_click"
+                href="/builders"
+                eventName="hero_builders_click"
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
               >
-                Apply for pilot
+                Get started
               </TrackedLink>
             </div>
 
@@ -104,6 +107,15 @@ export default function Home() {
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
+              <TrackedLink
+                href="/docs/first-protected-trade"
+                eventName="hero_golden_path_click"
+                eventProps={{ location: "atf_hero", target: "first_protected_trade" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                First protected trade
+              </TrackedLink>
+              <span aria-hidden="true" className="text-white/20">/</span>
               <TrackedLink
                 href="/docs/5-minute-quickstart"
                 eventName="hero_quickstart_click"
@@ -147,6 +159,15 @@ export default function Home() {
                 className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
                 Enterprise
+              </TrackedLink>
+              <span aria-hidden="true" className="text-white/20">/</span>
+              <TrackedLink
+                href="/builders"
+                eventName="hero_builders_link_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                For builders
               </TrackedLink>
             </div>
 
@@ -212,6 +233,12 @@ export default function Home() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
+              title: "First Protected Trade",
+              desc: "Protect a bot intent, receive a receipt, and verify it. HTTP, Python, TypeScript, CLI, and OpenClaw paths.",
+              href: "/docs/first-protected-trade",
+              event: "explore_first_protected_trade_click",
+            },
+            {
               title: "Architecture & Threat Model",
               desc: "Four-layer enforcement pipeline, threat vectors, and hard invariants.",
               href: "/details#architecture",
@@ -270,6 +297,12 @@ export default function Home() {
               desc: "Quickstart, policy model, API reference, CLI guides, and changelog.",
               href: "/docs",
               event: "explore_docs_click",
+            },
+            {
+              title: "For Bot Builders",
+              desc: "Integration paths, early access, and hands-on support for trading bots and AI agents.",
+              href: "/builders",
+              event: "explore_builders_click",
             },
           ].map((card) => (
             <Tilt key={card.title} maxTilt={5}>

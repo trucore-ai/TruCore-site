@@ -60,7 +60,7 @@ export function WaitlistForm() {
   });
 
   useEffect(() => {
-    if (state.ok && state.message) {
+    if (state.ok) {
       if (state.intent === "design_partner") {
         trackEvent("design_partner_application_submit_success", {
           source: "waitlist",
@@ -76,18 +76,18 @@ export function WaitlistForm() {
         });
       }
     }
-  }, [state.ok, state.message, state.intent]);
+  }, [state.ok, state.intent]);
 
-  if (state.ok && state.message) {
+  if (state.ok) {
     const isPartnerSuccess = state.intent === "design_partner";
 
     return (
       <div data-testid="waitlist-success" className="glass-panel rounded-xl px-6 py-5 space-y-4">
         <p className="text-xl font-semibold text-primary-100">
-          &#10003; {isPartnerSuccess ? "Application received" : state.message}
+          &#10003; {isPartnerSuccess ? "Application received" : "You\u2019re on the list"}
         </p>
 
-        {isPartnerSuccess && (
+        {isPartnerSuccess ? (
           <>
             {state.schedulingUrl ? (
               <>
@@ -129,6 +129,12 @@ export function WaitlistForm() {
               </p>
             )}
           </>
+        ) : (
+          <p className="text-lg text-slate-200">
+            {state.emailEnabled
+              ? "We\u2019ll share early-access updates by email soon."
+              : "We\u2019ll share early-access updates soon."}
+          </p>
         )}
       </div>
     );

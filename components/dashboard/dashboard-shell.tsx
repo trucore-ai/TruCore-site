@@ -23,6 +23,7 @@ import type {
   TenantsResponse,
   DashboardSummary,
   DashboardResult,
+  AdoptionFunnel,
 } from "@/lib/dashboard-client";
 import { HeroKpis } from "@/components/dashboard/hero-kpis";
 import { HealthStrip } from "@/components/dashboard/health-strip";
@@ -33,6 +34,9 @@ import { ErrorPanel } from "@/components/dashboard/error-panel";
 import { UnavailablePanel } from "@/components/dashboard/unavailable-panel";
 import { SectionExplainer } from "@/components/dashboard/section-explainer";
 import { OperatorSummary } from "@/components/dashboard/operator-summary";
+import { AdoptionFunnelPanel } from "@/components/dashboard/adoption-funnel";
+import { GrowthTriagePanel } from "@/components/dashboard/growth-triage-panel";
+import { SourceConversionRollups } from "@/components/dashboard/source-conversion-rollups";
 import {
   KpiGridSkeleton,
   HealthStripSkeleton,
@@ -58,6 +62,7 @@ export type DashboardData = {
   tenants: DashboardResult<TenantsResponse>;
   summary: DashboardResult<DashboardSummary>;
   trend?: DashboardResult<LiveTrend>;
+  adoption?: DashboardResult<AdoptionFunnel>;
 };
 
 type Props = {
@@ -133,7 +138,7 @@ export function DashboardShell({ initial }: Props) {
               Operator Dashboard
             </h1>
             <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
-              ATF system health, enforcement posture, and tenant overview
+              Platform-wide system health, enforcement posture, and tenant overview &mdash; operator access only
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-primary-300/10 bg-primary-500/[0.04] px-3.5 py-1.5">
@@ -147,7 +152,7 @@ export function DashboardShell({ initial }: Props) {
           </div>
         </div>
         <p className="mt-3 text-[10px] leading-relaxed text-slate-600">
-          Operator summaries derived from current service state. Section signals refresh with each polling cycle.
+          Platform-scoped operator summaries derived from current service state. All tenants visible. Section signals refresh with each polling cycle.
         </p>
         <div className="gradient-divider mt-3" />
       </div>
@@ -328,6 +333,104 @@ export function DashboardShell({ initial }: Props) {
             Tenants are sorted by priority: suspended tenants first, then those
             with enforcement events, then by request volume. Use it to triage
             quickly and drill into detail pages.
+          </p>
+        </SectionExplainer>
+      </section>
+
+      {/* ── Growth Triage ───────────────────────────────────── */}
+      <section id="growth-triage" className="scroll-mt-6" aria-label="Growth triage">
+        {data.adoption && renderSection(
+          data.adoption,
+          null,
+          (d) => <GrowthTriagePanel data={d} />,
+          {
+            title: "Growth triage not available",
+            message:
+              "The /dashboard/adoption endpoint is not reachable or did not return data. Follow-up prioritization, triage segments, and the operator queue will appear here once adoption data is available.",
+            capabilities: [
+              "follow-up priority",
+              "triage segments",
+              "operator queue",
+            ],
+          },
+        )}
+        <SectionExplainer label="About growth triage">
+          <p>
+            Deterministic follow-up prioritization for early user acquisition.
+            Tenants are scored as high, medium, or low priority based on their
+            activation stage, stall duration, and integration completeness.
+          </p>
+          <p>
+            Use this to quickly identify who needs outreach, who is stuck in
+            the funnel, and who is converting well. Filter by priority or
+            segment to focus your review.
+          </p>
+          <p>
+            This section is operator-only. Priority rules are transparent,
+            documented, and derived from existing adoption data.
+          </p>
+        </SectionExplainer>
+      </section>
+
+      {/* ── Source Conversion Rollups ──────────────────────── */}
+      <section id="source-rollups" className="scroll-mt-6" aria-label="Source conversion rollups">
+        {data.adoption && renderSection(
+          data.adoption,
+          null,
+          (d) => <SourceConversionRollups data={d} />,
+          {
+            title: "Source rollups not available",
+            message:
+              "Source conversion data requires the /dashboard/adoption endpoint. This section will show per-source activation metrics once adoption data is available.",
+            capabilities: [
+              "source conversion rates",
+              "per-source activation",
+              "integration path analysis",
+            ],
+          },
+        )}
+        <SectionExplainer label="About source rollups">
+          <p>
+            Per-source activation outcomes showing which integration paths
+            (CLI, HTTP, Python SDK, TypeScript SDK, OpenClaw) are producing
+            the best tenant activation rates.
+          </p>
+          <p>
+            Conversion rate is verifies ÷ protects. Sources are inferred from
+            endpoint patterns and the X-ATF-Client header.
+          </p>
+        </SectionExplainer>
+      </section>
+
+      {/* ── Adoption Funnel ─────────────────────────────────── */}
+      <section id="adoption" className="scroll-mt-6" aria-label="Adoption metrics">
+        {data.adoption && renderSection(
+          data.adoption,
+          null,
+          (d) => <AdoptionFunnelPanel data={d} />,
+          {
+            title: "Adoption metrics not available",
+            message:
+              "The /dashboard/adoption endpoint is not reachable or did not return data. Adoption funnel, tenant activation milestones, and platform-wide usage aggregates will appear here once the endpoint is enabled.",
+            capabilities: [
+              "activation funnel",
+              "tenant milestones",
+              "platform aggregates",
+            ],
+          },
+        )}
+        <SectionExplainer label="About adoption metrics">
+          <p>
+            Platform-wide adoption and activation signals for early-user-acquisition
+            measurement. Shows the funnel from onboarding through key milestones.
+          </p>
+          <p>
+            Use this to understand how many tenants are reaching each activation
+            stage and where the funnel drops off.
+          </p>
+          <p>
+            This section is operator-only and shows data across all tenants.
+            Tenant users never see this view.
           </p>
         </SectionExplainer>
       </section>

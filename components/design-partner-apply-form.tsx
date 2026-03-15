@@ -53,16 +53,16 @@ export function DesignPartnerApplyForm() {
   });
 
   useEffect(() => {
-    if (state.ok && state.message) {
+    if (state.ok) {
       trackEvent("design_partner_apply_page_submit_success", {
         source: "atf_apply_page",
         integrationsCount: formMetaRef.current.integrationsCount,
         hasUseCase: formMetaRef.current.hasUseCase,
       });
     }
-  }, [state.ok, state.message]);
+  }, [state.ok]);
 
-  if (state.ok && state.message) {
+  if (state.ok) {
     return (
       <div className="glass-panel rounded-xl px-6 py-5 space-y-4">
         <p className="text-xl font-semibold text-primary-100">

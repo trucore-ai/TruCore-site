@@ -31,8 +31,11 @@ export type WaitlistIntent = "standard" | "design_partner";
 export type WaitlistResult = {
   ok: boolean;
   message: string;
+  /** Always set on success; determines variant-specific rendering. */
   intent?: WaitlistIntent;
+  /** Design-partner scheduling link when configured. */
   schedulingUrl?: string;
+  /** True when confirmation-email pipeline is active. */
   emailEnabled?: boolean;
 };
 
@@ -43,7 +46,7 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
   const honeypot = formData.get("company");
   if (honeypot && typeof honeypot === "string" && honeypot.length > 0) {
     // Silently accept to not reveal the trap
-    return { ok: true, message: "You're on the list. We'll share early-access updates soon.", intent: "standard" };
+    return { ok: true, message: "You're on the list.", intent: "standard", emailEnabled: false };
   }
 
   /* ---- extract common fields ---- */

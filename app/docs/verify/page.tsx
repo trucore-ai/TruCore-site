@@ -231,6 +231,17 @@ export default function DocsVerifyPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="docs-info-card">
             <TrackedLink
+              href="/docs/first-protected-trade"
+              eventName="docs_verify_next_click"
+              eventProps={{ target: "first-protected-trade" }}
+              className="text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
+            >
+              First Protected Trade
+            </TrackedLink>
+            <p className="mt-1.5 text-sm text-slate-400">Protect an intent, receive a receipt, and verify it end-to-end.</p>
+          </div>
+          <div className="docs-info-card">
+            <TrackedLink
               href="/docs/cli"
               eventName="docs_verify_next_click"
               eventProps={{ target: "cli" }}

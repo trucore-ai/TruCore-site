@@ -64,7 +64,9 @@ export function PortalVerifyPanel() {
   return (
     <section className="space-y-4 rounded-xl border border-white/10 bg-white/[0.02] p-5">
       <h2 className="text-xl font-semibold">Verify a receipt</h2>
-      <p className="text-sm text-slate-300">Paste a receipt hash and jump into the verification kit.</p>
+      <p className="text-sm text-slate-300">
+        Paste a receipt hash and jump into the verification kit. Receipts shown here belong to your tenant&apos;s protected activity.
+      </p>
 
       <div className="space-y-2">
         <label htmlFor="portal-receipt-hash" className="text-sm font-medium text-slate-200">

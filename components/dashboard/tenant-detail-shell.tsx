@@ -9,12 +9,13 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { TenantDetail, DashboardResult } from "@/lib/dashboard-client";
+import type { TenantDetail, TenantActivationSnapshot, DashboardResult } from "@/lib/dashboard-client";
 import { TenantDetailHero } from "@/components/dashboard/tenant-detail-hero";
 import { TenantOperatorSummary } from "@/components/dashboard/tenant-operator-summary";
 import { QuotaBreakdownCard } from "@/components/dashboard/quota-breakdown-card";
 import { TenantUsageSummary } from "@/components/dashboard/tenant-usage-summary";
 import { TenantPosturePanel } from "@/components/dashboard/tenant-posture-panel";
+import { TenantGrowthContext } from "@/components/dashboard/tenant-growth-context";
 import { ErrorPanel } from "@/components/dashboard/error-panel";
 import {
   TenantDetailHeroSkeleton,
@@ -30,13 +31,14 @@ import { formatSecondsAgo } from "@/lib/freshness";
 type Props = {
   tenantId: string;
   initial: DashboardResult<TenantDetail>;
+  adoptionSnapshot?: TenantActivationSnapshot | null;
 };
 
 const POLL_MS = 5_000;
 
 /* ── Component ────────────────────────────────────────────── */
 
-export function TenantDetailShell({ tenantId, initial }: Props) {
+export function TenantDetailShell({ tenantId, initial, adoptionSnapshot }: Props) {
   const [result, setResult] = useState<DashboardResult<TenantDetail>>(initial);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [secondsAgo, setSecondsAgo] = useState(0);
@@ -187,6 +189,13 @@ export function TenantDetailShell({ tenantId, initial }: Props) {
           </p>
         </SectionExplainer>
       </section>
+
+      {/* Growth / follow-up context (when adoption data available) */}
+      {adoptionSnapshot && (
+        <section aria-label="Growth and follow-up context">
+          <TenantGrowthContext snapshot={adoptionSnapshot} />
+        </section>
+      )}
 
       {/* Metadata (if present) */}
       {tenant.metadata && Object.keys(tenant.metadata).length > 0 && (

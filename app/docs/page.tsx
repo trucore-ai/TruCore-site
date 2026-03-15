@@ -24,33 +24,27 @@ export default function DocsHubPage() {
           The docs are intentionally concise so teams can evaluate integration fit quickly.
         </p>
         <p className="max-w-3xl text-base leading-relaxed text-slate-400">
-          If you are new to the category, read{" "}
+          <strong className="text-slate-200">Bot developer?</strong>{" "}
+          Jump straight to{" "}
+          <Link
+            href="/docs/first-protected-trade"
+            className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            First Protected Trade
+          </Link>
+          {" "}&mdash; protect an intent, get a receipt, and verify it in minutes. Or read{" "}
           <Link
             href="/agent-transaction-firewall"
             className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
           >
-            Agent Transaction Firewall
+            What is ATF?
           </Link>
-          . Then continue with the{" "}
-          <Link
-            href="/docs/atf-architecture"
-            className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-          >
-            architecture deep dive
-          </Link>
-          . For receipt semantics, read the formal{" "}
+          {" "}for the full category definition. For receipt semantics, see{" "}
           <Link
             href="/docs/receipt-specification-v1"
             className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
           >
             Receipt Specification v1
-          </Link>
-          {" "}and the{" "}
-          <Link
-            href="/docs/anchoring-roadmap"
-            className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-          >
-            Anchoring &amp; Execution Roadmap
           </Link>
           .
         </p>
@@ -72,17 +66,32 @@ export default function DocsHubPage() {
         ))}
       </section>
 
-      <section className="glass-panel rounded-xl p-7">
-        <HeadingAnchor id="ready-to-test-atf-in-your-workflow">
-          Ready to test ATF in your workflow?
-        </HeadingAnchor>
-        <p className="mt-3 text-slate-400">
-          Apply to the design partner program to help shape policy and permit ergonomics for production teams.
-        </p>
-        <Button href="/atf/apply" size="sm" className="mt-5">
-          Apply as Design Partner
-        </Button>
-      </section>
+      <div className="grid gap-6 sm:grid-cols-2">
+        <section className="glass-panel rounded-xl p-7">
+          <HeadingAnchor id="ready-to-test-atf-in-your-workflow">
+            Ready to test ATF in your workflow?
+          </HeadingAnchor>
+          <p className="mt-3 text-slate-400">
+            Apply to the design partner program to help shape policy and permit ergonomics for production teams.
+          </p>
+          <Button href="/atf/apply" size="sm" className="mt-5">
+            Apply as Design Partner
+          </Button>
+        </section>
+
+        <section className="glass-panel rounded-xl p-7">
+          <HeadingAnchor id="need-integration-help">
+            Need integration help?
+          </HeadingAnchor>
+          <p className="mt-3 text-slate-400">
+            Building a bot or agent and want hands-on guidance? See the builder
+            landing for your fastest path from sandbox to production.
+          </p>
+          <Button href="/builders" size="sm" className="mt-5">
+            For Bot Builders &rarr;
+          </Button>
+        </section>
+      </div>
     </div>
   );
 }

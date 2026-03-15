@@ -22,6 +22,12 @@ export const sections: DocsNavSection[] = [
         description: "Start here for structure, core concepts, and next steps.",
       },
       {
+        title: "First Protected Trade",
+        href: "/docs/first-protected-trade",
+        description:
+          "Golden path: protect a swap intent, receive a receipt, and verify it. HTTP, Python, TypeScript, CLI, and OpenClaw paths.",
+      },
+      {
         title: "ATF CLI",
         href: "/docs/cli",
         description:

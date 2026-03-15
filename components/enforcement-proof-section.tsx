@@ -65,7 +65,7 @@ export function EnforcementProofSection() {
         </li>
       </ul>
 
-      <div className="mt-8">
+      <div className="mt-8 flex flex-wrap gap-4">
         <TrackedLink
           href="/atf/simulator?scenario=valid-swap"
           eventName="enforcement_proof_simulator_click"
@@ -73,6 +73,14 @@ export function EnforcementProofSection() {
           className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-lg font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
         >
           Run this example in the Simulator
+        </TrackedLink>
+        <TrackedLink
+          href="/docs/first-protected-trade"
+          eventName="enforcement_proof_golden_path_click"
+          eventProps={{ location: "atf_enforcement_proof" }}
+          className="inline-flex items-center justify-center rounded-xl border border-accent-300/40 bg-accent-500/10 px-7 py-4 text-lg font-semibold text-accent-100 transition-colors hover:bg-accent-500/20"
+        >
+          Protect your first bot trade &rarr;
         </TrackedLink>
       </div>
     </Section>

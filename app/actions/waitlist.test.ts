@@ -204,8 +204,9 @@ describe("joinWaitlist", () => {
 
     expect(result).toEqual({
       ok: true,
-      message: "You're on the list. We'll share early-access updates soon.",
+      message: "You're on the list.",
       intent: "standard",
+      emailEnabled: false,
     });
     expect(mocks.ensureWaitlistTableMock).not.toHaveBeenCalled();
     expect(mocks.upsertWaitlistSignupMock).not.toHaveBeenCalled();
@@ -337,6 +338,65 @@ describe("joinWaitlist", () => {
     expect(result.message).toContain("Something went wrong");
     expect(mocks.sendAdminNotificationMock).not.toHaveBeenCalled();
     expect(mocks.sendUserConfirmationMock).not.toHaveBeenCalled();
+  });
+
+  /* ---- unified success contract tests ---- */
+
+  it("standard success always includes intent, emailEnabled, and no schedulingUrl", async () => {
+    delete process.env.RESEND_API_KEY;
+
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "contract-std@example.com",
+        intent: "standard",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.intent).toBe("standard");
+    expect(typeof result.emailEnabled).toBe("boolean");
+    expect(result.schedulingUrl).toBeUndefined();
+  });
+
+  it("design_partner success always includes intent and emailEnabled", async () => {
+    process.env.RESEND_API_KEY = "re_test_key";
+    process.env.DESIGN_PARTNER_SCHEDULING_URL = "https://cal.example.com/trucore";
+
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "contract-dp@example.com",
+        role: "Founder",
+        intent: "design_partner",
+        projectName: "Contract DP",
+        integrationsInterest: ["jupiter"],
+        txVolumeBucket: "lt_10k",
+        buildStage: "idea",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.intent).toBe("design_partner");
+    expect(typeof result.emailEnabled).toBe("boolean");
+    expect(result.emailEnabled).toBe(true);
+    expect(result.schedulingUrl).toBe("https://cal.example.com/trucore");
+
+    delete process.env.RESEND_API_KEY;
+  });
+
+  it("client rendering does not need message text — ok + intent + emailEnabled suffice", async () => {
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "no-message-dep@example.com",
+        intent: "standard",
+      }),
+    );
+
+    // Success rendering can be driven entirely by these structured fields
+    expect(result.ok).toBe(true);
+    expect(result.intent).toBeDefined();
+    expect(result.emailEnabled).toBeDefined();
+    // message is present but not needed for key rendering branches
+    expect(typeof result.message).toBe("string");
   });
 
   it("blocks submissions during cooldown window", async () => {

@@ -91,6 +91,7 @@ This should print one or more `FAIL:` lines and exit non-zero.
 1. Submit one waitlist test entry and verify DB row appears.
 2. Confirm Resend shows a delivered or accepted event for test email.
 3. Confirm no new error spikes in Vercel logs during first 15 minutes.
+4. Check Vercel Function logs for `[waitlist]` warnings — any `database_missing` or `email_disabled` lines indicate misconfigured env vars (see `ops/ENV_VARS.md` → Waitlist Pipeline Readiness).
 
 ## Data Backup and Export (Neon)
 

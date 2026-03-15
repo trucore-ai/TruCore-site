@@ -58,3 +58,30 @@ All variables are configured in **Vercel Project Settings -> Environment Variabl
 - Database stores only token hash (`partner_portal_tokens.token_hash`), never raw token values.
 - Token default TTL is 7 days, rotate by issuing a new link when needed.
 - `/portal/*` is noindex/nofollow and no-store, suitable for private partner troubleshooting views.
+
+## Waitlist Pipeline Readiness
+
+The waitlist/design-partner submission pipeline depends on three env var groups
+with different criticality levels:
+
+| Capability | Required Env Var | Impact when missing |
+| --- | --- | --- |
+| Submission persistence | `POSTGRES_URL` or `DATABASE_URL` | **Submissions fail** — form returns a user-safe error |
+| Confirmation email | `RESEND_API_KEY` | Email skipped — signup still persists |
+| Scheduling CTA | `DESIGN_PARTNER_SCHEDULING_URL` | CTA hidden — application still persists |
+
+### Diagnostics
+
+- Server logs emit `[waitlist] database_missing`, `[waitlist] email_disabled`,
+  or `[waitlist] scheduling_link_missing` when capabilities are unavailable.
+- On submission failure, a `[waitlist] config_snapshot` line logs boolean
+  readiness per capability (no secrets).
+- Programmatic check: `getWaitlistConfigStatus()` in `lib/waitlist-config.ts`
+  returns `{ database, email, scheduling }` booleans for internal use.
+
+### Post-deploy verification
+
+1. Submit a test waitlist entry → confirm DB row appears in Neon console.
+2. Check Resend dashboard for a delivered/accepted event.
+3. Submit a design-partner application → confirm scheduling link appears in success state.
+4. Review Vercel Function logs for any `[waitlist]` warnings.

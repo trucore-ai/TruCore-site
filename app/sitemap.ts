@@ -15,6 +15,7 @@ const corePages: Array<{
   { path: "/atf/roadmap", priority: 0.8 },
   { path: "/atf/apply", priority: 0.9 },
   { path: "/build-with-atf", priority: 0.8 },
+  { path: "/builders", priority: 0.9 },
   { path: "/pilot/ecommerce", priority: 0.8 },
   { path: "/manifesto", priority: 0.8 },
   { path: "/direction", priority: 0.8 },
