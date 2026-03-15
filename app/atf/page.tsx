@@ -552,6 +552,40 @@ export default function ATFPage() {
         </div>
       </Section>
 
+      {/* ── Developer Quickstart CTA ── */}
+      <Section id="dev-quickstart" divider className="fade-in-up">
+        <section className="border border-white/10 rounded-xl p-6 bg-white/5">
+          <h2 className="text-lg font-semibold">
+            Try a protected trade in 30 seconds
+          </h2>
+
+          <p className="text-sm text-white/70 mt-2 max-w-lg">
+            Run a swap intent through the Agent Transaction Firewall and generate
+            a verifiable execution receipt.
+          </p>
+
+          <div className="mt-4 flex gap-4">
+            <TrackedLink
+              href="/docs/first-protected-trade"
+              eventName="dev_quickstart_click"
+              eventProps={{ target: "first_protected_trade", location: "atf_dev_quickstart" }}
+              className="text-sm font-medium text-blue-400 hover:text-blue-300"
+            >
+              Run first protected trade &rarr;
+            </TrackedLink>
+
+            <TrackedLink
+              href="/verify"
+              eventName="dev_quickstart_click"
+              eventProps={{ target: "verify", location: "atf_dev_quickstart" }}
+              className="text-sm font-medium text-white/70 hover:text-white"
+            >
+              Verify execution receipts &rarr;
+            </TrackedLink>
+          </div>
+        </section>
+      </Section>
+
       {/* ── Get Updates ── */}
       <Section id="updates" divider className="fade-in-up">
         <div className="mx-auto max-w-xl text-center">

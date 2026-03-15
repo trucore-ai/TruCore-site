@@ -84,6 +84,9 @@ export default function BuildersPage() {
           <h1 className="mt-4 text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
             Protect your bot before it hits the chain.
           </h1>
+          <p className="mt-2 text-sm text-white/70 max-w-xl">
+            Policy-enforced transaction protection for AI trading agents.
+          </p>
           <p className="mt-6 text-2xl leading-[1.5] text-slate-200">
             ATF enforces spend limits, protocol allowlists, and slippage caps on
             every transaction your bot or agent submits. Every decision produces a

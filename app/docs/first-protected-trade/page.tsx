@@ -232,6 +232,27 @@ export default function FirstProtectedTradePage() {
         </div>
       </section>
 
+      {/* ── Example Protected Execution ── */}
+      <div className="mt-8 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-5">
+        <h3 className="text-sm font-medium text-emerald-400">
+          Example protected execution
+        </h3>
+
+        <ul className="mt-3 text-sm text-white/80 space-y-1">
+          <li>SOL &rarr; USDC swap</li>
+          <li>DEX: Jupiter</li>
+          <li>Policy enforcement: enabled</li>
+          <li>Execution receipt generated</li>
+        </ul>
+
+        <Link
+          href="/verify"
+          className="inline-block mt-4 text-sm text-emerald-400 hover:text-emerald-300"
+        >
+          Verify a receipt &rarr;
+        </Link>
+      </div>
+
       {/* ── Step 3: Read the Response ── */}
       <section className="space-y-6">
         <HeadingAnchor id="read-response">Step 3 &mdash; Read the Response</HeadingAnchor>
