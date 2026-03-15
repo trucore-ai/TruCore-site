@@ -984,3 +984,176 @@ export async function getWaitlistMetricsSnapshot(): Promise<WaitlistMetricsSnaps
     })),
   };
 }
+
+/* ---------- Acquisition Funnel Snapshot (Stage: operator acquisition visibility) ---------- */
+
+export type AcquisitionRecentRow = {
+  created_at: string;
+  email: string;
+  intent: string | null;
+  source: string | null;
+  status: string;
+  project_name: string | null;
+  utm_source: string | null;
+};
+
+export type AcquisitionFunnelSnapshot = {
+  /** Total counts */
+  total_signups: number;
+  design_partner_count: number;
+  standard_count: number;
+
+  /** Time-windowed counts */
+  signups_7d: number;
+  signups_30d: number;
+  design_partners_7d: number;
+  design_partners_30d: number;
+
+  /** Pipeline status breakdown */
+  by_status: {
+    new: number;
+    contacted: number;
+    qualified: number;
+    closed: number;
+  };
+
+  /** Entry path breakdown (which page source produced signups) */
+  top_sources: Array<{ source: string; count: number }>;
+
+  /** UTM source breakdown */
+  top_utm_sources: Array<{ source: string; count: number }>;
+
+  /** UTM campaign breakdown */
+  top_campaigns: Array<{ campaign: string; count: number }>;
+
+  /** Recent submissions (newest first) */
+  recent: AcquisitionRecentRow[];
+
+  /** Activation linkage: signups that have an API key issued */
+  signups_with_api_key: number;
+
+  /** Activation linkage: signups that have an active portal token */
+  signups_with_portal_token: number;
+};
+
+/**
+ * Comprehensive acquisition funnel snapshot for operator visibility.
+ * Includes time-windowed counts, source/UTM breakdowns, recent
+ * submissions, and activation linkage (signups → API key / portal token).
+ */
+export async function getAcquisitionFunnelSnapshot(): Promise<AcquisitionFunnelSnapshot> {
+  await ensureWaitlistTable();
+  await ensureApiKeyTables();
+  await ensurePartnerPortalTables();
+  const sql = getSQL();
+
+  const totalsRows = await sql`
+    SELECT
+      COUNT(*)::int AS total_signups,
+      COUNT(*) FILTER (WHERE intent = 'design_partner')::int AS design_partner_count,
+      COUNT(*) FILTER (WHERE intent = 'standard' OR intent IS NULL)::int AS standard_count,
+      COUNT(*) FILTER (WHERE created_at >= now() - INTERVAL '7 days')::int AS signups_7d,
+      COUNT(*) FILTER (WHERE created_at >= now() - INTERVAL '30 days')::int AS signups_30d,
+      COUNT(*) FILTER (WHERE intent = 'design_partner' AND created_at >= now() - INTERVAL '7 days')::int AS design_partners_7d,
+      COUNT(*) FILTER (WHERE intent = 'design_partner' AND created_at >= now() - INTERVAL '30 days')::int AS design_partners_30d,
+      COUNT(*) FILTER (WHERE status = 'new' OR status IS NULL)::int AS status_new,
+      COUNT(*) FILTER (WHERE status = 'contacted')::int AS status_contacted,
+      COUNT(*) FILTER (WHERE status = 'qualified')::int AS status_qualified,
+      COUNT(*) FILTER (WHERE status = 'closed')::int AS status_closed
+    FROM waitlist_signups;
+  `;
+
+  const topSourceRows = await sql`
+    SELECT source, COUNT(*)::int AS count
+    FROM waitlist_signups
+    WHERE source IS NOT NULL AND TRIM(source) <> ''
+    GROUP BY source
+    ORDER BY count DESC, source ASC
+    LIMIT 10;
+  `;
+
+  const topUtmSourceRows = await sql`
+    SELECT utm_source AS source, COUNT(*)::int AS count
+    FROM waitlist_signups
+    WHERE utm_source IS NOT NULL AND TRIM(utm_source) <> ''
+    GROUP BY utm_source
+    ORDER BY count DESC, utm_source ASC
+    LIMIT 10;
+  `;
+
+  const topCampaignRows = await sql`
+    SELECT utm_campaign AS campaign, COUNT(*)::int AS count
+    FROM waitlist_signups
+    WHERE utm_campaign IS NOT NULL AND TRIM(utm_campaign) <> ''
+    GROUP BY utm_campaign
+    ORDER BY count DESC, utm_campaign ASC
+    LIMIT 10;
+  `;
+
+  const recentRows = await sql`
+    SELECT created_at, email, intent, source, status, project_name, utm_source
+    FROM waitlist_signups
+    ORDER BY created_at DESC
+    LIMIT 15;
+  `;
+
+  /* Activation linkage: count signups whose email matches an active API key */
+  const apiKeyLinkageRows = await sql`
+    SELECT COUNT(DISTINCT w.email)::int AS linked
+    FROM waitlist_signups w
+    INNER JOIN api_keys k
+      ON LOWER(w.email) = LOWER(k.owner_email)
+      AND k.revoked_at IS NULL;
+  `;
+
+  /* Activation linkage: count signups whose email matches an active portal token */
+  const portalLinkageRows = await sql`
+    SELECT COUNT(DISTINCT w.email)::int AS linked
+    FROM waitlist_signups w
+    INNER JOIN partner_portal_tokens t
+      ON LOWER(w.email) = LOWER(t.owner_email)
+      AND t.revoked_at IS NULL
+      AND t.expires_at > now();
+  `;
+
+  const totals = totalsRows[0] as Record<string, unknown>;
+
+  return {
+    total_signups: toInt(totals.total_signups),
+    design_partner_count: toInt(totals.design_partner_count),
+    standard_count: toInt(totals.standard_count),
+    signups_7d: toInt(totals.signups_7d),
+    signups_30d: toInt(totals.signups_30d),
+    design_partners_7d: toInt(totals.design_partners_7d),
+    design_partners_30d: toInt(totals.design_partners_30d),
+    by_status: {
+      new: toInt(totals.status_new),
+      contacted: toInt(totals.status_contacted),
+      qualified: toInt(totals.status_qualified),
+      closed: toInt(totals.status_closed),
+    },
+    top_sources: (topSourceRows as Array<Record<string, unknown>>).map((row) => ({
+      source: String(row.source),
+      count: toInt(row.count),
+    })),
+    top_utm_sources: (topUtmSourceRows as Array<Record<string, unknown>>).map((row) => ({
+      source: String(row.source),
+      count: toInt(row.count),
+    })),
+    top_campaigns: (topCampaignRows as Array<Record<string, unknown>>).map((row) => ({
+      campaign: String(row.campaign),
+      count: toInt(row.count),
+    })),
+    recent: (recentRows as Array<Record<string, unknown>>).map((row) => ({
+      created_at: String(row.created_at),
+      email: String(row.email),
+      intent: row.intent ? String(row.intent) : null,
+      source: row.source ? String(row.source) : null,
+      status: String(row.status ?? "new"),
+      project_name: row.project_name ? String(row.project_name) : null,
+      utm_source: row.utm_source ? String(row.utm_source) : null,
+    })),
+    signups_with_api_key: toInt((apiKeyLinkageRows[0] as Record<string, unknown>).linked),
+    signups_with_portal_token: toInt((portalLinkageRows[0] as Record<string, unknown>).linked),
+  };
+}
