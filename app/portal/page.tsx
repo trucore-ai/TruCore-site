@@ -8,6 +8,8 @@ import {
 } from "@/lib/partner-portal";
 import { derivePortalActivationState } from "@/lib/portal-activation";
 import { PortalActivationGuide } from "@/components/portal-activation-guide";
+import { PortalFirstProtectedTrade } from "@/components/portal-first-protected-trade";
+import { PortalCreateKeyGuide } from "@/components/portal-create-key-guide";
 import { PortalVerifyPanel } from "@/components/portal-verify-panel";
 import { PortalPremiumSection } from "@/components/portal-premium-section";
 import { resolvePortalPremium } from "@/lib/premium-analytics";
@@ -88,10 +90,21 @@ export default async function PartnerPortalPage() {
           </div>
         </header>
 
-        {/* ── Activation-aware guidance — adapts to portal state ── */}
+        {/* ── API-key-aware activation guidance ─────────────────
+         *  Case A: no keys    → CreateKeyGuide only (no trade block)
+         *  Case B: keys + zero_activity  → FirstProtectedTrade + ActivationGuide
+         *  Case C: keys + early_activity → FirstProtectedTrade + ActivationGuide
+         *  Case D: keys + active_usage   → ActivationGuide only
+         * ────────────────────────────────────────────────────── */}
+        {!activation.hasKeys && <PortalCreateKeyGuide />}
+
         <PortalActivationGuide activation={activation} />
 
-        <section className="space-y-3">
+        {activation.hasKeys && (
+          <PortalFirstProtectedTrade activationState={activation.state} />
+        )}
+
+        <section id="api-keys" className="space-y-3">
           <h2 className="text-xl font-semibold">API Keys</h2>
           <p className="text-xs text-slate-500">Only keys belonging to your tenant are shown. Other tenants cannot see or access your keys. Keys are never displayed in full after creation.</p>
           <div className="overflow-x-auto rounded-lg border border-white/10">
