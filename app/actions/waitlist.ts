@@ -203,15 +203,21 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "unknown";
-    // Surface config errors so they can be debugged
     const isConfigError = msg.includes("not configured");
+    // Always log the actual error for server-side debugging.
+    // Config errors: log full message (contains no secrets, only env var names).
+    // DB errors: log the error name + first 120 chars to avoid leaking query details.
     console.error(
-      `[waitlist] Submission failed: ${isConfigError ? msg : "DB error (see server logs)"}`,
+      `[waitlist] Submission failed: ${
+        isConfigError
+          ? msg
+          : `DB error: ${(error instanceof Error ? error.name : "Error")}: ${msg.slice(0, 120)}`
+      }`,
     );
     return {
       ok: false,
       message: isConfigError
-        ? "Waitlist is temporarily unavailable (server configuration issue)."
+        ? "Waitlist is temporarily unavailable. Please try again later or contact us directly."
         : "Something went wrong. Please try again shortly.",
     };
   }

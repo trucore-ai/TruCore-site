@@ -26,6 +26,7 @@ Set these in **Vercel Project > Settings > Environment Variables**.
 
 | Variable | Required | Scopes | Example | Notes |
 |---|---|---|---|---|
+| `POSTGRES_URL` | **Yes** | Production, Preview | `postgresql://user:pass@ep-xxx.neon.tech/neondb?sslmode=require` | Neon Postgres connection string. Without this, waitlist/design-partner submissions fail with "server configuration issue". |
 | `NEXT_PUBLIC_ATF_CLI_VERSION` | **Yes** | Production, Preview, Development | `1.4.0` | Pinned CLI version shown on `/atf` quickstart and `/status`. Must be an explicit semver, never `latest`. |
 
 ### How to set it
