@@ -1,13 +1,13 @@
 /* ────────────────────────────────────────────────────────────────
  *  LiveStatusStrip - compact homepage status + public infra metrics
  *
- *  Top row: system health, 24 h dashboard KPIs, and CTA.
- *  Bottom row: all-time public infrastructure signals from the
- *  ATF /metrics/public-summary endpoint, giving visitors a
- *  confidence-building "live infrastructure" view.
+ *  Displays live infrastructure signals from the public ATF
+ *  /metrics/public-summary endpoint. No authentication required.
  *
- *  Dashboard data polls every 30 s (needs freshness).
- *  Public metrics poll every 60 s (cache-friendly, relaxed).
+ *  Top row: derived health status, headline KPIs, and CTA.
+ *  Bottom row: extended infrastructure metrics.
+ *
+ *  Polls every 30 s with a single-retry strategy on failure.
  *
  *  Design principles:
  *   - Subtle, confidence-building, not an ops console
@@ -20,31 +20,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TrackedLink } from "@/components/tracked-link";
-import type {
-  SystemHealth,
-  LiveKpiItem,
-  LiveEnforcement,
-  DashboardResult,
-} from "@/lib/dashboard-client";
 import type { PublicMetrics } from "@/lib/public-metrics";
-
-/* ── Types ────────────────────────────────────────────────── */
-
-/**
- * The API returns LiveKpiItem[] and LiveEnforcement from the
- * summary-derived bundle. We accept those shapes directly
- * instead of the legacy KpiSummary / EnforcementOverview types.
- */
-type StripData = {
-  health: DashboardResult<SystemHealth>;
-  kpis: DashboardResult<LiveKpiItem[]>;
-  enforcement: DashboardResult<LiveEnforcement>;
-};
 
 /* ── Constants ────────────────────────────────────────────── */
 
-const DASHBOARD_POLL_MS = 30_000;
-const PUBLIC_POLL_MS = 60_000;
+const POLL_MS = 30_000;
+const RETRY_DELAY_MS = 500;
 
 /* ── Helpers ──────────────────────────────────────────────── */
 
@@ -76,6 +57,13 @@ function relativeTime(iso: string): string {
   }
 }
 
+/** Derive a health label from uptime percentage. */
+function deriveHealth(uptime: number): "healthy" | "degraded" | "down" {
+  if (uptime >= 99) return "healthy";
+  if (uptime >= 95) return "degraded";
+  return "down";
+}
+
 const healthLabel: Record<string, string> = {
   healthy: "All Systems Operational",
   degraded: "Degraded Performance",
@@ -97,91 +85,52 @@ const healthText: Record<string, string> = {
 /* ── Component ────────────────────────────────────────────── */
 
 export function LiveStatusStrip() {
-  const [data, setData] = useState<StripData | null>(null);
+  const [metrics, setMetrics] = useState<PublicMetrics | null>(null);
   const [error, setError] = useState(false);
-  const [publicMetrics, setPublicMetrics] = useState<PublicMetrics | null>(null);
   const mountedRef = useRef(true);
 
-  /* ── Dashboard fetch ───────────────────────────────────── */
+  /* ── Public metrics fetch (with single retry) ──────────── */
 
-  const refreshDashboard = useCallback(async () => {
-    try {
-      const res = await fetch("/api/dashboard/refresh", {
-        cache: "no-store",
-      });
-      if (!res.ok) {
-        if (mountedRef.current) setError(true);
-        return;
+  const fetchMetrics = useCallback(async (): Promise<PublicMetrics | null> => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch("/api/metrics/public-summary", {
+          cache: "no-store",
+        });
+        if (res.ok) return (await res.json()) as PublicMetrics;
+      } catch {
+        /* network error — fall through to retry / fail */
       }
-      const json = (await res.json()) as StripData;
-      if (mountedRef.current) {
-        setData(json);
-        setError(false);
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
       }
-    } catch {
-      if (mountedRef.current) setError(true);
     }
+    return null;
   }, []);
 
-  /* ── Public metrics fetch ──────────────────────────────── */
-
-  const refreshPublic = useCallback(async () => {
-    try {
-      const res = await fetch("/api/metrics/public-summary");
-      if (!res.ok) return;
-      const json = (await res.json()) as PublicMetrics;
-      if (mountedRef.current) setPublicMetrics(json);
-    } catch {
-      /* silent: public metrics are additive, not critical */
+  const refresh = useCallback(async () => {
+    const json = await fetchMetrics();
+    if (!mountedRef.current) return;
+    if (json) {
+      setMetrics(json);
+      setError(false);
+    } else {
+      setError(true);
     }
-  }, []);
+  }, [fetchMetrics]);
 
   useEffect(() => {
     mountedRef.current = true;
-
-    const startDashboard = async () => {
-      try {
-        const res = await fetch("/api/dashboard/refresh", {
-          cache: "no-store",
-        });
-        if (!res.ok) {
-          if (mountedRef.current) setError(true);
-          return;
-        }
-        const json = (await res.json()) as StripData;
-        if (mountedRef.current) {
-          setData(json);
-          setError(false);
-        }
-      } catch {
-        if (mountedRef.current) setError(true);
-      }
-    };
-
-    const startPublic = async () => {
-      try {
-        const res = await fetch("/api/metrics/public-summary");
-        if (!res.ok) return;
-        const json = (await res.json()) as PublicMetrics;
-        if (mountedRef.current) setPublicMetrics(json);
-      } catch {
-        /* silent */
-      }
-    };
-
-    startDashboard();
-    startPublic();
-    const dashId = setInterval(refreshDashboard, DASHBOARD_POLL_MS);
-    const pubId = setInterval(refreshPublic, PUBLIC_POLL_MS);
+    refresh();
+    const id = setInterval(refresh, POLL_MS);
     return () => {
       mountedRef.current = false;
-      clearInterval(dashId);
-      clearInterval(pubId);
+      clearInterval(id);
     };
-  }, [refreshDashboard, refreshPublic]);
+  }, [refresh]);
 
   /* ── Loading state ─────────────────────────────────────── */
-  if (!data && !error) {
+  if (!metrics && !error) {
     return (
       <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -204,7 +153,7 @@ export function LiveStatusStrip() {
   }
 
   /* ── Error state ───────────────────────────────────────── */
-  if (error && !data) {
+  if (error && !metrics) {
     return (
       <div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -228,45 +177,10 @@ export function LiveStatusStrip() {
     );
   }
 
-  /* ── Resolve dashboard values ──────────────────────────── */
-  const healthStatus =
-    data?.health?.ok ? data.health.data.status : "unknown";
-  const passedChecks =
-    data?.health?.ok
-      ? data.health.data.checks.filter((c) => c.status === "pass").length
-      : 0;
-  const totalChecks =
-    data?.health?.ok ? data.health.data.checks.length : 0;
-
-  // KPIs arrive as LiveKpiItem[] from the summary-derived bundle.
-  // Extract values by label, falling back to null when absent.
-  const kpiArr = data?.kpis?.ok ? data.kpis.data : [];
-  const kpiByLabel = (label: string): number | null => {
-    const item = kpiArr.find(
-      (k) => k.label.toLowerCase() === label.toLowerCase(),
-    );
-    if (!item) return null;
-    return typeof item.value === "number"
-      ? item.value
-      : Number(item.value) || null;
-  };
-
-  const requests24h = kpiByLabel("Total Requests (24h)") ?? kpiByLabel("Requests (24h)");
-  const enforcements24h = kpiByLabel("Total Enforcements (24h)") ?? kpiByLabel("Enforcements (24h)");
-  const uptimePct = kpiByLabel("Uptime %") ?? kpiByLabel("Uptime");
-
-  // Enforcement arrives as LiveEnforcement (auth_failures_total, etc).
-  // Derive a "blocked" count from the available counters.
-  const blockedCount =
-    data?.enforcement?.ok
-      ? (data.enforcement.data.auth_failures_total ?? 0) +
-        (data.enforcement.data.rate_limit_rejections_total ?? 0) +
-        (data.enforcement.data.quota_violations_total ?? 0)
-      : null;
-
-  /* ── Resolve public metrics ────────────────────────────── */
-  const pm = publicMetrics;
-  const pubUpdated = pm?.last_updated ? relativeTime(pm.last_updated) : "";
+  /* ── Resolve values from public metrics ──────────────── */
+  const pm = metrics!;
+  const healthStatus = deriveHealth(pm.uptime_percent);
+  const pubUpdated = pm.last_updated ? relativeTime(pm.last_updated) : "";
 
   return (
     <div
@@ -284,7 +198,7 @@ export function LiveStatusStrip() {
         }}
       />
 
-      {/* ── Top row: health + 24 h KPIs + CTA ────────────── */}
+      {/* ── Top row: health + primary KPIs + CTA ─────────── */}
       <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-4 px-5 py-4 sm:px-6">
         {/* ── Health indicator ─────────────────────────────── */}
         <div className="flex items-center gap-3">
@@ -301,35 +215,28 @@ export function LiveStatusStrip() {
             >
               {healthLabel[healthStatus] ?? "Unknown"}
             </p>
-            {totalChecks > 0 && (
-              <p className="mt-0.5 text-[11px] text-slate-500">
-                {passedChecks}/{totalChecks} checks passing
-              </p>
-            )}
           </div>
         </div>
 
         {/* ── Metric pills ────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-x-5 gap-y-3 sm:gap-x-7">
-          {requests24h !== null && (
-            <MetricPill label="Requests (24h)" value={compactNum(requests24h)} />
-          )}
-          {enforcements24h !== null && (
-            <MetricPill
-              label="Enforced"
-              value={compactNum(enforcements24h)}
-            />
-          )}
-          {blockedCount !== null && (
-            <MetricPill label="Blocked" value={compactNum(blockedCount)} />
-          )}
-          {uptimePct !== null && (
-            <MetricPill
-              label="Uptime"
-              value={`${Number(uptimePct).toFixed(2)}%`}
-              accent="text-emerald-300"
-            />
-          )}
+          <MetricPill
+            label="Protected Transactions"
+            value={compactNum(pm.protected_requests_total)}
+          />
+          <MetricPill
+            label="Receipts Verified"
+            value={compactNum(pm.receipts_verified_total)}
+          />
+          <MetricPill
+            label="Uptime"
+            value={
+              pm.uptime_seconds != null
+                ? friendlyUptime(pm.uptime_seconds)
+                : `${pm.uptime_percent.toFixed(2)}%`
+            }
+            accent="text-emerald-300"
+          />
         </div>
 
         {/* ── CTA ─────────────────────────────────────────── */}
@@ -344,82 +251,60 @@ export function LiveStatusStrip() {
         </TrackedLink>
       </div>
 
-      {/* ── Bottom row: public infrastructure metrics ─────── */}
-      {pm && (
-        <>
-          <div
-            className="mx-5 h-px sm:mx-6"
-            aria-hidden="true"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.06) 70%, transparent 100%)",
-            }}
-          />
-          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-2 px-5 pb-3.5 pt-3 sm:px-6">
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400/50" aria-hidden="true" />
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                Infrastructure
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:gap-x-7">
-              <MetricPill
-                label="Protected Requests"
-                value={compactNum(pm.protected_requests_total)}
-                small
-              />
-              {pm.receipts_written_total != null && (
-                <MetricPill
-                  label="Receipts Written"
-                  value={compactNum(pm.receipts_written_total)}
-                  small
-                />
-              )}
-              <MetricPill
-                label="Receipts Verified"
-                value={compactNum(pm.receipts_verified_total)}
-                subtitle={
-                  pm.verification_summary
-                    ? `${compactNum(pm.verification_summary.receipts_verified)} verified`
-                    : undefined
-                }
-                small
-              />
-              {pm.requests_last_hour != null && (
-                <MetricPill
-                  label="Requests (1h)"
-                  value={compactNum(pm.requests_last_hour)}
-                  accent="text-sky-300"
-                  small
-                />
-              )}
-              <MetricPill
-                label="Uptime"
-                value={
-                  pm.uptime_seconds != null
-                    ? friendlyUptime(pm.uptime_seconds)
-                    : `${pm.uptime_percent.toFixed(2)}%`
-                }
-                accent="text-emerald-300"
-                small
-              />
-              <MetricPill
-                label="Avg Latency"
-                value={`${pm.avg_request_latency_ms.toFixed(1)}ms`}
-                accent="text-primary-300"
-                small
-              />
-            </div>
-
-            {pubUpdated && (
-              <p className="text-[10px] text-slate-600">
-                {pubUpdated}
-              </p>
-            )}
+      {/* ── Bottom row: extended infrastructure metrics ──── */}
+      <>
+        <div
+          className="mx-5 h-px sm:mx-6"
+          aria-hidden="true"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.06) 70%, transparent 100%)",
+          }}
+        />
+        <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-2 px-5 pb-3.5 pt-3 sm:px-6">
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400/50" aria-hidden="true" />
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+              Infrastructure
+            </p>
           </div>
-        </>
-      )}
+
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:gap-x-7">
+            <MetricPill
+              label="Enforcement Events"
+              value={compactNum(pm.enforcement_events_total)}
+              small
+            />
+            {pm.receipts_written_total != null && (
+              <MetricPill
+                label="Receipts Written"
+                value={compactNum(pm.receipts_written_total)}
+                small
+              />
+            )}
+            {pm.requests_last_hour != null && (
+              <MetricPill
+                label="Requests (1h)"
+                value={compactNum(pm.requests_last_hour)}
+                accent="text-sky-300"
+                small
+              />
+            )}
+            <MetricPill
+              label="Avg Latency"
+              value={`${pm.avg_request_latency_ms.toFixed(1)}ms`}
+              accent="text-primary-300"
+              small
+            />
+          </div>
+
+          {pubUpdated && (
+            <p className="text-[10px] text-slate-600">
+              {pubUpdated}
+            </p>
+          )}
+        </div>
+      </>
     </div>
   );
 }
