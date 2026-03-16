@@ -34,32 +34,43 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const result = await fetchTenantDetail(tenantId);
+  try {
+    const result = await fetchTenantDetail(tenantId);
 
-  if (!result.ok) {
-    /* Distinguish not-found from upstream errors by inspecting
-       the error message from the dashboard client. */
-    const isNotFound =
-      result.error.includes("404") || result.error.includes("not found");
+    if (!result.ok) {
+      /* Distinguish not-found from upstream errors by inspecting
+         the error message from the dashboard client. */
+      const isNotFound =
+        result.error.includes("404") || result.error.includes("not found");
 
+      return NextResponse.json(
+        {
+          schema_version: AGENT_SCHEMA_VERSION,
+          available: false,
+          reason: isNotFound
+            ? `Tenant "${tenantId}" not found`
+            : "upstream_unavailable",
+        },
+        { status: isNotFound ? 404 : 502 },
+      );
+    }
+
+    const snapshot = serializeTenantSnapshot(result.data);
+
+    return NextResponse.json(snapshot, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+        "Content-Type": "application/json; charset=utf-8",
+      },
+    });
+  } catch {
     return NextResponse.json(
       {
         schema_version: AGENT_SCHEMA_VERSION,
         available: false,
-        reason: isNotFound
-          ? `Tenant "${tenantId}" not found`
-          : `Upstream error: ${result.error}`,
+        reason: "temporarily_unavailable",
       },
-      { status: isNotFound ? 404 : 502 },
+      { status: 502 },
     );
   }
-
-  const snapshot = serializeTenantSnapshot(result.data);
-
-  return NextResponse.json(snapshot, {
-    headers: {
-      "Cache-Control": "no-store, max-age=0",
-      "Content-Type": "application/json; charset=utf-8",
-    },
-  });
 }

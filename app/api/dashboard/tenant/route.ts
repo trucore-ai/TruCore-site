@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchTenantDetail } from "@/lib/dashboard-client";
 import { withAdminApiAuth } from "@/lib/admin-api-auth";
+import { logSecurityEvent } from "@/lib/security-log";
 
 /* ────────────────────────────────────────────────────────────────
  *  GET /api/dashboard/tenant?id=<tenantId>
@@ -25,7 +26,16 @@ export const GET = withAdminApiAuth(async (req: NextRequest) => {
     );
   }
 
-  const result = await fetchTenantDetail(tenantId);
-
-  return NextResponse.json(result);
+  try {
+    const result = await fetchTenantDetail(tenantId);
+    return NextResponse.json(result);
+  } catch {
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "dashboard/tenant", reason: "query_failed" },
+    });
+    return NextResponse.json(
+      { ok: false, error: "temporarily_unavailable" },
+      { status: 500 },
+    );
+  }
 }, { csrf: false });

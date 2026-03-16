@@ -3,6 +3,7 @@ import { createKeyForOwner } from "@/lib/api-keys";
 import { assertRateLimit } from "@/lib/rate-limit";
 import { logAdminAction } from "@/lib/audit-log";
 import { withAdminApiAuth } from "@/lib/admin-api-auth";
+import { logSecurityEvent } from "@/lib/security-log";
 
 type IssueRequestBody = {
   email?: unknown;
@@ -97,8 +98,11 @@ export const POST = withAdminApiAuth(async (request: NextRequest) => {
       { status: 201 },
     );
   } catch {
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "keys/issue-for-partner", reason: "write_failed" },
+    });
     return NextResponse.json(
-      { error: "key_issue_failed" },
+      { error: "temporarily_unavailable" },
       { status: 500 },
     );
   }

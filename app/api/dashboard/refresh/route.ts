@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchFullDashboard } from "@/lib/dashboard-client";
 import { withAdminApiAuth } from "@/lib/admin-api-auth";
+import { logSecurityEvent } from "@/lib/security-log";
 
 /* ────────────────────────────────────────────────────────────────
  *  GET /api/dashboard/refresh
@@ -19,7 +20,16 @@ import { withAdminApiAuth } from "@/lib/admin-api-auth";
 export const dynamic = "force-dynamic";
 
 export const GET = withAdminApiAuth(async () => {
-  const bundle = await fetchFullDashboard();
-
-  return NextResponse.json(bundle);
+  try {
+    const bundle = await fetchFullDashboard();
+    return NextResponse.json(bundle);
+  } catch {
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "dashboard/refresh", reason: "query_failed" },
+    });
+    return NextResponse.json(
+      { error: "temporarily_unavailable" },
+      { status: 500 },
+    );
+  }
 }, { csrf: false });

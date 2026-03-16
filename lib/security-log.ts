@@ -22,6 +22,7 @@ export type SecurityEvent =
   | "admin_api_denied"
   | "admin_action_denied"
   | "admin_action_degraded"
+  | "admin_api_degraded"
   | "csrf_origin_rejected"
   | "session_gc_error"
   | "admin_page_degraded"
@@ -98,6 +99,17 @@ export function logSecurityEvent(
       );
     }
   }
+
+  /* ── Track per-route degraded API counts ── */
+  if (event === "admin_api_degraded" && ctx.meta?.route) {
+    const route = String(ctx.meta.route);
+    if (KNOWN_ADMIN_API_ROUTES.has(route)) {
+      adminApiDegradedCounts.set(
+        route,
+        (adminApiDegradedCounts.get(route) ?? 0) + 1,
+      );
+    }
+  }
 }
 
 /* ---------- security event counters ---------- */
@@ -132,6 +144,22 @@ const KNOWN_ADMIN_ACTIONS = new Set([
   "update_admin_notes",
   "export_design_partners_csv",
 ]);
+
+/* ---------- per-route degraded API counters ---------- */
+
+/** Allowed route names — only these are tracked. Anything else is ignored. */
+const KNOWN_ADMIN_API_ROUTES = new Set([
+  "keys/create",
+  "keys/revoke",
+  "keys/issue-for-partner",
+  "portal/token/create",
+  "portal/token/revoke",
+  "dashboard/refresh",
+  "dashboard/tenant",
+  "admin/security",
+]);
+
+const adminApiDegradedCounts = new Map<string, number>();
 
 /**
  * Process-local aggregate counters for admin_action_degraded events, keyed
@@ -187,9 +215,26 @@ export function getAdminActionDegradedCounts(): Record<string, number> {
   }
 }
 
+/**
+ * Return a snapshot of per-route degraded admin API counts.
+ * Keys are safe static route labels only. Never throws.
+ */
+export function getAdminApiDegradedCounts(): Record<string, number> {
+  try {
+    const result: Record<string, number> = {};
+    for (const [key, val] of adminApiDegradedCounts) {
+      result[key] = val;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
 /** Exposed for tests only — reset all counters. */
 export function _resetSecurityEventCounters(): void {
   securityEventCounters.clear();
   adminPageDegradedCounts.clear();
   adminActionDegradedCounts.clear();
+  adminApiDegradedCounts.clear();
 }

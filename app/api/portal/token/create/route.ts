@@ -6,6 +6,7 @@ import {
   createPartnerPortalAccess,
 } from "@/lib/partner-portal";
 import { withAdminApiAuth } from "@/lib/admin-api-auth";
+import { logSecurityEvent } from "@/lib/security-log";
 
 type CreateTokenBody = {
   owner_email?: unknown;
@@ -107,8 +108,11 @@ export const POST = withAdminApiAuth(async (request: NextRequest) => {
       { status: 201 },
     );
   } catch {
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "portal/token/create", reason: "write_failed" },
+    });
     return NextResponse.json(
-      { error: "portal_token_create_failed" },
+      { error: "temporarily_unavailable" },
       { status: 500 },
     );
   }
