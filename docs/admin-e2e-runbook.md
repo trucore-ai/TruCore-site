@@ -101,6 +101,70 @@ Secrets required in GitHub repo settings:
 
 ---
 
+## Prometheus security metrics
+
+### Endpoint
+
+`GET /api/metrics/security` — **public**, no authentication required.
+
+Returns aggregate admin/security counters and gauges in Prometheus text
+exposition format (`text/plain; version=0.0.4`). Designed for scraping by
+Prometheus, Grafana Agent, or any compatible collector.
+
+### Why public exposure is safe
+
+The endpoint exposes only aggregate numeric counters and gauges. It never
+returns secrets, tokens, cookies, IP addresses, per-user dimensions, or
+any identifying information. The data is equivalent to what an application
+error-rate dashboard would show.
+
+### Metrics exposed
+
+**Counters**
+
+| Metric | Description |
+|---|---|
+| `trucore_admin_login_success_total` | Successful admin logins |
+| `trucore_admin_login_failure_total` | Failed admin login attempts |
+| `trucore_admin_login_rate_limited_total` | Logins rejected by rate limiter |
+| `trucore_admin_csrf_origin_rejected_total` | CSRF origin mismatches |
+| `trucore_admin_route_denied_total` | Admin route access denials |
+| `trucore_admin_api_denied_total` | Admin API access denials |
+| `trucore_admin_action_denied_total` | Admin action denials |
+| `trucore_admin_session_expired_total` | Sessions expired (absolute lifetime) |
+| `trucore_admin_session_idle_timeout_total` | Sessions expired (idle timeout) |
+| `trucore_admin_revoked_session_rejected_total` | Revoked session reuse attempts |
+
+**Gauges**
+
+| Metric | Description |
+|---|---|
+| `trucore_admin_session_store_size` | Current in-memory session count |
+| `trucore_admin_revoked_session_count` | Revoked sessions retained for detection |
+| `trucore_security_uptime_seconds` | Seconds since module startup |
+
+### Scraping
+
+```yaml
+# prometheus.yml
+scrape_configs:
+  - job_name: "trucore-security"
+    scrape_interval: 30s
+    metrics_path: /api/metrics/security
+    static_configs:
+      - targets: ["your-trucore-host:3000"]
+```
+
+### Important notes
+
+- Metrics are **in-memory and process-local**. They reset on cold start.
+- The existing admin-only JSON telemetry at `/api/admin/security` is
+  unchanged and still requires an authenticated admin session.
+- Response headers include `Cache-Control: no-store` and
+  `X-Content-Type-Options: nosniff`.
+
+---
+
 ## Waitlist fallback storage (CI / local dev)
 
 ### Problem
