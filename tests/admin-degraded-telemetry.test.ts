@@ -6,6 +6,7 @@ import {
   getAdminActionDegradedCounts,
   getAdminApiDegradedCounts,
   getAgentRouteRateLimitedCounts,
+  getPublicRouteRateLimitedCounts,
   _resetSecurityEventCounters,
 } from "@/lib/security-log";
 
@@ -474,6 +475,124 @@ describe("agentRouteRateLimitedCounts tracking", () => {
   });
 });
 
+/* ═══════════ Per-route public-route rate-limited counters ═══════════ */
+
+describe("publicRouteRateLimitedCounts tracking", () => {
+  it("tracks per-route rate-limited counts for known public routes", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("public_route_rate_limited", {
+      ip: "1.2.3.4",
+      meta: { route: "verify-receipt" },
+    });
+    logSecurityEvent("public_route_rate_limited", {
+      ip: "1.2.3.4",
+      meta: { route: "verify-receipt" },
+    });
+    logSecurityEvent("public_route_rate_limited", {
+      ip: "5.6.7.8",
+      meta: { route: "demo-policy" },
+    });
+    logSecurityEvent("public_route_rate_limited", {
+      ip: "9.10.11.12",
+      meta: { route: "status" },
+    });
+
+    const byRoute = getPublicRouteRateLimitedCounts();
+    expect(byRoute["verify-receipt"]).toBe(2);
+    expect(byRoute["demo-policy"]).toBe(1);
+    expect(byRoute["status"]).toBe(1);
+
+    const counters = getSecurityEventCounters();
+    expect(counters["public_route_rate_limited"]).toBe(4);
+  });
+
+  it("ignores unknown route labels", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("public_route_rate_limited", {
+      meta: { route: "evil/injected/route" },
+    });
+
+    const byRoute = getPublicRouteRateLimitedCounts();
+    expect(Object.keys(byRoute)).toHaveLength(0);
+
+    // aggregate still counts
+    const counters = getSecurityEventCounters();
+    expect(counters["public_route_rate_limited"]).toBe(1);
+  });
+
+  it("ignores events without route metadata", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("public_route_rate_limited", {
+      meta: { reason: "test" },
+    });
+
+    const byRoute = getPublicRouteRateLimitedCounts();
+    expect(Object.keys(byRoute)).toHaveLength(0);
+  });
+
+  it("does not track per-route for non-public-rate-limited events", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("login_failure", {
+      meta: { route: "verify-receipt" },
+    });
+
+    const byRoute = getPublicRouteRateLimitedCounts();
+    expect(Object.keys(byRoute)).toHaveLength(0);
+  });
+
+  it("reset clears public-route rate-limited counters", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("public_route_rate_limited", {
+      meta: { route: "public-metrics" },
+    });
+
+    expect(getPublicRouteRateLimitedCounts()["public-metrics"]).toBe(1);
+
+    _resetSecurityEventCounters();
+
+    expect(Object.keys(getPublicRouteRateLimitedCounts())).toHaveLength(0);
+    expect(Object.keys(getSecurityEventCounters())).toHaveLength(0);
+  });
+
+  it("per-route keys contain only safe static public route labels", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const safeRoutes = [
+      "verify-receipt",
+      "verify-receipt-signature",
+      "public-metrics",
+      "public-receipts",
+      "demo-policy",
+      "metrics/public-summary",
+      "receipt-signing-key",
+      "status",
+    ];
+
+    for (const route of safeRoutes) {
+      logSecurityEvent("public_route_rate_limited", {
+        meta: { route },
+      });
+    }
+
+    const byRoute = getPublicRouteRateLimitedCounts();
+    const keys = Object.keys(byRoute);
+
+    expect(keys).toHaveLength(safeRoutes.length);
+    for (const key of keys) {
+      expect(safeRoutes).toContain(key);
+      expect(key).not.toMatch(/\d+\.\d+\.\d+\.\d+/);
+      expect(key).not.toContain("DATABASE_URL");
+      expect(key).not.toContain("ADMIN_DASHBOARD_KEY");
+      expect(key).not.toContain("SELECT ");
+    }
+  });
+});
+
 /* ═══════════ API payload shape ═══════════ */
 
 describe("admin security API degraded telemetry payload", () => {
@@ -624,6 +743,8 @@ describe("admin security API degraded telemetry payload", () => {
     expect(body.admin_api_degraded_by_route).toEqual({});
     expect(body.agent_route_rate_limited_total).toBe(0);
     expect(body.agent_route_rate_limited_by_route).toEqual({});
+    expect(body.public_route_rate_limited_total).toBe(0);
+    expect(body.public_route_rate_limited_by_route).toEqual({});
   });
 
   it("does not leak secrets or raw backend details in degraded payload", async () => {
@@ -691,6 +812,8 @@ describe("admin security API degraded telemetry payload", () => {
     expect(body.admin_api_degraded_by_route).toBeUndefined();
     expect(body.agent_route_rate_limited_total).toBeUndefined();
     expect(body.agent_route_rate_limited_by_route).toBeUndefined();
+    expect(body.public_route_rate_limited_total).toBeUndefined();
+    expect(body.public_route_rate_limited_by_route).toBeUndefined();
   });
 
   it("includes API degraded data with per-route breakdown in payload", async () => {
@@ -947,6 +1070,134 @@ describe("admin security API degraded telemetry payload", () => {
     const raw = await res.text();
 
     expect(raw).not.toContain("192.168.1.100");
+    expect(raw).not.toContain(token);
+    expect(raw).not.toContain("test-admin-key");
+    expect(raw).not.toContain("cookie");
+    expect(raw).not.toContain("DATABASE_URL");
+  });
+
+  it("includes public-route rate-limited data with per-route breakdown", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    process.env.ADMIN_DASHBOARD_KEY = "test-admin-key";
+
+    const {
+      NextRequest,
+      ADMIN_COOKIE_NAME,
+      createSessionToken,
+      _getSessionStore,
+      _resetGcTimer,
+      GET,
+    } = await getModules();
+
+    _getSessionStore().clear();
+    _resetGcTimer();
+
+    logSecurityEvent("public_route_rate_limited", {
+      meta: { route: "verify-receipt" },
+    });
+    logSecurityEvent("public_route_rate_limited", {
+      meta: { route: "verify-receipt" },
+    });
+    logSecurityEvent("public_route_rate_limited", {
+      meta: { route: "demo-policy" },
+    });
+    logSecurityEvent("public_route_rate_limited", {
+      meta: { route: "status" },
+    });
+
+    const token = createSessionToken();
+    mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
+
+    const req = new NextRequest(
+      new URL("/api/admin/security", "http://localhost:3000"),
+      { method: "GET" },
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.public_route_rate_limited_total).toBe(4);
+    expect(body.public_route_rate_limited_by_route).toEqual({
+      "verify-receipt": 2,
+      "demo-policy": 1,
+      "status": 1,
+    });
+  });
+
+  it("filters unknown route labels from public-route rate-limited breakdown", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    process.env.ADMIN_DASHBOARD_KEY = "test-admin-key";
+
+    const {
+      NextRequest,
+      ADMIN_COOKIE_NAME,
+      createSessionToken,
+      _getSessionStore,
+      _resetGcTimer,
+      GET,
+    } = await getModules();
+
+    _getSessionStore().clear();
+    _resetGcTimer();
+
+    logSecurityEvent("public_route_rate_limited", {
+      meta: { route: "verify-receipt" },
+    });
+    // Unknown route — should not appear in breakdown
+    logSecurityEvent("public_route_rate_limited", {
+      meta: { route: "evil/injected/route" },
+    });
+
+    const token = createSessionToken();
+    mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
+
+    const req = new NextRequest(
+      new URL("/api/admin/security", "http://localhost:3000"),
+      { method: "GET" },
+    );
+    const res = await GET(req);
+    const body = await res.json();
+
+    // Total counts all events, but breakdown only has known routes
+    expect(body.public_route_rate_limited_total).toBe(2);
+    expect(body.public_route_rate_limited_by_route).toEqual({
+      "verify-receipt": 1,
+    });
+    expect(body.public_route_rate_limited_by_route["evil/injected/route"]).toBeUndefined();
+  });
+
+  it("does not leak IPs or secrets in public-route rate-limited payload", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    process.env.ADMIN_DASHBOARD_KEY = "test-admin-key";
+
+    const {
+      NextRequest,
+      ADMIN_COOKIE_NAME,
+      createSessionToken,
+      _getSessionStore,
+      _resetGcTimer,
+      GET,
+    } = await getModules();
+
+    _getSessionStore().clear();
+    _resetGcTimer();
+
+    logSecurityEvent("public_route_rate_limited", {
+      ip: "10.0.0.42",
+      meta: { route: "public-metrics" },
+    });
+
+    const token = createSessionToken();
+    mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
+
+    const req = new NextRequest(
+      new URL("/api/admin/security", "http://localhost:3000"),
+      { method: "GET" },
+    );
+    const res = await GET(req);
+    const raw = await res.text();
+
+    expect(raw).not.toContain("10.0.0.42");
     expect(raw).not.toContain(token);
     expect(raw).not.toContain("test-admin-key");
     expect(raw).not.toContain("cookie");

@@ -22,6 +22,8 @@ interface DegradedTelemetry {
   admin_api_degraded_by_route: Record<string, number>;
   agent_route_rate_limited_total: number;
   agent_route_rate_limited_by_route: Record<string, number>;
+  public_route_rate_limited_total: number;
+  public_route_rate_limited_by_route: Record<string, number>;
 }
 
 export function AdminDegradedTelemetry() {
@@ -58,6 +60,10 @@ export function AdminDegradedTelemetry() {
               json.agent_route_rate_limited_total ?? 0,
             agent_route_rate_limited_by_route:
               json.agent_route_rate_limited_by_route ?? {},
+            public_route_rate_limited_total:
+              json.public_route_rate_limited_total ?? 0,
+            public_route_rate_limited_by_route:
+              json.public_route_rate_limited_by_route ?? {},
           });
         }
       } catch {
@@ -116,7 +122,14 @@ export function AdminDegradedTelemetry() {
   );
   const hasAgentRlAny = agentRlTotal > 0;
 
-  const hasAnyDegraded = hasAny || hasActionAny || hasApiAny || hasAgentRlAny;
+  const publicRlTotal = data.public_route_rate_limited_total;
+  const byPublicRoute = data.public_route_rate_limited_by_route;
+  const publicRouteEntries = Object.entries(byPublicRoute).sort(
+    ([, a], [, b]) => b - a,
+  );
+  const hasPublicRlAny = publicRlTotal > 0;
+
+  const hasAnyDegraded = hasAny || hasActionAny || hasApiAny || hasAgentRlAny || hasPublicRlAny;
 
   return (
     <div
@@ -329,6 +342,61 @@ export function AdminDegradedTelemetry() {
             </p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
               {agentRouteEntries.map(([route, count]) => (
+                <div
+                  key={route}
+                  className="rounded border border-white/10 bg-neutral-900/60 px-3 py-2"
+                >
+                  <p className="text-xs text-slate-400">{route}</p>
+                  <p className="text-sm font-semibold text-slate-100">
+                    {count}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Public Route Abuse Controls ── */}
+      <div className="mt-5 border-t border-white/10 pt-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+          Public Route Abuse Controls
+        </h2>
+
+        <div className="mt-3 flex items-center gap-3">
+          <span
+            data-testid="public-rl-total"
+            className={`text-2xl font-bold ${
+              hasPublicRlAny ? "text-amber-300" : "text-slate-100"
+            }`}
+          >
+            {publicRlTotal}
+          </span>
+          <span className="text-xs text-slate-400">
+            public endpoint throttles (process lifetime)
+          </span>
+        </div>
+
+        {hasPublicRlAny && (
+          <p className="mt-2 text-xs text-amber-400/80">
+            Public endpoint throttles detected — rate limiting
+            is active on public demo/verify/status routes.
+          </p>
+        )}
+
+        {!hasPublicRlAny && (
+          <p className="mt-2 text-xs text-emerald-400/70">
+            No public route throttles detected.
+          </p>
+        )}
+
+        {publicRouteEntries.length > 0 && (
+          <div className="mt-3">
+            <p className="mb-1 text-[10px] uppercase tracking-wider text-slate-500">
+              By route
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              {publicRouteEntries.map(([route, count]) => (
                 <div
                   key={route}
                   className="rounded border border-white/10 bg-neutral-900/60 px-3 py-2"
