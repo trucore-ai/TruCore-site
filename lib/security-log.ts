@@ -21,7 +21,8 @@ export type SecurityEvent =
   | "admin_route_denied"
   | "admin_api_denied"
   | "admin_action_denied"
-  | "csrf_origin_rejected";
+  | "csrf_origin_rejected"
+  | "session_gc_error";
 
 export interface SecurityLogContext {
   /** Raw IP string — will be hashed before logging. */
@@ -66,4 +67,36 @@ export function logSecurityEvent(
   const ts = new Date().toISOString();
   // Use console.warn so it goes to stderr in production — visible in log aggregators
   console.warn(`[security] ${ts} | ${parts.join(" | ")}`);
+
+  /* ── Increment event counter ── */
+  securityEventCounters.set(
+    event,
+    (securityEventCounters.get(event) ?? 0) + 1,
+  );
+}
+
+/* ---------- security event counters ---------- */
+
+/** In-memory counters for security events. Lazily initialized on first increment. */
+const securityEventCounters = new Map<string, number>();
+
+/**
+ * Return a snapshot of all security event counters.
+ * Never throws. Never exposes tokens/IPs.
+ */
+export function getSecurityEventCounters(): Record<string, number> {
+  try {
+    const result: Record<string, number> = {};
+    for (const [key, val] of securityEventCounters) {
+      result[key] = val;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+/** Exposed for tests only — reset all counters. */
+export function _resetSecurityEventCounters(): void {
+  securityEventCounters.clear();
 }

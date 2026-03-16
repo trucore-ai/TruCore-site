@@ -1,9 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { logSecurityEvent } from "./security-log";
+import {
+  logSecurityEvent,
+  getSecurityEventCounters,
+  _resetSecurityEventCounters,
+} from "./security-log";
 
 describe("security-log", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    _resetSecurityEventCounters();
   });
 
   it("emits a structured log line for login_success", () => {
@@ -115,5 +120,59 @@ describe("security-log", () => {
     const msg = spy.mock.calls[0][0] as string;
     expect(msg).toContain("event=admin_action_denied");
     expect(msg).not.toContain("192.168.0.50");
+  });
+
+  /* ---------- security event counters ---------- */
+
+  describe("event counters", () => {
+    it("increments counters on logSecurityEvent", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      logSecurityEvent("login_success");
+      logSecurityEvent("login_success");
+      logSecurityEvent("login_failure");
+
+      const counters = getSecurityEventCounters();
+      expect(counters.login_success).toBe(2);
+      expect(counters.login_failure).toBe(1);
+    });
+
+    it("returns empty object when no events logged", () => {
+      const counters = getSecurityEventCounters();
+      expect(counters).toEqual({});
+    });
+
+    it("does not reset counters on read", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      logSecurityEvent("admin_route_denied");
+
+      getSecurityEventCounters();
+      const counters = getSecurityEventCounters();
+      expect(counters.admin_route_denied).toBe(1);
+    });
+
+    it("counters initialized lazily — only present after first event", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      let counters = getSecurityEventCounters();
+      expect(counters.login_success).toBeUndefined();
+
+      logSecurityEvent("login_success");
+      counters = getSecurityEventCounters();
+      expect(counters.login_success).toBe(1);
+    });
+
+    it("never exposes tokens or IPs in counter keys", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      logSecurityEvent("login_success", { ip: "10.0.0.1" });
+      const counters = getSecurityEventCounters();
+      const snapshot = JSON.stringify(counters);
+      expect(snapshot).not.toContain("10.0.0.1");
+    });
+
+    it("_resetSecurityEventCounters clears all counters", () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      logSecurityEvent("login_success");
+      _resetSecurityEventCounters();
+      expect(getSecurityEventCounters()).toEqual({});
+    });
   });
 });

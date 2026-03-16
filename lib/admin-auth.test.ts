@@ -26,6 +26,7 @@ import {
   ADMIN_COOKIE_NAME,
   IDLE_TIMEOUT_SECONDS,
   LAST_SEEN_THROTTLE_SECONDS,
+  SESSION_GC_RETENTION_MULTIPLIER,
   assertAdminSession,
   createSessionToken,
   getAdminSessionFromCookies,
@@ -34,6 +35,7 @@ import {
   revokeSessionToken,
   touchSession,
   _getSessionStore,
+  _resetGcTimer,
 } from "./admin-auth";
 
 const ORIGINAL_ADMIN_KEY = process.env.ADMIN_DASHBOARD_KEY;
@@ -43,6 +45,7 @@ describe("admin-auth", () => {
     vi.clearAllMocks();
     mocks.cookieValues.clear();
     _getSessionStore().clear();
+    _resetGcTimer();
     process.env.ADMIN_DASHBOARD_KEY = "super-secret-admin-key";
   });
 
@@ -222,6 +225,106 @@ describe("admin-auth", () => {
   it("exports idle timeout and throttle constants", () => {
     expect(IDLE_TIMEOUT_SECONDS).toBe(15 * 60);
     expect(LAST_SEEN_THROTTLE_SECONDS).toBe(60);
+  });
+
+  /* ---------- session GC ---------- */
+
+  describe("session GC", () => {
+    it("removes expired sessions", () => {
+      const store = _getSessionStore();
+      const old = Date.now() - (ADMIN_COOKIE_MAX_AGE + 1) * 1000;
+      store.set("expired-tok", { issuedAt: old, lastSeenAt: old });
+
+      _resetGcTimer(); // force GC eligibility
+      createSessionToken(); // triggers GC
+
+      expect(store.has("expired-tok")).toBe(false);
+    });
+
+    it("retains revoked sessions until retention threshold", () => {
+      const store = _getSessionStore();
+      // Revoked and expired, but within retention window
+      const expiredRecently =
+        Date.now() - (ADMIN_COOKIE_MAX_AGE + 10) * 1000;
+      store.set("revoked-recent", {
+        issuedAt: expiredRecently,
+        lastSeenAt: expiredRecently,
+        revokedAt: expiredRecently + 1000,
+      });
+
+      _resetGcTimer();
+      createSessionToken();
+
+      // Should still be in the store (within 2× max age)
+      expect(store.has("revoked-recent")).toBe(true);
+    });
+
+    it("removes revoked sessions past retention threshold", () => {
+      const store = _getSessionStore();
+      const veryOld =
+        Date.now() -
+        ADMIN_COOKIE_MAX_AGE * SESSION_GC_RETENTION_MULTIPLIER * 1000 -
+        1000;
+      store.set("revoked-old", {
+        issuedAt: veryOld,
+        lastSeenAt: veryOld,
+        revokedAt: veryOld + 1000,
+      });
+
+      _resetGcTimer();
+      createSessionToken();
+
+      expect(store.has("revoked-old")).toBe(false);
+    });
+
+    it("removes malformed records", () => {
+      const store = _getSessionStore();
+      store.set("malformed-tok", {
+        issuedAt: "bad",
+        lastSeenAt: 0,
+      } as never);
+
+      _resetGcTimer();
+      createSessionToken();
+
+      expect(store.has("malformed-tok")).toBe(false);
+    });
+
+    it("respects GC interval — skips sweep when interval not elapsed", () => {
+      const store = _getSessionStore();
+      const old = Date.now() - (ADMIN_COOKIE_MAX_AGE + 1) * 1000;
+
+      // First call — triggers GC, resets timer
+      _resetGcTimer();
+      createSessionToken();
+
+      // Add expired session AFTER GC ran
+      store.set("late-expired", { issuedAt: old, lastSeenAt: old });
+
+      // Second call without resetting timer — GC should NOT run
+      createSessionToken();
+      expect(store.has("late-expired")).toBe(true);
+
+      // After resetting timer, GC runs again
+      _resetGcTimer();
+      createSessionToken();
+      expect(store.has("late-expired")).toBe(false);
+    });
+
+    it("GC triggered by touchSession", () => {
+      const store = _getSessionStore();
+      const old = Date.now() - (ADMIN_COOKIE_MAX_AGE + 1) * 1000;
+      store.set("expired-touch", { issuedAt: old, lastSeenAt: old });
+
+      const token = createSessionToken();
+      // Reset GC timer so touchSession can trigger it
+      _resetGcTimer();
+
+      // Re-add expired session
+      store.set("expired-touch2", { issuedAt: old, lastSeenAt: old });
+      touchSession(token);
+      expect(store.has("expired-touch2")).toBe(false);
+    });
   });
 });
 

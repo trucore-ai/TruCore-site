@@ -21,6 +21,8 @@ export const ADMIN_COOKIE_NAME = "admin_session";
 export const ADMIN_COOKIE_MAX_AGE = 60 * 60; // 1 hour (absolute session lifetime)
 export const IDLE_TIMEOUT_SECONDS = 15 * 60; // 15 min idle timeout
 export const LAST_SEEN_THROTTLE_SECONDS = 60; // throttle lastSeenAt writes
+export const SESSION_GC_INTERVAL_SECONDS = 300; // 5 min between GC sweeps
+export const SESSION_GC_RETENTION_MULTIPLIER = 2; // keep revoked sessions 2× max age
 
 type AdminCookieOptions = Pick<
   ResponseCookie,
@@ -46,9 +48,70 @@ function constantTimeEqual(a: string, b: string): boolean {
 /** token → session record */
 const sessionStore = new Map<string, SessionRecord>();
 
+/** Timestamp of last GC run (ms epoch). */
+let lastGcRun = 0;
+
 /** Exposed for tests only. */
 export function _getSessionStore(): Map<string, SessionRecord> {
   return sessionStore;
+}
+
+/** Exposed for tests only — reset GC timer. */
+export function _resetGcTimer(): void {
+  lastGcRun = 0;
+}
+
+/* ---------- session garbage collection ---------- */
+
+/**
+ * Opportunistic GC sweep. Removes:
+ * - expired sessions (older than ADMIN_COOKIE_MAX_AGE)
+ * - revoked sessions older than retention threshold
+ * - malformed records
+ *
+ * Runs at most once per SESSION_GC_INTERVAL_SECONDS.
+ * Never throws — logs session_gc_error on failure.
+ */
+function sweepSessions(): void {
+  try {
+    const now = Date.now();
+    if ((now - lastGcRun) / 1000 < SESSION_GC_INTERVAL_SECONDS) return;
+    lastGcRun = now;
+
+    const retentionMs =
+      ADMIN_COOKIE_MAX_AGE * SESSION_GC_RETENTION_MULTIPLIER * 1000;
+
+    for (const [token, record] of sessionStore) {
+      /* Malformed record */
+      if (
+        !record ||
+        typeof record.issuedAt !== "number" ||
+        typeof record.lastSeenAt !== "number"
+      ) {
+        sessionStore.delete(token);
+        continue;
+      }
+
+      const age = now - record.issuedAt;
+
+      /* Expired session (absolute lifetime exceeded) */
+      if (age > ADMIN_COOKIE_MAX_AGE * 1000) {
+        /* Revoked sessions get extra retention for reuse detection */
+        if (record.revokedAt !== undefined) {
+          if (age > retentionMs) {
+            sessionStore.delete(token);
+          }
+          continue;
+        }
+        sessionStore.delete(token);
+        continue;
+      }
+
+      /* Revoked session within retention — keep for reuse detection */
+    }
+  } catch {
+    logSecurityEvent("session_gc_error");
+  }
 }
 
 /* ---------- key validation (used by login route) ---------- */
@@ -69,6 +132,8 @@ export function isAdminKeyValid(key: string | null | undefined): boolean {
 export function createSessionToken(): string {
   const secret = process.env.ADMIN_DASHBOARD_KEY;
   if (!secret) throw new Error("ADMIN_DASHBOARD_KEY is not set");
+
+  sweepSessions();
 
   const now = Date.now();
   const nonce = randomBytes(16).toString("hex");
@@ -152,6 +217,8 @@ export function revokeSessionToken(
  * Returns true if the session is still valid, false otherwise.
  */
 export function touchSession(token: string): boolean {
+  sweepSessions();
+
   const record = sessionStore.get(token);
   if (!record || record.revokedAt !== undefined) return false;
 
@@ -206,6 +273,8 @@ export async function getAdminSessionFromCookies(): Promise<boolean> {
  * Throws if the session is missing or invalid (callers should catch and return 404).
  */
 export async function assertAdminSession(): Promise<void> {
+  sweepSessions();
+
   const valid = await getAdminSessionFromCookies();
   if (!valid) {
     logSecurityEvent("invalid_session_rejected");
