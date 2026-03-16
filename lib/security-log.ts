@@ -27,7 +27,8 @@ export type SecurityEvent =
   | "session_gc_error"
   | "admin_page_degraded"
   | "metrics_route_rate_limited"
-  | "agent_route_rate_limited";
+  | "agent_route_rate_limited"
+  | "public_route_rate_limited";
 
 export interface SecurityLogContext {
   /** Raw IP string — will be hashed before logging. */
@@ -122,6 +123,17 @@ export function logSecurityEvent(
       );
     }
   }
+
+  /* ── Track per-route public-route rate-limited counts ── */
+  if (event === "public_route_rate_limited" && ctx.meta?.route) {
+    const route = String(ctx.meta.route);
+    if (KNOWN_PUBLIC_ROUTES.has(route)) {
+      publicRouteRateLimitedCounts.set(
+        route,
+        (publicRouteRateLimitedCounts.get(route) ?? 0) + 1,
+      );
+    }
+  }
 }
 
 /* ---------- security event counters ---------- */
@@ -189,6 +201,25 @@ const KNOWN_AGENT_ROUTES = new Set([
  * keyed by route label. Only safe static labels from KNOWN_AGENT_ROUTES stored.
  */
 const agentRouteRateLimitedCounts = new Map<string, number>();
+
+/* ---------- per-route public-route rate-limited counters ---------- */
+
+/** Allowed public route labels — only these are tracked in breakdowns. */
+const KNOWN_PUBLIC_ROUTES = new Set([
+  "verify-receipt",
+  "verify-receipt-signature",
+  "public-metrics",
+  "public-receipts",
+  "demo-policy",
+  "metrics/public-summary",
+  "receipt-signing-key",
+]);
+
+/**
+ * Process-local aggregate counters for public_route_rate_limited events,
+ * keyed by route label. Only safe static labels from KNOWN_PUBLIC_ROUTES stored.
+ */
+const publicRouteRateLimitedCounts = new Map<string, number>();
 
 /**
  * Process-local aggregate counters for admin_action_degraded events, keyed
@@ -276,6 +307,22 @@ export function getAgentRouteRateLimitedCounts(): Record<string, number> {
   }
 }
 
+/**
+ * Return a snapshot of per-route public-route rate-limited counts.
+ * Keys are safe static route labels only. Never throws.
+ */
+export function getPublicRouteRateLimitedCounts(): Record<string, number> {
+  try {
+    const result: Record<string, number> = {};
+    for (const [key, val] of publicRouteRateLimitedCounts) {
+      result[key] = val;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
 /** Exposed for tests only — reset all counters. */
 export function _resetSecurityEventCounters(): void {
   securityEventCounters.clear();
@@ -283,4 +330,5 @@ export function _resetSecurityEventCounters(): void {
   adminActionDegradedCounts.clear();
   adminApiDegradedCounts.clear();
   agentRouteRateLimitedCounts.clear();
+  publicRouteRateLimitedCounts.clear();
 }

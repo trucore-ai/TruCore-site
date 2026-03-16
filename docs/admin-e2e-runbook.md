@@ -526,3 +526,72 @@ aggregate total but silently excluded from the per-route breakdown.
 - **UI behavior**: The panel shows green when zero throttles are
   detected and amber when non-zero, consistent with other stability
   sections.
+
+---
+
+## Public demo/verify route hardening
+
+### Audited routes
+
+The following public routes were audited and hardened (Prompt 57):
+
+| Route | Method | Rate limit | Cache policy | Notes |
+| --- | --- | --- | --- | --- |
+| `/api/verify-receipt` | POST | 30/min per IP | `no-store` | Hash computation per request; rate limited to prevent spam |
+| `/api/verify-receipt-signature` | POST | 30/min per IP | `no-store` | Crypto verification per request; rate limited |
+| `/api/public-metrics` | GET | 30/min per IP | `no-store` (+ 60s in-memory cache) | Hits DB; in-memory cache prevents redundant queries |
+| `/api/metrics/public-summary` | GET | 30/min per IP | `s-maxage=60, stale-while-revalidate=120` | Upstream fetch; edge cache + rate limit |
+| `/api/demo-policy` | GET | 60/min per IP | `public, max-age=60` | Static constant data; generous limit |
+| `/api/public-receipts` | GET | 60/min per IP | `public, max-age=60` | Static demo data; generous limit |
+| `/api/receipt-signing-key` | GET | 30/min per IP | `no-store` | Key availability may change at runtime |
+| `/api/status` | GET | 60/min per IP (existing) | `no-store` | Removed `base_url` leak; replaced with `configured` boolean |
+
+### Already-hardened routes (unchanged)
+
+| Route | Method | Rate limit | Notes |
+| --- | --- | --- | --- |
+| `/api/demo-live` | GET | 60/min per IP | Already had full rate limiting |
+| `/api/simulate` | POST | Per-IP + per-key | Already had full hardening |
+| `/api/health` | GET | 60/min per IP | Already hardened |
+| `/api/receipt-signature` | POST | 30/min per IP | Already hardened |
+| `/api/bot-feedback` | POST | 10/5min per IP | Already hardened |
+| `/api/csp-report` | POST | 30/min per IP | Already hardened |
+
+### Protections added
+
+- **IP-based rate limiting**: All previously-unprotected public routes
+  now have per-IP rate limits using hashed IPs (SHA-256, first 12 hex
+  chars). Rate limits use `consumeRateLimit` from `lib/rate-limit.ts`.
+- **In-memory response cache**: `/api/public-metrics` adds a 60-second
+  process-local cache to avoid hitting the database on every request.
+- **Cache policy upgrades**: Static/constant routes (`demo-policy`,
+  `public-receipts`) upgraded from `no-store` to `public, max-age=60`.
+- **Info leak fix**: `/api/status` no longer exposes `firewall_api.base_url`
+  in public responses. Replaced with a `configured` boolean.
+- **Telemetry**: New `public_route_rate_limited` security event with
+  per-route breakdown tracking via allowlisted static labels.
+
+### Telemetry
+
+Rate-limit events are logged as `public_route_rate_limited` in the
+security event log. Per-route breakdowns are available via
+`getPublicRouteRateLimitedCounts()` using allowlisted labels only:
+
+- `verify-receipt`
+- `verify-receipt-signature`
+- `public-metrics`
+- `public-receipts`
+- `demo-policy`
+- `metrics/public-summary`
+- `receipt-signing-key`
+
+### Public route hardening design notes
+
+- **Process-local**: All rate limits and caches are in-memory and reset
+  on deploy or cold start. Acceptable for abuse damping.
+- **Aggregate-only**: No IPs, tokens, cookies, or backend details are
+  exposed in rate-limit responses or telemetry.
+- **Fail-safe**: Rate-limited responses return `{ ok: false, error: "rate_limited" }`
+  with `429` status, `Retry-After` header, and `Cache-Control: no-store`.
+- **Non-breaking**: All existing response contracts preserved for
+  non-throttled requests.
