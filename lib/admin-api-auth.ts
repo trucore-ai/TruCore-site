@@ -18,6 +18,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { assertAdminSession } from "./admin-auth";
 import { logSecurityEvent } from "./security-log";
+import { isOriginValid, getRequestIp } from "./security/origin";
 
 /* ---------- protected response headers ---------- */
 
@@ -43,45 +44,7 @@ export function applyAdminHeaders(response: NextResponse): NextResponse {
 
 /* ---------- CSRF / Origin verification ---------- */
 
-const MUTATION_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
-
-/**
- * Verify that the request Origin matches the request URL origin.
- * Returns true if the origin is valid (same-origin), false otherwise.
- *
- * For non-mutation methods this always returns true (no check needed).
- */
-function isOriginValid(request: NextRequest): boolean {
-  if (!MUTATION_METHODS.has(request.method)) {
-    return true;
-  }
-
-  const origin = request.headers.get("origin");
-
-  /* Missing Origin on a mutation → fail closed */
-  if (!origin) {
-    return false;
-  }
-
-  try {
-    const requestOrigin = request.nextUrl.origin;
-    return origin === requestOrigin;
-  } catch {
-    /* Malformed URL → fail closed */
-    return false;
-  }
-}
-
-/* ---------- IP extraction ---------- */
-
-function getRequestIp(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  return (
-    forwarded?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown"
-  );
-}
+/* isOriginValid and getRequestIp are now imported from lib/security/origin.ts */
 
 /* ---------- generic denial responses ---------- */
 

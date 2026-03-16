@@ -13,21 +13,7 @@ import {
 } from "@/lib/login-throttle";
 import { logSecurityEvent } from "@/lib/security-log";
 import { ADMIN_RESPONSE_HEADERS } from "@/lib/admin-api-auth";
-
-function getRequestIp(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() ?? request.headers.get("x-real-ip") ?? "unknown";
-}
-
-function isOriginValid(request: NextRequest): boolean {
-  const origin = request.headers.get("origin");
-  if (!origin) return false;
-  try {
-    return origin === request.nextUrl.origin;
-  } catch {
-    return false;
-  }
-}
+import { isOriginValid, getRequestIp } from "@/lib/security/origin";
 
 const LOGIN_HTML = `<!DOCTYPE html>
 <html lang="en">
