@@ -21,6 +21,7 @@ export type SecurityEvent =
   | "admin_route_denied"
   | "admin_api_denied"
   | "admin_action_denied"
+  | "admin_action_degraded"
   | "csrf_origin_rejected"
   | "session_gc_error"
   | "admin_page_degraded"

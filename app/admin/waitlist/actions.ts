@@ -41,7 +41,7 @@ export async function setSignupStatus(formData: FormData) {
     });
 
     return { ok: true, updated };
-  });
+  }, { action: "set_signup_status" });
 }
 
 /* ---------- Admin notes update ---------- */
@@ -72,10 +72,8 @@ export async function updateAdminNotes(formData: FormData) {
     });
 
     return { ok: true, updated };
-  });
+  }, { action: "update_admin_notes" });
 }
-
-/* ---------- CSV export ---------- */
 
 const CSV_HEADERS = [
   "created_at",
@@ -106,5 +104,5 @@ export async function exportDesignPartnersCsv(formData: FormData) {
     });
 
     return { csv, filename: `trucore-design-partners-${Date.now()}.csv` };
-  });
+  }, { action: "export_design_partners_csv" });
 }

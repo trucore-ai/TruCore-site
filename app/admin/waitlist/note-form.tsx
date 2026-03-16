@@ -13,14 +13,19 @@ export function NoteForm({
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData) {
     startTransition(async () => {
       setSaved(false);
+      setError(null);
       const result = await updateAdminNotes(formData);
       if (result?.ok) {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
+      } else if (result && "error" in result) {
+        setError("Could not save changes right now.");
+        setTimeout(() => setError(null), 4000);
       }
     });
   }
@@ -47,6 +52,9 @@ export function NoteForm({
         </button>
         {saved && (
           <span className="text-xs text-emerald-400">Saved</span>
+        )}
+        {error && (
+          <span className="text-xs text-red-400">{error}</span>
         )}
       </div>
     </form>

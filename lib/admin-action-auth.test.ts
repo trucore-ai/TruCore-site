@@ -37,13 +37,17 @@ describe("withAdminAction", () => {
     expect(mockLogSecurityEvent).not.toHaveBeenCalled();
   });
 
-  it("does not catch errors thrown inside fn", async () => {
+  it("catches errors thrown inside fn and returns safe error", async () => {
     mockAssertAdminSession.mockResolvedValue(undefined);
 
-    await expect(
-      withAdminAction(async () => {
-        throw new Error("business logic error");
-      }),
-    ).rejects.toThrow("business logic error");
+    const result = await withAdminAction(async () => {
+      throw new Error("business logic error");
+    }, { action: "test_action" });
+
+    expect(result).toEqual({ error: "temporarily_unavailable" });
+    expect(mockLogSecurityEvent).toHaveBeenCalledWith(
+      "admin_action_degraded",
+      { meta: { action: "test_action", failure: "Error" } },
+    );
   });
 });

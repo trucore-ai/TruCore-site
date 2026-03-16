@@ -15,14 +15,19 @@ export function StatusForm({
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData) {
     startTransition(async () => {
       setSaved(false);
+      setError(null);
       const result = await setSignupStatus(formData);
       if (result?.ok) {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
+      } else if (result && "error" in result) {
+        setError("Update temporarily unavailable.");
+        setTimeout(() => setError(null), 4000);
       }
     });
   }
@@ -51,6 +56,9 @@ export function StatusForm({
       </button>
       {saved && (
         <span className="text-xs text-emerald-400">Saved</span>
+      )}
+      {error && (
+        <span className="text-xs text-red-400">{error}</span>
       )}
     </form>
   );
