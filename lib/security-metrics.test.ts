@@ -4,6 +4,7 @@ import {
   getSessionStoreSize,
   getRevokedSessionCount,
   getUptimeSeconds,
+  _resetMetricsCache,
 } from "@/lib/security-metrics";
 import {
   logSecurityEvent,
@@ -20,6 +21,7 @@ const ORIGINAL_ENV = { ...process.env };
 
 afterEach(() => {
   _resetSecurityEventCounters();
+  _resetMetricsCache();
   _getSessionStore().clear();
   _resetGcTimer();
   process.env = { ...ORIGINAL_ENV };
@@ -179,5 +181,47 @@ describe("gauges in prometheus output", () => {
     const match = output.match(/trucore_security_uptime_seconds (\d+)/);
     expect(match).not.toBeNull();
     expect(Number(match![1])).toBeGreaterThanOrEqual(0);
+  });
+});
+
+/* ═══════════ Short-lived metrics cache ═══════════ */
+
+describe("metrics caching", () => {
+  it("returns stable output within TTL window", () => {
+    logSecurityEvent("login_failure", {});
+    const first = serializePrometheusMetrics();
+
+    // Increment counter — cached body should not reflect it yet
+    logSecurityEvent("login_failure", {});
+    const second = serializePrometheusMetrics();
+
+    expect(second).toBe(first);
+    expect(second).toContain("trucore_admin_login_failure_total 1");
+  });
+
+  it("refreshes after cache is cleared", () => {
+    logSecurityEvent("login_failure", {});
+    const first = serializePrometheusMetrics();
+
+    logSecurityEvent("login_failure", {});
+    _resetMetricsCache();
+    const refreshed = serializePrometheusMetrics();
+
+    expect(refreshed).not.toBe(first);
+    expect(refreshed).toContain("trucore_admin_login_failure_total 2");
+  });
+
+  it("refreshes after TTL expires", () => {
+    logSecurityEvent("login_failure", {});
+    const first = serializePrometheusMetrics();
+
+    logSecurityEvent("login_failure", {});
+
+    // Advance time past the 10 s TTL
+    vi.spyOn(Date, "now").mockReturnValue(Date.now() + 11_000);
+    const refreshed = serializePrometheusMetrics();
+
+    expect(refreshed).toContain("trucore_admin_login_failure_total 2");
+    expect(refreshed).not.toBe(first);
   });
 });

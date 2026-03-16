@@ -70,3 +70,8 @@ export function assertRateLimit(
     throw new Error("Too many requests. Please wait a moment before trying again.");
   }
 }
+
+/** Exposed for tests only — clear all rate-limit buckets. */
+export function _resetRateLimitBuckets(): void {
+  buckets.clear();
+}

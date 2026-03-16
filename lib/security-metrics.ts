@@ -122,6 +122,26 @@ export function getUptimeSeconds(): number {
   return Math.floor((Date.now() - startedAt) / 1000);
 }
 
+/* ── Short-lived metrics cache ── */
+
+/**
+ * In-memory cache for the serialized Prometheus output.
+ * Avoids repeated serialization under burst traffic.
+ * Metrics are approximate within the TTL window (default 10 s).
+ */
+interface MetricsCache {
+  body: string;
+  expiresAt: number;
+}
+
+const METRICS_CACHE_TTL_MS = 10_000; // 10 seconds
+let metricsCache: MetricsCache | null = null;
+
+/** Exposed for tests only — clear the metrics cache. */
+export function _resetMetricsCache(): void {
+  metricsCache = null;
+}
+
 /* ── Prometheus text serializer ── */
 
 /**
@@ -141,8 +161,17 @@ function formatMetric(
  *
  * Never throws — returns a best-effort snapshot even if parts fail.
  * Missing counters default to 0.
+ *
+ * Uses a short-lived in-memory cache (10 s TTL) to avoid repeated
+ * serialization under burst traffic. Metrics are approximate within
+ * the TTL window — acceptable for aggregate counters and gauges.
  */
 export function serializePrometheusMetrics(): string {
+  const now = Date.now();
+  if (metricsCache && now < metricsCache.expiresAt) {
+    return metricsCache.body;
+  }
+
   const lines: string[] = [];
 
   try {
@@ -182,5 +211,7 @@ export function serializePrometheusMetrics(): string {
     // Fail closed — return whatever we have
   }
 
-  return lines.join("\n");
+  const body = lines.join("\n");
+  metricsCache = { body, expiresAt: now + METRICS_CACHE_TTL_MS };
+  return body;
 }
