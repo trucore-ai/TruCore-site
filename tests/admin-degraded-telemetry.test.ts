@@ -4,6 +4,7 @@ import {
   getSecurityEventCounters,
   getAdminPageDegradedCounts,
   getAdminActionDegradedCounts,
+  getAdminApiDegradedCounts,
   _resetSecurityEventCounters,
 } from "@/lib/security-log";
 
@@ -232,6 +233,133 @@ describe("adminActionDegradedCounts tracking", () => {
   });
 });
 
+/* ═══════════ Per-route degraded API counters ═══════════ */
+
+describe("adminApiDegradedCounts tracking", () => {
+  it("tracks per-route degraded counts for known routes", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "keys/create", reason: "upstream_timeout" },
+    });
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "keys/create", reason: "upstream_timeout" },
+    });
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "dashboard/refresh", reason: "upstream_error" },
+    });
+
+    const byRoute = getAdminApiDegradedCounts();
+    expect(byRoute["keys/create"]).toBe(2);
+    expect(byRoute["dashboard/refresh"]).toBe(1);
+
+    const counters = getSecurityEventCounters();
+    expect(counters["admin_api_degraded"]).toBe(3);
+  });
+
+  it("ignores unknown route names", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "unknown/evil/route", reason: "upstream_error" },
+    });
+
+    const byRoute = getAdminApiDegradedCounts();
+    expect(Object.keys(byRoute)).toHaveLength(0);
+
+    // aggregate still counts
+    const counters = getSecurityEventCounters();
+    expect(counters["admin_api_degraded"]).toBe(1);
+  });
+
+  it("ignores events without route metadata", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_api_degraded", {
+      meta: { reason: "upstream_error" },
+    });
+
+    const byRoute = getAdminApiDegradedCounts();
+    expect(Object.keys(byRoute)).toHaveLength(0);
+  });
+
+  it("does not track per-route for non-api-degraded events", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("login_failure", {
+      meta: { route: "keys/create" },
+    });
+
+    const byRoute = getAdminApiDegradedCounts();
+    expect(Object.keys(byRoute)).toHaveLength(0);
+  });
+
+  it("reset clears per-route counters", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "portal/token/create", reason: "upstream_error" },
+    });
+
+    expect(getAdminApiDegradedCounts()["portal/token/create"]).toBe(1);
+
+    _resetSecurityEventCounters();
+
+    expect(Object.keys(getAdminApiDegradedCounts())).toHaveLength(0);
+    expect(Object.keys(getSecurityEventCounters())).toHaveLength(0);
+  });
+
+  it("per-route keys contain only safe static route labels", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const safeRoutes = [
+      "keys/create",
+      "keys/revoke",
+      "keys/issue-for-partner",
+      "portal/token/create",
+      "portal/token/revoke",
+      "dashboard/refresh",
+      "dashboard/tenant",
+      "admin/security",
+      "agent/dashboard",
+      "agent/tenant",
+    ];
+
+    for (const route of safeRoutes) {
+      logSecurityEvent("admin_api_degraded", {
+        meta: { route, reason: "upstream_error" },
+      });
+    }
+
+    const byRoute = getAdminApiDegradedCounts();
+    const keys = Object.keys(byRoute);
+
+    expect(keys).toHaveLength(safeRoutes.length);
+    for (const key of keys) {
+      expect(safeRoutes).toContain(key);
+      expect(key).not.toMatch(/\d+\.\d+\.\d+\.\d+/);
+      expect(key).not.toContain("DATABASE_URL");
+      expect(key).not.toContain("ADMIN_DASHBOARD_KEY");
+      expect(key).not.toContain("SELECT ");
+    }
+  });
+
+  it("tracks agent routes correctly", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "agent/dashboard", reason: "upstream_error" },
+    });
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "agent/tenant", reason: "upstream_error" },
+    });
+
+    const byRoute = getAdminApiDegradedCounts();
+    expect(byRoute["agent/dashboard"]).toBe(1);
+    expect(byRoute["agent/tenant"]).toBe(1);
+  });
+});
+
 /* ═══════════ API payload shape ═══════════ */
 
 describe("admin security API degraded telemetry payload", () => {
@@ -304,6 +432,12 @@ describe("admin security API degraded telemetry payload", () => {
     logSecurityEvent("admin_action_degraded", {
       meta: { action: "set_signup_status", failure: "Error" },
     });
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "keys/create", reason: "upstream_timeout" },
+    });
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "agent/dashboard", reason: "upstream_error" },
+    });
 
     const token = createSessionToken();
     mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
@@ -324,6 +458,11 @@ describe("admin security API degraded telemetry payload", () => {
     expect(body.admin_action_degraded_total).toBe(1);
     expect(body.admin_action_degraded_by_action).toEqual({
       set_signup_status: 1,
+    });
+    expect(body.admin_api_degraded_total).toBe(2);
+    expect(body.admin_api_degraded_by_route).toEqual({
+      "keys/create": 1,
+      "agent/dashboard": 1,
     });
   });
 
@@ -356,6 +495,8 @@ describe("admin security API degraded telemetry payload", () => {
     expect(body.admin_page_degraded_by_page).toEqual({});
     expect(body.admin_action_degraded_total).toBe(0);
     expect(body.admin_action_degraded_by_action).toEqual({});
+    expect(body.admin_api_degraded_total).toBe(0);
+    expect(body.admin_api_degraded_by_route).toEqual({});
   });
 
   it("does not leak secrets or raw backend details in degraded payload", async () => {
@@ -419,6 +560,140 @@ describe("admin security API degraded telemetry payload", () => {
     expect(body.admin_page_degraded_by_page).toBeUndefined();
     expect(body.admin_action_degraded_total).toBeUndefined();
     expect(body.admin_action_degraded_by_action).toBeUndefined();
+    expect(body.admin_api_degraded_total).toBeUndefined();
+    expect(body.admin_api_degraded_by_route).toBeUndefined();
+  });
+
+  it("includes API degraded data with per-route breakdown in payload", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    process.env.ADMIN_DASHBOARD_KEY = "test-admin-key";
+
+    const {
+      NextRequest,
+      ADMIN_COOKIE_NAME,
+      createSessionToken,
+      _getSessionStore,
+      _resetGcTimer,
+      GET,
+    } = await getModules();
+
+    _getSessionStore().clear();
+    _resetGcTimer();
+
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "keys/create", reason: "upstream_timeout" },
+    });
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "keys/create", reason: "upstream_timeout" },
+    });
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "portal/token/revoke", reason: "upstream_error" },
+    });
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "agent/tenant", reason: "upstream_error" },
+    });
+
+    const token = createSessionToken();
+    mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
+
+    const req = new NextRequest(
+      new URL("/api/admin/security", "http://localhost:3000"),
+      { method: "GET" },
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.admin_api_degraded_total).toBe(4);
+    expect(body.admin_api_degraded_by_route).toEqual({
+      "keys/create": 2,
+      "portal/token/revoke": 1,
+      "agent/tenant": 1,
+    });
+  });
+
+  it("filters unknown route labels from API degraded breakdown", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    process.env.ADMIN_DASHBOARD_KEY = "test-admin-key";
+
+    const {
+      NextRequest,
+      ADMIN_COOKIE_NAME,
+      createSessionToken,
+      _getSessionStore,
+      _resetGcTimer,
+      GET,
+    } = await getModules();
+
+    _getSessionStore().clear();
+    _resetGcTimer();
+
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "keys/create", reason: "upstream_timeout" },
+    });
+    // Unknown route — should not appear in breakdown
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "evil/injected/route", reason: "upstream_error" },
+    });
+
+    const token = createSessionToken();
+    mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
+
+    const req = new NextRequest(
+      new URL("/api/admin/security", "http://localhost:3000"),
+      { method: "GET" },
+    );
+    const res = await GET(req);
+    const body = await res.json();
+
+    // Total counts all events, but breakdown only has known routes
+    expect(body.admin_api_degraded_total).toBe(2);
+    expect(body.admin_api_degraded_by_route).toEqual({
+      "keys/create": 1,
+    });
+    expect(body.admin_api_degraded_by_route["evil/injected/route"]).toBeUndefined();
+  });
+
+  it("does not leak backend details in API degraded payload", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    process.env.ADMIN_DASHBOARD_KEY = "test-admin-key";
+
+    const {
+      NextRequest,
+      ADMIN_COOKIE_NAME,
+      createSessionToken,
+      _getSessionStore,
+      _resetGcTimer,
+      GET,
+    } = await getModules();
+
+    _getSessionStore().clear();
+    _resetGcTimer();
+
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "dashboard/refresh", reason: "upstream_error" },
+    });
+
+    const token = createSessionToken();
+    mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
+
+    const req = new NextRequest(
+      new URL("/api/admin/security", "http://localhost:3000"),
+      { method: "GET" },
+    );
+    const res = await GET(req);
+    const raw = await res.text();
+
+    expect(raw).not.toContain(token);
+    expect(raw).not.toContain("test-admin-key");
+    expect(raw).not.toContain("DATABASE_URL");
+    expect(raw).not.toContain("POSTGRES");
+    expect(raw).not.toContain("cookie");
+    expect(raw).not.toContain("ECONNREFUSED");
+    expect(raw).not.toContain("stack");
+    expect(raw).not.toContain("SELECT ");
+    expect(raw).not.toContain("upstream_error");
+    expect(raw).not.toContain("upstream_timeout");
   });
 });
 

@@ -157,6 +157,8 @@ const KNOWN_ADMIN_API_ROUTES = new Set([
   "dashboard/refresh",
   "dashboard/tenant",
   "admin/security",
+  "agent/dashboard",
+  "agent/tenant",
 ]);
 
 const adminApiDegradedCounts = new Map<string, number>();
