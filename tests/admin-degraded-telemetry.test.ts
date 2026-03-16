@@ -5,6 +5,7 @@ import {
   getAdminPageDegradedCounts,
   getAdminActionDegradedCounts,
   getAdminApiDegradedCounts,
+  getAgentRouteRateLimitedCounts,
   _resetSecurityEventCounters,
 } from "@/lib/security-log";
 
@@ -360,6 +361,119 @@ describe("adminApiDegradedCounts tracking", () => {
   });
 });
 
+/* ═══════════ Per-route agent-route rate-limited counters ═══════════ */
+
+describe("agentRouteRateLimitedCounts tracking", () => {
+  it("tracks per-route rate-limited counts for known agent routes", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("agent_route_rate_limited", {
+      ip: "1.2.3.4",
+      meta: { route: "agent/dashboard" },
+    });
+    logSecurityEvent("agent_route_rate_limited", {
+      ip: "1.2.3.4",
+      meta: { route: "agent/dashboard" },
+    });
+    logSecurityEvent("agent_route_rate_limited", {
+      ip: "5.6.7.8",
+      meta: { route: "agent/tenant" },
+    });
+    logSecurityEvent("agent_route_rate_limited", {
+      ip: "9.10.11.12",
+      meta: { route: "agent/stream" },
+    });
+
+    const byRoute = getAgentRouteRateLimitedCounts();
+    expect(byRoute["agent/dashboard"]).toBe(2);
+    expect(byRoute["agent/tenant"]).toBe(1);
+    expect(byRoute["agent/stream"]).toBe(1);
+
+    const counters = getSecurityEventCounters();
+    expect(counters["agent_route_rate_limited"]).toBe(4);
+  });
+
+  it("ignores unknown route labels", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { route: "evil/injected/route" },
+    });
+
+    const byRoute = getAgentRouteRateLimitedCounts();
+    expect(Object.keys(byRoute)).toHaveLength(0);
+
+    // aggregate still counts
+    const counters = getSecurityEventCounters();
+    expect(counters["agent_route_rate_limited"]).toBe(1);
+  });
+
+  it("ignores events without route metadata", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { reason: "test" },
+    });
+
+    const byRoute = getAgentRouteRateLimitedCounts();
+    expect(Object.keys(byRoute)).toHaveLength(0);
+  });
+
+  it("does not track per-route for non-agent-rate-limited events", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("login_failure", {
+      meta: { route: "agent/dashboard" },
+    });
+
+    const byRoute = getAgentRouteRateLimitedCounts();
+    expect(Object.keys(byRoute)).toHaveLength(0);
+  });
+
+  it("reset clears agent-route rate-limited counters", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { route: "agent/stream" },
+    });
+
+    expect(getAgentRouteRateLimitedCounts()["agent/stream"]).toBe(1);
+
+    _resetSecurityEventCounters();
+
+    expect(Object.keys(getAgentRouteRateLimitedCounts())).toHaveLength(0);
+    expect(Object.keys(getSecurityEventCounters())).toHaveLength(0);
+  });
+
+  it("per-route keys contain only safe static agent route labels", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const safeRoutes = [
+      "agent/dashboard",
+      "agent/tenant",
+      "agent/stream",
+    ];
+
+    for (const route of safeRoutes) {
+      logSecurityEvent("agent_route_rate_limited", {
+        meta: { route },
+      });
+    }
+
+    const byRoute = getAgentRouteRateLimitedCounts();
+    const keys = Object.keys(byRoute);
+
+    expect(keys).toHaveLength(safeRoutes.length);
+    for (const key of keys) {
+      expect(safeRoutes).toContain(key);
+      expect(key).not.toMatch(/\d+\.\d+\.\d+\.\d+/);
+      expect(key).not.toContain("DATABASE_URL");
+      expect(key).not.toContain("ADMIN_DASHBOARD_KEY");
+      expect(key).not.toContain("SELECT ");
+    }
+  });
+});
+
 /* ═══════════ API payload shape ═══════════ */
 
 describe("admin security API degraded telemetry payload", () => {
@@ -438,6 +552,12 @@ describe("admin security API degraded telemetry payload", () => {
     logSecurityEvent("admin_api_degraded", {
       meta: { route: "agent/dashboard", reason: "upstream_error" },
     });
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { route: "agent/dashboard" },
+    });
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { route: "agent/stream" },
+    });
 
     const token = createSessionToken();
     mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
@@ -463,6 +583,11 @@ describe("admin security API degraded telemetry payload", () => {
     expect(body.admin_api_degraded_by_route).toEqual({
       "keys/create": 1,
       "agent/dashboard": 1,
+    });
+    expect(body.agent_route_rate_limited_total).toBe(2);
+    expect(body.agent_route_rate_limited_by_route).toEqual({
+      "agent/dashboard": 1,
+      "agent/stream": 1,
     });
   });
 
@@ -497,6 +622,8 @@ describe("admin security API degraded telemetry payload", () => {
     expect(body.admin_action_degraded_by_action).toEqual({});
     expect(body.admin_api_degraded_total).toBe(0);
     expect(body.admin_api_degraded_by_route).toEqual({});
+    expect(body.agent_route_rate_limited_total).toBe(0);
+    expect(body.agent_route_rate_limited_by_route).toEqual({});
   });
 
   it("does not leak secrets or raw backend details in degraded payload", async () => {
@@ -562,6 +689,8 @@ describe("admin security API degraded telemetry payload", () => {
     expect(body.admin_action_degraded_by_action).toBeUndefined();
     expect(body.admin_api_degraded_total).toBeUndefined();
     expect(body.admin_api_degraded_by_route).toBeUndefined();
+    expect(body.agent_route_rate_limited_total).toBeUndefined();
+    expect(body.agent_route_rate_limited_by_route).toBeUndefined();
   });
 
   it("includes API degraded data with per-route breakdown in payload", async () => {
@@ -694,6 +823,134 @@ describe("admin security API degraded telemetry payload", () => {
     expect(raw).not.toContain("SELECT ");
     expect(raw).not.toContain("upstream_error");
     expect(raw).not.toContain("upstream_timeout");
+  });
+
+  it("includes agent-route rate-limited data with per-route breakdown", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    process.env.ADMIN_DASHBOARD_KEY = "test-admin-key";
+
+    const {
+      NextRequest,
+      ADMIN_COOKIE_NAME,
+      createSessionToken,
+      _getSessionStore,
+      _resetGcTimer,
+      GET,
+    } = await getModules();
+
+    _getSessionStore().clear();
+    _resetGcTimer();
+
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { route: "agent/dashboard" },
+    });
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { route: "agent/dashboard" },
+    });
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { route: "agent/tenant" },
+    });
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { route: "agent/stream" },
+    });
+
+    const token = createSessionToken();
+    mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
+
+    const req = new NextRequest(
+      new URL("/api/admin/security", "http://localhost:3000"),
+      { method: "GET" },
+    );
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.agent_route_rate_limited_total).toBe(4);
+    expect(body.agent_route_rate_limited_by_route).toEqual({
+      "agent/dashboard": 2,
+      "agent/tenant": 1,
+      "agent/stream": 1,
+    });
+  });
+
+  it("filters unknown route labels from agent-route rate-limited breakdown", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    process.env.ADMIN_DASHBOARD_KEY = "test-admin-key";
+
+    const {
+      NextRequest,
+      ADMIN_COOKIE_NAME,
+      createSessionToken,
+      _getSessionStore,
+      _resetGcTimer,
+      GET,
+    } = await getModules();
+
+    _getSessionStore().clear();
+    _resetGcTimer();
+
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { route: "agent/dashboard" },
+    });
+    // Unknown route — should not appear in breakdown
+    logSecurityEvent("agent_route_rate_limited", {
+      meta: { route: "evil/injected/route" },
+    });
+
+    const token = createSessionToken();
+    mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
+
+    const req = new NextRequest(
+      new URL("/api/admin/security", "http://localhost:3000"),
+      { method: "GET" },
+    );
+    const res = await GET(req);
+    const body = await res.json();
+
+    // Total counts all events, but breakdown only has known routes
+    expect(body.agent_route_rate_limited_total).toBe(2);
+    expect(body.agent_route_rate_limited_by_route).toEqual({
+      "agent/dashboard": 1,
+    });
+    expect(body.agent_route_rate_limited_by_route["evil/injected/route"]).toBeUndefined();
+  });
+
+  it("does not leak IPs or secrets in agent-route rate-limited payload", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    process.env.ADMIN_DASHBOARD_KEY = "test-admin-key";
+
+    const {
+      NextRequest,
+      ADMIN_COOKIE_NAME,
+      createSessionToken,
+      _getSessionStore,
+      _resetGcTimer,
+      GET,
+    } = await getModules();
+
+    _getSessionStore().clear();
+    _resetGcTimer();
+
+    logSecurityEvent("agent_route_rate_limited", {
+      ip: "192.168.1.100",
+      meta: { route: "agent/stream" },
+    });
+
+    const token = createSessionToken();
+    mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
+
+    const req = new NextRequest(
+      new URL("/api/admin/security", "http://localhost:3000"),
+      { method: "GET" },
+    );
+    const res = await GET(req);
+    const raw = await res.text();
+
+    expect(raw).not.toContain("192.168.1.100");
+    expect(raw).not.toContain(token);
+    expect(raw).not.toContain("test-admin-key");
+    expect(raw).not.toContain("cookie");
+    expect(raw).not.toContain("DATABASE_URL");
   });
 });
 

@@ -20,6 +20,8 @@ interface DegradedTelemetry {
   admin_action_degraded_by_action: Record<string, number>;
   admin_api_degraded_total: number;
   admin_api_degraded_by_route: Record<string, number>;
+  agent_route_rate_limited_total: number;
+  agent_route_rate_limited_by_route: Record<string, number>;
 }
 
 export function AdminDegradedTelemetry() {
@@ -52,6 +54,10 @@ export function AdminDegradedTelemetry() {
               json.admin_api_degraded_total ?? 0,
             admin_api_degraded_by_route:
               json.admin_api_degraded_by_route ?? {},
+            agent_route_rate_limited_total:
+              json.agent_route_rate_limited_total ?? 0,
+            agent_route_rate_limited_by_route:
+              json.agent_route_rate_limited_by_route ?? {},
           });
         }
       } catch {
@@ -103,7 +109,14 @@ export function AdminDegradedTelemetry() {
   );
   const hasApiAny = apiTotal > 0;
 
-  const hasAnyDegraded = hasAny || hasActionAny || hasApiAny;
+  const agentRlTotal = data.agent_route_rate_limited_total;
+  const byAgentRoute = data.agent_route_rate_limited_by_route;
+  const agentRouteEntries = Object.entries(byAgentRoute).sort(
+    ([, a], [, b]) => b - a,
+  );
+  const hasAgentRlAny = agentRlTotal > 0;
+
+  const hasAnyDegraded = hasAny || hasActionAny || hasApiAny || hasAgentRlAny;
 
   return (
     <div
@@ -261,6 +274,61 @@ export function AdminDegradedTelemetry() {
             </p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
               {routeEntries.map(([route, count]) => (
+                <div
+                  key={route}
+                  className="rounded border border-white/10 bg-neutral-900/60 px-3 py-2"
+                >
+                  <p className="text-xs text-slate-400">{route}</p>
+                  <p className="text-sm font-semibold text-slate-100">
+                    {count}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Agent Route Abuse Controls ── */}
+      <div className="mt-5 border-t border-white/10 pt-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+          Agent Route Abuse Controls
+        </h2>
+
+        <div className="mt-3 flex items-center gap-3">
+          <span
+            data-testid="agent-rl-total"
+            className={`text-2xl font-bold ${
+              hasAgentRlAny ? "text-amber-300" : "text-slate-100"
+            }`}
+          >
+            {agentRlTotal}
+          </span>
+          <span className="text-xs text-slate-400">
+            public bot-facing route throttles (process lifetime)
+          </span>
+        </div>
+
+        {hasAgentRlAny && (
+          <p className="mt-2 text-xs text-amber-400/80">
+            Public bot-facing route throttles detected — rate limiting
+            is active on agent endpoints.
+          </p>
+        )}
+
+        {!hasAgentRlAny && (
+          <p className="mt-2 text-xs text-emerald-400/70">
+            No agent route throttles detected.
+          </p>
+        )}
+
+        {agentRouteEntries.length > 0 && (
+          <div className="mt-3">
+            <p className="mb-1 text-[10px] uppercase tracking-wider text-slate-500">
+              By route
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              {agentRouteEntries.map(([route, count]) => (
                 <div
                   key={route}
                   className="rounded border border-white/10 bg-neutral-900/60 px-3 py-2"
