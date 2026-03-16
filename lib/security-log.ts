@@ -87,6 +87,17 @@ export function logSecurityEvent(
       );
     }
   }
+
+  /* ── Track per-action degraded mutation counts ── */
+  if (event === "admin_action_degraded" && ctx.meta?.action) {
+    const action = String(ctx.meta.action);
+    if (KNOWN_ADMIN_ACTIONS.has(action)) {
+      adminActionDegradedCounts.set(
+        action,
+        (adminActionDegradedCounts.get(action) ?? 0) + 1,
+      );
+    }
+  }
 }
 
 /* ---------- security event counters ---------- */
@@ -112,6 +123,21 @@ const KNOWN_ADMIN_PAGES = new Set([
  * page name. Only safe static page labels from KNOWN_ADMIN_PAGES are stored.
  */
 const adminPageDegradedCounts = new Map<string, number>();
+
+/* ---------- per-action degraded mutation counters ---------- */
+
+/** Allowed action names — only these are tracked. Anything else is ignored. */
+const KNOWN_ADMIN_ACTIONS = new Set([
+  "set_signup_status",
+  "update_admin_notes",
+  "export_design_partners_csv",
+]);
+
+/**
+ * Process-local aggregate counters for admin_action_degraded events, keyed
+ * by action label. Only safe static labels from KNOWN_ADMIN_ACTIONS stored.
+ */
+const adminActionDegradedCounts = new Map<string, number>();
 
 /**
  * Return a snapshot of all security event counters.
@@ -145,8 +171,25 @@ export function getAdminPageDegradedCounts(): Record<string, number> {
   }
 }
 
+/**
+ * Return a snapshot of per-action degraded admin mutation counts.
+ * Keys are safe static action labels only. Never throws.
+ */
+export function getAdminActionDegradedCounts(): Record<string, number> {
+  try {
+    const result: Record<string, number> = {};
+    for (const [key, val] of adminActionDegradedCounts) {
+      result[key] = val;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
 /** Exposed for tests only — reset all counters. */
 export function _resetSecurityEventCounters(): void {
   securityEventCounters.clear();
   adminPageDegradedCounts.clear();
+  adminActionDegradedCounts.clear();
 }

@@ -245,6 +245,58 @@ Operators can now see these events through the authenticated admin UI:
 
 ---
 
+## Degraded admin-mutation telemetry
+
+### What it shows
+
+When an admin server action (status change, notes update, CSV export)
+fails due to a backend error, `withAdminAction` catches the exception,
+returns a safe generic error, and logs an `admin_action_degraded`
+security event with a safe action label.
+
+Operators can see these events through the authenticated admin UI:
+
+- **Admin Metrics page** (`/admin/metrics`) — an "Admin Mutation
+  Stability" section shows the aggregate degraded mutation count and an
+  optional per-action breakdown.
+- **Admin security API** (`/api/admin/security`) — the JSON payload
+  includes `admin_action_degraded_total` and
+  `admin_action_degraded_by_action`.
+
+### What is exposed
+
+| Field | Description |
+|---|---|
+| `admin_action_degraded_total` | Total degraded admin mutations across all actions (process lifetime) |
+| `admin_action_degraded_by_action` | Object mapping safe action label → count (e.g. `{ "set_signup_status": 2 }`) |
+
+### Allowed action labels
+
+Only the following static labels are tracked in the per-action breakdown.
+Unknown action names are silently ignored.
+
+- `set_signup_status`
+- `update_admin_notes`
+- `export_design_partners_csv`
+
+### Safety guarantees
+
+- Only aggregate numeric counts — no raw errors, stack traces, IPs, SQL,
+  DSNs, cookies, or tokens.
+- Action labels are restricted to a static allowlist. Unknown values are
+  silently dropped.
+- The telemetry API remains gated by `withAdminApiAuth` —
+  unauthenticated requests receive a generic 404.
+- The UI panel is a client component that fetches from the authenticated
+  API — it inherits the same session protection.
+
+### Process-local limitations
+
+- Same as page-render telemetry: in-memory, process-local, resets on
+  deploy/restart. Use Prometheus + aggregation for cross-instance views.
+
+---
+
 ## Waitlist fallback storage (CI / local dev)
 
 ### Problem
