@@ -11,7 +11,10 @@
 import { NextResponse } from "next/server";
 import { withAdminApiAuth } from "@/lib/admin-api-auth";
 import { _getSessionStore } from "@/lib/admin-auth";
-import { getSecurityEventCounters } from "@/lib/security-log";
+import {
+  getSecurityEventCounters,
+  getAdminPageDegradedCounts,
+} from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -27,11 +30,16 @@ export const GET = withAdminApiAuth(async () => {
       if (record.revokedAt !== undefined) revokedCount++;
     }
 
+    const counters = getSecurityEventCounters();
+    const degradedByPage = getAdminPageDegradedCounts();
+
     return NextResponse.json({
       uptime_seconds: Math.floor((Date.now() - startedAt) / 1000),
       session_store_size: store.size,
       revoked_session_count: revokedCount,
-      security_event_counters: getSecurityEventCounters(),
+      security_event_counters: counters,
+      admin_page_degraded_total: counters["admin_page_degraded"] ?? 0,
+      admin_page_degraded_by_page: degradedByPage,
     });
   } catch {
     return NextResponse.json(

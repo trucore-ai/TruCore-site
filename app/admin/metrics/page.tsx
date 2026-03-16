@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import type { WaitlistMetricsSnapshot } from "@/lib/db";
 import { MetricsSummaryCard } from "@/components/metrics-summary-card";
 import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
+import { AdminDegradedTelemetry } from "@/components/dashboard/admin-degraded-telemetry";
 import { logSecurityEvent } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
@@ -74,6 +75,11 @@ export default async function AdminMetricsPage() {
             </button>
           </form>
         </div>
+      </div>
+
+      {/* Degraded-page telemetry — operator observability */}
+      <div className="mb-6">
+        <AdminDegradedTelemetry />
       </div>
 
       {!metrics ? (
