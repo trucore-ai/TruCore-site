@@ -1,4 +1,6 @@
 import { listCspReports, type CspReportRow } from "@/lib/db";
+import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
+import { logSecurityEvent } from "@/lib/security-log";
 
 /* ---------- helpers ---------- */
 
@@ -41,7 +43,17 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AdminCspPage() {
-  const reports: CspReportRow[] = await listCspReports(50);
+  let reports: CspReportRow[] = [];
+  let degraded = false;
+
+  try {
+    reports = await listCspReports(50);
+  } catch {
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "csp", reason: "db_unavailable" },
+    });
+    degraded = true;
+  }
 
   return (
     <div className="min-h-screen bg-neutral-950 text-slate-100 p-6 md:p-10">
@@ -77,7 +89,12 @@ export default async function AdminCspPage() {
       </p>
 
       {/* Table */}
-      {reports.length === 0 ? (
+      {degraded ? (
+        <AdminDegradedState
+          title="CSP Reports"
+          description="CSP telemetry temporarily unavailable."
+        />
+      ) : reports.length === 0 ? (
         <p className="text-slate-400">No CSP reports yet. That is a good sign.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-white/10">
