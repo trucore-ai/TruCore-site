@@ -197,7 +197,6 @@ export function AdoptionFunnelPanel({ data }: Props) {
   const total = data.total_tenants;
   const repeatActive = data.repeat_active_tenants ?? 0;
   const stalledCount = data.stalled_tenants ?? 0;
-  const dormantCount = data.dormant_tenants ?? 0;
 
   // Sort tenants: stalled first, then by last_seen descending
   const sortedSnapshots = [...data.tenant_snapshots].sort((a, b) => {

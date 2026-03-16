@@ -1,6 +1,5 @@
 import {
   getAcquisitionFunnelSnapshot,
-  type AcquisitionFunnelSnapshot,
   type AcquisitionRecentRow,
 } from "@/lib/db";
 import {
@@ -23,7 +22,6 @@ import {
   computeProgressSignalSummary,
   PROGRESS_STATE_CONFIG,
   PROGRESS_SIGNAL_CONFIG,
-  type AcquisitionRowWithProgress,
   type ProgressState,
   type ProgressSignal,
 } from "@/lib/acquisition-progress";
