@@ -22,7 +22,8 @@ export type SecurityEvent =
   | "admin_api_denied"
   | "admin_action_denied"
   | "csrf_origin_rejected"
-  | "session_gc_error";
+  | "session_gc_error"
+  | "admin_page_degraded";
 
 export interface SecurityLogContext {
   /** Raw IP string — will be hashed before logging. */

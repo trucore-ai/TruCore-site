@@ -4,7 +4,8 @@
  * Scoped error boundary for admin pages.
  *
  * Catches runtime errors within /admin/* routes and shows
- * an admin-specific recovery UI.
+ * an admin-specific recovery UI. Never leaks backend details,
+ * stack traces, SQL errors, or connection strings to the UI.
  */
 export default function AdminError({
   reset,
@@ -19,14 +20,16 @@ export default function AdminError({
           Admin Error
         </h1>
         <p className="text-slate-400 mb-6">
-          Something went wrong loading this admin page. Try refreshing or{" "}
+          Something went wrong loading this admin page. This may be a
+          temporary backend issue.
+          Try refreshing or{" "}
           <a
             href="/admin/login"
             className="text-primary-400 underline hover:text-primary-300 transition"
           >
             sign in again
           </a>.
-          If the issue continues, contact{" "}
+          If the issue continues, verify backend connectivity or contact{" "}
           <a
             href="mailto:info@trucore.xyz"
             className="text-primary-400 underline hover:text-primary-300 transition"

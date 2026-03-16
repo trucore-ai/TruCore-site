@@ -1,6 +1,8 @@
 import { headers } from "next/headers";
 import type { WaitlistMetricsSnapshot } from "@/lib/db";
 import { MetricsSummaryCard } from "@/components/metrics-summary-card";
+import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
+import { logSecurityEvent } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -31,7 +33,14 @@ async function fetchMetrics(): Promise<WaitlistMetricsSnapshot> {
 }
 
 export default async function AdminMetricsPage() {
-  const metrics = await fetchMetrics();
+  let metrics: WaitlistMetricsSnapshot | null = null;
+  try {
+    metrics = await fetchMetrics();
+  } catch {
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "metrics", reason: "fetch_failed" },
+    });
+  }
 
   return (
     <div className="min-h-screen bg-neutral-950 p-6 text-slate-100 md:p-10">
@@ -67,40 +76,49 @@ export default async function AdminMetricsPage() {
         </div>
       </div>
 
-      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricsSummaryCard label="Total Signups" value={metrics.total_signups} />
-        <MetricsSummaryCard
-          label="Design Partners"
-          value={metrics.design_partner_count}
+      {!metrics ? (
+        <AdminDegradedState
+          title="Metrics"
+          description="Metrics data could not be loaded right now."
         />
-        <MetricsSummaryCard label="Qualified" value={metrics.by_status.qualified} />
-        <MetricsSummaryCard label="Closed" value={metrics.by_status.closed} />
-      </div>
+      ) : (
+        <>
+          <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <MetricsSummaryCard label="Total Signups" value={metrics.total_signups} />
+            <MetricsSummaryCard
+              label="Design Partners"
+              value={metrics.design_partner_count}
+            />
+            <MetricsSummaryCard label="Qualified" value={metrics.by_status.qualified} />
+            <MetricsSummaryCard label="Closed" value={metrics.by_status.closed} />
+          </div>
 
-      <div className="mb-8 rounded-lg border border-white/10 bg-white/5 p-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
-          Pipeline Snapshot
-        </h2>
-        <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-          <SnapshotCell label="New" value={metrics.by_status.new} />
-          <SnapshotCell label="Contacted" value={metrics.by_status.contacted} />
-          <SnapshotCell label="Qualified" value={metrics.by_status.qualified} />
-          <SnapshotCell label="Closed" value={metrics.by_status.closed} />
-        </div>
-      </div>
+          <div className="mb-8 rounded-lg border border-white/10 bg-white/5 p-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+              Pipeline Snapshot
+            </h2>
+            <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+              <SnapshotCell label="New" value={metrics.by_status.new} />
+              <SnapshotCell label="Contacted" value={metrics.by_status.contacted} />
+              <SnapshotCell label="Qualified" value={metrics.by_status.qualified} />
+              <SnapshotCell label="Closed" value={metrics.by_status.closed} />
+            </div>
+          </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <TopTable
-          title="Top UTM Sources"
-          emptyLabel="No attributed source data yet."
-          rows={metrics.top_utm_sources.map((row) => ({ key: row.source, count: row.count }))}
-        />
-        <TopTable
-          title="Top Campaigns"
-          emptyLabel="No campaign data yet."
-          rows={metrics.top_campaigns.map((row) => ({ key: row.campaign, count: row.count }))}
-        />
-      </div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <TopTable
+              title="Top UTM Sources"
+              emptyLabel="No attributed source data yet."
+              rows={metrics.top_utm_sources.map((row) => ({ key: row.source, count: row.count }))}
+            />
+            <TopTable
+              title="Top Campaigns"
+              emptyLabel="No campaign data yet."
+              rows={metrics.top_campaigns.map((row) => ({ key: row.campaign, count: row.count }))}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
