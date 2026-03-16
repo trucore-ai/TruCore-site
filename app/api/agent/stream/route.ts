@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { fetchFullDashboard } from "@/lib/dashboard-client";
 import {
   serializeDashboardSnapshot,
@@ -5,6 +6,10 @@ import {
 } from "@/lib/agent-serializer";
 import type { AgentDashboardSnapshot } from "@/lib/agent-serializer";
 import { diffSnapshots, formatSSE } from "@/lib/agent-stream";
+import { consumeRateLimit } from "@/lib/rate-limit";
+import { logSecurityEvent } from "@/lib/security-log";
+import { getRequestIp } from "@/lib/security/origin";
+import { sha256 } from "@/lib/hash";
 
 /* ────────────────────────────────────────────────────────────────
  *  GET /api/agent/stream
@@ -27,11 +32,38 @@ import { diffSnapshots, formatSSE } from "@/lib/agent-stream";
  *
  *  Polling cadence matches the existing 5 s contract.
  *  No new dependencies.
+ *
+ *  Rate-limited: 10 new connections / 60 s per IP (hashed).
  * ──────────────────────────────────────────────────────────── */
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+
+export async function GET(req: NextRequest) {
+  /* ── Rate limiting (connection initiation) ── */
+  const ip = getRequestIp(req);
+  const key = `agent_stream:${sha256(ip).slice(0, 12)}`;
+  const rl = consumeRateLimit(key, {
+    max: RATE_LIMIT_MAX,
+    windowMs: RATE_LIMIT_WINDOW_MS,
+  });
+
+  if (rl.exceeded) {
+    logSecurityEvent("agent_route_rate_limited", {
+      ip,
+      meta: { route: "agent/stream" },
+    });
+    return new Response(null, {
+      status: 429,
+      headers: {
+        "Retry-After": String(Math.max(1, rl.resetEpochSeconds - Math.ceil(Date.now() / 1000))),
+        "Cache-Control": "no-store, max-age=0",
+      },
+    });
+  }
+
   const encoder = new TextEncoder();
   let cancelled = false;
   let intervalId: ReturnType<typeof setInterval> | undefined;

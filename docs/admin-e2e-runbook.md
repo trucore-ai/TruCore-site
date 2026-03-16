@@ -200,6 +200,71 @@ which is harmless but provides no additional resolution.
 
 ---
 
+## Public agent route abuse controls
+
+### Routes covered
+
+| Route | Purpose | Rate limit |
+|---|---|---|
+| `GET /api/agent/dashboard` | Full dashboard snapshot for bots (OpenClaw, etc.) | 60 req / 60 s per IP |
+| `GET /api/agent/tenant?id=<id>` | Single tenant detail for bots | 60 req / 60 s per IP |
+| `GET /api/agent/stream` | SSE real-time dashboard stream | 10 connections / 60 s per IP |
+
+### Why these are public
+
+These endpoints serve machine-readable JSON for OpenClaw and other AI
+agents. They expose the same data as the human dashboard — no admin
+mutations, no secrets, no PII. They remain publicly accessible without
+authentication.
+
+### Abuse protection
+
+Each route includes an IP-based in-memory rate limiter using truncated
+SHA-256 hashed IP (first 12 hex chars). Raw IPs are never stored or
+logged.
+
+| Parameter | dashboard / tenant | stream |
+|---|---|---|
+| **Limit** | 60 requests per 60 s | 10 connections per 60 s |
+| **Key** | `agent_dashboard:<hash>` or `agent_tenant:<hash>` | `agent_stream:<hash>` |
+| **Scope** | Process-local; resets on cold start | Process-local |
+| **429 behavior** | Empty body, `Retry-After` header | Empty body, `Retry-After` header |
+
+The dashboard and tenant limits (60/min) comfortably accommodate the 5 s
+polling contract (12 req/min for one agent) while damping trivial abuse.
+The stream limit (10/min) is intentionally lower since connections are
+long-lived.
+
+When the limiter triggers, an `agent_route_rate_limited` security event
+is logged (without raw IP) for operational visibility.
+
+### Failure response safety
+
+All three routes catch backend/upstream exceptions and return safe
+structured responses:
+
+- **Dashboard**: `{ available: false, reason: "temporarily_unavailable" }` (502)
+- **Tenant**: `{ available: false, reason: "temporarily_unavailable" }` (502)
+- **Stream**: SSE comment keep-alive on transient errors
+
+Error responses never include raw exception text, stack traces, SQL,
+DSNs, connection strings, or internal identifiers.
+
+The tenant route uses static reason codes (`missing_required_parameter`,
+`tenant_not_found`, `upstream_unavailable`) and never reflects
+user-supplied input back in the response body.
+
+### Process-local limitations
+
+- Rate-limit buckets are in-memory and process-local. They reset on
+  deploy, restart, or new serverless isolate.
+- In multi-instance deployments, each instance tracks its own buckets.
+  This is acceptable for a lightweight abuse guard.
+- For persistent rate limiting, add an upstream reverse-proxy limiter
+  (nginx, Cloudflare, etc.).
+
+---
+
 ## Degraded admin-page telemetry
 
 ### What it shows
