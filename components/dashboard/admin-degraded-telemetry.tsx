@@ -16,6 +16,8 @@ import { useEffect, useState } from "react";
 interface DegradedTelemetry {
   admin_page_degraded_total: number;
   admin_page_degraded_by_page: Record<string, number>;
+  admin_action_degraded_total: number;
+  admin_action_degraded_by_action: Record<string, number>;
 }
 
 export function AdminDegradedTelemetry() {
@@ -40,6 +42,10 @@ export function AdminDegradedTelemetry() {
               json.admin_page_degraded_total ?? 0,
             admin_page_degraded_by_page:
               json.admin_page_degraded_by_page ?? {},
+            admin_action_degraded_total:
+              json.admin_action_degraded_total ?? 0,
+            admin_action_degraded_by_action:
+              json.admin_action_degraded_by_action ?? {},
           });
         }
       } catch {
@@ -77,11 +83,20 @@ export function AdminDegradedTelemetry() {
   );
   const hasAny = total > 0;
 
+  const actionTotal = data.admin_action_degraded_total;
+  const byAction = data.admin_action_degraded_by_action;
+  const actionEntries = Object.entries(byAction).sort(
+    ([, a], [, b]) => b - a,
+  );
+  const hasActionAny = actionTotal > 0;
+
+  const hasAnyDegraded = hasAny || hasActionAny;
+
   return (
     <div
       data-testid="degraded-telemetry-panel"
       className={`rounded-lg border px-4 py-4 ${
-        hasAny
+        hasAnyDegraded
           ? "border-amber-500/20 bg-amber-500/[0.04]"
           : "border-white/10 bg-white/5"
       }`}
@@ -137,6 +152,61 @@ export function AdminDegradedTelemetry() {
           </div>
         </div>
       )}
+
+      {/* ── Admin Mutation Stability ── */}
+      <div className="mt-5 border-t border-white/10 pt-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+          Admin Mutation Stability
+        </h2>
+
+        <div className="mt-3 flex items-center gap-3">
+          <span
+            data-testid="action-degraded-total"
+            className={`text-2xl font-bold ${
+              hasActionAny ? "text-amber-300" : "text-slate-100"
+            }`}
+          >
+            {actionTotal}
+          </span>
+          <span className="text-xs text-slate-400">
+            degraded admin mutations (process lifetime)
+          </span>
+        </div>
+
+        {hasActionAny && (
+          <p className="mt-2 text-xs text-amber-400/80">
+            Admin mutation instability observed — action failures handled
+            safely.
+          </p>
+        )}
+
+        {!hasActionAny && (
+          <p className="mt-2 text-xs text-emerald-400/70">
+            No degraded admin mutations detected.
+          </p>
+        )}
+
+        {actionEntries.length > 0 && (
+          <div className="mt-3">
+            <p className="mb-1 text-[10px] uppercase tracking-wider text-slate-500">
+              By action
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              {actionEntries.map(([action, count]) => (
+                <div
+                  key={action}
+                  className="rounded border border-white/10 bg-neutral-900/60 px-3 py-2"
+                >
+                  <p className="text-xs text-slate-400">{action}</p>
+                  <p className="text-sm font-semibold text-slate-100">
+                    {count}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       <p className="mt-3 text-[10px] text-slate-500">
         Process-local aggregate counters. Resets on deploy or restart.

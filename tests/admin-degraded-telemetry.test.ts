@@ -3,6 +3,7 @@ import {
   logSecurityEvent,
   getSecurityEventCounters,
   getAdminPageDegradedCounts,
+  getAdminActionDegradedCounts,
   _resetSecurityEventCounters,
 } from "@/lib/security-log";
 
@@ -126,6 +127,111 @@ describe("adminPageDegradedCounts tracking", () => {
   });
 });
 
+/* ═══════════ Per-action degraded mutation counters ═══════════ */
+
+describe("adminActionDegradedCounts tracking", () => {
+  it("tracks per-action degraded counts for known actions", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_action_degraded", {
+      meta: { action: "set_signup_status", failure: "Error" },
+    });
+    logSecurityEvent("admin_action_degraded", {
+      meta: { action: "set_signup_status", failure: "Error" },
+    });
+    logSecurityEvent("admin_action_degraded", {
+      meta: { action: "update_admin_notes", failure: "TypeError" },
+    });
+
+    const byAction = getAdminActionDegradedCounts();
+    expect(byAction["set_signup_status"]).toBe(2);
+    expect(byAction["update_admin_notes"]).toBe(1);
+
+    const counters = getSecurityEventCounters();
+    expect(counters["admin_action_degraded"]).toBe(3);
+  });
+
+  it("ignores unknown action names", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_action_degraded", {
+      meta: { action: "unknown_evil_action", failure: "Error" },
+    });
+
+    const byAction = getAdminActionDegradedCounts();
+    expect(Object.keys(byAction)).toHaveLength(0);
+
+    // aggregate still counts
+    const counters = getSecurityEventCounters();
+    expect(counters["admin_action_degraded"]).toBe(1);
+  });
+
+  it("ignores events without action metadata", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_action_degraded", {
+      meta: { failure: "Error" },
+    });
+
+    const byAction = getAdminActionDegradedCounts();
+    expect(Object.keys(byAction)).toHaveLength(0);
+  });
+
+  it("does not track per-action for non-action-degraded events", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("login_failure", {
+      meta: { action: "set_signup_status" },
+    });
+
+    const byAction = getAdminActionDegradedCounts();
+    expect(Object.keys(byAction)).toHaveLength(0);
+  });
+
+  it("reset clears per-action counters", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_action_degraded", {
+      meta: { action: "export_design_partners_csv", failure: "Error" },
+    });
+
+    expect(getAdminActionDegradedCounts()["export_design_partners_csv"]).toBe(1);
+
+    _resetSecurityEventCounters();
+
+    expect(Object.keys(getAdminActionDegradedCounts())).toHaveLength(0);
+    expect(Object.keys(getSecurityEventCounters())).toHaveLength(0);
+  });
+
+  it("per-action keys contain only safe static action labels", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const safeActions = [
+      "set_signup_status",
+      "update_admin_notes",
+      "export_design_partners_csv",
+    ];
+
+    for (const action of safeActions) {
+      logSecurityEvent("admin_action_degraded", {
+        meta: { action, failure: "Error" },
+      });
+    }
+
+    const byAction = getAdminActionDegradedCounts();
+    const keys = Object.keys(byAction);
+
+    expect(keys).toHaveLength(safeActions.length);
+    for (const key of keys) {
+      expect(safeActions).toContain(key);
+      expect(key).not.toMatch(/\d+\.\d+\.\d+\.\d+/);
+      expect(key).not.toContain("DATABASE_URL");
+      expect(key).not.toContain("ADMIN_DASHBOARD_KEY");
+      expect(key).not.toContain("SELECT ");
+    }
+  });
+});
+
 /* ═══════════ API payload shape ═══════════ */
 
 describe("admin security API degraded telemetry payload", () => {
@@ -195,6 +301,9 @@ describe("admin security API degraded telemetry payload", () => {
     logSecurityEvent("admin_page_degraded", {
       meta: { page: "csp", reason: "db_unavailable" },
     });
+    logSecurityEvent("admin_action_degraded", {
+      meta: { action: "set_signup_status", failure: "Error" },
+    });
 
     const token = createSessionToken();
     mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
@@ -211,6 +320,10 @@ describe("admin security API degraded telemetry payload", () => {
     expect(body.admin_page_degraded_by_page).toEqual({
       waitlist: 1,
       csp: 1,
+    });
+    expect(body.admin_action_degraded_total).toBe(1);
+    expect(body.admin_action_degraded_by_action).toEqual({
+      set_signup_status: 1,
     });
   });
 
@@ -241,6 +354,8 @@ describe("admin security API degraded telemetry payload", () => {
 
     expect(body.admin_page_degraded_total).toBe(0);
     expect(body.admin_page_degraded_by_page).toEqual({});
+    expect(body.admin_action_degraded_total).toBe(0);
+    expect(body.admin_action_degraded_by_action).toEqual({});
   });
 
   it("does not leak secrets or raw backend details in degraded payload", async () => {
@@ -302,6 +417,8 @@ describe("admin security API degraded telemetry payload", () => {
     const body = await res.json();
     expect(body.admin_page_degraded_total).toBeUndefined();
     expect(body.admin_page_degraded_by_page).toBeUndefined();
+    expect(body.admin_action_degraded_total).toBeUndefined();
+    expect(body.admin_action_degraded_by_action).toBeUndefined();
   });
 });
 
