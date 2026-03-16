@@ -104,6 +104,7 @@ export function WaitlistForm() {
                         location: "waitlist_success",
                       })
                     }
+                    data-testid="waitlist-scheduling-link"
                     className="inline-flex h-12 items-center justify-center rounded-xl bg-accent-500 px-6 text-lg font-semibold text-white shadow-md transition-all hover:bg-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-neutral-950"
                   >
                     Book a fit check
@@ -225,6 +226,7 @@ export function WaitlistForm() {
             </label>
             <input
               id="waitlist-project"
+              data-testid="waitlist-project"
               name="projectName"
               type="text"
               required
@@ -250,6 +252,7 @@ export function WaitlistForm() {
                     type="checkbox"
                     name="integrationsInterest"
                     value={opt.value}
+                    data-testid={`waitlist-integration-${opt.value}`}
                     className="h-5 w-5 rounded border-white/20 bg-neutral-950/70 text-accent-500 focus:ring-accent-500"
                     onChange={() => {
                       // Count checked integration boxes via DOM query
@@ -272,6 +275,7 @@ export function WaitlistForm() {
             </label>
             <select
               id="waitlist-tx-volume"
+              data-testid="waitlist-tx-volume"
               name="txVolumeBucket"
               required
               className={`${inputStyles} mt-1 appearance-none`}
@@ -294,6 +298,7 @@ export function WaitlistForm() {
             </label>
             <select
               id="waitlist-build-stage"
+              data-testid="waitlist-build-stage"
               name="buildStage"
               required
               className={`${inputStyles} mt-1 appearance-none`}

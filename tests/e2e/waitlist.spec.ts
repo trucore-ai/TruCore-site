@@ -51,6 +51,117 @@ test("waitlist error does not leak internal details", async ({ page }) => {
   expect(text).not.toContain("stack");
 });
 
+/* ── Homepage design-partner variant (?intent=design_partner) ── */
+
+test("homepage design-partner variant renders all required fields", async ({ page }) => {
+  await page.goto("/?intent=design_partner");
+
+  const waitlistSection = page.locator("#waitlist");
+  await waitlistSection.scrollIntoViewIfNeeded();
+
+  const form = page.getByTestId("waitlist-form");
+  await expect(form).toBeVisible({ timeout: 15_000 });
+
+  // Standard fields still present
+  await expect(page.getByTestId("waitlist-email")).toBeVisible();
+  await expect(page.getByTestId("waitlist-role")).toBeVisible();
+  await expect(page.getByTestId("waitlist-usecase")).toBeVisible();
+
+  // Design-partner–specific fields rendered
+  await expect(page.getByTestId("waitlist-project")).toBeVisible();
+  await expect(page.getByTestId("waitlist-tx-volume")).toBeVisible();
+  await expect(page.getByTestId("waitlist-build-stage")).toBeVisible();
+  await expect(page.getByTestId("waitlist-integration-jupiter")).toBeVisible();
+
+  // Submit button reads "Submit Application" for design-partner variant
+  await expect(page.getByTestId("waitlist-submit")).toContainText("Submit Application");
+});
+
+test("homepage design-partner submit succeeds and shows success state", async ({ page }) => {
+  await page.goto("/?intent=design_partner");
+
+  const waitlistSection = page.locator("#waitlist");
+  await waitlistSection.scrollIntoViewIfNeeded();
+
+  const form = page.getByTestId("waitlist-form");
+  await expect(form).toBeVisible({ timeout: 15_000 });
+
+  // Fill all required fields
+  await page.getByTestId("waitlist-email").fill("homepage-dp+e2e@example.com");
+  await page.getByTestId("waitlist-project").fill("Homepage DP E2E");
+  await page.getByTestId("waitlist-integration-jupiter").check();
+  await page.getByTestId("waitlist-build-stage").selectOption("prototype");
+  await page.getByTestId("waitlist-tx-volume").selectOption("10k_100k");
+
+  await page.getByTestId("waitlist-submit").click();
+
+  // Success state
+  const success = page.getByTestId("waitlist-success");
+  await expect(success).toBeVisible({ timeout: 10_000 });
+  await expect(success).toContainText("Application received");
+});
+
+test("homepage design-partner success shows scheduling link", async ({ page }) => {
+  await page.goto("/?intent=design_partner");
+
+  const waitlistSection = page.locator("#waitlist");
+  await waitlistSection.scrollIntoViewIfNeeded();
+
+  const form = page.getByTestId("waitlist-form");
+  await expect(form).toBeVisible({ timeout: 15_000 });
+
+  // Fill and submit
+  await page.getByTestId("waitlist-email").fill("homepage-dp+sched@example.com");
+  await page.getByTestId("waitlist-project").fill("Schedule Link E2E");
+  await page.getByTestId("waitlist-integration-orca").check();
+  await page.getByTestId("waitlist-build-stage").selectOption("prod");
+  await page.getByTestId("waitlist-tx-volume").selectOption("gt_1m");
+
+  await page.getByTestId("waitlist-submit").click();
+
+  const success = page.getByTestId("waitlist-success");
+  await expect(success).toBeVisible({ timeout: 10_000 });
+
+  // Scheduling link rendered with valid URL
+  const schedulingLink = page.getByTestId("waitlist-scheduling-link");
+  await expect(schedulingLink).toBeVisible();
+  await expect(schedulingLink).toHaveText("Book a fit check");
+
+  const href = await schedulingLink.getAttribute("href");
+  expect(href).toBeTruthy();
+  expect(href).toMatch(/^https?:\/\//);
+  expect(href).not.toContain("undefined");
+});
+
+test("homepage design-partner error does not leak internal details", async ({ page }) => {
+  await page.goto("/?intent=design_partner");
+
+  const waitlistSection = page.locator("#waitlist");
+  await waitlistSection.scrollIntoViewIfNeeded();
+
+  const form = page.getByTestId("waitlist-form");
+  await expect(form).toBeVisible({ timeout: 15_000 });
+
+  // Submit with invalid email but other fields filled
+  await page.getByTestId("waitlist-email").fill("bad-email");
+  await page.getByTestId("waitlist-project").fill("Leak Test Co");
+  await page.getByTestId("waitlist-integration-jupiter").check();
+  await page.getByTestId("waitlist-build-stage").selectOption("idea");
+  await page.getByTestId("waitlist-tx-volume").selectOption("lt_10k");
+
+  await page.getByTestId("waitlist-submit").click();
+
+  const error = page.getByTestId("waitlist-error");
+  await expect(error).toBeVisible({ timeout: 10_000 });
+
+  const text = await error.textContent();
+  expect(text).toBeTruthy();
+  expect(text).not.toContain("POSTGRES_URL");
+  expect(text).not.toContain("DATABASE_URL");
+  expect(text).not.toContain("DESIGN_PARTNER_SCHEDULING_URL");
+  expect(text).not.toContain("stack");
+});
+
 /* ── Design-partner apply page (/atf/apply) ── */
 
 test("design-partner form renders with all required fields", async ({ page }) => {
