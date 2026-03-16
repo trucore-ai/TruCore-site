@@ -141,7 +141,7 @@ export function WaitlistForm() {
   }
 
   return (
-    <form action={dispatch} className="space-y-4" noValidate>
+    <form action={dispatch} data-testid="waitlist-form" className="space-y-4" noValidate>
       {/* Hidden intent field */}
       <input type="hidden" name="intent" value={intent} />
 
@@ -328,7 +328,7 @@ export function WaitlistForm() {
       {/* Status messages */}
       <p id="waitlist-status" role={!state.ok && state.message ? "alert" : "status"} className="text-lg">
         {!state.ok && state.message && (
-          <span className="text-red-300">{state.message}</span>
+          <span data-testid="waitlist-error" className="text-red-300">{state.message}</span>
         )}
       </p>
     </form>

@@ -4,7 +4,7 @@ test("homepage loads", async ({ page }) => {
   await page.goto("/");
 
   await expect(page).toHaveTitle(/TruCore/i);
-  await expect(page.getByText("Operational Controls", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /Guardrails for automated finance/i })).toBeVisible();
 });
 
 test("homepage nav includes receipts link", async ({ page }) => {

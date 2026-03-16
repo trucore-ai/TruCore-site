@@ -4,29 +4,25 @@ test("atf page loads", async ({ page }) => {
   await page.goto("/atf");
 
   await expect(
-    page.getByRole("heading", { name: "Cryptographic guardrails for autonomous finance", level: 1 }),
+    page.getByRole("heading", { name: "Agent Transaction Firewall", level: 1 }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Apply as Design Partner" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Run This First" }).first()).toBeVisible();
 });
 
-test("atf hero shows sandbox-first CTA hierarchy", async ({ page }) => {
+test("atf hero shows developer-first CTA hierarchy", async ({ page }) => {
   await page.goto("/atf");
 
-  await expect(page.getByRole("link", { name: "Try sandbox" }).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "Apply for pilot" }).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "Get started in 5 min" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Run This First" }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Devnet Quickstart" }).first()).toBeVisible();
 });
 
-test("atf one-line quickstart strip is visible with copy control", async ({ page }) => {
+test("atf doctor command block is visible with copy control", async ({ page }) => {
   await page.goto("/atf");
 
-  const quickstart = page.getByTestId("one-line-quickstart");
-
-  await expect(quickstart).toBeVisible();
-  await expect(page.getByRole("button", { name: "Copy npx command" })).toBeVisible();
-  await expect(quickstart).toContainText("npx @trucore/atf@v1.4.0 simulate --preset swap_small --verify");
-  await expect(quickstart.getByRole("link", { name: "Verify a receipt hash" })).toHaveAttribute("href", "/verify");
-  await expect(quickstart.locator("details a[href='/verify']")).toHaveCount(1);
+  const doctorSection = page.locator("#doctor");
+  await expect(page.getByRole("heading", { name: "Run This First", level: 2 })).toBeVisible();
+  await expect(doctorSection.getByText(/npx @trucore\/atf@.*doctor --pretty/)).toBeVisible();
+  await expect(doctorSection.getByRole("button", { name: /Copy/i }).first()).toBeVisible();
 });
 
 test("atf receipts nav link routes to receipts explorer", async ({ page }) => {

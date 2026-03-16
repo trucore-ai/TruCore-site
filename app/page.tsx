@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { Suspense } from "react";
 import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
@@ -7,6 +8,7 @@ import { AtfV1Scope } from "@/components/atf-v1-scope";
 import { EcosystemIntegrations } from "@/components/ecosystem-integrations";
 import { AtfRoadmap } from "@/components/atf-roadmap";
 import { AtfDesignPartnerCta } from "@/components/atf-design-partner-cta";
+import { WaitlistForm } from "@/components/waitlist-form";
 import { WhyNowSection } from "@/components/why-now-section";
 import { EnforcementProofSection } from "@/components/enforcement-proof-section";
 import { SecurityIntegrityStrip } from "@/components/security-integrity-strip";
@@ -341,6 +343,21 @@ export default function Home() {
       {/* ── Waitlist / Design Partner CTA ── */}
       <div id="waitlist">
         <AtfDesignPartnerCta />
+        <Section className="fade-in-up">
+          <div className="mx-auto max-w-xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+              Join the Waitlist
+            </h2>
+            <p className="mt-4 text-lg leading-[1.5] text-slate-200">
+              Get early-access updates, release notes, and security advisories.
+            </p>
+          </div>
+          <div className="mx-auto mt-8 max-w-xl">
+            <Suspense fallback={<div className="h-40 rounded-xl bg-white/5" />}>
+              <WaitlistForm />
+            </Suspense>
+          </div>
+        </Section>
       </div>
 
       {/* ── Moat Signals ── */}

@@ -121,10 +121,11 @@ export function LiveStatusStrip() {
 
   useEffect(() => {
     mountedRef.current = true;
-    refresh();
+    const initial = setTimeout(refresh, 0);
     const id = setInterval(refresh, POLL_MS);
     return () => {
       mountedRef.current = false;
+      clearTimeout(initial);
       clearInterval(id);
     };
   }, [refresh]);

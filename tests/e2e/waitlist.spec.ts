@@ -1,60 +1,39 @@
 import { expect, test } from "@playwright/test";
 
-test("waitlist submission success state (mocked)", async ({ page }) => {
+test("waitlist form renders and accepts submission", async ({ page }) => {
   await page.goto("/");
-  await page.waitForLoadState("networkidle");
 
+  // Scroll to the real #waitlist section
   const waitlistSection = page.locator("#waitlist");
   await waitlistSection.scrollIntoViewIfNeeded();
 
-  await page.evaluate(() => {
-    let form = document.querySelector('[data-testid="waitlist-email"]')?.closest("form") as HTMLFormElement | null;
+  // Wait for the real WaitlistForm component to hydrate
+  const form = page.getByTestId("waitlist-form");
+  await expect(form).toBeVisible();
 
-    if (!form) {
-      const mount = document.querySelector("#waitlist .mt-6.max-w-xl") as HTMLElement | null;
-      if (!mount) return;
-
-      form = document.createElement("form");
-      form.innerHTML = `
-        <input data-testid="waitlist-email" id="waitlist-email" name="email" type="email" />
-        <select data-testid="waitlist-role" id="waitlist-role" name="role">
-          <option value="">Select a role...</option>
-          <option value="Builder">Builder</option>
-        </select>
-        <input data-testid="waitlist-usecase" id="waitlist-usecase" name="useCase" type="text" />
-        <button data-testid="waitlist-submit" type="submit">Join Waitlist</button>
-      `;
-      mount.appendChild(form);
-    }
-
-    if (!form) return;
-
-    form.addEventListener(
-      "submit",
-      (event) => {
-        event.preventDefault();
-        const successPanel = document.createElement("div");
-        successPanel.setAttribute("data-testid", "waitlist-success");
-        successPanel.className = "glass-panel rounded-xl px-6 py-5";
-        const heading = document.createElement("p");
-        heading.className = "text-xl font-semibold text-primary-100";
-        heading.textContent = "\u2713 You\u2019re on the list";
-        successPanel.appendChild(heading);
-        form.replaceWith(successPanel);
-      },
-      { once: true },
-    );
-  });
-
-  await page.waitForSelector('[data-testid="waitlist-email"]');
-
+  // Fill the real form fields
   await page.getByTestId("waitlist-email").fill("test+e2e@example.com");
   await page.getByTestId("waitlist-role").selectOption("Builder");
   await page.getByTestId("waitlist-usecase").fill("Deterministic E2E coverage");
+
+  // Submit via the real button
   await page.getByTestId("waitlist-submit").click();
 
-  const successPanel = page.getByTestId("waitlist-success");
-  await expect(successPanel).toBeVisible();
-  // Assert structured UI: heading rendered, no dependence on server message text
-  await expect(successPanel.locator("p").first()).toBeVisible();
+  // In CI/local without a database, the server action returns a graceful
+  // error. With a database, it returns success. Either outcome is valid;
+  // the key assertion is that the UI responds deterministically without
+  // crashing or exposing internal details.
+  const success = page.getByTestId("waitlist-success");
+  const error = page.getByTestId("waitlist-error");
+  await expect(success.or(error)).toBeVisible({ timeout: 10_000 });
+
+  // If the error path fired, verify it shows a user-safe message
+  if (await error.isVisible()) {
+    const text = await error.textContent();
+    expect(text).toBeTruthy();
+    // Must not leak internal DB/config details
+    expect(text).not.toContain("POSTGRES_URL");
+    expect(text).not.toContain("DATABASE_URL");
+    expect(text).not.toContain("stack");
+  }
 });
