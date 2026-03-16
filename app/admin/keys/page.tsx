@@ -1,6 +1,8 @@
 import { AdminCreateKeyForm } from "@/components/admin-create-key-form";
 import { PartnerPortalLinkButton } from "@/components/partner-portal-link-button";
 import { listApiKeysWithUsageSummary, listLatestActivePortalTokensForOwners } from "@/lib/db";
+import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
+import { logSecurityEvent } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,12 +20,22 @@ function fmtDate(iso: string) {
 }
 
 export default async function AdminKeysPage() {
-  const keys = await listApiKeysWithUsageSummary(200, { includeRevoked: true });
-  const ownerEmails = Array.from(new Set(keys.map((key) => key.owner_email?.toLowerCase()).filter(Boolean) as string[]));
-  const activePortalTokens = await listLatestActivePortalTokensForOwners(ownerEmails);
-  const activePortalTokenByOwner = new Map(
-    activePortalTokens.map((token) => [token.owner_email, token]),
-  );
+  let degraded = false;
+  let keys: Awaited<ReturnType<typeof listApiKeysWithUsageSummary>> = [];
+  let activePortalTokenByOwner = new Map<string, { id: string; expires_at: string }>();
+  try {
+    keys = await listApiKeysWithUsageSummary(200, { includeRevoked: true });
+    const ownerEmails = Array.from(new Set(keys.map((key) => key.owner_email?.toLowerCase()).filter(Boolean) as string[]));
+    const activePortalTokens = await listLatestActivePortalTokensForOwners(ownerEmails);
+    activePortalTokenByOwner = new Map(
+      activePortalTokens.map((token) => [token.owner_email, token]),
+    );
+  } catch {
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "keys", reason: "db_unavailable" },
+    });
+    degraded = true;
+  }
 
   return (
     <div className="min-h-screen bg-neutral-950 p-6 text-slate-100 md:p-10">
@@ -63,7 +75,12 @@ export default async function AdminKeysPage() {
         <AdminCreateKeyForm />
       </div>
 
-      {keys.length === 0 ? (
+      {degraded ? (
+        <AdminDegradedState
+          title="API Keys"
+          description="Key management data could not be loaded right now."
+        />
+      ) : keys.length === 0 ? (
         <p className="text-sm text-slate-400">No keys created yet.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-white/10">

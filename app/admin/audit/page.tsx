@@ -1,4 +1,6 @@
 import { listAuditLogEntries, type AuditLogRow } from "@/lib/audit-log";
+import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
+import { logSecurityEvent } from "@/lib/security-log";
 
 /* ---------- helpers ---------- */
 
@@ -47,7 +49,17 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AdminAuditPage() {
-  const entries: AuditLogRow[] = await listAuditLogEntries(50);
+  let entries: AuditLogRow[];
+  let degraded = false;
+  try {
+    entries = await listAuditLogEntries(50);
+  } catch {
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "audit", reason: "db_unavailable" },
+    });
+    degraded = true;
+    entries = [];
+  }
 
   return (
     <div className="min-h-screen bg-neutral-950 text-slate-100 p-6 md:p-10">
@@ -83,7 +95,12 @@ export default async function AdminAuditPage() {
       </p>
 
       {/* Table */}
-      {entries.length === 0 ? (
+      {degraded ? (
+        <AdminDegradedState
+          title="Audit Log"
+          description="Audit data could not be loaded right now."
+        />
+      ) : entries.length === 0 ? (
         <p className="text-slate-400">No audit entries yet.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-white/10">

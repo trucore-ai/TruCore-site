@@ -25,6 +25,8 @@ import {
   type ProgressState,
   type ProgressSignal,
 } from "@/lib/acquisition-progress";
+import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
+import { logSecurityEvent } from "@/lib/security-log";
 
 /* ────────────────────────────────────────────────────────────────
  *  /admin/acquisition — Operator Acquisition Funnel
@@ -42,15 +44,24 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AdminAcquisitionPage() {
-  const data = await getAcquisitionFunnelSnapshot();
+  let degraded = false;
+  let data: Awaited<ReturnType<typeof getAcquisitionFunnelSnapshot>> | null = null;
+  try {
+    data = await getAcquisitionFunnelSnapshot();
+  } catch {
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "acquisition", reason: "db_unavailable" },
+    });
+    degraded = true;
+  }
 
   /* ── Derive follow-up guidance for each recent lead ──── */
-  const guidedRows = enrichWithGuidance(data.recent);
+  const guidedRows = data ? enrichWithGuidance(data.recent) : [];
   const actionSummary = computeActionSummary(guidedRows);
   const prioritySummary = computePrioritySummary(guidedRows);
 
   /* ── Derive progress states for each recent lead ──── */
-  const progressRows = enrichWithProgress(data.recent);
+  const progressRows = data ? enrichWithProgress(data.recent) : [];
   const progressStateSummary = computeProgressStateSummary(progressRows);
   const progressSignalSummary = computeProgressSignalSummary(progressRows);
 
@@ -88,6 +99,13 @@ export default async function AdminAcquisitionPage() {
         </div>
       </div>
 
+      {degraded || !data ? (
+        <AdminDegradedState
+          title="Acquisition Funnel"
+          description="Acquisition data could not be loaded right now."
+        />
+      ) : (
+        <>
       {/* ── KPI cards ─────────────────────────────────────── */}
       <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <KpiCard label="Total signups" value={data.total_signups} />
@@ -518,6 +536,8 @@ export default async function AdminAcquisitionPage() {
         Vercel Analytics events (builder page views, tracked link clicks)
         are not joined here — they live in the Vercel dashboard.
       </div>
+        </>
+      )}
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import { listApiKeysWithUsageSummary } from "@/lib/db";
+import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
+import { logSecurityEvent } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -28,7 +30,17 @@ export default async function AdminUsagePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const includeRevoked = parseIncludeRevoked(params.includeRevoked);
 
-  const rows = await listApiKeysWithUsageSummary(300, { includeRevoked });
+  let rows: Awaited<ReturnType<typeof listApiKeysWithUsageSummary>>;
+  let degraded = false;
+  try {
+    rows = await listApiKeysWithUsageSummary(300, { includeRevoked });
+  } catch {
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "usage", reason: "db_unavailable" },
+    });
+    degraded = true;
+    rows = [];
+  }
 
   return (
     <div className="min-h-screen bg-neutral-950 p-6 text-slate-100 md:p-10">
@@ -81,7 +93,12 @@ export default async function AdminUsagePage({ searchParams }: PageProps) {
         </a>
       </div>
 
-      {rows.length === 0 ? (
+      {degraded ? (
+        <AdminDegradedState
+          title="Usage"
+          description="Usage data could not be loaded right now."
+        />
+      ) : rows.length === 0 ? (
         <p className="text-sm text-slate-400">No usage data available yet.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-white/10">
