@@ -20,7 +20,7 @@ export default defineConfig({
     baseURL: "http://localhost:3000",
   },
   webServer: {
-    command: `ADMIN_DASHBOARD_KEY=${adminDashboardKey} RECEIPT_SIGNING_KEY=${receiptSigningKey} npm run build && ADMIN_DASHBOARD_KEY=${adminDashboardKey} RECEIPT_SIGNING_KEY=${receiptSigningKey} ATF_E2E_TEST_SECRET=${e2eTestSecret} npm start`,
+    command: `ADMIN_DASHBOARD_KEY=${adminDashboardKey} RECEIPT_SIGNING_KEY=${receiptSigningKey} WAITLIST_FALLBACK_MODE=memory npm run build && ADMIN_DASHBOARD_KEY=${adminDashboardKey} RECEIPT_SIGNING_KEY=${receiptSigningKey} ATF_E2E_TEST_SECRET=${e2eTestSecret} WAITLIST_FALLBACK_MODE=memory npm start`,
     port: 3000,
     reuseExistingServer,
     timeout: 120_000,

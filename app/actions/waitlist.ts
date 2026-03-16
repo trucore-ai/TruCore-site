@@ -1,7 +1,7 @@
 "use server";
 
 import { headers, cookies } from "next/headers";
-import { ensureWaitlistTable, upsertWaitlistSignup } from "@/lib/db";
+import { ensureWaitlistTable, upsertWaitlistSignup } from "@/lib/waitlist-store";
 import { sha256 } from "@/lib/hash";
 import { sendAdminNotification, sendUserConfirmation } from "@/lib/email";
 import { parseUtmCookieValue, UTM_COOKIE_NAME } from "@/lib/utm";

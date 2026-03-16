@@ -29,7 +29,7 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock("@/lib/db", () => ({
+vi.mock("@/lib/waitlist-store", () => ({
   ensureWaitlistTable: mocks.ensureWaitlistTableMock,
   upsertWaitlistSignup: mocks.upsertWaitlistSignupMock,
 }));

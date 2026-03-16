@@ -98,3 +98,57 @@ from a GitHub Actions secret, scoped only to the `e2e` job.
 Secrets required in GitHub repo settings:
 - `ADMIN_DASHBOARD_KEY` — used by the e2e job
 - `ATF_E2E_TEST_SECRET` — used by the e2e job only
+
+---
+
+## Waitlist fallback storage (CI / local dev)
+
+### Problem
+
+The waitlist submission path requires Postgres for persistence. In CI and
+local development, Postgres is typically unavailable, which made the E2E
+waitlist test non-deterministic (accepted either success **or** graceful error).
+
+### Solution: `WAITLIST_FALLBACK_MODE=memory`
+
+A tiny persistence abstraction (`lib/waitlist-store.ts`) routes submissions to
+one of two backends:
+
+| Backend | When used |
+|---|---|
+| **Postgres** (production) | `POSTGRES_URL` or `DATABASE_URL` is configured |
+| **In-memory** (test/dev) | No DB configured **and** `WAITLIST_FALLBACK_MODE=memory` **and** `NODE_ENV !== "production"` |
+
+### Fail-closed rules
+
+- If a DB connection string exists, **DB is always used** — even if the
+  fallback flag is set. This prevents accidental memory-mode in staging
+  that has a DB.
+- `NODE_ENV=production` **never** uses the memory backend, regardless of flags.
+- If no DB exists **and** fallback is not allowed, the submission fails
+  gracefully with a generic user-safe error (existing behavior).
+
+### How Playwright uses it
+
+`playwright.config.ts` injects `WAITLIST_FALLBACK_MODE=memory` into the
+`webServer` build and start commands. This means:
+
+- The E2E waitlist spec asserts **deterministic success** through the real
+  form, real server action, and in-memory store.
+- No Postgres required for local or CI E2E runs.
+
+To run waitlist E2E manually:
+
+```bash
+WAITLIST_FALLBACK_MODE=memory \
+ADMIN_DASHBOARD_KEY=e2e-admin-key \
+RECEIPT_SIGNING_KEY=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY= \
+ATF_E2E_TEST_SECRET=e2e-test-secret \
+npx playwright test tests/e2e/waitlist.spec.ts
+```
+
+### Production
+
+Production uses the DB-backed path as before. `WAITLIST_FALLBACK_MODE` should
+**not** be set in production environment variables. If it is accidentally set,
+the `NODE_ENV=production` guard prevents the memory backend from activating.
