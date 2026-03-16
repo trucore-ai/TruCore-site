@@ -3,6 +3,7 @@ import { assertRateLimit } from "@/lib/rate-limit";
 import { revokePartnerPortalToken } from "@/lib/db";
 import { logAdminAction } from "@/lib/audit-log";
 import { withAdminApiAuth } from "@/lib/admin-api-auth";
+import { logSecurityEvent } from "@/lib/security-log";
 
 function isFormRequest(request: NextRequest): boolean {
   const contentType = request.headers.get("content-type") ?? "";
@@ -68,21 +69,36 @@ export const POST = withAdminApiAuth(async (request: NextRequest) => {
     );
   }
 
-  const revoked = await revokePartnerPortalToken(id);
+  try {
+    const revoked = await revokePartnerPortalToken(id);
 
-  if (revoked) {
-    await logAdminAction({
-      action: "partner_portal_token_revoke",
-      metadata: { portalTokenId: id },
+    if (revoked) {
+      await logAdminAction({
+        action: "partner_portal_token_revoke",
+        metadata: { portalTokenId: id },
+      });
+    }
+
+    if (isFormRequest(request)) {
+      return NextResponse.redirect(getRedirectTarget(request), 303);
+    }
+
+    return NextResponse.json(
+      { ok: true, revoked },
+      { status: 200 },
+    );
+  } catch {
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "portal/token/revoke", reason: "write_failed" },
     });
-  }
 
-  if (isFormRequest(request)) {
-    return NextResponse.redirect(getRedirectTarget(request), 303);
-  }
+    if (isFormRequest(request)) {
+      return NextResponse.redirect(getRedirectTarget(request), 303);
+    }
 
-  return NextResponse.json(
-    { ok: true, revoked },
-    { status: 200 },
-  );
+    return NextResponse.json(
+      { error: "temporarily_unavailable" },
+      { status: 500 },
+    );
+  }
 });

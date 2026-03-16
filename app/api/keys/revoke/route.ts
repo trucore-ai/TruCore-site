@@ -3,6 +3,7 @@ import { revokeApiKey } from "@/lib/api-keys";
 import { assertRateLimit } from "@/lib/rate-limit";
 import { logAdminAction } from "@/lib/audit-log";
 import { withAdminApiAuth } from "@/lib/admin-api-auth";
+import { logSecurityEvent } from "@/lib/security-log";
 
 function getRedirectTarget(request: NextRequest): URL {
   const referer = request.headers.get("referer");
@@ -68,21 +69,36 @@ export const POST = withAdminApiAuth(async (request: NextRequest) => {
     );
   }
 
-  const revoked = await revokeApiKey(id);
+  try {
+    const revoked = await revokeApiKey(id);
 
-  if (revoked) {
-    await logAdminAction({
-      action: "api_key_revoke",
-      metadata: { apiKeyId: id },
+    if (revoked) {
+      await logAdminAction({
+        action: "api_key_revoke",
+        metadata: { apiKeyId: id },
+      });
+    }
+
+    if (isFormRequest(request)) {
+      return NextResponse.redirect(getRedirectTarget(request), 303);
+    }
+
+    return NextResponse.json(
+      { ok: true, revoked },
+      { status: 200 },
+    );
+  } catch {
+    logSecurityEvent("admin_api_degraded", {
+      meta: { route: "keys/revoke", reason: "write_failed" },
     });
-  }
 
-  if (isFormRequest(request)) {
-    return NextResponse.redirect(getRedirectTarget(request), 303);
-  }
+    if (isFormRequest(request)) {
+      return NextResponse.redirect(getRedirectTarget(request), 303);
+    }
 
-  return NextResponse.json(
-    { ok: true, revoked },
-    { status: 200 },
-  );
+    return NextResponse.json(
+      { error: "temporarily_unavailable" },
+      { status: 500 },
+    );
+  }
 });

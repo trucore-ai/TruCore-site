@@ -20,13 +20,26 @@ import { serializeDashboardSnapshot } from "@/lib/agent-serializer";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const bundle = await fetchFullDashboard();
-  const snapshot = serializeDashboardSnapshot(bundle);
+  try {
+    const bundle = await fetchFullDashboard();
+    const snapshot = serializeDashboardSnapshot(bundle);
 
-  return NextResponse.json(snapshot, {
-    headers: {
-      "Cache-Control": "no-store, max-age=0",
-      "Content-Type": "application/json; charset=utf-8",
-    },
-  });
+    return NextResponse.json(snapshot, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+        "Content-Type": "application/json; charset=utf-8",
+      },
+    });
+  } catch {
+    return NextResponse.json(
+      { available: false, reason: "temporarily_unavailable" },
+      {
+        status: 502,
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+          "Content-Type": "application/json; charset=utf-8",
+        },
+      },
+    );
+  }
 }

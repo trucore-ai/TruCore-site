@@ -15,6 +15,7 @@ import {
   getSecurityEventCounters,
   getAdminPageDegradedCounts,
   getAdminActionDegradedCounts,
+  getAdminApiDegradedCounts,
 } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export const GET = withAdminApiAuth(async () => {
     const counters = getSecurityEventCounters();
     const degradedByPage = getAdminPageDegradedCounts();
     const degradedByAction = getAdminActionDegradedCounts();
+    const degradedByRoute = getAdminApiDegradedCounts();
 
     return NextResponse.json({
       uptime_seconds: Math.floor((Date.now() - startedAt) / 1000),
@@ -44,6 +46,8 @@ export const GET = withAdminApiAuth(async () => {
       admin_page_degraded_by_page: degradedByPage,
       admin_action_degraded_total: counters["admin_action_degraded"] ?? 0,
       admin_action_degraded_by_action: degradedByAction,
+      admin_api_degraded_total: counters["admin_api_degraded"] ?? 0,
+      admin_api_degraded_by_route: degradedByRoute,
     });
   } catch {
     return NextResponse.json(

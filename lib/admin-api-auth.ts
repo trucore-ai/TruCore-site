@@ -100,7 +100,22 @@ export function withAdminApiAuth(
     }
 
     /* ── Run the actual handler ──── */
-    const response = await handler(request, context);
-    return applyAdminHeaders(response);
+    try {
+      const response = await handler(request, context);
+      return applyAdminHeaders(response);
+    } catch {
+      logSecurityEvent("admin_api_degraded", {
+        ip,
+        meta: {
+          route: request.nextUrl.pathname,
+          reason: "unhandled_handler_error",
+        },
+      });
+      const res = NextResponse.json(
+        { error: "temporarily_unavailable" },
+        { status: 500 },
+      );
+      return applyAdminHeaders(res);
+    }
   };
 }
