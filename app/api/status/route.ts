@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       commit: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
       env: process.env.VERCEL_ENV ?? null,
       firewall_api: {
-        base_url: firewallBaseUrl,
+        configured: Boolean(firewallBaseUrl),
         reachable: firewallReachable,
       },
     },

@@ -5,17 +5,51 @@ import {
   isSupportedReceiptVersion,
   recomputeDemoReceiptHash,
 } from "@/lib/receipt-verification";
+import { consumeRateLimit } from "@/lib/rate-limit";
+import { sha256 } from "@/lib/hash";
+import { logSecurityEvent } from "@/lib/security-log";
 
 const NO_STORE_HEADERS = {
   "Cache-Control": "no-store",
 };
+
+const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_WINDOW_MS = 60_000;
 
 type VerifyReceiptRequest = {
   receipt_hash?: unknown;
   receipt?: unknown;
 };
 
+function getRequestIp(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  return forwarded?.split(",")[0]?.trim() ?? request.headers.get("x-real-ip") ?? "unknown";
+}
+
 export async function POST(request: NextRequest) {
+  const ip = getRequestIp(request);
+  const rl = consumeRateLimit(`verify-receipt:${sha256(ip)}`, {
+    max: RATE_LIMIT_MAX,
+    windowMs: RATE_LIMIT_WINDOW_MS,
+  });
+
+  if (rl.exceeded) {
+    logSecurityEvent("public_route_rate_limited", {
+      ip,
+      meta: { route: "verify-receipt" },
+    });
+    return NextResponse.json(
+      { ok: false, error: "rate_limited" },
+      {
+        status: 429,
+        headers: {
+          ...NO_STORE_HEADERS,
+          "Retry-After": String(Math.max(1, rl.resetEpochSeconds - Math.floor(Date.now() / 1000))),
+        },
+      },
+    );
+  }
+
   let body: VerifyReceiptRequest;
 
   try {
