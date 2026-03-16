@@ -130,6 +130,7 @@ export default function ATFPage() {
                 href="#doctor"
                 eventName="hero_doctor_click"
                 eventProps={{ location: "atf_hero" }}
+                data-testid="hero-run-this-first"
                 className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3 text-lg font-semibold text-neutral-950 transition-colors hover:bg-slate-200"
               >
                 Run This First
@@ -138,6 +139,7 @@ export default function ATFPage() {
                 href="#burner"
                 eventName="hero_burner_click"
                 eventProps={{ location: "atf_hero" }}
+                data-testid="hero-devnet-quickstart"
                 className="inline-flex items-center justify-center rounded-xl border border-white/20 px-6 py-3 text-lg font-semibold text-slate-100 transition-colors hover:bg-white/10"
               >
                 Devnet Quickstart
@@ -202,6 +204,7 @@ export default function ATFPage() {
           <AtfCopyCommand
             label="Doctor"
             command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
+            testId="doctor-command-copy"
           />
         </div>
 

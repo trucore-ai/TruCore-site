@@ -369,7 +369,7 @@ export default function RootLayout({
 
                 <div className="mt-8 flex flex-col gap-3 border-t border-white/[0.06] pt-6 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-3 text-slate-400">
-                    <Link href="/docs/permit-schema-v1" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Permit Schema v1</Link>
+                    <Link href="/docs/permit-schema-v1" data-testid="footer-permit-schema-link" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Permit Schema v1</Link>
                     <span aria-hidden="true" className="text-slate-600">|</span>
                     <Link href="/build-with-atf" className="rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Build With ATF</Link>
                     <span aria-hidden="true" className="text-slate-600">|</span>

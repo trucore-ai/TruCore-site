@@ -64,11 +64,11 @@ test("design-partner form renders with all required fields", async ({ page }) =>
   await expect(page.getByTestId("design-partner-project")).toBeVisible();
   await expect(page.getByTestId("design-partner-build-stage")).toBeVisible();
   await expect(page.getByTestId("design-partner-tx-volume")).toBeVisible();
-  // Submit button is present (Button component uses accessible role)
-  await expect(page.getByRole("button", { name: /submit application/i })).toBeVisible();
+  // Submit button is present
+  await expect(page.getByTestId("design-partner-submit")).toBeVisible();
 
   // At least one integration checkbox is present
-  await expect(page.locator('input[name="integrationsInterest"]').first()).toBeVisible();
+  await expect(page.getByTestId("design-partner-integration-jupiter")).toBeVisible();
 });
 
 test("design-partner submit succeeds and renders success state", async ({ page }) => {
@@ -80,12 +80,12 @@ test("design-partner submit succeeds and renders success state", async ({ page }
   // Fill all required fields
   await page.getByTestId("design-partner-email").fill("partner+e2e@example.com");
   await page.getByTestId("design-partner-project").fill("Acme Trading E2E");
-  await page.locator('input[name="integrationsInterest"][value="jupiter"]').check();
+  await page.getByTestId("design-partner-integration-jupiter").check();
   await page.getByTestId("design-partner-build-stage").selectOption("prototype");
   await page.getByTestId("design-partner-tx-volume").selectOption("10k_100k");
 
   // Submit
-  await page.getByRole("button", { name: /submit application/i }).click();
+  await page.getByTestId("design-partner-submit").click();
 
   // Success state renders
   const success = page.getByTestId("design-partner-success");
@@ -102,11 +102,11 @@ test("design-partner success state shows scheduling link", async ({ page }) => {
   // Fill and submit
   await page.getByTestId("design-partner-email").fill("partner+sched@example.com");
   await page.getByTestId("design-partner-project").fill("Schedule Test Co");
-  await page.locator('input[name="integrationsInterest"][value="orca"]').check();
+  await page.getByTestId("design-partner-integration-orca").check();
   await page.getByTestId("design-partner-build-stage").selectOption("prod");
   await page.getByTestId("design-partner-tx-volume").selectOption("gt_1m");
 
-  await page.getByRole("button", { name: /submit application/i }).click();
+  await page.getByTestId("design-partner-submit").click();
 
   const success = page.getByTestId("design-partner-success");
   await expect(success).toBeVisible({ timeout: 10_000 });
@@ -133,11 +133,11 @@ test("design-partner error does not leak internal details", async ({ page }) => 
   // Submit with invalid email
   await page.getByTestId("design-partner-email").fill("bad-email");
   await page.getByTestId("design-partner-project").fill("Test Co");
-  await page.locator('input[name="integrationsInterest"][value="jupiter"]').check();
+  await page.getByTestId("design-partner-integration-jupiter").check();
   await page.getByTestId("design-partner-build-stage").selectOption("idea");
   await page.getByTestId("design-partner-tx-volume").selectOption("lt_10k");
 
-  await page.getByRole("button", { name: /submit application/i }).click();
+  await page.getByTestId("design-partner-submit").click();
 
   const error = page.getByTestId("design-partner-error");
   await expect(error).toBeVisible({ timeout: 10_000 });

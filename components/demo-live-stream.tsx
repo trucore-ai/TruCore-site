@@ -91,7 +91,7 @@ export function DemoLiveStream() {
       {error ? <p className="text-sm text-red-200">{error}</p> : null}
 
       <ul className="space-y-3">
-        {receipts.map((receipt) => {
+        {receipts.map((receipt, idx) => {
           const isExpanded = Boolean(expandedIds[receipt.id]);
 
           return (
@@ -119,6 +119,7 @@ export function DemoLiveStream() {
                 <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href={buildVerifyUrl({ hash: receipt.result.receipt_hash })}
+                    data-testid={`receipt-verify-link-${idx}`}
                     className="inline-flex rounded border border-primary-300/40 bg-primary-500/10 px-3 py-1.5 text-sm font-medium text-primary-100 transition-colors hover:bg-primary-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                   >
                     Verify
@@ -126,6 +127,7 @@ export function DemoLiveStream() {
                   <button
                     type="button"
                     onClick={() => toggleExpanded(receipt.id)}
+                    data-testid={`receipt-json-toggle-${idx}`}
                     className="inline-flex rounded border border-white/20 bg-white/5 px-3 py-1.5 text-sm font-medium text-slate-100 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                   >
                     {isExpanded ? "Hide receipt JSON" : "View receipt JSON"}

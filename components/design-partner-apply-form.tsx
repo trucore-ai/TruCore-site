@@ -211,6 +211,7 @@ export function DesignPartnerApplyForm() {
                 type="checkbox"
                 name="integrationsInterest"
                 value={opt.value}
+                data-testid={`design-partner-integration-${opt.value}`}
                 className="h-5 w-5 rounded border-white/20 bg-neutral-950/70 text-accent-500 focus:ring-accent-500"
                 onChange={() => {
                   const checked = document.querySelectorAll(
@@ -308,7 +309,7 @@ export function DesignPartnerApplyForm() {
       </div>
 
       {/* Submit */}
-      <Button variant="primary" type="submit" disabled={isPending} className="h-12 w-full sm:w-auto">
+      <Button variant="primary" type="submit" disabled={isPending} data-testid="design-partner-submit" className="h-12 w-full sm:w-auto">
         {isPending ? "Submitting..." : "Submit Application"}
       </Button>
 

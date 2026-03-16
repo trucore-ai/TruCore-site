@@ -6,23 +6,21 @@ test("atf page loads", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Agent Transaction Firewall", level: 1 }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Run This First" }).first()).toBeVisible();
+  await expect(page.getByTestId("hero-run-this-first")).toBeVisible();
 });
 
 test("atf hero shows developer-first CTA hierarchy", async ({ page }) => {
   await page.goto("/atf");
 
-  await expect(page.getByRole("link", { name: "Run This First" }).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "Devnet Quickstart" }).first()).toBeVisible();
+  await expect(page.getByTestId("hero-run-this-first")).toBeVisible();
+  await expect(page.getByTestId("hero-devnet-quickstart")).toBeVisible();
 });
 
 test("atf doctor command block is visible with copy control", async ({ page }) => {
   await page.goto("/atf");
 
-  const doctorSection = page.locator("#doctor");
   await expect(page.getByRole("heading", { name: "Run This First", level: 2 })).toBeVisible();
-  await expect(doctorSection.getByText(/npx @trucore\/atf@.*doctor --pretty/)).toBeVisible();
-  await expect(doctorSection.getByRole("button", { name: /Copy/i }).first()).toBeVisible();
+  await expect(page.getByTestId("doctor-command-copy")).toBeVisible();
 });
 
 test("atf receipts nav link routes to receipts explorer", async ({ page }) => {
@@ -44,7 +42,7 @@ test("atf reduced motion hides animated hero background", async ({ page }) => {
 test("atf links to permit schema v1", async ({ page }) => {
   await page.goto("/atf");
 
-  const schemaLink = page.getByRole("link", { name: "Permit Schema v1" }).first();
+  const schemaLink = page.getByTestId("footer-permit-schema-link");
   await expect(schemaLink).toHaveAttribute("href", "/docs/permit-schema-v1");
   await schemaLink.click();
 

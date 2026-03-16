@@ -5,16 +5,14 @@ test("demo live page loads and renders stream receipts", async ({ page }) => {
 
   await expect(page.getByRole("heading", { level: 1, name: "Demo Live" })).toBeVisible();
 
-  const main = page.locator("main");
-  await expect(main.getByRole("button", { name: /View receipt JSON/i }).first()).toBeVisible();
-  await expect(main.getByRole("link", { name: "Verify" }).first()).toBeVisible();
+  await expect(page.getByTestId("receipt-json-toggle-0")).toBeVisible();
+  await expect(page.getByTestId("receipt-verify-link-0")).toBeVisible();
 });
 
 test("demo live verify link navigates to verify with hash prefilled", async ({ page }) => {
   await page.goto("/demo");
 
-  const main = page.locator("main");
-  await main.getByRole("link", { name: "Verify", exact: true }).first().click();
+  await page.getByTestId("receipt-verify-link-0").click();
   await expect(page).toHaveURL(/\/verify\?hash=[a-f0-9]{64}/);
   await expect(page.getByLabel("Paste receipt_hash")).toHaveValue(/[a-f0-9]{64}/);
 });

@@ -12,6 +12,7 @@ type TrackedLinkProps = {
   target?: string;
   rel?: string;
   ariaLabel?: string;
+  "data-testid"?: string;
 };
 
 export function TrackedLink({
@@ -23,6 +24,7 @@ export function TrackedLink({
   target,
   rel,
   ariaLabel,
+  "data-testid": testId,
 }: TrackedLinkProps) {
   const baseClassName =
     "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950";
@@ -41,6 +43,7 @@ export function TrackedLink({
       target={target}
       rel={rel}
       aria-label={ariaLabel}
+      data-testid={testId}
       onClick={onClick}
     >
       {children}
