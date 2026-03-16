@@ -64,7 +64,7 @@ export function DesignPartnerApplyForm() {
 
   if (state.ok) {
     return (
-      <div className="glass-panel rounded-xl px-6 py-5 space-y-4">
+      <div data-testid="design-partner-success" className="glass-panel rounded-xl px-6 py-5 space-y-4">
         <p className="text-xl font-semibold text-primary-100">
           &#10003; Application received
         </p>
@@ -85,6 +85,7 @@ export function DesignPartnerApplyForm() {
                     location: "atf_apply_success",
                   })
                 }
+                data-testid="design-partner-scheduling-link"
                 className="inline-flex h-12 items-center justify-center rounded-xl bg-accent-500 px-6 text-lg font-semibold text-white shadow-md transition-all hover:bg-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-neutral-950"
               >
                 Book a fit check
@@ -142,7 +143,7 @@ export function DesignPartnerApplyForm() {
   }
 
   return (
-    <form action={dispatch} className="space-y-5" noValidate>
+    <form action={dispatch} data-testid="design-partner-form" className="space-y-5" noValidate>
       {/* Hidden intent */}
       <input type="hidden" name="intent" value="design_partner" />
 
@@ -165,6 +166,7 @@ export function DesignPartnerApplyForm() {
         </label>
         <input
           id="apply-email"
+          data-testid="design-partner-email"
           name="email"
           type="email"
           autoComplete="email"
@@ -183,6 +185,7 @@ export function DesignPartnerApplyForm() {
         </label>
         <input
           id="apply-project"
+          data-testid="design-partner-project"
           name="projectName"
           type="text"
           required
@@ -229,6 +232,7 @@ export function DesignPartnerApplyForm() {
         </label>
         <select
           id="apply-build-stage"
+          data-testid="design-partner-build-stage"
           name="buildStage"
           required
           className={`${inputStyles} mt-1 appearance-none`}
@@ -250,6 +254,7 @@ export function DesignPartnerApplyForm() {
         </label>
         <select
           id="apply-tx-volume"
+          data-testid="design-partner-tx-volume"
           name="txVolumeBucket"
           required
           className={`${inputStyles} mt-1 appearance-none`}
@@ -310,7 +315,7 @@ export function DesignPartnerApplyForm() {
       {/* Status */}
       <p id="apply-status" role={!state.ok && state.message ? "alert" : "status"} className="text-lg">
         {!state.ok && state.message && (
-          <span className="text-red-300">{state.message}</span>
+          <span data-testid="design-partner-error" className="text-red-300">{state.message}</span>
         )}
       </p>
     </form>
