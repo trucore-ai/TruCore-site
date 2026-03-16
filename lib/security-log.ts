@@ -26,7 +26,8 @@ export type SecurityEvent =
   | "csrf_origin_rejected"
   | "session_gc_error"
   | "admin_page_degraded"
-  | "metrics_route_rate_limited";
+  | "metrics_route_rate_limited"
+  | "agent_route_rate_limited";
 
 export interface SecurityLogContext {
   /** Raw IP string — will be hashed before logging. */
