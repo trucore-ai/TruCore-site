@@ -13,7 +13,7 @@
  *  Operator-only. Never shown to tenant users.
  * ──────────────────────────────────────────────────────────── */
 
-import type { TenantActivationSnapshot, AdoptionFunnel } from "@/lib/dashboard-client";
+import type { TenantActivationSnapshot } from "@/lib/dashboard-client";
 
 /* ── Triage segments ──────────────────────────────────────── */
 
