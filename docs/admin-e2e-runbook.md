@@ -479,3 +479,50 @@ npx playwright test tests/e2e/waitlist.spec.ts
 Production uses the DB-backed path as before. `WAITLIST_FALLBACK_MODE` should
 **not** be set in production environment variables. If it is accidentally set,
 the `NODE_ENV=production` guard prevents the memory backend from activating.
+
+---
+
+## Agent route abuse telemetry
+
+### What is shown
+
+The authenticated admin metrics page (`/admin/metrics`) includes an
+**Agent Route Abuse Controls** section in the degraded-telemetry panel.
+This surfaces aggregate counts of public bot-facing route throttles
+triggered by the per-IP rate limiters on the agent endpoints.
+
+### Where operators can see it
+
+- **UI**: `/admin/metrics` → "Agent Route Abuse Controls" panel
+- **API**: `GET /api/admin/security` → `agent_route_rate_limited_total`
+  and `agent_route_rate_limited_by_route` fields (authenticated only)
+
+### Telemetry fields
+
+| Field | Description |
+|---|---|
+| `agent_route_rate_limited_total` | Aggregate count of all agent-route rate-limit rejections |
+| `agent_route_rate_limited_by_route` | Per-route breakdown (allowlisted labels only) |
+
+### Safe route labels
+
+Only the following static labels appear in the per-route breakdown:
+
+- `agent/dashboard`
+- `agent/tenant`
+- `agent/stream`
+
+Any rate-limited event with an unknown route label is counted in the
+aggregate total but silently excluded from the per-route breakdown.
+
+### Design notes
+
+- **Aggregate-only**: No IPs, tokens, cookies, stack traces, SQL,
+  DSNs, or raw backend error messages are exposed.
+- **Process-local**: Counters are in-memory and reset on deploy or
+  cold start. They are not persisted.
+- **Fail-closed**: The `/api/admin/security` endpoint requires a valid
+  admin session. Unauthenticated requests receive a generic 404.
+- **UI behavior**: The panel shows green when zero throttles are
+  detected and amber when non-zero, consistent with other stability
+  sections.

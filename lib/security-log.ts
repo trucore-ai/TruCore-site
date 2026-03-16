@@ -111,6 +111,17 @@ export function logSecurityEvent(
       );
     }
   }
+
+  /* ── Track per-route agent-route rate-limited counts ── */
+  if (event === "agent_route_rate_limited" && ctx.meta?.route) {
+    const route = String(ctx.meta.route);
+    if (KNOWN_AGENT_ROUTES.has(route)) {
+      agentRouteRateLimitedCounts.set(
+        route,
+        (agentRouteRateLimitedCounts.get(route) ?? 0) + 1,
+      );
+    }
+  }
 }
 
 /* ---------- security event counters ---------- */
@@ -163,6 +174,21 @@ const KNOWN_ADMIN_API_ROUTES = new Set([
 ]);
 
 const adminApiDegradedCounts = new Map<string, number>();
+
+/* ---------- per-route agent-route rate-limited counters ---------- */
+
+/** Allowed agent route labels — only these are tracked in breakdowns. */
+const KNOWN_AGENT_ROUTES = new Set([
+  "agent/dashboard",
+  "agent/tenant",
+  "agent/stream",
+]);
+
+/**
+ * Process-local aggregate counters for agent_route_rate_limited events,
+ * keyed by route label. Only safe static labels from KNOWN_AGENT_ROUTES stored.
+ */
+const agentRouteRateLimitedCounts = new Map<string, number>();
 
 /**
  * Process-local aggregate counters for admin_action_degraded events, keyed
@@ -234,10 +260,27 @@ export function getAdminApiDegradedCounts(): Record<string, number> {
   }
 }
 
+/**
+ * Return a snapshot of per-route agent-route rate-limited counts.
+ * Keys are safe static route labels only. Never throws.
+ */
+export function getAgentRouteRateLimitedCounts(): Record<string, number> {
+  try {
+    const result: Record<string, number> = {};
+    for (const [key, val] of agentRouteRateLimitedCounts) {
+      result[key] = val;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
 /** Exposed for tests only — reset all counters. */
 export function _resetSecurityEventCounters(): void {
   securityEventCounters.clear();
   adminPageDegradedCounts.clear();
   adminActionDegradedCounts.clear();
   adminApiDegradedCounts.clear();
+  agentRouteRateLimitedCounts.clear();
 }
