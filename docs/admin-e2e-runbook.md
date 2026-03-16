@@ -200,6 +200,51 @@ which is harmless but provides no additional resolution.
 
 ---
 
+## Degraded admin-page telemetry
+
+### What it shows
+
+When a DB-dependent admin page (waitlist, metrics, audit, CSP, usage,
+acquisition, keys) fails to load its data, the page renders a safe
+fallback panel and logs an `admin_page_degraded` security event.
+
+Operators can now see these events through the authenticated admin UI:
+
+- **Admin Metrics page** (`/admin/metrics`) — an "Admin Page Stability"
+  panel shows the aggregate degraded render count and a per-page breakdown.
+- **Admin security API** (`/api/admin/security`) — the JSON payload
+  includes `admin_page_degraded_total` and `admin_page_degraded_by_page`.
+
+### What is exposed
+
+| Field | Description |
+|---|---|
+| `admin_page_degraded_total` | Total degraded renders across all admin pages (process lifetime) |
+| `admin_page_degraded_by_page` | Object mapping safe page name → count (e.g. `{ "waitlist": 3, "csp": 1 }`) |
+
+### Safety guarantees
+
+- Only aggregate numeric counts are shown — no raw errors, stack traces,
+  IPs, SQL, DSNs, cookies, or tokens.
+- Page names are restricted to a static allowlist of known admin route
+  names. Unknown page values are silently ignored.
+- The telemetry API remains gated by `withAdminApiAuth` — unauthenticated
+  requests receive a generic 404.
+- The UI panel is a client component that fetches from the authenticated
+  API — it inherits the same session protection.
+
+### Process-local limitations
+
+- Counters are in-memory and process-local. They reset on deploy,
+  restart, or new serverless isolate.
+- In multi-instance deployments, each instance tracks its own counters.
+  For cross-instance visibility, use the Prometheus `/api/metrics/security`
+  endpoint with an aggregating dashboard.
+- This is an aggregate signal, not a full event log. For detailed
+  investigation, use structured log aggregation (e.g. Datadog, CloudWatch).
+
+---
+
 ## Waitlist fallback storage (CI / local dev)
 
 ### Problem

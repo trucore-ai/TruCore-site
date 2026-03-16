@@ -75,12 +75,42 @@ export function logSecurityEvent(
     event,
     (securityEventCounters.get(event) ?? 0) + 1,
   );
+
+  /* ── Track per-page degraded counts ── */
+  if (event === "admin_page_degraded" && ctx.meta?.page) {
+    const page = String(ctx.meta.page);
+    if (KNOWN_ADMIN_PAGES.has(page)) {
+      adminPageDegradedCounts.set(
+        page,
+        (adminPageDegradedCounts.get(page) ?? 0) + 1,
+      );
+    }
+  }
 }
 
 /* ---------- security event counters ---------- */
 
 /** In-memory counters for security events. Lazily initialized on first increment. */
 const securityEventCounters = new Map<string, number>();
+
+/* ---------- per-page degraded counters ---------- */
+
+/** Allowed page names — only these are tracked. Anything else is ignored. */
+const KNOWN_ADMIN_PAGES = new Set([
+  "waitlist",
+  "csp",
+  "usage",
+  "metrics",
+  "audit",
+  "acquisition",
+  "keys",
+]);
+
+/**
+ * Process-local aggregate counters for admin_page_degraded events, keyed by
+ * page name. Only safe static page labels from KNOWN_ADMIN_PAGES are stored.
+ */
+const adminPageDegradedCounts = new Map<string, number>();
 
 /**
  * Return a snapshot of all security event counters.
@@ -98,7 +128,24 @@ export function getSecurityEventCounters(): Record<string, number> {
   }
 }
 
+/**
+ * Return a snapshot of per-page degraded admin render counts.
+ * Keys are safe static page names only. Never throws.
+ */
+export function getAdminPageDegradedCounts(): Record<string, number> {
+  try {
+    const result: Record<string, number> = {};
+    for (const [key, val] of adminPageDegradedCounts) {
+      result[key] = val;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
 /** Exposed for tests only — reset all counters. */
 export function _resetSecurityEventCounters(): void {
   securityEventCounters.clear();
+  adminPageDegradedCounts.clear();
 }
