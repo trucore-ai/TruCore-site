@@ -78,7 +78,10 @@ export async function POST(request: NextRequest) {
   const cooldownSeconds = checkLoginThrottle(ip);
   if (cooldownSeconds > 0) {
     logSecurityEvent("login_rate_limited", { ip });
-    return new NextResponse(null, { status: 404 });
+    return NextResponse.redirect(
+      new URL("/admin/login", request.url),
+      303,
+    );
   }
 
   if (!isAdminKeyValid(key)) {
@@ -87,7 +90,10 @@ export async function POST(request: NextRequest) {
       ip,
       meta: locked > 0 ? { cooldown_triggered: true } : undefined,
     });
-    return new NextResponse(null, { status: 404 });
+    return NextResponse.redirect(
+      new URL("/admin/login", request.url),
+      303,
+    );
   }
 
   /* ── success ── */

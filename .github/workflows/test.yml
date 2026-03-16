@@ -85,11 +85,33 @@ jobs:
           name: coverage
           path: coverage/
 
+  build:
+    runs-on: ubuntu-latest
+    env:
+      RECEIPT_SIGNING_KEY: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
   e2e:
     runs-on: ubuntu-latest
     env:
       ADMIN_DASHBOARD_KEY: ${{ secrets.ADMIN_DASHBOARD_KEY }}
       RECEIPT_SIGNING_KEY: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+      ATF_E2E_TEST_SECRET: ${{ secrets.ATF_E2E_TEST_SECRET }}
+      CI: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -114,7 +136,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run E2E smoke tests
+      - name: Run E2E tests (includes admin auth flow)
         run: npm run test:e2e
 
       - name: Upload Playwright report artifact

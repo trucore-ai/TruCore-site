@@ -16,8 +16,9 @@ import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { logSecurityEvent } from "./security-log";
+import { ADMIN_COOKIE_NAME } from "./admin-constants";
 
-export const ADMIN_COOKIE_NAME = "admin_session";
+export { ADMIN_COOKIE_NAME };
 export const ADMIN_COOKIE_MAX_AGE = 60 * 60; // 1 hour (absolute session lifetime)
 export const IDLE_TIMEOUT_SECONDS = 15 * 60; // 15 min idle timeout
 export const LAST_SEEN_THROTTLE_SECONDS = 60; // throttle lastSeenAt writes

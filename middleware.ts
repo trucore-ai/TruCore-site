@@ -13,7 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { ADMIN_COOKIE_NAME } from "./lib/admin-auth";
+import { ADMIN_COOKIE_NAME } from "./lib/admin-constants";
 
 /**
  * Paths under /admin that must remain accessible without a session cookie.
