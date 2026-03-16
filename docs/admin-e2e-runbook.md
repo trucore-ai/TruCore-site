@@ -118,6 +118,35 @@ returns secrets, tokens, cookies, IP addresses, per-user dimensions, or
 any identifying information. The data is equivalent to what an application
 error-rate dashboard would show.
 
+### Abuse protection (rate limiting)
+
+The route includes a lightweight in-memory rate limiter to damp obvious
+probe spam without interfering with normal Prometheus scraping.
+
+| Parameter | Value |
+|---|---|
+| **Limit** | 60 requests per 60-second window |
+| **Key** | Truncated SHA-256 hash of client IP (never raw IP) |
+| **Scope** | Process-local; resets on cold start |
+| **429 behavior** | Empty body, `Retry-After` header, no internal details |
+
+This is intended as a lightweight abuse guard, not a hard security boundary.
+Normal Prometheus scrape intervals (15–30 s) are well within the limit.
+
+When the limiter triggers, a `metrics_route_rate_limited` event is logged
+(without raw IP) for operational visibility.
+
+### Response caching
+
+The serialized Prometheus output is cached in-memory for **10 seconds**
+to reduce repeated serialization under burst traffic. Metrics are
+approximate within the TTL window — counter and gauge values may lag
+by up to 10 s after an event occurs.
+
+The cache is process-local and resets on cold start. Downstream
+`Cache-Control: no-store` headers remain unchanged — the caching is
+internal only and does not affect Prometheus staleness detection.
+
 ### Metrics exposed
 
 **Counters**
@@ -155,9 +184,15 @@ scrape_configs:
       - targets: ["your-trucore-host:3000"]
 ```
 
+A `scrape_interval` of 15 s or longer is recommended. The 10 s internal
+cache TTL means scrapes faster than 10 s will receive the same snapshot,
+which is harmless but provides no additional resolution.
+
 ### Important notes
 
 - Metrics are **in-memory and process-local**. They reset on cold start.
+- Rate-limit buckets and the metrics cache are also process-local and
+  reset on cold start or new serverless isolate.
 - The existing admin-only JSON telemetry at `/api/admin/security` is
   unchanged and still requires an authenticated admin session.
 - Response headers include `Cache-Control: no-store` and
