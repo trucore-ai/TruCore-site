@@ -5,6 +5,8 @@ import {
   PIPELINE_STATUSES,
   type WaitlistSignupRow,
 } from "@/lib/db";
+import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
+import { logSecurityEvent } from "@/lib/security-log";
 import { StatusForm } from "./status-form";
 import { NoteForm } from "./note-form";
 import { CopyOutreachButton } from "./copy-outreach-button";
@@ -72,13 +74,26 @@ export default async function AdminWaitlistPage({ searchParams }: PageProps) {
   const intent = parseIntent(params.intent);
   const limit = parseLimit(params.limit);
 
-  const rows = await listRecentWaitlistSignups({ limit, intent });
-  const activeKeyOwners = new Set(await listActiveApiKeyOwnerEmails());
-  const ownerEmails = rows.map((row) => row.email);
-  const activePortalTokens = await listLatestActivePortalTokensForOwners(ownerEmails);
-  const activePortalTokenByOwner = new Map(
-    activePortalTokens.map((token) => [token.owner_email, token]),
-  );
+  let rows: WaitlistSignupRow[] = [];
+  let activeKeyOwners = new Set<string>();
+  let activePortalTokenByOwner = new Map<string, { id: string; expires_at: string }>();
+  let degraded = false;
+
+  try {
+    rows = await listRecentWaitlistSignups({ limit, intent });
+    activeKeyOwners = new Set(await listActiveApiKeyOwnerEmails());
+    const ownerEmails = rows.map((row) => row.email);
+    const activePortalTokens = await listLatestActivePortalTokensForOwners(ownerEmails);
+    activePortalTokenByOwner = new Map(
+      activePortalTokens.map((token) => [token.owner_email, token]),
+    );
+  } catch {
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "waitlist", reason: "db_unavailable" },
+    });
+    degraded = true;
+  }
+
   const designPartnerCount = rows.filter(
     (r) => r.intent === "design_partner",
   ).length;
@@ -178,7 +193,12 @@ export default async function AdminWaitlistPage({ searchParams }: PageProps) {
       </div>
 
       {/* Table */}
-      {rows.length === 0 ? (
+      {degraded ? (
+        <AdminDegradedState
+          title="Waitlist"
+          description="Waitlist data temporarily unavailable."
+        />
+      ) : rows.length === 0 ? (
         <p className="text-slate-400">No signups found for this filter.</p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-white/10">

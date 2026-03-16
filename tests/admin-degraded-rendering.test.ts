@@ -133,3 +133,113 @@ describe("AdminError boundary", () => {
     expect(html).not.toContain("connect ECONNREFUSED");
   });
 });
+
+/* ═══════════ Waitlist degraded state ═══════════ */
+
+describe("Waitlist degraded rendering", () => {
+  it("renders safe degraded UI with waitlist-specific messaging", async () => {
+    const { AdminDegradedState } = await import(
+      "@/components/dashboard/admin-degraded-state"
+    );
+
+    const el = AdminDegradedState({
+      title: "Waitlist",
+      description: "Waitlist data temporarily unavailable.",
+    });
+
+    const html = JSON.stringify(el);
+    expect(html).toContain("Waitlist");
+    expect(html).toContain("temporarily unavailable");
+    expect(html).toContain("Waitlist data temporarily unavailable.");
+    expect(html).toContain("Try again shortly or verify backend connectivity.");
+
+    // Must NOT contain backend internals
+    expect(html).not.toContain("POSTGRES");
+    expect(html).not.toContain("DATABASE_URL");
+    expect(html).not.toContain("password");
+    expect(html).not.toContain("Error:");
+    expect(html).not.toContain("SELECT ");
+    expect(html).not.toContain("connection refused");
+  });
+
+  it("logs admin_page_degraded with page=waitlist metadata", () => {
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "waitlist", reason: "db_unavailable" },
+    });
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    const line = spy.mock.calls[0][0] as string;
+    expect(line).toContain("[security]");
+    expect(line).toContain("event=admin_page_degraded");
+    expect(line).toContain("page=waitlist");
+    expect(line).toContain("reason=db_unavailable");
+    expect(line).not.toContain("DATABASE_URL");
+    expect(line).not.toContain("ADMIN_DASHBOARD_KEY");
+  });
+
+  it("increments page_degraded counter for waitlist", () => {
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "waitlist", reason: "db_unavailable" },
+    });
+
+    const counters = getSecurityEventCounters();
+    expect(counters["admin_page_degraded"]).toBeGreaterThanOrEqual(1);
+  });
+});
+
+/* ═══════════ CSP degraded state ═══════════ */
+
+describe("CSP degraded rendering", () => {
+  it("renders safe degraded UI with CSP-specific messaging", async () => {
+    const { AdminDegradedState } = await import(
+      "@/components/dashboard/admin-degraded-state"
+    );
+
+    const el = AdminDegradedState({
+      title: "CSP Reports",
+      description: "CSP telemetry temporarily unavailable.",
+    });
+
+    const html = JSON.stringify(el);
+    expect(html).toContain("CSP Reports");
+    expect(html).toContain("temporarily unavailable");
+    expect(html).toContain("CSP telemetry temporarily unavailable.");
+    expect(html).toContain("Try again shortly or verify backend connectivity.");
+
+    // Must NOT contain backend internals
+    expect(html).not.toContain("POSTGRES");
+    expect(html).not.toContain("DATABASE_URL");
+    expect(html).not.toContain("password");
+    expect(html).not.toContain("Error:");
+    expect(html).not.toContain("SELECT ");
+    expect(html).not.toContain("connection refused");
+  });
+
+  it("logs admin_page_degraded with page=csp metadata", () => {
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "csp", reason: "db_unavailable" },
+    });
+
+    expect(spy).toHaveBeenCalledTimes(1);
+    const line = spy.mock.calls[0][0] as string;
+    expect(line).toContain("[security]");
+    expect(line).toContain("event=admin_page_degraded");
+    expect(line).toContain("page=csp");
+    expect(line).toContain("reason=db_unavailable");
+    expect(line).not.toContain("DATABASE_URL");
+    expect(line).not.toContain("ADMIN_DASHBOARD_KEY");
+  });
+
+  it("increments page_degraded counter for csp", () => {
+    logSecurityEvent("admin_page_degraded", {
+      meta: { page: "csp", reason: "db_unavailable" },
+    });
+
+    const counters = getSecurityEventCounters();
+    expect(counters["admin_page_degraded"]).toBeGreaterThanOrEqual(1);
+  });
+});
