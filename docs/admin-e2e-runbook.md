@@ -529,6 +529,59 @@ aggregate total but silently excluded from the per-route breakdown.
 
 ---
 
+## Public route abuse telemetry
+
+### What is shown
+
+The authenticated admin metrics page (`/admin/metrics`) includes a
+**Public Route Abuse Controls** section in the degraded-telemetry panel.
+This surfaces aggregate counts of public endpoint throttles triggered by
+per-IP rate limiters on the public demo, verify, status, and metrics
+routes.
+
+### Where operators can see it
+
+- **UI**: `/admin/metrics` → "Public Route Abuse Controls" panel
+- **API**: `GET /api/admin/security` → `public_route_rate_limited_total`
+  and `public_route_rate_limited_by_route` fields (authenticated only)
+
+### Telemetry fields
+
+| Field | Description |
+|---|---|
+| `public_route_rate_limited_total` | Aggregate count of all public-route rate-limit rejections |
+| `public_route_rate_limited_by_route` | Per-route breakdown (allowlisted labels only) |
+
+### Safe route labels
+
+Only the following static labels appear in the per-route breakdown:
+
+- `verify-receipt`
+- `verify-receipt-signature`
+- `public-metrics`
+- `public-receipts`
+- `demo-policy`
+- `metrics/public-summary`
+- `receipt-signing-key`
+- `status`
+
+Any rate-limited event with an unknown route label is counted in the
+aggregate total but silently excluded from the per-route breakdown.
+
+### Design notes
+
+- **Aggregate-only**: No IPs, tokens, cookies, stack traces, SQL,
+  DSNs, or raw backend error messages are exposed.
+- **Process-local**: Counters are in-memory and reset on deploy or
+  cold start. They are not persisted.
+- **Fail-closed**: The `/api/admin/security` endpoint requires a valid
+  admin session. Unauthenticated requests receive a generic 404.
+- **UI behavior**: The panel shows green when zero throttles are
+  detected and amber when non-zero, consistent with other stability
+  sections.
+
+---
+
 ## Public demo/verify route hardening
 
 ### Audited routes

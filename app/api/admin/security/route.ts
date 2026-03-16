@@ -17,6 +17,7 @@ import {
   getAdminActionDegradedCounts,
   getAdminApiDegradedCounts,
   getAgentRouteRateLimitedCounts,
+  getPublicRouteRateLimitedCounts,
 } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +39,7 @@ export const GET = withAdminApiAuth(async () => {
     const degradedByAction = getAdminActionDegradedCounts();
     const degradedByRoute = getAdminApiDegradedCounts();
     const agentRateLimitedByRoute = getAgentRouteRateLimitedCounts();
+    const publicRateLimitedByRoute = getPublicRouteRateLimitedCounts();
 
     return NextResponse.json({
       uptime_seconds: Math.floor((Date.now() - startedAt) / 1000),
@@ -52,6 +54,8 @@ export const GET = withAdminApiAuth(async () => {
       admin_api_degraded_by_route: degradedByRoute,
       agent_route_rate_limited_total: counters["agent_route_rate_limited"] ?? 0,
       agent_route_rate_limited_by_route: agentRateLimitedByRoute,
+      public_route_rate_limited_total: counters["public_route_rate_limited"] ?? 0,
+      public_route_rate_limited_by_route: publicRateLimitedByRoute,
     });
   } catch {
     return NextResponse.json(
