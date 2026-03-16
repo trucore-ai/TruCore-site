@@ -4,6 +4,8 @@ import {
   recordLoginFailure,
   clearLoginFailures,
   _resetThrottleStore,
+  _advanceTime,
+  _getTimeOffset,
 } from "./login-throttle";
 
 describe("login-throttle", () => {
@@ -86,5 +88,47 @@ describe("login-throttle", () => {
     // Both undefined and "unknown" map to the same key
     expect(checkLoginThrottle(undefined)).toBeGreaterThan(0);
     expect(checkLoginThrottle("unknown")).toBeGreaterThan(0);
+  });
+
+  /* ── _advanceTime / _getTimeOffset deterministic clock tests ── */
+
+  describe("_advanceTime / _getTimeOffset", () => {
+    it("offset starts at 0", () => {
+      expect(_getTimeOffset()).toBe(0);
+    });
+
+    it("_advanceTime increments the offset", () => {
+      _advanceTime(5000);
+      expect(_getTimeOffset()).toBe(5000);
+      _advanceTime(3000);
+      expect(_getTimeOffset()).toBe(8000);
+    });
+
+    it("_resetThrottleStore resets offset to 0", () => {
+      _advanceTime(10_000);
+      expect(_getTimeOffset()).toBe(10_000);
+      _resetThrottleStore();
+      expect(_getTimeOffset()).toBe(0);
+    });
+
+    it("cooldown expires via _advanceTime instead of Date mock", () => {
+      for (let i = 0; i < 5; i++) {
+        recordLoginFailure("10.0.0.1");
+      }
+      expect(checkLoginThrottle("10.0.0.1")).toBeGreaterThan(0);
+
+      // Advance past 15-minute cooldown
+      _advanceTime(15 * 60 * 1000 + 1);
+      expect(checkLoginThrottle("10.0.0.1")).toBe(0);
+    });
+
+    it("cooldown still active if advance is insufficient", () => {
+      for (let i = 0; i < 5; i++) {
+        recordLoginFailure("10.0.0.1");
+      }
+      // Advance only 10 minutes — not enough
+      _advanceTime(10 * 60 * 1000);
+      expect(checkLoginThrottle("10.0.0.1")).toBeGreaterThan(0);
+    });
   });
 });

@@ -29,15 +29,40 @@ interface LoginRecord {
 
 const store = new Map<string, LoginRecord>();
 
+/**
+ * Test-only time offset (ms) added to Date.now().
+ * Always 0 in production — only mutated by _advanceTime / _resetThrottleStore.
+ */
+let _timeOffset = 0;
+
+/** Internal clock — uses real time + test offset. */
+function _now(): number {
+  return Date.now() + _timeOffset;
+}
+
 /** Derive a stable key from a raw IP. */
 function ipKey(rawIp: string | undefined): string {
   if (!rawIp || rawIp === "unknown") return "unknown";
   return sha256(rawIp).slice(0, 16);
 }
 
-/** Exposed for tests only — clear all throttle state. */
+/** Exposed for tests only — clear all throttle state and reset clock offset. */
 export function _resetThrottleStore(): void {
   store.clear();
+  _timeOffset = 0;
+}
+
+/**
+ * Advance the internal test clock by `ms` milliseconds.
+ * Only meaningful in test — production never calls this.
+ */
+export function _advanceTime(ms: number): void {
+  _timeOffset += ms;
+}
+
+/** Return the current test clock offset (ms). Exposed for diagnostics. */
+export function _getTimeOffset(): number {
+  return _timeOffset;
 }
 
 /**
@@ -49,7 +74,7 @@ export function checkLoginThrottle(rawIp: string | undefined): number {
   const record = store.get(key);
   if (!record) return 0;
 
-  const now = Date.now();
+  const now = _now();
 
   if (record.lockedUntil && now < record.lockedUntil) {
     return Math.ceil((record.lockedUntil - now) / 1000);
@@ -70,7 +95,7 @@ export function checkLoginThrottle(rawIp: string | undefined): number {
  */
 export function recordLoginFailure(rawIp: string | undefined): number {
   const key = ipKey(rawIp);
-  const now = Date.now();
+  const now = _now();
   let record = store.get(key);
 
   if (!record) {
