@@ -18,6 +18,8 @@ interface DegradedTelemetry {
   admin_page_degraded_by_page: Record<string, number>;
   admin_action_degraded_total: number;
   admin_action_degraded_by_action: Record<string, number>;
+  admin_api_degraded_total: number;
+  admin_api_degraded_by_route: Record<string, number>;
 }
 
 export function AdminDegradedTelemetry() {
@@ -46,6 +48,10 @@ export function AdminDegradedTelemetry() {
               json.admin_action_degraded_total ?? 0,
             admin_action_degraded_by_action:
               json.admin_action_degraded_by_action ?? {},
+            admin_api_degraded_total:
+              json.admin_api_degraded_total ?? 0,
+            admin_api_degraded_by_route:
+              json.admin_api_degraded_by_route ?? {},
           });
         }
       } catch {
@@ -90,7 +96,14 @@ export function AdminDegradedTelemetry() {
   );
   const hasActionAny = actionTotal > 0;
 
-  const hasAnyDegraded = hasAny || hasActionAny;
+  const apiTotal = data.admin_api_degraded_total;
+  const byRoute = data.admin_api_degraded_by_route;
+  const routeEntries = Object.entries(byRoute).sort(
+    ([, a], [, b]) => b - a,
+  );
+  const hasApiAny = apiTotal > 0;
+
+  const hasAnyDegraded = hasAny || hasActionAny || hasApiAny;
 
   return (
     <div
@@ -198,6 +211,61 @@ export function AdminDegradedTelemetry() {
                   className="rounded border border-white/10 bg-neutral-900/60 px-3 py-2"
                 >
                   <p className="text-xs text-slate-400">{action}</p>
+                  <p className="text-sm font-semibold text-slate-100">
+                    {count}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Admin API Stability ── */}
+      <div className="mt-5 border-t border-white/10 pt-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+          Admin API Stability
+        </h2>
+
+        <div className="mt-3 flex items-center gap-3">
+          <span
+            data-testid="api-degraded-total"
+            className={`text-2xl font-bold ${
+              hasApiAny ? "text-amber-300" : "text-slate-100"
+            }`}
+          >
+            {apiTotal}
+          </span>
+          <span className="text-xs text-slate-400">
+            degraded admin API calls (process lifetime)
+          </span>
+        </div>
+
+        {hasApiAny && (
+          <p className="mt-2 text-xs text-amber-400/80">
+            Temporary control-plane API instability detected — backend API
+            failures handled safely.
+          </p>
+        )}
+
+        {!hasApiAny && (
+          <p className="mt-2 text-xs text-emerald-400/70">
+            No degraded admin API calls detected.
+          </p>
+        )}
+
+        {routeEntries.length > 0 && (
+          <div className="mt-3">
+            <p className="mb-1 text-[10px] uppercase tracking-wider text-slate-500">
+              By route
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+              {routeEntries.map(([route, count]) => (
+                <div
+                  key={route}
+                  className="rounded border border-white/10 bg-neutral-900/60 px-3 py-2"
+                >
+                  <p className="text-xs text-slate-400">{route}</p>
                   <p className="text-sm font-semibold text-slate-100">
                     {count}
                   </p>

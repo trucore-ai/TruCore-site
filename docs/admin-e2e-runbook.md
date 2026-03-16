@@ -297,6 +297,72 @@ Unknown action names are silently ignored.
 
 ---
 
+## Degraded admin API telemetry
+
+### What it shows
+
+When an authenticated admin API route (key management, portal tokens,
+dashboard refresh, agent routes) experiences a backend failure, the
+control path logs an `admin_api_degraded` security event with a safe
+route label.
+
+Operators can see these events through the authenticated admin UI:
+
+- **Admin Metrics page** (`/admin/metrics`) — an "Admin API Stability"
+  section shows the aggregate degraded API call count and an optional
+  per-route breakdown.
+- **Admin security API** (`/api/admin/security`) — the JSON payload
+  includes `admin_api_degraded_total` and
+  `admin_api_degraded_by_route`.
+
+### What is exposed
+
+| Field | Description |
+|---|---|
+| `admin_api_degraded_total` | Total degraded admin API calls across all routes (process lifetime) |
+| `admin_api_degraded_by_route` | Object mapping safe route label → count (e.g. `{ "keys/create": 2, "agent/dashboard": 1 }`) |
+
+### Allowed route labels
+
+Only the following static labels are tracked in the per-route breakdown.
+Unknown route names are silently ignored.
+
+- `keys/create`
+- `keys/revoke`
+- `keys/issue-for-partner`
+- `portal/token/create`
+- `portal/token/revoke`
+- `dashboard/refresh`
+- `dashboard/tenant`
+- `admin/security`
+- `agent/dashboard`
+- `agent/tenant`
+
+### UI behavior
+
+- **Green** (zero failures): "No degraded admin API calls detected."
+- **Amber** (non-zero): "Temporary control-plane API instability
+  detected — backend API failures handled safely." with per-route
+  breakdown grid.
+
+### Safety guarantees
+
+- Only aggregate numeric counts — no raw errors, stack traces, IPs, SQL,
+  DSNs, cookies, or tokens.
+- Route labels are restricted to a static allowlist. Unknown values are
+  silently dropped.
+- The telemetry API remains gated by `withAdminApiAuth` —
+  unauthenticated requests receive a generic 404.
+- The UI panel is a client component that fetches from the authenticated
+  API — it inherits the same session protection.
+
+### Process-local limitations
+
+- Same as page-render telemetry: in-memory, process-local, resets on
+  deploy/restart. Use Prometheus + aggregation for cross-instance views.
+
+---
+
 ## Waitlist fallback storage (CI / local dev)
 
 ### Problem
