@@ -14,7 +14,7 @@ export function CsvExportButton() {
       const result = await exportDesignPartnersCsv(fd);
 
       if ("error" in result) {
-        setError(result.error ?? "Unknown error");
+        setError("Export temporarily unavailable.");
         return;
       }
 
