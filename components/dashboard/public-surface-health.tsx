@@ -2,17 +2,17 @@
  *  PublicSurfaceHealth — compact operator panel summarising
  *  the hardened public perimeter in one place.
  *
- *  Fetches aggregate rate-limit counters from the authenticated
- *  /api/admin/security endpoint and renders a single summary card.
+ *  Receives aggregate rate-limit counters from the shared
+ *  useAdminSecurityTelemetry hook and renders a single summary card.
  *
  *  - No secrets, IPs, stack traces, or raw backend errors displayed.
  *  - Aggregate counts only, derived from process-local in-memory state.
- *  - Fails gracefully if the telemetry endpoint is unreachable.
+ *  - Fails gracefully if the telemetry data is unavailable.
  * ──────────────────────────────────────────────────────────── */
 
 "use client";
 
-import { useEffect, useState } from "react";
+import type { AdminSecurityData } from "./use-admin-security-telemetry";
 
 interface SurfaceData {
   public_route_rate_limited_total: number;
@@ -29,47 +29,25 @@ function deriveStatus(d: SurfaceData): PerimeterStatus {
     : "healthy";
 }
 
-export function PublicSurfaceHealth() {
-  const [data, setData] = useState<SurfaceData | null>(null);
-  const [error, setError] = useState(false);
+interface PublicSurfaceHealthProps {
+  data: AdminSecurityData | null;
+  loading: boolean;
+  error: boolean;
+}
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const res = await fetch("/api/admin/security", {
-          credentials: "same-origin",
-        });
-        if (!res.ok) {
-          setError(true);
-          return;
-        }
-        const json = await res.json();
-        if (!cancelled) {
-          setData({
-            public_route_rate_limited_total:
-              json.public_route_rate_limited_total ?? 0,
-            public_route_rate_limited_by_route:
-              json.public_route_rate_limited_by_route ?? {},
-            agent_route_rate_limited_total:
-              json.agent_route_rate_limited_total ?? 0,
-            agent_route_rate_limited_by_route:
-              json.agent_route_rate_limited_by_route ?? {},
-          });
-        }
-      } catch {
-        if (!cancelled) setError(true);
+export function PublicSurfaceHealth({ data: raw, loading, error }: PublicSurfaceHealthProps) {
+  const data: SurfaceData | null = raw
+    ? {
+        public_route_rate_limited_total: raw.public_route_rate_limited_total,
+        public_route_rate_limited_by_route: raw.public_route_rate_limited_by_route,
+        agent_route_rate_limited_total: raw.agent_route_rate_limited_total,
+        agent_route_rate_limited_by_route: raw.agent_route_rate_limited_by_route,
       }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    : null;
 
   /* ── loading / error states ── */
 
-  if (error) {
+  if (error && !data) {
     return (
       <div
         data-testid="public-surface-health"
@@ -82,13 +60,26 @@ export function PublicSurfaceHealth() {
     );
   }
 
-  if (!data) {
+  if (loading && !data) {
     return (
       <div
         data-testid="public-surface-health"
         className="rounded-lg border border-white/10 bg-white/5 px-4 py-4"
       >
         <p className="text-xs text-slate-400">Loading public surface health…</p>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div
+        data-testid="public-surface-health"
+        className="rounded-lg border border-white/10 bg-white/5 px-4 py-4"
+      >
+        <p className="text-xs text-slate-400">
+          Public surface health unavailable.
+        </p>
       </div>
     );
   }
