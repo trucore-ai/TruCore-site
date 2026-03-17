@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ensureCspReportsTable, getSQL } from "@/lib/db";
 import { sha256 } from "@/lib/hash";
-import { assertRateLimit } from "@/lib/rate-limit";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 /**
  * CSP violation report collector.
@@ -59,12 +59,17 @@ export async function POST(request: NextRequest) {
   const ip = forwarded?.split(",")[0]?.trim() ?? "unknown";
   const ipKey = `csp:${sha256(ip)}`;
 
-  try {
-    assertRateLimit(ipKey, { max: 30, windowMs: 60_000 });
-  } catch {
+  const rl = consumeRateLimit(ipKey, { max: 30, windowMs: 60_000 });
+  if (rl.exceeded) {
     return NextResponse.json(
       { ok: false, error: "rate_limited" },
-      { status: 429, headers: { "Cache-Control": "no-store" } },
+      {
+        status: 429,
+        headers: {
+          "Cache-Control": "no-store",
+          "Retry-After": String(Math.max(1, rl.resetEpochSeconds - Math.floor(Date.now() / 1000))),
+        },
+      },
     );
   }
 

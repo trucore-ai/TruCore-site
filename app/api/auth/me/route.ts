@@ -9,21 +9,24 @@ import { getFeedbackUserById } from "@/lib/feedback-db";
 export async function GET() {
   const userId = await getSessionUserId();
   if (!userId) {
-    return NextResponse.json({ user: null });
+    return NextResponse.json({ user: null }, { headers: { "Cache-Control": "no-store" } });
   }
 
   const user = await getFeedbackUserById(userId);
   if (!user) {
-    return NextResponse.json({ user: null });
+    return NextResponse.json({ user: null }, { headers: { "Cache-Control": "no-store" } });
   }
 
-  return NextResponse.json({
-    user: {
-      id: user.id,
-      username: user.username,
-      display_name: user.display_name,
-      avatar_url: user.avatar_url,
-      is_admin: user.is_admin,
+  return NextResponse.json(
+    {
+      user: {
+        id: user.id,
+        username: user.username,
+        display_name: user.display_name,
+        avatar_url: user.avatar_url,
+        is_admin: user.is_admin,
+      },
     },
-  });
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }

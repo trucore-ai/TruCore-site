@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isReceiptHashFormatValid } from "@/lib/receipt-verification";
 import { signReceiptHash } from "@/lib/receipt-signature";
-import { assertRateLimit } from "@/lib/rate-limit";
+import { consumeRateLimit } from "@/lib/rate-limit";
 import { sha256 } from "@/lib/hash";
+import { logSecurityEvent } from "@/lib/security-log";
 
 export const runtime = "nodejs";
 
@@ -21,9 +22,14 @@ function getRequestIp(request: NextRequest): string {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    assertRateLimit(`receipt-signature:${sha256(getRequestIp(request))}`, { max: 30, windowMs: 60_000 });
-  } catch {
+  const ip = getRequestIp(request);
+  const rl = consumeRateLimit(`receipt-signature:${sha256(ip)}`, { max: 30, windowMs: 60_000 });
+
+  if (rl.exceeded) {
+    logSecurityEvent("public_route_rate_limited", {
+      ip,
+      meta: { route: "receipt-signature" },
+    });
     return NextResponse.json(
       {
         ok: false,
@@ -31,7 +37,10 @@ export async function POST(request: NextRequest) {
       },
       {
         status: 429,
-        headers: NO_STORE_HEADERS,
+        headers: {
+          ...NO_STORE_HEADERS,
+          "Retry-After": String(Math.max(1, rl.resetEpochSeconds - Math.floor(Date.now() / 1000))),
+        },
       },
     );
   }
