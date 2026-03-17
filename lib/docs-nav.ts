@@ -64,6 +64,12 @@ export const sections: DocsNavSection[] = [
           "See how AI agents call ATF before execution and consume deterministic decisions with receipt hashes.",
       },
       {
+        title: "Latency-Positive ATF",
+        href: "/docs/latency-positive-atf",
+        description:
+          "How ATF evolves into a latency-positive execution layer — making protected bots faster, not slower.",
+      },
+      {
         title: "Perps Enforcement",
         href: "/docs/perps",
         description:

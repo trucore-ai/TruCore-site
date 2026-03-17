@@ -293,8 +293,68 @@ export const AdoptionFunnelSchema = z.object({
   tenant_snapshots: z.array(TenantActivationSnapshotSchema),
 });
 
+// ── Latency metrics schemas ──────────────────────────────────
+//
+// Validated shape for /v1/metrics/latency.
+// Covers overall percentiles, per-mode breakdown, and cache
+// effectiveness indicators.
+
+export const PercentileSchema = z.object({
+  p50: z.number(),
+  p95: z.number(),
+  p99: z.number(),
+});
+
+export const LatencyOverallSchema = z
+  .object({
+    total_ms: PercentileSchema,
+    policy_eval_ms: PercentileSchema,
+    rpc_total_time_ms: PercentileSchema,
+    cache_lookup_ms: PercentileSchema.optional(),
+    eval_cache_lookup_ms: PercentileSchema.optional(),
+    parallel_read_group_ms: PercentileSchema.optional(),
+    policy_package_build_ms: PercentileSchema.optional(),
+    policy_package_validate_ms: PercentileSchema.optional(),
+  })
+  .passthrough();
+
+export const LatencyModeBreakdownSchema = z
+  .object({
+    observation_count: z.number(),
+    total_ms: PercentileSchema,
+    cache_hits: z.number(),
+    eval_cache_hits: z.number(),
+    turbo_fast_path_hits: z.number(),
+  })
+  .passthrough();
+
+export const LatencyCacheSummarySchema = z
+  .object({
+    cache_hits: z.number(),
+    cache_misses: z.number(),
+    eval_cache_hits: z.number(),
+    turbo_fast_path_hits: z.number(),
+    rpc_calls_avg: z.number().optional(),
+  })
+  .passthrough();
+
+export const LatencyMetricsSchema = z
+  .object({
+    observation_count: z.number(),
+    window: z.string().optional(),
+    overall: LatencyOverallSchema,
+    by_mode: z.record(LatencyModeBreakdownSchema).optional(),
+    cache_summary: LatencyCacheSummarySchema.optional(),
+  })
+  .passthrough();
+
 // ── Types ────────────────────────────────────────────────────
 
+export type Percentile = z.infer<typeof PercentileSchema>;
+export type LatencyOverall = z.infer<typeof LatencyOverallSchema>;
+export type LatencyModeBreakdown = z.infer<typeof LatencyModeBreakdownSchema>;
+export type LatencyCacheSummary = z.infer<typeof LatencyCacheSummarySchema>;
+export type LatencyMetrics = z.infer<typeof LatencyMetricsSchema>;
 export type SystemHealth = z.infer<typeof SystemHealthSchema>;
 export type KpiSummary = z.infer<typeof KpiSummarySchema>;
 export type EnforcementOverview = z.infer<typeof EnforcementOverviewSchema>;
@@ -398,6 +458,10 @@ export function fetchDashboardSummary(): Promise<
 
 export function fetchAdoption(): Promise<DashboardResult<AdoptionFunnel>> {
   return dashboardFetch("/dashboard/adoption", AdoptionFunnelSchema);
+}
+
+export function fetchLatencyMetrics(): Promise<DashboardResult<LatencyMetrics>> {
+  return dashboardFetch("/v1/metrics/latency", LatencyMetricsSchema);
 }
 
 // ── Consolidated dashboard bundle ────────────────────────────
