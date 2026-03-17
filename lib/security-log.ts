@@ -211,9 +211,11 @@ const KNOWN_PUBLIC_ROUTES = new Set([
   "public-metrics",
   "public-receipts",
   "demo-policy",
+  "demo-live",
   "metrics/public-summary",
   "receipt-signing-key",
   "status",
+  "health",
 ]);
 
 /**

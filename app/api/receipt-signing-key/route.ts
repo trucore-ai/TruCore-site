@@ -43,18 +43,26 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const publicKey = getReceiptSigningPublicKeyB64();
+  try {
+    const publicKey = getReceiptSigningPublicKeyB64();
 
-  return NextResponse.json(
-    {
-      available: Boolean(publicKey),
-      public_key: publicKey,
-      alg: "Ed25519",
-      encoding: "base64",
-    },
-    {
-      status: 200,
-      headers: NO_STORE_HEADERS,
-    },
-  );
+    return NextResponse.json(
+      {
+        ok: true,
+        available: Boolean(publicKey),
+        public_key: publicKey,
+        alg: "Ed25519",
+        encoding: "base64",
+      },
+      {
+        status: 200,
+        headers: NO_STORE_HEADERS,
+      },
+    );
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "temporarily_unavailable" },
+      { status: 503, headers: NO_STORE_HEADERS },
+    );
+  }
 }
