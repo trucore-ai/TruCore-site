@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { buildDemoLivePayload } from "@/lib/demo-live";
 import { sha256 } from "@/lib/hash";
 import { consumeRateLimit, type RateLimitResult } from "@/lib/rate-limit";
+import { logSecurityEvent } from "@/lib/security-log";
 
 const LIVE_RATE_LIMIT_MAX = 60;
 const LIVE_RATE_LIMIT_WINDOW_MS = 60_000;
+const NO_STORE_HEADERS = { "Cache-Control": "no-store" };
 
 function getRequestIp(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
@@ -30,6 +32,10 @@ export async function GET(request: NextRequest) {
   const rateLimit = getRateLimit(request);
 
   if (rateLimit.exceeded) {
+    logSecurityEvent("public_route_rate_limited", {
+      ip: getRequestIp(request),
+      meta: { route: "demo-live" },
+    });
     return NextResponse.json(
       {
         ok: false,
@@ -38,24 +44,32 @@ export async function GET(request: NextRequest) {
       {
         status: 429,
         headers: {
-          "Cache-Control": "no-store",
+          ...NO_STORE_HEADERS,
           ...rateLimitHeaders(rateLimit),
+          "Retry-After": String(Math.max(1, rateLimit.resetEpochSeconds - Math.floor(Date.now() / 1000))),
         },
       },
     );
   }
 
-  return NextResponse.json(
-    {
-      ok: true,
-      ...buildDemoLivePayload(),
-    },
-    {
-      status: 200,
-      headers: {
-        "Cache-Control": "no-store",
-        ...rateLimitHeaders(rateLimit),
+  try {
+    return NextResponse.json(
+      {
+        ok: true,
+        ...buildDemoLivePayload(),
       },
-    },
-  );
+      {
+        status: 200,
+        headers: {
+          ...NO_STORE_HEADERS,
+          ...rateLimitHeaders(rateLimit),
+        },
+      },
+    );
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "temporarily_unavailable" },
+      { status: 503, headers: NO_STORE_HEADERS },
+    );
+  }
 }

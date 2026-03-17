@@ -96,9 +96,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const data = await fetchMetrics();
+  try {
+    const data = await fetchMetrics();
 
-  return NextResponse.json(data, {
-    headers: NO_STORE_HEADERS,
-  });
+    return NextResponse.json({ ok: true, ...data }, {
+      headers: NO_STORE_HEADERS,
+    });
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "temporarily_unavailable" },
+      { status: 502, headers: NO_STORE_HEADERS },
+    );
+  }
 }

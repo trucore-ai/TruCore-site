@@ -62,14 +62,20 @@ export async function POST(request: NextRequest) {
   try {
     assertRateLimit(ipKey, { max: 30, windowMs: 60_000 });
   } catch {
-    return new NextResponse(null, { status: 429 });
+    return NextResponse.json(
+      { ok: false, error: "rate_limited" },
+      { status: 429, headers: { "Cache-Control": "no-store" } },
+    );
   }
 
   let payload: unknown;
   try {
     payload = await request.json();
   } catch {
-    return new NextResponse(null, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "invalid_json" },
+      { status: 400, headers: { "Cache-Control": "no-store" } },
+    );
   }
 
   // Reporting API may send an array of reports
@@ -89,8 +95,8 @@ export async function POST(request: NextRequest) {
         VALUES (${effectiveDirective}, ${violatedDirective}, ${disposition}, ${documentOrigin}, ${ua});
       `;
     }
-  } catch (err) {
-    console.error("[csp-report] write failed:", err);
+  } catch {
+    console.error("[csp-report] write failed");
   }
 
   return new NextResponse(null, { status: 204 });

@@ -648,3 +648,62 @@ security event log. Per-route breakdowns are available via
   with `429` status, `Retry-After` header, and `Cache-Control: no-store`.
 - **Non-breaking**: All existing response contracts preserved for
   non-throttled requests.
+
+## Public read-only route consistency audit (Prompt 59)
+
+### Scope
+
+Final sweep across all remaining public read-only routes to normalize
+response-shape, cache-header, and failure-contract outliers.
+
+### Routes normalized
+
+| Route | Change | Why |
+| --- | --- | --- |
+| `/api/health` | Switched to `consumeRateLimit` + `logSecurityEvent`; added `Retry-After` on 429 | Consistent rate-limit telemetry with peer routes |
+| `/api/status` | Switched to `consumeRateLimit` + `logSecurityEvent`; added `Retry-After` on 429; added outer try/catch | Consistent telemetry + safe failure on unexpected upstream error |
+| `/api/demo-live` | Added `logSecurityEvent` on 429; added `Retry-After` on 429; added outer try/catch | Missing telemetry; crash on payload builder would return 500 |
+| `/api/public-metrics` | Success response wrapped in `{ ok: true, ... }` envelope; added outer try/catch | Only public route returning raw data without `ok` field |
+| `/api/metrics/public-summary` | 502 error now returns `{ ok: false, error: "temporarily_unavailable" }` instead of `{ error: <upstream text> }`; added outer try/catch | Leaked upstream error details; missing `ok` field |
+| `/api/receipt-signing-key` | Success response now includes `ok: true`; added try/catch | Minor shape inconsistency with peers |
+| `/api/csp-report` | 429 and 400 now return JSON bodies `{ ok: false, error: ... }` with `Cache-Control: no-store`; sanitized `console.error` | Empty response bodies; raw error object logged |
+
+### Routes already consistent (unchanged)
+
+| Route | Notes |
+| --- | --- |
+| `/api/verify-receipt` | Already fully hardened |
+| `/api/verify-receipt-signature` | Already fully hardened |
+| `/api/demo-policy` | Static data; success shape intentionally raw policy doc |
+| `/api/public-receipts` | Already uses `{ ok: true, receipts }` |
+| `/api/receipt-signature` | Already fully hardened |
+| `/api/bot-feedback` | Already fully hardened |
+| `/api/simulate` | Already fully hardened |
+
+### Telemetry additions
+
+New routes added to `KNOWN_PUBLIC_ROUTES` in `lib/security-log.ts`:
+- `health`
+- `demo-live`
+
+### Cache-policy decisions
+
+| Route | Policy | Rationale |
+| --- | --- | --- |
+| `/api/health` | `no-store` | Live liveness check, must not be cached |
+| `/api/status` | `no-store` | Live upstream probe, must not be cached |
+| `/api/demo-live` | `no-store` | Simulated live demo data, freshness required |
+| `/api/public-metrics` | `no-store` (+ 60s in-memory cache) | DB-backed; in-memory cache prevents redundant queries |
+| `/api/metrics/public-summary` | `s-maxage=60, stale-while-revalidate=120` on success; `no-store` on failure | Edge-cached proxy; failures must not be cached |
+| `/api/receipt-signing-key` | `no-store` | Key availability may change at runtime |
+| `/api/csp-report` | `no-store` on errors | Write endpoint; errors should not be cached |
+
+### Design notes
+
+- **Minimal normalization**: Only clear outliers were fixed. Routes with
+  intentionally different contracts (e.g. `demo-policy` returning raw
+  policy data) were left unchanged.
+- **No new dependencies**: All changes use existing `consumeRateLimit`,
+  `logSecurityEvent`, and `NextResponse.json` patterns.
+- **Non-breaking**: Changes add fields (`ok: true`) or improve error
+  responses. No existing success fields were removed.
