@@ -3,6 +3,7 @@ import type { WaitlistMetricsSnapshot } from "@/lib/db";
 import { MetricsSummaryCard } from "@/components/metrics-summary-card";
 import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
 import { AdminDegradedTelemetry } from "@/components/dashboard/admin-degraded-telemetry";
+import { PublicSurfaceHealth } from "@/components/dashboard/public-surface-health";
 import { logSecurityEvent } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
@@ -75,6 +76,11 @@ export default async function AdminMetricsPage() {
             </button>
           </form>
         </div>
+      </div>
+
+      {/* Public Surface Health — operator perimeter summary */}
+      <div className="mb-6">
+        <PublicSurfaceHealth />
       </div>
 
       {/* Degraded-page telemetry — operator observability */}
