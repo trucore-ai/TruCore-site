@@ -2,8 +2,7 @@ import { headers } from "next/headers";
 import type { WaitlistMetricsSnapshot } from "@/lib/db";
 import { MetricsSummaryCard } from "@/components/metrics-summary-card";
 import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
-import { AdminDegradedTelemetry } from "@/components/dashboard/admin-degraded-telemetry";
-import { PublicSurfaceHealth } from "@/components/dashboard/public-surface-health";
+import { AdminTelemetrySection } from "@/components/dashboard/admin-telemetry-section";
 import { logSecurityEvent } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
@@ -78,15 +77,8 @@ export default async function AdminMetricsPage() {
         </div>
       </div>
 
-      {/* Public Surface Health — operator perimeter summary */}
-      <div className="mb-6">
-        <PublicSurfaceHealth />
-      </div>
-
-      {/* Degraded-page telemetry — operator observability */}
-      <div className="mb-6">
-        <AdminDegradedTelemetry />
-      </div>
+      {/* Security Telemetry — shared data, auto-refresh, manual refresh */}
+      <AdminTelemetrySection />
 
       {!metrics ? (
         <AdminDegradedState
