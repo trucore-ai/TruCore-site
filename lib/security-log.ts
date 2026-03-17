@@ -213,6 +213,7 @@ const KNOWN_PUBLIC_ROUTES = new Set([
   "demo-policy",
   "demo-live",
   "metrics/public-summary",
+  "receipt-signature",
   "receipt-signing-key",
   "status",
   "health",
