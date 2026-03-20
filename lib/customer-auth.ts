@@ -117,3 +117,75 @@ export async function fetchDashboard(): Promise<Record<string, unknown>> {
 
   return res.json();
 }
+
+// ---------------------------------------------------------------------------
+// Onboarding — first protected trade flow
+// ---------------------------------------------------------------------------
+
+export async function fetchSampleIntent(): Promise<Record<string, unknown>> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${ATF_API_BASE}/onboarding/sample-intent`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) throw new Error("Failed to fetch sample intent");
+
+  return res.json();
+}
+
+export async function simulateProtection(
+  intent: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${ATF_API_BASE}/onboarding/protect-dry-run`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(intent),
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) throw new Error("Protection simulation failed");
+
+  return res.json();
+}
+
+export async function executeSample(
+  intent: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${ATF_API_BASE}/onboarding/execute-sample`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(intent),
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) throw new Error("Sample execution failed");
+
+  return res.json();
+}

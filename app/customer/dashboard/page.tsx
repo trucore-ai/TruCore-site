@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -8,6 +8,9 @@ import {
   getApiKey,
   fetchDashboard,
   clearAuth,
+  fetchSampleIntent,
+  simulateProtection,
+  executeSample,
 } from "@/lib/customer-auth";
 
 interface DashboardData {
@@ -28,6 +31,15 @@ export default function CustomerDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+
+  // Onboarding state
+  const [obStep, setObStep] = useState<0 | 1 | 2 | 3 | 4>(0);
+  const [obLoading, setObLoading] = useState(false);
+  const [obIntent, setObIntent] = useState<Record<string, unknown> | null>(null);
+  const [obDryRun, setObDryRun] = useState<Record<string, unknown> | null>(null);
+  const [obReceipt, setObReceipt] = useState<Record<string, unknown> | null>(null);
+  const [obError, setObError] = useState("");
+  const [receiptCopied, setReceiptCopied] = useState(false);
 
   // API key from signup (only available once)
   const savedApiKey = typeof window !== "undefined" ? getApiKey() : null;
@@ -59,6 +71,59 @@ export default function CustomerDashboardPage() {
   function handleLogout() {
     clearAuth();
     router.push("/login");
+  }
+
+  // --- Onboarding handlers ---
+
+  const handleGenerateSample = useCallback(async () => {
+    setObLoading(true);
+    setObError("");
+    try {
+      const res = await fetchSampleIntent();
+      setObIntent(res.intent as Record<string, unknown>);
+      setObStep(1);
+    } catch (e) {
+      setObError(e instanceof Error ? e.message : "Failed to generate sample");
+    } finally {
+      setObLoading(false);
+    }
+  }, []);
+
+  const handleSimulate = useCallback(async () => {
+    if (!obIntent) return;
+    setObLoading(true);
+    setObError("");
+    try {
+      const res = await simulateProtection(obIntent);
+      setObDryRun(res);
+      setObStep(2);
+    } catch (e) {
+      setObError(e instanceof Error ? e.message : "Simulation failed");
+    } finally {
+      setObLoading(false);
+    }
+  }, [obIntent]);
+
+  const handleExecute = useCallback(async () => {
+    if (!obIntent) return;
+    setObLoading(true);
+    setObError("");
+    try {
+      const res = await executeSample(obIntent);
+      setObReceipt(res);
+      setObStep(3);
+    } catch (e) {
+      setObError(e instanceof Error ? e.message : "Execution failed");
+    } finally {
+      setObLoading(false);
+    }
+  }, [obIntent]);
+
+  function handleCopyReceipt() {
+    if (!obReceipt) return;
+    navigator.clipboard.writeText(JSON.stringify(obReceipt, null, 2));
+    setReceiptCopied(true);
+    setTimeout(() => setReceiptCopied(false), 2000);
   }
 
   if (typeof window !== "undefined" && !isLoggedIn()) return null;
@@ -211,21 +276,179 @@ export default function CustomerDashboardPage() {
           </section>
         )}
 
-        {/* CTA */}
-        <section className="rounded-xl border border-accent-400/20 bg-accent-500/5 p-6 text-center">
-          <h2 className="text-lg font-semibold text-slate-100">
-            Run your first protected trade
-          </h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Use your API key to submit an intent to the ATF and get a
-            cryptographic permit.
-          </p>
-          <Link
-            href="/quickstart"
-            className="mt-4 inline-block rounded-lg bg-accent-500 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-accent-400"
-          >
-            View quickstart guide
-          </Link>
+        {/* First Protected Trade — Onboarding Flow */}
+        <section className="rounded-xl border border-accent-400/20 bg-accent-500/5 p-6 space-y-5">
+          <div className="text-center">
+            <h2 className="text-lg font-semibold text-slate-100">
+              \uD83D\uDE80 Run Your First Protected Trade
+            </h2>
+            <p className="mt-1 text-sm text-slate-400">
+              Experience ATF protection in 3 clicks — no code required.
+            </p>
+          </div>
+
+          {obError && (
+            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              {obError}
+            </div>
+          )}
+
+          {/* Step indicators */}
+          <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+            {["Generate", "Simulate", "Execute", "Receipt"].map((label, i) => (
+              <div key={label} className="flex items-center gap-2">
+                <span
+                  className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                    obStep > i
+                      ? "bg-emerald-500/20 text-emerald-300"
+                      : obStep === i
+                        ? "bg-accent-500/30 text-accent-300"
+                        : "bg-white/5 text-slate-500"
+                  }`}
+                >
+                  {obStep > i ? "\u2713" : i + 1}
+                </span>
+                <span className={obStep >= i ? "text-slate-300" : ""}>
+                  {label}
+                </span>
+                {i < 3 && (
+                  <span className="mx-1 text-slate-600">\u2014</span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Step 1: Generate */}
+          {obStep === 0 && (
+            <div className="text-center">
+              <button
+                onClick={handleGenerateSample}
+                disabled={obLoading}
+                className="rounded-lg bg-accent-500 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-accent-400 disabled:opacity-50"
+              >
+                {obLoading ? "Generating\u2026" : "Generate Sample Trade"}
+              </button>
+            </div>
+          )}
+
+          {/* Step 1 result: show intent */}
+          {obStep >= 1 && obIntent && (
+            <div className="rounded-lg border border-white/10 bg-neutral-900 p-4">
+              <h3 className="text-xs font-medium text-slate-400 mb-2">
+                Sample Intent
+              </h3>
+              <pre className="overflow-x-auto text-xs text-slate-200 font-mono">
+                {JSON.stringify(obIntent, null, 2)}
+              </pre>
+            </div>
+          )}
+
+          {/* Step 2: Simulate */}
+          {obStep === 1 && (
+            <div className="text-center">
+              <button
+                onClick={handleSimulate}
+                disabled={obLoading}
+                className="rounded-lg bg-accent-500 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-accent-400 disabled:opacity-50"
+              >
+                {obLoading ? "Simulating\u2026" : "Simulate Protection"}
+              </button>
+            </div>
+          )}
+
+          {/* Step 2 result: policy breakdown */}
+          {obStep >= 2 && obDryRun && (
+            <div className="rounded-lg border border-white/10 bg-neutral-900 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-medium text-slate-400">
+                  Policy Evaluation
+                </h3>
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                    (obDryRun as Record<string, unknown>).decision === "ALLOW"
+                      ? "bg-emerald-500/20 text-emerald-300"
+                      : "bg-red-500/20 text-red-300"
+                  }`}
+                >
+                  {(obDryRun as Record<string, unknown>).decision as string}
+                </span>
+              </div>
+              <div className="space-y-1">
+                {((obDryRun as Record<string, unknown>).policy_breakdown as Array<{
+                  policy: string;
+                  result: string;
+                  reason: string;
+                }>)?.map((p) => (
+                  <div
+                    key={p.policy}
+                    className="flex items-center justify-between text-xs"
+                  >
+                    <span className="text-slate-300 font-mono">
+                      {p.policy}
+                    </span>
+                    <span
+                      className={
+                        p.result === "PASS"
+                          ? "text-emerald-400"
+                          : "text-red-400"
+                      }
+                    >
+                      {p.result}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500 italic">
+                Protected by ATF &middot; Dry run (no on-chain transaction)
+              </p>
+            </div>
+          )}
+
+          {/* Step 3: Execute */}
+          {obStep === 2 && (
+            <div className="text-center">
+              <button
+                onClick={handleExecute}
+                disabled={obLoading}
+                className="rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:opacity-50"
+              >
+                {obLoading ? "Executing\u2026" : "Execute Sample Trade"}
+              </button>
+            </div>
+          )}
+
+          {/* Step 3 result: receipt */}
+          {obStep >= 3 && obReceipt && (
+            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-medium text-emerald-300">
+                  \u2705 Trade Receipt
+                </h3>
+                <button
+                  onClick={handleCopyReceipt}
+                  className="rounded-md border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10"
+                >
+                  {receiptCopied ? "Copied!" : "Copy JSON"}
+                </button>
+              </div>
+              <pre className="overflow-x-auto rounded-lg bg-neutral-900 p-3 text-xs text-slate-200 font-mono">
+                {JSON.stringify(obReceipt, null, 2)}
+              </pre>
+              <p className="text-xs text-slate-500 italic">
+                Protected by ATF &middot; Your first trade is complete!
+              </p>
+            </div>
+          )}
+
+          {/* Quickstart link fallback */}
+          <div className="text-center">
+            <Link
+              href="/quickstart"
+              className="text-xs text-slate-500 underline hover:text-slate-300"
+            >
+              Or follow the full quickstart guide
+            </Link>
+          </div>
         </section>
       </div>
     </main>
