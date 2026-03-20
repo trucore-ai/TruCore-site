@@ -40,9 +40,17 @@ const cliVersion = getAtfCliVersion();
 /* ── Toolbox command groups ── */
 const toolboxGroups = [
   {
+    title: "Golden Path",
+    commands: [
+      { name: "trade", desc: "Run a protected trade (demo mode when unconfigured)" },
+      { name: "setup", desc: "Interactive API key and config setup" },
+      { name: "doctor", desc: "Full environment health check" },
+      { name: "verify", desc: "Verify and share a receipt" },
+    ],
+  },
+  {
     title: "Environment",
     commands: [
-      { name: "doctor", desc: "Full environment health check" },
       { name: "whoami", desc: "Show active profile and pubkey" },
       { name: "ls", desc: "List all configured profiles" },
       { name: "completion", desc: "Generate shell completions (bash/zsh/fish)" },
@@ -119,10 +127,9 @@ export default function ATFPage() {
               Agent Transaction Firewall
             </h1>
             <p className="mt-6 max-w-3xl text-xl leading-[1.6] text-slate-200">
-              ATF is a non-custodial developer platform for building and operating
-              transactional bots and AI agents on Solana. Comprehensive CLI tooling,
-              public API, native agent tools, profiles, Helius-first RPC, devnet
-              burner mode, and cryptographically verifiable receipts.
+              Run a protected trade in one command. Set up without .env friction.
+              Diagnose instantly. Verify and share receipts. ATF ships a complete
+              product loop for both human operators and bot developers on Solana.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -188,7 +195,78 @@ export default function ATFPage() {
         </Card>
       </Section>
 
-      {/* ── 2. Run This First: doctor ── */}
+      {/* ── 2. Golden Path ── */}
+      <Section id="golden-path" divider className="fade-in-up fade-delay-1">
+        <div className="mb-8 max-w-3xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+            Start Here
+          </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            Four commands. From first trade to verified receipt.
+          </p>
+        </div>
+
+        <div className="max-w-3xl space-y-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              1. Try a protected trade
+            </p>
+            <AtfCopyCommand
+              command="atf trade"
+              testId="golden-path-trade"
+            />
+            <p className="mt-1 text-sm text-slate-400">
+              Demo mode works out of the box — no API key required.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              2. Connect your API key
+            </p>
+            <AtfCopyCommand
+              command="atf setup"
+              testId="golden-path-setup"
+            />
+            <p className="mt-1 text-sm text-slate-400">
+              Interactive setup. No manual .env editing needed.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              3. Diagnose your environment
+            </p>
+            <AtfCopyCommand
+              command="atf doctor"
+              testId="golden-path-doctor"
+            />
+            <p className="mt-1 text-sm text-slate-400">
+              Checks config, RPC, wallet, and environment in one pass.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              4. Verify and share a receipt
+            </p>
+            <AtfCopyCommand
+              command={`atf verify <receipt-id>`}
+              testId="golden-path-verify"
+            />
+            <p className="mt-1 text-sm text-slate-400">
+              Verify integrity. Share with human-readable text or bot-friendly output.
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-6 max-w-3xl text-sm text-primary-200/80">
+          Each command produces dual-surface output: clear terminal messages for
+          operators and structured JSON for automation.
+        </p>
+      </Section>
+
+      {/* ── 3. Run This First: doctor ── */}
       <Section id="doctor" divider className="fade-in-up fade-delay-1">
         <div className="mb-8 max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
@@ -414,9 +492,8 @@ export default function ATFPage() {
             Toolbox
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            A representative sample of what the CLI ships today, grouped by workflow.
-            The full CLI covers profiles, transactions, policy validation, bot
-            protection, perps enforcement, agent discovery, and more.
+            Start with trade, setup, doctor, and verify. Advanced bot and operator
+            commands are available when you need them.
           </p>
         </div>
 
@@ -439,15 +516,37 @@ export default function ATFPage() {
         </div>
       </Section>
 
-      {/* ── 7. Designed for Bots, Agents, Custodians ── */}
+      {/* ── 8. Designed for Bots, Agents, Custodians ── */}
       <Section id="designed-for" divider className="fade-in-up fade-delay-6">
         <div className="mb-8 max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
-            Designed for Production Bots, AI Agents, and Custodians
+            Great UX for Humans, Stable Contracts for Bots
           </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            Dual-surface outputs: readable in terminal, reliable in automation.
+            Built for production bots, AI agents, and custodians.
+          </p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
+          <Card>
+            <h3 className="text-lg font-bold text-accent-300">Human-Facing</h3>
+            <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-300">
+              <li>Guided protected trade UX with clear mode/status messaging</li>
+              <li>Actionable next steps after every command</li>
+              <li>Share snippets and replay commands for receipts</li>
+            </ul>
+          </Card>
+
+          <Card>
+            <h3 className="text-lg font-bold text-accent-300">Bot-Facing</h3>
+            <ul className="mt-2 space-y-1.5 text-sm leading-relaxed text-slate-300">
+              <li>Machine-readable JSON with <code className="text-primary-200/90">machine_summary</code></li>
+              <li><code className="text-primary-200/90">suggested_action</code> and <code className="text-primary-200/90">suggested_command</code> fields</li>
+              <li>Replay, share, and bot-friendly output hooks</li>
+            </ul>
+          </Card>
+
           <Card>
             <h3 className="text-lg font-bold text-accent-300">Non-Custodial</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
@@ -457,30 +556,12 @@ export default function ATFPage() {
           </Card>
 
           <Card>
-            <h3 className="text-lg font-bold text-accent-300">Profile Separation</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
-              Named profiles isolate dev, test, and production environments.
-              Different RPC endpoints, wallets, and policies per profile keep
-              concerns separated cleanly.
-            </p>
-          </Card>
-
-          <Card>
             <h3 className="text-lg font-bold text-accent-300">Deterministic Receipts</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-300">
               Every decision produces a{" "}
               <code className="text-primary-200/90">content_hash</code> computed
-              from stable JSON serialization. Re-hash the payload locally and the
-              digest matches. Full auditability, zero ambiguity.
-            </p>
-          </Card>
-
-          <Card>
-            <h3 className="text-lg font-bold text-accent-300">Safe Defaults</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
-              Fail-closed enforcement, automatic secret redaction, and explicit
-              network selection mean accidents cost nothing while you iterate. The
-              guardrails are always on.
+              from stable JSON serialization. Shareable, verifiable, and
+              reproducible. Full auditability, zero ambiguity.
             </p>
           </Card>
         </div>
@@ -507,15 +588,16 @@ export default function ATFPage() {
             Get Started
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-200">
-            Run the health check, spin up a devnet burner, and verify your first
+            Run a protected trade, connect your key, and verify your first
             receipt. Everything you need ships in the CLI.
           </p>
         </div>
 
         <div className="mx-auto mt-6 max-w-xl">
           <AtfCopyCommand
-            label="Install and run"
-            command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
+            label="Try a protected trade"
+            command="atf trade"
+            testId="footer-cta-trade"
           />
         </div>
 
@@ -559,22 +641,22 @@ export default function ATFPage() {
       <Section id="dev-quickstart" divider className="fade-in-up">
         <section className="border border-white/10 rounded-xl p-6 bg-white/5">
           <h2 className="text-lg font-semibold">
-            Try a protected trade in 30 seconds
+            Run a protected trade in one command
           </h2>
 
           <p className="text-sm text-white/70 mt-2 max-w-lg">
-            Run a swap intent through the Agent Transaction Firewall and generate
-            a verifiable execution receipt.
+            Try <code className="text-white/90">atf trade</code> to see the full
+            product loop: protect, receipt, verify. Demo mode works instantly.
           </p>
 
           <div className="mt-4 flex gap-4">
             <TrackedLink
-              href="/docs/first-protected-trade"
+              href="/quickstart"
               eventName="dev_quickstart_click"
-              eventProps={{ target: "first_protected_trade", location: "atf_dev_quickstart" }}
+              eventProps={{ target: "golden_path_quickstart", location: "atf_dev_quickstart" }}
               className="text-sm font-medium text-blue-400 hover:text-blue-300"
             >
-              Run first protected trade &rarr;
+              Golden path quickstart &rarr;
             </TrackedLink>
 
             <TrackedLink

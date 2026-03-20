@@ -77,11 +77,12 @@ export default function Home() {
               Don&apos;t let your bot blow up your wallet.
             </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
-              ATF enforces spend limits, protocol allowlists, and slippage caps on every transaction.
-              Your agents move fast without going off the rails.
+              Run a protected trade in one command. Set up in seconds.
+              Diagnose instantly. Verify and share receipts.
             </p>
             <p className="mt-3 text-base text-slate-400">
               Built for trading bot developers, AI agent builders, and DeFi protocol integrators on Solana.
+              Readable for humans, structured for agents.
             </p>
 
             {/* CTAs */}
@@ -106,6 +107,7 @@ export default function Home() {
 
             <p className="mt-6 text-base text-slate-300/80">
               Non-custodial. Helius-first RPC. Cryptographic receipts prove every enforcement decision.
+              Human-friendly UX, bot-friendly output.
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
@@ -189,6 +191,41 @@ export default function Home() {
         </p>
       </div>
 
+      {/* ── Golden Path: Try ATF in Four Commands ── */}
+      <Section divider className="fade-in-up fade-delay-1">
+        <div className="mb-8 max-w-2xl">
+          <p className="section-label mb-3">Golden Path</p>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
+            Try ATF in Four Commands
+          </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            From first trade to verified receipt. No manual config needed.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { step: "1", cmd: "atf trade", desc: "Run a protected trade. Demo mode works out of the box — no API key required." },
+            { step: "2", cmd: "atf setup", desc: "Connect your API key interactively. No .env editing needed." },
+            { step: "3", cmd: "atf doctor", desc: "Diagnose your environment. One command checks config, connectivity, and wallet." },
+            { step: "4", cmd: "atf verify", desc: "Verify and share a receipt. Human-readable share text and bot-friendly output." },
+          ].map((item) => (
+            <Tilt key={item.step} maxTilt={6}>
+              <Card className="h-full">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Step {item.step}</p>
+                <p className="mt-2 font-mono text-lg font-bold text-accent-300">{item.cmd}</p>
+                <p className="mt-2 text-base leading-[1.5] text-slate-200">{item.desc}</p>
+              </Card>
+            </Tilt>
+          ))}
+        </div>
+        <p className="mt-6 max-w-3xl text-sm text-slate-400">
+          The same run produces operator-friendly terminal output and bot-ready JSON with{" "}
+          <code className="text-slate-300">machine_summary</code>,{" "}
+          <code className="text-slate-300">suggested_action</code>, and{" "}
+          <code className="text-slate-300">suggested_command</code> fields.
+        </p>
+      </Section>
+
       {/* ── What ATF Enforces ── */}
       <Section divider className="fade-in-up fade-delay-1">
         <div className="mb-8 max-w-2xl">
@@ -236,7 +273,7 @@ export default function Home() {
           {[
             {
               title: "First Protected Trade",
-              desc: "Protect a bot intent, receive a receipt, and verify it. HTTP, Python, TypeScript, CLI, and OpenClaw paths.",
+              desc: "Run atf trade, get a receipt, verify it. One command to try — no config required. HTTP, Python, TypeScript, CLI, and OpenClaw paths also available.",
               href: "/docs/first-protected-trade",
               event: "explore_first_protected_trade_click",
             },
@@ -260,19 +297,19 @@ export default function Home() {
             },
             {
               title: "Receipts",
-              desc: "Cryptographic, tamper-evident receipts for every policy decision.",
+              desc: "Shareable, verifiable receipts for every policy decision. Human share text and bot-friendly structured output.",
               href: "/receipts",
               event: "explore_receipts_click",
             },
             {
               title: "CLI Reference",
-              desc: "Comprehensive CLI covering profiles, transactions, receipts, policy validation, bot protection, and more.",
+              desc: "Start with trade, setup, doctor, and verify. Advanced bot and operator commands available when you need them.",
               href: "/docs/cli",
               event: "explore_cli_click",
             },
             {
               title: "Agent Tooling",
-              desc: "Native agent tools, OpenClaw plugin, bootstrap recipes, and self-integration for autonomous workflows.",
+              desc: "Great UX for humans, stable contracts for bots. Dual-surface outputs: readable in terminal, reliable in automation. Native agent tools and OpenClaw plugin included.",
               href: "/docs/agent-discovery",
               event: "explore_agent_tooling_click",
             },

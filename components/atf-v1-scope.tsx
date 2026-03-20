@@ -77,17 +77,17 @@ export function AtfV1Scope() {
         <Card className="border-primary-300/25 bg-primary-500/10">
           <h3 className="text-xl font-bold text-accent-300">Platform Surface</h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            ATF is enforcement infrastructure, not just a CLI. Agents connect
-            through multiple integration points.
+            ATF is enforcement infrastructure, not just a CLI. Start with the
+            golden path, then unlock advanced capabilities.
           </p>
           <ul className="mt-3 space-y-2">
             {[
-              "52+ CLI commands across 14 groups",
+              "Golden path: trade → setup → doctor → verify",
+              "Dual-surface output: human-readable + bot-ready JSON",
               "Public API with deterministic simulation",
               "13 native agent tools across 6 contract families",
               "8 production-ready example projects",
               "6 deployable services",
-              "4 on-chain Solana programs (devnet)",
             ].map((c) => (
               <li key={c} className="flex items-start gap-2 text-base leading-[1.5] text-slate-200">
                 <span className="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary-400" />

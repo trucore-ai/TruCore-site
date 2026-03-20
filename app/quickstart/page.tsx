@@ -6,27 +6,15 @@ import { Card } from "@/components/ui/card";
 import { CopyBlock } from "@/components/copy-block";
 
 export const metadata: Metadata = {
-  title: "Quickstart — Protect Your First Transaction | TruCore",
+  title: "Quickstart — Try ATF in Four Commands | TruCore",
   description:
-    "Run a protected transaction through ATF in under 60 seconds. Copy-paste examples for intent protection, execution, and receipt verification.",
+    "Run a protected trade, set up your API key, diagnose your environment, and verify a receipt — all from the CLI in under 60 seconds.",
 };
 
-const CURL_PROTECT = `curl -sS https://api.trucore.xyz/v1/bot/protect \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "chain_id": "solana",
-    "intent_type": "swap",
-    "intent": {
-      "type": "swap",
-      "in_mint": "So11111111111111111111111111111111111111112",
-      "out_mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-      "amount_in": 1000000,
-      "slippage_bps": 50,
-      "agent_id": "my-bot-v1"
-    }
-  }'`;
-
-const CLI_EXECUTE = `atf bot send --tx-base64 <BASE64_TX_FROM_STEP_1>`;
+const CLI_TRADE = `atf trade`;
+const CLI_SETUP = `atf setup`;
+const CLI_DOCTOR = `atf doctor`;
+const CLI_VERIFY = `atf verify <receipt-id>`;
 
 export default function QuickstartPage() {
   return (
@@ -38,88 +26,143 @@ export default function QuickstartPage() {
             Quickstart
           </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
-            Quickstart — Protect Your First Transaction
+            Try ATF in Four Commands
           </h1>
           <p className="mt-6 text-xl leading-[1.6] text-slate-200">
-            Run a protected transaction through ATF in under 60 seconds.
+            From first trade to verified receipt. No manual config, no .env editing.
+            Demo mode works out of the box.
           </p>
         </div>
       </Section>
 
-      {/* ── Step 1 — Protect intent ── */}
+      {/* ── Step 1 — Try a protected trade ── */}
       <Section id="step-1" divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             <span className="mr-2 font-mono text-sm text-primary-200">01</span>
-            Protect intent
+            Try a protected trade
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Submit a swap intent to the ATF protect endpoint. The firewall
-            evaluates it against your active policies and returns a permit or
-            denial.
+            Run your first protected trade. Demo mode activates automatically
+            when no API key is configured — you can try it right now with zero setup.
           </p>
           <div className="mt-6">
             <CopyBlock
-              label="curl — POST /v1/bot/protect"
-              value={CURL_PROTECT}
+              label="CLI — run a protected trade"
+              value={CLI_TRADE}
               copyButtonLabel="Copy"
             />
           </div>
+          <p className="mt-4 text-sm text-slate-400">
+            The output includes human-readable status and machine-readable JSON
+            with <code className="text-slate-300">machine_summary</code> and <code className="text-slate-300">suggested_action</code> fields.
+          </p>
         </div>
       </Section>
 
-      {/* ── Step 2 — Execute transaction ── */}
+      {/* ── Step 2 — Connect your API key ── */}
       <Section id="step-2" divider className="fade-in-up fade-delay-2">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             <span className="mr-2 font-mono text-sm text-primary-200">02</span>
-            Execute transaction
+            Connect your API key
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Once the intent is approved, execute the transaction using the ATF
-            CLI. Pass the base64-encoded transaction payload returned from
-            step&nbsp;1.
+            Set up API access interactively. No manual .env editing needed —
+            the CLI guides you through configuration and stores credentials locally.
           </p>
           <div className="mt-6">
             <CopyBlock
-              label="CLI — send the approved transaction"
-              value={CLI_EXECUTE}
+              label="CLI — interactive setup"
+              value={CLI_SETUP}
               copyButtonLabel="Copy"
             />
           </div>
         </div>
       </Section>
 
-      {/* ── Step 3 — Verify receipt ── */}
+      {/* ── Step 3 — Diagnose setup ── */}
       <Section id="step-3" divider className="fade-in-up fade-delay-3">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             <span className="mr-2 font-mono text-sm text-primary-200">03</span>
-            Verify receipt
+            Diagnose your setup
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Every executed transaction produces a deterministic receipt. Verify
-            it independently to confirm the transaction matched the approved
-            intent.
+            One command checks your config, RPC connectivity, wallet, and
+            environment. If something is wrong, it tells you exactly what to fix.
           </p>
+          <div className="mt-6">
+            <CopyBlock
+              label="CLI — diagnose environment"
+              value={CLI_DOCTOR}
+              copyButtonLabel="Copy"
+            />
+          </div>
+        </div>
+      </Section>
+
+      {/* ── Step 4 — Verify a receipt ── */}
+      <Section id="step-4" divider className="fade-in-up fade-delay-4">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+            <span className="mr-2 font-mono text-sm text-primary-200">04</span>
+            Verify and share a receipt
+          </h2>
+          <p className="mt-4 text-lg leading-[1.5] text-slate-300">
+            Every trade produces a verifiable receipt. Verify it, share it, or
+            replay the command. Output includes human share text and a bot-friendly line.
+          </p>
+          <div className="mt-6">
+            <CopyBlock
+              label="CLI — verify a receipt"
+              value={CLI_VERIFY}
+              copyButtonLabel="Copy"
+            />
+          </div>
           <Card className="mt-6">
             <p className="text-base text-slate-200">
-              Open the{" "}
+              You can also verify receipts on the web:{" "}
               <Link
                 href="/verify"
                 className="font-medium text-accent-300 underline decoration-accent-300/30 underline-offset-2 transition-colors hover:text-accent-200 hover:decoration-accent-200/50"
               >
-                Receipt Verification
-              </Link>{" "}
-              page and paste the receipt hash returned from step&nbsp;2 to
-              confirm execution integrity.
+                Receipt Verifier
+              </Link>
             </p>
           </Card>
         </div>
       </Section>
 
+      {/* ── Dual-surface output ── */}
+      <Section id="dual-surface" divider className="fade-in-up fade-delay-5">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+            Readable for Humans, Structured for Agents
+          </h2>
+          <p className="mt-4 text-lg leading-[1.5] text-slate-300">
+            Every command produces clear terminal output for operators and
+            machine-readable JSON for automation. The same run gives you both.
+          </p>
+          <ul className="mt-4 space-y-2 text-base text-slate-300">
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-primary-200">&#x2713;</span>
+              <span><strong className="text-slate-100">Human output</strong> — clear status, actionable next steps, share snippets</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-primary-200">&#x2713;</span>
+              <span><strong className="text-slate-100">Bot output</strong> — <code className="text-slate-200">machine_summary</code>, <code className="text-slate-200">suggested_action</code>, <code className="text-slate-200">suggested_command</code></span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-primary-200">&#x2713;</span>
+              <span><strong className="text-slate-100">Distribution</strong> — replay command, share snippet, bot-friendly line</span>
+            </li>
+          </ul>
+        </div>
+      </Section>
+
       {/* ── Next steps ── */}
-      <Section id="next-steps" divider className="fade-in-up fade-delay-4">
+      <Section id="next-steps" divider className="fade-in-up fade-delay-6">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             Next Steps
@@ -127,25 +170,25 @@ export default function QuickstartPage() {
           <ul className="mt-6 space-y-3 text-lg text-slate-300">
             <li>
               <Link
-                href="/examples/protected-swap"
+                href="/docs/first-protected-trade"
                 className="font-medium text-accent-300 underline decoration-accent-300/30 underline-offset-2 transition-colors hover:text-accent-200 hover:decoration-accent-200/50"
               >
-                Protected Swap Example
+                First Protected Trade
               </Link>{" "}
-              — end-to-end walkthrough of a shielded swap
+              — end-to-end walkthrough with HTTP, Python, TypeScript, CLI, and OpenClaw
             </li>
             <li>
               <Link
-                href="/integrations/bot"
+                href="/docs/cli"
                 className="font-medium text-accent-300 underline decoration-accent-300/30 underline-offset-2 transition-colors hover:text-accent-200 hover:decoration-accent-200/50"
               >
-                Bot Integration Guide
+                CLI Reference
               </Link>{" "}
-              — wire ATF into your trading bot
+              — advanced bot and operator commands beyond the golden path
             </li>
             <li>
               <Link
-                href="/how-it-works"
+                href="/atf/how-it-works"
                 className="font-medium text-accent-300 underline decoration-accent-300/30 underline-offset-2 transition-colors hover:text-accent-200 hover:decoration-accent-200/50"
               >
                 How ATF Works

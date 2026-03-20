@@ -8,6 +8,7 @@ const personas = [
       "Enforce slippage, spend caps, and protocol allowlists before every transaction.",
       "Operate continuously without human approval loops while staying within hard boundaries.",
       "Generate tamper-evident receipts for every policy evaluation and execution outcome.",
+      "Bot-ready JSON output with machine_summary and suggested_action for seamless automation.",
     ],
   },
   {
@@ -16,6 +17,7 @@ const personas = [
       "Layer deterministic risk controls over any agent framework or model pipeline.",
       "Define portfolio-level invariants that no single agent can override.",
       "Maintain auditable, verifiable execution records across all agent activity.",
+      "Dual-surface outputs: clear operator dashboards and structured signals for automation.",
     ],
   },
   {
@@ -24,6 +26,7 @@ const personas = [
       "Gate agent access to your protocol with scoped, time-bound permits.",
       "Protect your liquidity pools from unbounded or malicious agent behavior.",
       "Ship a trust layer without building custom enforcement from scratch.",
+      "Shareable receipts support proof and distribution workflows.",
     ],
   },
 ];

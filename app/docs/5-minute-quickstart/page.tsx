@@ -27,7 +27,11 @@ export default function DocsFiveMinuteQuickstartPage() {
           5-Minute Developer Quickstart
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          Start with a key, run one request, and verify deterministic policy output in minutes.
+          Start with the golden path: <code className="font-mono text-slate-200">atf trade</code>,{" "}
+          <code className="font-mono text-slate-200">atf setup</code>,{" "}
+          <code className="font-mono text-slate-200">atf doctor</code>,{" "}
+          <code className="font-mono text-slate-200">atf verify</code>.
+          Or use an API key and run one request to see deterministic policy output.
         </p>
       </header>
 
