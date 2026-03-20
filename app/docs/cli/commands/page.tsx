@@ -141,6 +141,7 @@ export default function CommandReferencePage() {
           { label: "Golden Path", anchor: "#golden-path" },
           { label: "Dual-Surface Output", anchor: "#dual-surface" },
           { label: "Advanced Commands", anchor: "#advanced" },
+          { label: "Performance", anchor: "#performance" },
           { label: "Next Steps", anchor: "#next-steps" },
         ].map((item) => (
           <a
@@ -356,6 +357,51 @@ npx @trucore/atf@${cliVersion} verify <id>    # 4. Verify and share a receipt`}
           the full command list, or <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion} &lt;command&gt; --help</code> for
           per-command usage and flags.
         </p>
+      </section>
+
+      {/* ── Performance & Execution Characteristics ── */}
+      <section className="space-y-6">
+        <HeadingAnchor id="performance">Performance &amp; Execution Characteristics</HeadingAnchor>
+
+        <div className="max-w-3xl space-y-4 text-slate-300">
+          <p>
+            The CLI is a lightweight Node.js binary with no heavy runtime
+            dependencies. Commands start fast and produce deterministic,
+            structured output.
+          </p>
+          <ul className="list-disc space-y-1 pl-6 text-sm">
+            <li>Demo mode executes instantly with local simulation — no network calls.</li>
+            <li>Real mode performance depends on RPC latency and route complexity.</li>
+            <li>Policy evaluation is deterministic and runs before any on-chain execution.</li>
+            <li>All outputs are structured JSON by default, suitable for piping and automation.</li>
+          </ul>
+        </div>
+
+        {/* Demo vs Real Mode */}
+        <div className="rounded-xl border border-white/10 bg-neutral-950/50 p-5 space-y-3">
+          <h3 className="text-lg font-semibold text-slate-100">Demo vs Real Mode</h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-white/10 bg-neutral-950/50 p-4">
+              <p className="font-mono text-sm font-semibold text-primary-200">Demo Mode</p>
+              <p className="mt-1 text-sm text-slate-300">
+                Instant, local simulation. No API key or RPC required.
+                Produces realistic receipts for integration testing.
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-neutral-950/50 p-4">
+              <p className="font-mono text-sm font-semibold text-primary-200">Real Mode</p>
+              <p className="mt-1 text-sm text-slate-300">
+                Network-dependent. Policy evaluation runs first, then RPC
+                simulation, then execution. RPC latency dominates total time.
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-slate-400">
+            In real mode, classification occurs before execution to avoid
+            wasted compute. Typical SAFE routes observed under ~170k compute
+            units in mainnet test matrices.
+          </p>
+        </div>
       </section>
 
       {/* ── Next Steps ── */}

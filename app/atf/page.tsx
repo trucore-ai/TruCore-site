@@ -499,6 +499,93 @@ export default function ATFPage() {
         </p>
       </Section>
 
+      {/* ── 5b. Performance: Optimized for Real Execution Environments ── */}
+      <Section id="performance" divider className="fade-in-up fade-delay-5">
+        <div className="mb-8 max-w-3xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+            Optimized for Real Execution Environments
+          </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            ATF enforces policy inline with execution — not in batch, not
+            offline. Every claim below is based on observed behavior from
+            mainnet test matrices.
+          </p>
+        </div>
+
+        <div className="max-w-3xl">
+          <ul className="space-y-2 text-sm text-slate-200">
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-primary-200">&#x2713;</span>
+              Measured across mainnet routing scenarios with real RPC simulation
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-primary-200">&#x2713;</span>
+              Classification occurs before execution to avoid wasted compute
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-primary-200">&#x2713;</span>
+              Designed to operate within typical Solana RPC latency constraints
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-primary-200">&#x2713;</span>
+              Deterministic policy evaluation avoids unnecessary RPC calls
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 text-primary-200">&#x2713;</span>
+              Graceful fallback to demo mode when API is unavailable
+            </li>
+          </ul>
+
+          <p className="mt-6 text-sm text-slate-400">
+            Typical SAFE routes observed under ~170k compute units across
+            mainnet test matrices. Multi-hop routes increase compute and
+            latency. RPC response time dominates total execution time.
+          </p>
+        </div>
+
+        {/* ── Measured on Mainnet ── */}
+        <div className="mt-10 max-w-3xl">
+          <h3 className="text-lg font-bold text-accent-300">
+            Measured on Mainnet
+          </h3>
+          <p className="mt-3 text-sm leading-relaxed text-slate-300">
+            Routes were evaluated across real conditions using RPC simulation
+            on Solana mainnet-beta. The following characteristics were observed
+            across 6 matrix runs and 55+ scout samples.
+          </p>
+
+          <div className="mt-4 rounded-xl border border-white/[0.08] bg-neutral-950/70 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Observed Characteristics
+            </p>
+            <ul className="mt-3 space-y-1.5 text-sm text-slate-200">
+              <li>
+                <span className="text-primary-200/90">SAFE</span>{" "}
+                — under 170,000 compute units (most single-hop routes)
+              </li>
+              <li>
+                <span className="text-primary-200/90">BORDERLINE</span>{" "}
+                — 170,000–200,000 CU (observed in multi-hop route variance)
+              </li>
+              <li>
+                <span className="text-primary-200/90">Multi-hop routes</span>{" "}
+                — increase compute and latency; CU driven by route composition,
+                not trade amount
+              </li>
+              <li>
+                <span className="text-primary-200/90">RPC latency</span>{" "}
+                — dominates total execution time in typical conditions
+              </li>
+            </ul>
+          </div>
+
+          <p className="mt-3 text-xs text-slate-400">
+            Based on internal test matrices. Route composition is
+            non-deterministic — actual CU may vary between calls.
+          </p>
+        </div>
+      </Section>
+
       {/* ── 6. Toolbox ── */}
       <Section id="toolbox" divider className="fade-in-up fade-delay-5">
         <div className="mb-8 max-w-3xl">
