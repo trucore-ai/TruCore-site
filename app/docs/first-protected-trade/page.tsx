@@ -215,7 +215,7 @@ export default function FirstProtectedTradePage() {
             Exit codes: <code className="font-mono text-slate-300">0</code> = ALLOW,{" "}
             <code className="font-mono text-slate-300">20</code> = DENY,{" "}
             <code className="font-mono text-slate-300">31</code> = CONFIG_ERROR.{" "}
-            Install: <code className="font-mono text-slate-300">npm i -g @trucore/atf-cli</code>
+            Install: <code className="font-mono text-slate-300">npm install -g @trucore/atf</code>, or run directly with <code className="font-mono text-slate-300">npx @trucore/atf</code>
           </p>
         </div>
 

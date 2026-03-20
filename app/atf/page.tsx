@@ -204,6 +204,20 @@ export default function ATFPage() {
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
             Four commands. From first trade to verified receipt.
           </p>
+          <p className="mt-2 text-sm text-slate-400">
+            Install globally with{" "}
+            <code className="font-mono text-slate-300">npm install -g @trucore/atf@{cliVersion}</code>,{" "}
+            or prefix each command with{" "}
+            <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion}</code>.{" "}
+            <TrackedLink
+              href="/docs/cli/commands#install"
+              eventName="golden_path_install_link"
+              eventProps={{ location: "atf_golden_path" }}
+              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+            >
+              Installation details &rarr;
+            </TrackedLink>
+          </p>
         </div>
 
         <div className="max-w-3xl space-y-4">
@@ -596,7 +610,7 @@ export default function ATFPage() {
         <div className="mx-auto mt-6 max-w-xl">
           <AtfCopyCommand
             label="Try a protected trade"
-            command="atf trade"
+            command={`npx @trucore/atf@${cliVersion} trade`}
             testId="footer-cta-trade"
           />
         </div>
@@ -645,7 +659,7 @@ export default function ATFPage() {
           </h2>
 
           <p className="text-sm text-white/70 mt-2 max-w-lg">
-            Try <code className="text-white/90">atf trade</code> to see the full
+            Try <code className="text-white/90">npx @trucore/atf@{cliVersion} trade</code> to see the full
             product loop: protect, receipt, verify. Demo mode works instantly.
           </p>
 
