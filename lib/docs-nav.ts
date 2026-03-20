@@ -34,6 +34,12 @@ export const sections: DocsNavSection[] = [
           "Comprehensive CLI reference: profiles, transactions, policy validation, bot protection, receipts, perps enforcement, agent discovery, and more.",
       },
       {
+        title: "ATF Command Reference",
+        href: "/docs/cli/commands",
+        description:
+          "Install the CLI, learn the golden-path commands (trade, setup, doctor, verify), and find advanced command groups.",
+      },
+      {
         title: "ATF API",
         href: "/docs/api",
         description:
