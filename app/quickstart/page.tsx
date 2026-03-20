@@ -29,8 +29,7 @@ export default function QuickstartPage() {
             Try ATF in Four Commands
           </h1>
           <p className="mt-6 text-xl leading-[1.6] text-slate-200">
-            From first trade to verified receipt. No manual config, no .env editing.
-            Demo mode works out of the box.
+            Four commands. Zero config. Demo mode runs immediately.
           </p>
         </div>
       </Section>
@@ -43,8 +42,8 @@ export default function QuickstartPage() {
             Try a protected trade
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Run your first protected trade. Demo mode activates automatically
-            when no API key is configured — you can try it right now with zero setup.
+            Works immediately with zero setup. Demo mode runs by default &mdash;
+            safe to try, no on-chain execution.
           </p>
           <div className="mt-6">
             <CopyBlock
@@ -54,8 +53,8 @@ export default function QuickstartPage() {
             />
           </div>
           <p className="mt-4 text-sm text-slate-400">
-            The output includes human-readable status and machine-readable JSON
-            with <code className="text-slate-300">machine_summary</code> and <code className="text-slate-300">suggested_action</code> fields.
+            You&apos;ll see: <code className="text-slate-300">&ldquo;\u2713 Protected trade complete&rdquo;</code>
+            with route, classification, decision, and a verifiable receipt.
           </p>
         </div>
       </Section>
@@ -68,8 +67,8 @@ export default function QuickstartPage() {
             Connect your API key
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Set up API access interactively. No manual .env editing needed —
-            the CLI guides you through configuration and stores credentials locally.
+            Connect your API key to move from demo to real mode.
+            Real mode executes on Solana mainnet with ATF policy enforcement.
           </p>
           <div className="mt-6">
             <CopyBlock
@@ -89,8 +88,9 @@ export default function QuickstartPage() {
             Diagnose your setup
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            One command checks your config, RPC connectivity, wallet, and
-            environment. If something is wrong, it tells you exactly what to fix.
+            One command checks everything: API key, RPC, wallet.
+            You&apos;ll see either
+            <strong className="text-slate-100">&ldquo;\u2713 Ready for real trades&rdquo;</strong> or a list of what to fix.
           </p>
           <div className="mt-6">
             <CopyBlock
@@ -110,8 +110,9 @@ export default function QuickstartPage() {
             Verify and share a receipt
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Every trade produces a verifiable receipt. Verify it, share it, or
-            replay the command. Output includes human share text and a bot-friendly line.
+            Verify = proof. Every trade produces a receipt.
+            Run <code className="text-slate-200">atf verify</code> to confirm ATF approved
+            and finalized the execution. Share the link as proof.
           </p>
           <div className="mt-6">
             <CopyBlock
