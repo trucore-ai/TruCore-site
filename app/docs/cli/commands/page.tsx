@@ -28,7 +28,7 @@ const GOLDEN_PATH: GoldenPathEntry[] = [
     title: "First Protected Trade",
     description: "Guided workflow: route → classify → policy check → decide → execute → receipt.",
     detail:
-      "Runs in demo mode out of the box — no API key required. Add --pretty for human-readable terminal output. In production mode it executes a real protected trade end-to-end.",
+      "Runs in demo mode by default. No wallet. No on-chain execution. Add --pretty for human-readable terminal output. In real mode it executes a protected trade on Solana mainnet, enforced by ATF policy.",
   },
   {
     step: 2,

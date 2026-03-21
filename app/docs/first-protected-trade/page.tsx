@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { CopyBlock } from "@/components/copy-block";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components/safe-to-try-banner";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -152,6 +153,9 @@ export default function FirstProtectedTradePage() {
           Protect your first bot intent in minutes. Submit a swap intent, receive a cryptographic receipt,
           and verify it independently. No new dependencies required.
         </p>
+        <div className="mt-4">
+          <SafeToTryBanner />
+        </div>
       </header>
 
       {/* ── Install ── */}
@@ -178,10 +182,15 @@ export default function FirstProtectedTradePage() {
       <section className="rounded-xl border border-accent-500/30 bg-accent-500/5 p-6 space-y-4">
         <HeadingAnchor id="run-first-trade">Run Your First Protected Trade</HeadingAnchor>
         <p className="text-slate-300">
-          Demo mode works out of the box. No API key, no wallet, no on-chain execution.
+          Demo mode works out of the box. No wallet required. No on-chain execution.
         </p>
+        <WhatHappensBlock />
 
-        <div className="space-y-3">
+        <div className="mt-4">
+          <DemoVsRealBlock />
+        </div>
+
+        <div className="mt-4 space-y-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">1. Try a protected trade</p>
             <AtfCopyCommand command="atf trade" testId="fpt-trade" />

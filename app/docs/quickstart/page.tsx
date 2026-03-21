@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { SafeToTryBanner } from "@/components/safe-to-try-banner";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -21,6 +22,9 @@ export default function DocsQuickstartPage() {
           ATF sits between agent intent and chain execution. You define guardrails once, issue scoped permits,
           validate every transaction against policy, and record receipts for auditability.
         </p>
+        <div className="mt-4">
+          <SafeToTryBanner />
+        </div>
       </header>
 
       {/* ── Install ── */}

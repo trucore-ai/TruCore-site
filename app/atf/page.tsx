@@ -7,6 +7,7 @@ import { TrackedLink } from "@/components/tracked-link";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { SimulateVerifyExecuteFlow } from "@/components/simulate-verify-execute-flow";
+import { SafeToTryBanner } from "@/components/safe-to-try-banner";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -42,7 +43,7 @@ const toolboxGroups = [
   {
     title: "Golden Path",
     commands: [
-      { name: "trade", desc: "Run a protected trade (demo mode when unconfigured)" },
+      { name: "trade", desc: "Run a protected trade (demo mode by default, no wallet needed)" },
       { name: "setup", desc: "Interactive API key and config setup" },
       { name: "doctor", desc: "Full environment health check" },
       { name: "verify", desc: "Verify and share a receipt" },
@@ -153,6 +154,10 @@ export default function ATFPage() {
               </TrackedLink>
             </div>
 
+            <div className="mt-6">
+              <SafeToTryBanner />
+            </div>
+
             {/* ── Micro-nav ── */}
             <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-400">
               <TrackedLink
@@ -230,7 +235,7 @@ export default function ATFPage() {
               testId="golden-path-trade"
             />
             <p className="mt-1 text-sm text-slate-400">
-              Demo mode works out of the box — no API key required.
+              Safe to try. No wallet needed. No on-chain execution.
             </p>
           </div>
 

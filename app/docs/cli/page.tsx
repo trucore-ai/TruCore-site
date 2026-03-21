@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { TrackedLink } from "@/components/tracked-link";
+import { SafeToTryBanner } from "@/components/safe-to-try-banner";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -82,6 +83,7 @@ const RESPONSE_FIELDS: { name: string; description: string }[] = [
 /* ── Page sections for quick navigation ── */
 type QuickNavItem = { label: string; anchor: string };
 const QUICK_NAV: QuickNavItem[] = [
+  { label: "Install", anchor: "#install" },
   { label: "Run This First", anchor: "#run-this-first" },
   { label: "Common Dev Flows", anchor: "#common-dev-flows" },
   { label: "Guides", anchor: "#guides" },
@@ -109,6 +111,9 @@ export default function DocsCliPage() {
         <p className="text-sm text-slate-400">
           Pinned version: <code className="font-mono text-primary-200">@trucore/atf@{cliVersion}</code>
         </p>
+        <div className="mt-4">
+          <SafeToTryBanner />
+        </div>
       </header>
 
       {/* ── Quick nav ── */}
@@ -123,6 +128,26 @@ export default function DocsCliPage() {
           </a>
         ))}
       </nav>
+
+      {/* ── Install the CLI ── */}
+      <section className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-6 space-y-4">
+        <HeadingAnchor id="install">Install the CLI</HeadingAnchor>
+        <p className="text-slate-300">
+          Get started with a global install or run directly with npx. Node.js 18+ required.
+        </p>
+
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Recommended: install globally</p>
+            <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="cli-install-global" />
+            <p className="mt-1 text-sm text-slate-400">Then run commands directly with <code className="font-mono text-slate-300">atf</code>.</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Alternative: run without installing</p>
+            <AtfCopyCommand command={`npx @trucore/atf@${cliVersion} trade`} testId="cli-install-npx" />
+          </div>
+        </div>
+      </section>
 
       {/* ── Run This First ── */}
       <section className="space-y-4">
@@ -451,6 +476,19 @@ export default function DocsCliPage() {
             &ndash; step-by-step walkthroughs for common workflows.
           </li>
         </ul>
+      </section>
+
+      {/* ── Troubleshooting ── */}
+      <section className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+        <p className="text-sm font-semibold text-amber-400">Wrong package name?</p>
+        <p className="mt-1 text-sm text-slate-300">
+          If you see <code className="font-mono text-slate-200">npm ERR! 404</code> for{" "}
+          <code className="font-mono text-slate-200">@trucore/atf-cli</code>, use the correct name:{" "}
+          <code className="font-mono text-primary-200">@trucore/atf</code>
+        </p>
+        <p className="mt-1 text-xs text-slate-400">
+          The published package is <code className="font-mono text-slate-300">@trucore/atf</code>. The binary is <code className="font-mono text-slate-300">atf</code>.
+        </p>
       </section>
     </article>
   );

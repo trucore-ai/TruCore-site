@@ -5,6 +5,7 @@ import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
 import { CopyBlock } from "@/components/copy-block";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components/safe-to-try-banner";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -35,6 +36,9 @@ export default function QuickstartPage() {
           <p className="mt-6 text-xl leading-[1.6] text-slate-200">
             Four commands. Zero config. Demo mode runs immediately.
           </p>
+          <div className="mt-6">
+            <SafeToTryBanner />
+          </div>
         </div>
       </Section>
 
@@ -69,8 +73,7 @@ export default function QuickstartPage() {
             Try a protected trade
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Works immediately with zero setup. Demo mode runs by default,
-            safe to try, no on-chain execution.
+            Works immediately with zero setup. No wallet needed.
           </p>
           <div className="mt-6">
             <CopyBlock
@@ -79,7 +82,8 @@ export default function QuickstartPage() {
               copyButtonLabel="Copy"
             />
           </div>
-          <p className="mt-4 text-sm text-slate-400">
+          <WhatHappensBlock />
+          <p className="mt-2 text-sm text-slate-400">
             You&apos;ll see: <code className="text-slate-300">&ldquo;\u2713 Protected trade complete&rdquo;</code>
             with route, classification, decision, and a verifiable receipt.
           </p>
@@ -95,8 +99,10 @@ export default function QuickstartPage() {
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-300">
             Connect your API key to move from demo to real mode.
-            Real mode executes on Solana mainnet with ATF policy enforcement.
           </p>
+          <div className="mt-4">
+            <DemoVsRealBlock />
+          </div>
           <div className="mt-6">
             <CopyBlock
               label="CLI — interactive setup"

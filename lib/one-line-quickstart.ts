@@ -1,6 +1,9 @@
 import { getAtfCliTag } from "@/lib/version";
 
-export type OneLineMethod = "npx" | "curl";
+export type OneLineMethod = "global" | "npx" | "curl";
+
+export const ONE_LINE_GLOBAL_INSTALL = `npm install -g @trucore/atf@${getAtfCliTag()}`;
+export const ONE_LINE_GLOBAL_COMMAND = `atf trade`;
 
 export const ONE_LINE_NPX_COMMAND = `npx @trucore/atf@${getAtfCliTag()} simulate --preset swap_small --verify`;
 
@@ -25,5 +28,6 @@ export const ONE_LINE_EXPECTED_OUTPUT = `{
 # denied responses exit with code 2 (CLI)`;
 
 export function oneLineCommandFor(method: OneLineMethod): string {
+  if (method === "global") return `${ONE_LINE_GLOBAL_INSTALL}\n${ONE_LINE_GLOBAL_COMMAND}`;
   return method === "npx" ? ONE_LINE_NPX_COMMAND : ONE_LINE_CURL_COMMAND;
 }
