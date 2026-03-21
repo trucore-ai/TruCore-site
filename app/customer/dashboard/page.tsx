@@ -11,7 +11,14 @@ import {
   fetchSampleIntent,
   simulateProtection,
   executeSample,
+  fetchActivation,
+  markActivationStep,
+  fetchReceipts,
 } from "@/lib/customer-auth";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 interface DashboardData {
   user_id: string;
@@ -24,7 +31,45 @@ interface DashboardData {
     status: string;
     created_at: number;
   }>;
+  activation?: ActivationState;
+  receipt_count?: number;
 }
+
+interface ActivationState {
+  onboarding_completed: boolean;
+  steps_completed: string[];
+  first_receipt_id: string | null;
+}
+
+interface ReceiptSummary {
+  receipt_id: string;
+  created_at: number;
+  decision: string;
+  dry_run: boolean;
+  content_hash: string;
+  protected_by: string;
+  summary: string;
+  intent_type: string;
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/** Derive the onboarding step (0-4) from backend activation state. */
+function stepFromActivation(act: ActivationState | null): 0 | 1 | 2 | 3 | 4 {
+  if (!act) return 0;
+  if (act.onboarding_completed) return 4;
+  const s = new Set(act.steps_completed);
+  if (s.has("execution_completed")) return 4;
+  if (s.has("dry_run_completed")) return 3;
+  if (s.has("sample_generated")) return 2;
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function CustomerDashboardPage() {
   const router = useRouter();
@@ -32,17 +77,34 @@ export default function CustomerDashboardPage() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Onboarding state
+  // Activation / onboarding
+  const [activationLoading, setActivationLoading] = useState(true);
+  const [activation, setActivation] = useState<ActivationState | null>(null);
   const [obStep, setObStep] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [obLoading, setObLoading] = useState(false);
-  const [obIntent, setObIntent] = useState<Record<string, unknown> | null>(null);
-  const [obDryRun, setObDryRun] = useState<Record<string, unknown> | null>(null);
-  const [obReceipt, setObReceipt] = useState<Record<string, unknown> | null>(null);
+  const [obIntent, setObIntent] = useState<Record<string, unknown> | null>(
+    null,
+  );
+  const [obDryRun, setObDryRun] = useState<Record<string, unknown> | null>(
+    null,
+  );
+  const [obReceipt, setObReceipt] = useState<Record<string, unknown> | null>(
+    null,
+  );
   const [obError, setObError] = useState("");
   const [receiptCopied, setReceiptCopied] = useState(false);
 
-  // API key from signup (only available once)
+  // Receipt awareness
+  const [receiptCount, setReceiptCount] = useState(0);
+  const [recentReceipt, setRecentReceipt] = useState<ReceiptSummary | null>(
+    null,
+  );
+
   const savedApiKey = typeof window !== "undefined" ? getApiKey() : null;
+
+  // -----------------------------------------------------------------------
+  // Initial load: dashboard + activation + receipts
+  // -----------------------------------------------------------------------
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -50,16 +112,57 @@ export default function CustomerDashboardPage() {
       return;
     }
 
+    // Dashboard data
     fetchDashboard()
-      .then((d) => setData(d as unknown as DashboardData))
+      .then((d) => {
+        const dd = d as unknown as DashboardData;
+        setData(dd);
+        if (dd.receipt_count !== undefined) setReceiptCount(dd.receipt_count);
+        // If the dashboard already returns activation, use it
+        if (dd.activation) {
+          setActivation(dd.activation);
+          setObStep(stepFromActivation(dd.activation));
+          setActivationLoading(false);
+        }
+      })
       .catch((err) => {
         if (err instanceof Error && err.message === "Session expired") {
           router.replace("/login");
         } else {
-          setError(err instanceof Error ? err.message : "Failed to load dashboard");
+          setError(
+            err instanceof Error ? err.message : "Failed to load dashboard",
+          );
         }
       });
+
+    // Activation state (dedicated call — covers case where /dashboard/me
+    // doesn't embed activation yet)
+    fetchActivation()
+      .then((act) => {
+        const a = act as unknown as ActivationState;
+        setActivation(a);
+        setObStep(stepFromActivation(a));
+      })
+      .catch(() => {
+        // Non-fatal — activation endpoint might not exist on older backend
+      })
+      .finally(() => setActivationLoading(false));
+
+    // Recent receipts
+    fetchReceipts({ limit: 1 })
+      .then((res) => {
+        const r = res as { receipts?: ReceiptSummary[]; count?: number };
+        if (r.count !== undefined) setReceiptCount((prev) => Math.max(prev, r.count!));
+        if (r.receipts && r.receipts.length > 0) setRecentReceipt(r.receipts[0]);
+      })
+      .catch(() => {
+        // Non-fatal
+      });
   }, [router]);
+
+  // -----------------------------------------------------------------------
+  // Copy helpers
+  // -----------------------------------------------------------------------
 
   function handleCopy() {
     if (!savedApiKey) return;
@@ -73,7 +176,16 @@ export default function CustomerDashboardPage() {
     router.push("/login");
   }
 
-  // --- Onboarding handlers ---
+  function handleCopyReceipt() {
+    if (!obReceipt) return;
+    navigator.clipboard.writeText(JSON.stringify(obReceipt, null, 2));
+    setReceiptCopied(true);
+    setTimeout(() => setReceiptCopied(false), 2000);
+  }
+
+  // -----------------------------------------------------------------------
+  // Onboarding handlers — now with backend persistence
+  // -----------------------------------------------------------------------
 
   const handleGenerateSample = useCallback(async () => {
     setObLoading(true);
@@ -82,8 +194,18 @@ export default function CustomerDashboardPage() {
       const res = await fetchSampleIntent();
       setObIntent(res.intent as Record<string, unknown>);
       setObStep(1);
+
+      // Persist step
+      try {
+        const act = (await markActivationStep("sample_generated")) as unknown as ActivationState;
+        setActivation(act);
+      } catch {
+        // Step completed in UI even if persistence fails — will retry on next refresh
+      }
     } catch (e) {
-      setObError(e instanceof Error ? e.message : "Failed to generate sample");
+      setObError(
+        e instanceof Error ? e.message : "Failed to generate sample",
+      );
     } finally {
       setObLoading(false);
     }
@@ -97,6 +219,21 @@ export default function CustomerDashboardPage() {
       const res = await simulateProtection(obIntent);
       setObDryRun(res);
       setObStep(2);
+
+      try {
+        const receiptId = (res as Record<string, unknown>).receipt
+          ? ((res as Record<string, unknown>).receipt as Record<string, unknown>)
+              .receipt_id as string
+          : undefined;
+        const act = (await markActivationStep(
+          "dry_run_completed",
+          receiptId,
+        )) as unknown as ActivationState;
+        setActivation(act);
+        setReceiptCount((c) => c + 1);
+      } catch {
+        // Non-fatal
+      }
     } catch (e) {
       setObError(e instanceof Error ? e.message : "Simulation failed");
     } finally {
@@ -112,6 +249,21 @@ export default function CustomerDashboardPage() {
       const res = await executeSample(obIntent);
       setObReceipt(res);
       setObStep(3);
+
+      try {
+        const receiptId = (res as Record<string, unknown>).receipt
+          ? ((res as Record<string, unknown>).receipt as Record<string, unknown>)
+              .receipt_id as string
+          : undefined;
+        const act = (await markActivationStep(
+          "execution_completed",
+          receiptId,
+        )) as unknown as ActivationState;
+        setActivation(act);
+        setReceiptCount((c) => c + 1);
+      } catch {
+        // Non-fatal
+      }
     } catch (e) {
       setObError(e instanceof Error ? e.message : "Execution failed");
     } finally {
@@ -119,12 +271,9 @@ export default function CustomerDashboardPage() {
     }
   }, [obIntent]);
 
-  function handleCopyReceipt() {
-    if (!obReceipt) return;
-    navigator.clipboard.writeText(JSON.stringify(obReceipt, null, 2));
-    setReceiptCopied(true);
-    setTimeout(() => setReceiptCopied(false), 2000);
-  }
+  // Derived state
+  const onboardingComplete =
+    activation?.onboarding_completed || obStep >= 3;
 
   if (typeof window !== "undefined" && !isLoggedIn()) return null;
 
@@ -276,16 +425,86 @@ export default function CustomerDashboardPage() {
           </section>
         )}
 
+        {/* Receipt awareness section */}
+        {receiptCount > 0 && (
+          <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium text-slate-300">
+                Receipts
+              </h2>
+              <Link
+                href="/customer/receipts"
+                className="text-xs text-primary-400 hover:text-primary-300 transition"
+              >
+                View all &rarr;
+              </Link>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <div className="text-2xl font-semibold text-slate-100">
+                  {receiptCount}
+                </div>
+                <div className="text-xs text-slate-500">Receipts created</div>
+              </div>
+              {recentReceipt && (
+                <div className="flex-1 rounded-lg border border-white/5 bg-neutral-900 px-4 py-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400">Latest</span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 font-medium ${
+                        recentReceipt.decision === "ALLOW" ||
+                        recentReceipt.decision === "approved"
+                          ? "bg-emerald-500/20 text-emerald-300"
+                          : "bg-red-500/20 text-red-300"
+                      }`}
+                    >
+                      {recentReceipt.decision}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-300 truncate">
+                    {recentReceipt.summary || recentReceipt.intent_type || "Protected trade"}
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-slate-500 font-mono truncate">
+                    {recentReceipt.receipt_id}
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         {/* First Protected Trade — Onboarding Flow */}
         <section className="rounded-xl border border-accent-400/20 bg-accent-500/5 p-6 space-y-5">
+          {/* Header — adapts to completion state */}
           <div className="text-center">
-            <h2 className="text-lg font-semibold text-slate-100">
-              \uD83D\uDE80 Run Your First Protected Trade
-            </h2>
-            <p className="mt-1 text-sm text-slate-400">
-              Experience ATF protection in 3 clicks — no code required.
-            </p>
+            {onboardingComplete ? (
+              <>
+                <h2 className="text-lg font-semibold text-emerald-300">
+                  &#x2705; Onboarding Complete
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Your first protected trade is done. You can run another or
+                  view your receipts.
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-semibold text-slate-100">
+                  &#x1F680; Run Your First Protected Trade
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Experience ATF protection in 3 clicks — no code required.
+                </p>
+              </>
+            )}
           </div>
+
+          {/* Loading activation */}
+          {activationLoading && (
+            <div className="text-center text-sm text-slate-500">
+              Loading progress&hellip;
+            </div>
+          )}
 
           {obError && (
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
@@ -294,32 +513,41 @@ export default function CustomerDashboardPage() {
           )}
 
           {/* Step indicators */}
-          <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
-            {["Generate", "Simulate", "Execute", "Receipt"].map((label, i) => (
-              <div key={label} className="flex items-center gap-2">
-                <span
-                  className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                    obStep > i
-                      ? "bg-emerald-500/20 text-emerald-300"
-                      : obStep === i
-                        ? "bg-accent-500/30 text-accent-300"
-                        : "bg-white/5 text-slate-500"
-                  }`}
-                >
-                  {obStep > i ? "\u2713" : i + 1}
-                </span>
-                <span className={obStep >= i ? "text-slate-300" : ""}>
-                  {label}
-                </span>
-                {i < 3 && (
-                  <span className="mx-1 text-slate-600">\u2014</span>
-                )}
-              </div>
-            ))}
-          </div>
+          {!activationLoading && (
+            <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+              {["Generate", "Simulate", "Execute", "Receipt"].map(
+                (label, i) => {
+                  // For restored steps, step >= i+1 means completed
+                  const completed = obStep > i || (onboardingComplete && i < 4);
+                  const current = obStep === i && !onboardingComplete;
+                  return (
+                    <div key={label} className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                          completed
+                            ? "bg-emerald-500/20 text-emerald-300"
+                            : current
+                              ? "bg-accent-500/30 text-accent-300"
+                              : "bg-white/5 text-slate-500"
+                        }`}
+                      >
+                        {completed ? "\u2713" : i + 1}
+                      </span>
+                      <span className={completed || current ? "text-slate-300" : ""}>
+                        {label}
+                      </span>
+                      {i < 3 && (
+                        <span className="mx-1 text-slate-600">&mdash;</span>
+                      )}
+                    </div>
+                  );
+                },
+              )}
+            </div>
+          )}
 
           {/* Step 1: Generate */}
-          {obStep === 0 && (
+          {!activationLoading && obStep === 0 && (
             <div className="text-center">
               <button
                 onClick={handleGenerateSample}
@@ -343,8 +571,8 @@ export default function CustomerDashboardPage() {
             </div>
           )}
 
-          {/* Step 2: Simulate */}
-          {obStep === 1 && (
+          {/* Step 2: Simulate — show if at step 1 (intent generated, not yet simulated) */}
+          {!activationLoading && obStep === 1 && (
             <div className="text-center">
               <button
                 onClick={handleSimulate}
@@ -374,11 +602,13 @@ export default function CustomerDashboardPage() {
                 </span>
               </div>
               <div className="space-y-1">
-                {((obDryRun as Record<string, unknown>).policy_breakdown as Array<{
-                  policy: string;
-                  result: string;
-                  reason: string;
-                }>)?.map((p) => (
+                {(
+                  (obDryRun as Record<string, unknown>).policy_breakdown as Array<{
+                    policy: string;
+                    result: string;
+                    reason: string;
+                  }>
+                )?.map((p) => (
                   <div
                     key={p.policy}
                     className="flex items-center justify-between text-xs"
@@ -404,8 +634,8 @@ export default function CustomerDashboardPage() {
             </div>
           )}
 
-          {/* Step 3: Execute */}
-          {obStep === 2 && (
+          {/* Step 3: Execute — show if at step 2 (simulation done, not yet executed) */}
+          {!activationLoading && obStep === 2 && (
             <div className="text-center">
               <button
                 onClick={handleExecute}
@@ -422,7 +652,7 @@ export default function CustomerDashboardPage() {
             <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-medium text-emerald-300">
-                  \u2705 Trade Receipt
+                  &#x2705; Trade Receipt
                 </h3>
                 <button
                   onClick={handleCopyReceipt}
@@ -440,7 +670,49 @@ export default function CustomerDashboardPage() {
             </div>
           )}
 
-          {/* Quickstart link fallback */}
+          {/* Resume banner — shown when restored from backend mid-onboarding */}
+          {!activationLoading &&
+            !onboardingComplete &&
+            obStep > 0 &&
+            !obIntent && (
+              <div className="rounded-lg border border-accent-400/20 bg-accent-500/10 px-4 py-3 text-center">
+                <p className="text-sm text-accent-300">
+                  Resume onboarding — you left off at step {obStep + 1}.
+                </p>
+                <button
+                  onClick={handleGenerateSample}
+                  disabled={obLoading}
+                  className="mt-2 rounded-lg bg-accent-500 px-5 py-2 text-sm font-medium text-white transition hover:bg-accent-400 disabled:opacity-50"
+                >
+                  {obLoading ? "Loading\u2026" : "Continue"}
+                </button>
+              </div>
+            )}
+
+          {/* Completed-state CTAs */}
+          {onboardingComplete && !obReceipt && (
+            <div className="flex items-center justify-center gap-4">
+              <Link
+                href="/customer/receipts"
+                className="rounded-lg bg-primary-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-primary-400"
+              >
+                View receipts
+              </Link>
+              <button
+                onClick={() => {
+                  setObStep(0);
+                  setObIntent(null);
+                  setObDryRun(null);
+                  setObReceipt(null);
+                }}
+                className="rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-slate-300 transition hover:bg-white/10"
+              >
+                Run another trade
+              </button>
+            </div>
+          )}
+
+          {/* Quickstart link */}
           <div className="text-center">
             <Link
               href="/quickstart"

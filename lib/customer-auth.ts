@@ -189,3 +189,148 @@ export async function executeSample(
 
   return res.json();
 }
+
+// ---------------------------------------------------------------------------
+// Activation state — onboarding progress tracking
+// ---------------------------------------------------------------------------
+
+export async function fetchActivation(): Promise<Record<string, unknown>> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${ATF_API_BASE}/dashboard/activation`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) throw new Error("Failed to fetch activation state");
+
+  return res.json();
+}
+
+export async function markActivationStep(
+  step: string,
+  receiptId?: string,
+): Promise<Record<string, unknown>> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const body: Record<string, unknown> = { step };
+  if (receiptId) body.receipt_id = receiptId;
+
+  const res = await fetch(`${ATF_API_BASE}/dashboard/activation`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) throw new Error("Failed to update activation");
+
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Customer receipts — history, detail, verification
+// ---------------------------------------------------------------------------
+
+export interface ReceiptListParams {
+  limit?: number;
+  offset?: number;
+  status?: string;
+  dry_run?: boolean;
+  protected_by?: string;
+}
+
+export async function fetchReceipts(
+  params: ReceiptListParams = {},
+): Promise<Record<string, unknown>> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const query = new URLSearchParams();
+  if (params.limit !== undefined) query.set("limit", String(params.limit));
+  if (params.offset !== undefined) query.set("offset", String(params.offset));
+  if (params.status) query.set("status", params.status);
+  if (params.dry_run !== undefined)
+    query.set("dry_run", String(params.dry_run));
+  if (params.protected_by) query.set("protected_by", params.protected_by);
+
+  const qs = query.toString();
+  const url = `${ATF_API_BASE}/customer/receipts${qs ? `?${qs}` : ""}`;
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) throw new Error("Failed to fetch receipts");
+
+  return res.json();
+}
+
+export async function fetchReceiptDetail(
+  receiptId: string,
+): Promise<Record<string, unknown>> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(
+    `${ATF_API_BASE}/customer/receipts/${encodeURIComponent(receiptId)}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) throw new Error("Receipt not found");
+
+  return res.json();
+}
+
+export async function verifyReceipt(
+  receiptIdOrObject: string | Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const body: Record<string, unknown> =
+    typeof receiptIdOrObject === "string"
+      ? { receipt_id: receiptIdOrObject }
+      : { receipt: receiptIdOrObject };
+
+  const res = await fetch(`${ATF_API_BASE}/customer/receipts/verify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) throw new Error("Verification failed");
+
+  return res.json();
+}
