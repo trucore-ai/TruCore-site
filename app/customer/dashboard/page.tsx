@@ -22,6 +22,25 @@ import {
 // Types
 // ---------------------------------------------------------------------------
 
+interface UsageBucket {
+  used: number;
+  limit: number;
+}
+
+interface PlanInfo {
+  tier: string;
+  limits: {
+    protect_calls_per_day: number;
+    execution_calls_per_day: number;
+    receipt_storage_limit: number;
+  };
+  usage: {
+    protect_calls: UsageBucket;
+    execution_calls: UsageBucket;
+    receipts_created: UsageBucket;
+  };
+}
+
 interface DashboardData {
   user_id: string;
   email: string;
@@ -36,6 +55,7 @@ interface DashboardData {
   }>;
   activation?: ActivationState;
   receipt_count?: number;
+  plan?: PlanInfo;
 }
 
 interface ActivationState {
@@ -68,6 +88,86 @@ function stepFromActivation(act: ActivationState | null): 0 | 1 | 2 | 3 | 4 {
   if (s.has("dry_run_completed")) return 3;
   if (s.has("sample_generated")) return 2;
   return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Usage Meter
+// ---------------------------------------------------------------------------
+
+function UsageMeter({
+  label,
+  used,
+  limit,
+}: {
+  label: string;
+  used: number;
+  limit: number;
+}) {
+  const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
+  const isWarning = pct >= 80 && pct < 100;
+  const isExceeded = pct >= 100;
+
+  const barColor = isExceeded
+    ? "bg-red-500"
+    : isWarning
+      ? "bg-amber-500"
+      : "bg-primary-500";
+
+  const textColor = isExceeded
+    ? "text-red-300"
+    : isWarning
+      ? "text-amber-300"
+      : "text-slate-300";
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-slate-400">{label}</span>
+        <span className={textColor}>
+          {used.toLocaleString()} / {limit.toLocaleString()}
+        </span>
+      </div>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.06]">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      {isExceeded && (
+        <p className="text-[10px] text-red-400">
+          Limit reached &mdash;{" "}
+          <Link
+            href="/pricing"
+            className="underline hover:text-red-300"
+          >
+            upgrade your plan
+          </Link>
+        </p>
+      )}
+      {isWarning && !isExceeded && (
+        <p className="text-[10px] text-amber-400">
+          Approaching limit &mdash;{" "}
+          <Link
+            href="/pricing"
+            className="underline hover:text-amber-300"
+          >
+            view plans
+          </Link>
+        </p>
+      )}
+    </div>
+  );
+}
+
+function planBadgeClasses(tier: string) {
+  switch (tier) {
+    case "enterprise":
+      return "bg-accent-500/20 text-accent-300 border-accent-400/30";
+    case "pro":
+      return "bg-primary-500/20 text-primary-200 border-primary-400/30";
+    default:
+      return "bg-white/10 text-slate-300 border-white/20";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -373,6 +473,97 @@ export default function CustomerDashboardPage() {
           </section>
         )}
 
+        {/* Plan & Usage */}
+        {data && (() => {
+          const tier = data.plan?.tier ?? data.tenant?.plan_tier ?? "free";
+          const plan = data.plan;
+          return (
+            <section className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <h2 className="text-sm font-medium text-slate-300">
+                    Your Plan
+                  </h2>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold capitalize ${planBadgeClasses(tier)}`}
+                    >
+                      {tier} plan
+                    </span>
+                    {data.tenant?.status && (
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                          data.tenant.status === "active"
+                            ? "bg-emerald-500/20 text-emerald-300"
+                            : "bg-amber-500/20 text-amber-300"
+                        }`}
+                      >
+                        {data.tenant.status}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {tier === "free" && (
+                  <Link
+                    href="/pricing"
+                    className="rounded-lg bg-accent-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-400"
+                  >
+                    Upgrade to Pro
+                  </Link>
+                )}
+                {tier !== "free" && (
+                  <Link
+                    href="/pricing"
+                    className="text-xs text-primary-400 hover:text-primary-300 transition"
+                  >
+                    View plans &rarr;
+                  </Link>
+                )}
+              </div>
+
+              {plan?.usage && (
+                <div className="space-y-3">
+                  <UsageMeter
+                    label="Protect calls (daily)"
+                    used={plan.usage.protect_calls.used}
+                    limit={plan.usage.protect_calls.limit}
+                  />
+                  <UsageMeter
+                    label="Execution calls (daily)"
+                    used={plan.usage.execution_calls.used}
+                    limit={plan.usage.execution_calls.limit}
+                  />
+                  <UsageMeter
+                    label="Receipts stored"
+                    used={plan.usage.receipts_created.used}
+                    limit={plan.usage.receipts_created.limit}
+                  />
+                </div>
+              )}
+
+              {!plan?.usage && (
+                <p className="text-xs text-slate-500">
+                  Usage data not yet available. Complete your first protected
+                  trade to start tracking.
+                </p>
+              )}
+
+              {tier === "free" && (
+                <p className="text-xs text-slate-500">
+                  You&apos;re on the <span className="text-slate-300 font-medium">Free plan</span>.{" "}
+                  <Link
+                    href="/pricing"
+                    className="text-primary-400 underline hover:text-primary-300"
+                  >
+                    Upgrade to Pro
+                  </Link>{" "}
+                  for higher limits and real execution capacity.
+                </p>
+              )}
+            </section>
+          );
+        })()}
+
         {/* Tenant info */}
         {data && (
           <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
@@ -389,7 +580,7 @@ export default function CustomerDashboardPage() {
               <div>
                 <dt className="text-slate-500">Plan</dt>
                 <dd className="mt-0.5 capitalize text-slate-200">
-                  {data.tenant?.plan_tier ?? "free"}
+                  {data.plan?.tier ?? data.tenant?.plan_tier ?? "free"}
                 </dd>
               </div>
               <div>

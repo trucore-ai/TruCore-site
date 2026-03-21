@@ -255,6 +255,12 @@ export default function RootLayout({
                   Why TruCore
                 </Link>
                 <Link
+                  href="/pricing"
+                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                >
+                  Pricing
+                </Link>
+                <Link
                   href="/try"
                   className="rounded-md bg-accent-500/15 px-2.5 py-1.5 font-semibold text-accent-300 transition-all duration-200 hover:bg-accent-500/25 hover:text-accent-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
@@ -321,6 +327,7 @@ export default function RootLayout({
                         <Link href="/atf/primer" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF Primer</Link>
                         <Link href="/atf/roadmap" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF Roadmap</Link>
                         <Link href="/enterprise" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Enterprise</Link>
+                        <Link href="/pricing" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Pricing</Link>
                         <Link href="/builders" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">For Builders</Link>
                       </div>
                     </div>
