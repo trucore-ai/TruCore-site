@@ -88,20 +88,20 @@ export default function Home() {
             {/* CTAs */}
             <div className="mt-10 flex flex-wrap items-center gap-5">
               <TrackedLink
-                href="/atf/simulator"
-                eventName="hero_simulator_click"
+                href="/try"
+                eventName="hero_try_atf_click"
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl px-8 py-4 text-xl font-semibold shadow-glow-accent transition-all bg-accent-500 text-neutral-950 hover:bg-accent-400 hover:shadow-lg"
               >
-                Try sandbox
+                Try ATF
               </TrackedLink>
               <TrackedLink
-                href="/builders"
-                eventName="hero_builders_click"
+                href="/atf/simulator"
+                eventName="hero_simulator_click"
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
               >
-                Get started
+                Try sandbox
               </TrackedLink>
             </div>
 
