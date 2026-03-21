@@ -586,3 +586,77 @@ export async function fetchVerificationStatus(): Promise<VerificationStatus> {
 
   return res.json();
 }
+
+// ---------------------------------------------------------------------------
+// Password reset
+// ---------------------------------------------------------------------------
+
+export async function requestPasswordReset(
+  email: string,
+): Promise<{ status: string; message: string }> {
+  const res = await fetch(`${ATF_API_BASE}/auth/password-reset/request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (res.status === 429) {
+    const body = await res.json().catch(() => ({}));
+    const secs =
+      body?.retry_after_seconds ?? res.headers.get("Retry-After") ?? "";
+    throw new Error(
+      secs
+        ? `Too many requests. Please try again in ${secs} seconds.`
+        : "Too many requests. Please try again later.",
+    );
+  }
+
+  if (!res.ok) throw new Error("Failed to request password reset");
+
+  return res.json();
+}
+
+export async function confirmPasswordReset(
+  resetToken: string,
+  newPassword: string,
+): Promise<{ status: string; message: string }> {
+  const res = await fetch(`${ATF_API_BASE}/auth/password-reset/confirm`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: resetToken, new_password: newPassword }),
+  });
+
+  if (res.status === 429) {
+    const body = await res.json().catch(() => ({}));
+    const secs =
+      body?.retry_after_seconds ?? res.headers.get("Retry-After") ?? "";
+    throw new Error(
+      secs
+        ? `Too many attempts. Please try again in ${secs} seconds.`
+        : "Too many attempts. Please try again later.",
+    );
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      body?.detail?.message || body?.detail || "Password reset failed",
+    );
+  }
+
+  return res.json();
+}
+
+export async function validateResetToken(
+  resetToken: string,
+): Promise<{ valid: boolean; reason?: string }> {
+  const res = await fetch(`${ATF_API_BASE}/auth/password-reset/validate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: resetToken }),
+  });
+
+  if (!res.ok) throw new Error("Failed to validate reset token");
+
+  return res.json();
+}
