@@ -6,6 +6,8 @@
  * - Auth guard utility for protected pages
  */
 
+import { parseApiError, getUserFacingMessage } from "@/lib/auth-errors";
+
 const ATF_API_BASE =
   process.env.NEXT_PUBLIC_ATF_API_URL || "https://api.trucore.xyz";
 
@@ -54,6 +56,31 @@ export function isLoggedIn(): boolean {
 // API calls
 // ---------------------------------------------------------------------------
 
+/**
+ * Error thrown by API calls that carries a machine-readable error code.
+ */
+export class ApiError extends Error {
+  constructor(
+    public readonly code: string,
+    message: string,
+    public readonly retryAfterSeconds?: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+/** Parse a failed response into an ApiError with structured code. */
+async function throwApiError(
+  res: Response,
+  fallbackMessage: string,
+): Promise<never> {
+  const body = await res.json().catch(() => ({}));
+  const parsed = parseApiError(body);
+  const message = getUserFacingMessage(parsed.code, parsed.message || fallbackMessage);
+  throw new ApiError(parsed.code, message, parsed.retryAfterSeconds);
+}
+
 export interface AuthResult {
   token: string;
   tenant_id: string;
@@ -72,18 +99,7 @@ export async function signup(
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    if (res.status === 429) {
-      const secs = body?.retry_after_seconds ?? res.headers.get("Retry-After") ?? "";
-      throw new Error(
-        secs
-          ? `Too many signup attempts. Please try again in ${secs} seconds.`
-          : "Too many signup attempts. Please try again later.",
-      );
-    }
-    const msg =
-      body?.detail?.message || body?.detail || "Signup failed";
-    throw new Error(msg);
+    await throwApiError(res, "Signup failed");
   }
 
   return res.json();
@@ -100,18 +116,7 @@ export async function login(
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    if (res.status === 429) {
-      const secs = body?.retry_after_seconds ?? res.headers.get("Retry-After") ?? "";
-      throw new Error(
-        secs
-          ? `Too many login attempts. Please try again in ${secs} seconds.`
-          : "Too many login attempts. Please try again later.",
-      );
-    }
-    const msg =
-      body?.detail?.message || body?.detail || "Login failed";
-    throw new Error(msg);
+    await throwApiError(res, "Login failed");
   }
 
   return res.json();
@@ -127,7 +132,7 @@ export async function fetchDashboard(): Promise<Record<string, unknown>> {
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) throw new Error("Failed to fetch dashboard");
@@ -149,17 +154,11 @@ export async function fetchSampleIntent(): Promise<Record<string, unknown>> {
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (res.status === 429) {
-    const body = await res.json().catch(() => ({}));
-    const secs = body?.retry_after_seconds ?? "";
-    throw new Error(
-      secs
-        ? `Rate limit reached. Please try again in ${secs} seconds.`
-        : "Rate limit reached. Please try again later.",
-    );
+    await throwApiError(res, "Rate limit reached. Please try again later.");
   }
 
   if (!res.ok) throw new Error("Failed to fetch sample intent");
@@ -184,17 +183,11 @@ export async function simulateProtection(
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (res.status === 429) {
-    const body = await res.json().catch(() => ({}));
-    const secs = body?.retry_after_seconds ?? "";
-    throw new Error(
-      secs
-        ? `Rate limit reached. Please try again in ${secs} seconds.`
-        : "Rate limit reached. Please try again later.",
-    );
+    await throwApiError(res, "Rate limit reached. Please try again later.");
   }
 
   if (!res.ok) throw new Error("Protection simulation failed");
@@ -219,17 +212,11 @@ export async function executeSample(
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (res.status === 429) {
-    const body = await res.json().catch(() => ({}));
-    const secs = body?.retry_after_seconds ?? "";
-    throw new Error(
-      secs
-        ? `Rate limit reached. Please try again in ${secs} seconds.`
-        : "Rate limit reached. Please try again later.",
-    );
+    await throwApiError(res, "Rate limit reached. Please try again later.");
   }
 
   if (!res.ok) throw new Error("Sample execution failed");
@@ -251,7 +238,7 @@ export async function fetchActivation(): Promise<Record<string, unknown>> {
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) throw new Error("Failed to fetch activation state");
@@ -280,7 +267,7 @@ export async function markActivationStep(
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) throw new Error("Failed to update activation");
@@ -323,7 +310,7 @@ export async function fetchReceipts(
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) throw new Error("Failed to fetch receipts");
@@ -344,7 +331,7 @@ export async function fetchReceiptDetail(
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) throw new Error("Receipt not found");
@@ -374,7 +361,7 @@ export async function verifyReceipt(
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) throw new Error("Verification failed");
@@ -419,7 +406,7 @@ export async function fetchCustomerKeys(): Promise<CustomerKeyListResponse> {
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) throw new Error("Failed to fetch API keys");
@@ -444,12 +431,11 @@ export async function createCustomerKey(
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.detail || "Failed to create API key");
+    await throwApiError(res, "Failed to create API key");
   }
 
   return res.json();
@@ -469,12 +455,11 @@ export async function revokeCustomerKey(keyId: string): Promise<void> {
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.detail || "Failed to revoke key");
+    await throwApiError(res, "Failed to revoke key");
   }
 }
 
@@ -494,12 +479,11 @@ export async function rotateCustomerKey(
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.detail || "Failed to rotate key");
+    await throwApiError(res, "Failed to rotate key");
   }
 
   return res.json();
@@ -531,18 +515,11 @@ export async function requestVerificationEmail(): Promise<{ status: string }> {
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (res.status === 429) {
-    const body = await res.json().catch(() => ({}));
-    const secs =
-      body?.retry_after_seconds ?? res.headers.get("Retry-After") ?? "";
-    throw new Error(
-      secs
-        ? `Too many resend attempts. Please try again in ${secs} seconds.`
-        : "Too many resend attempts. Please try again later.",
-    );
+    await throwApiError(res, "Too many resend attempts. Please try again later.");
   }
 
   if (!res.ok) throw new Error("Failed to resend verification email");
@@ -560,10 +537,7 @@ export async function confirmVerificationEmail(
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(
-      body?.detail?.message || body?.detail || "Verification failed",
-    );
+    await throwApiError(res, "Verification failed");
   }
 
   return res.json();
@@ -579,7 +553,7 @@ export async function fetchVerificationStatus(): Promise<VerificationStatus> {
 
   if (res.status === 401) {
     clearAuth();
-    throw new Error("Session expired");
+    throw new ApiError("unauthorized", "Session expired");
   }
 
   if (!res.ok) throw new Error("Failed to fetch verification status");
@@ -601,14 +575,7 @@ export async function requestPasswordReset(
   });
 
   if (res.status === 429) {
-    const body = await res.json().catch(() => ({}));
-    const secs =
-      body?.retry_after_seconds ?? res.headers.get("Retry-After") ?? "";
-    throw new Error(
-      secs
-        ? `Too many requests. Please try again in ${secs} seconds.`
-        : "Too many requests. Please try again later.",
-    );
+    await throwApiError(res, "Too many requests. Please try again later.");
   }
 
   if (!res.ok) throw new Error("Failed to request password reset");
@@ -627,21 +594,11 @@ export async function confirmPasswordReset(
   });
 
   if (res.status === 429) {
-    const body = await res.json().catch(() => ({}));
-    const secs =
-      body?.retry_after_seconds ?? res.headers.get("Retry-After") ?? "";
-    throw new Error(
-      secs
-        ? `Too many attempts. Please try again in ${secs} seconds.`
-        : "Too many attempts. Please try again later.",
-    );
+    await throwApiError(res, "Too many attempts. Please try again later.");
   }
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(
-      body?.detail?.message || body?.detail || "Password reset failed",
-    );
+    await throwApiError(res, "Password reset failed");
   }
 
   return res.json();
@@ -656,7 +613,9 @@ export async function validateResetToken(
     body: JSON.stringify({ token: resetToken }),
   });
 
-  if (!res.ok) throw new Error("Failed to validate reset token");
+  if (!res.ok) {
+    await throwApiError(res, "Failed to validate reset token");
+  }
 
   return res.json();
 }

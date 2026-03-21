@@ -3,7 +3,7 @@
 import { useState, useEffect, type FormEvent, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { confirmPasswordReset, validateResetToken } from "@/lib/customer-auth";
+import { confirmPasswordReset, validateResetToken, ApiError } from "@/lib/customer-auth";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -30,7 +30,7 @@ function ResetPasswordForm() {
       .then((result) => {
         if (result.valid) {
           setTokenStatus("valid");
-        } else if (result.reason === "token_expired") {
+        } else if (result.reason === "reset_token_expired") {
           setTokenStatus("expired");
         } else {
           setTokenStatus("invalid");
@@ -62,12 +62,12 @@ function ResetPasswordForm() {
       await confirmPasswordReset(token, password);
       setSuccess(true);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Password reset failed";
-      if (msg.toLowerCase().includes("expired")) {
+      if (err instanceof ApiError && err.code === "reset_token_expired") {
         setTokenStatus("expired");
-      } else if (msg.toLowerCase().includes("invalid")) {
+      } else if (err instanceof ApiError && err.code === "reset_token_invalid") {
         setTokenStatus("invalid");
       } else {
+        const msg = err instanceof Error ? err.message : "Password reset failed";
         setError(msg);
       }
     } finally {

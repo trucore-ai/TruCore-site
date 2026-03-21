@@ -15,6 +15,7 @@ import {
   markActivationStep,
   fetchReceipts,
   requestVerificationEmail,
+  ApiError,
 } from "@/lib/customer-auth";
 
 // ---------------------------------------------------------------------------
@@ -134,7 +135,7 @@ export default function CustomerDashboardPage() {
         }
       })
       .catch((err) => {
-        if (err instanceof Error && err.message === "Session expired") {
+        if (err instanceof ApiError && err.code === "unauthorized") {
           router.replace("/login");
         } else {
           setError(

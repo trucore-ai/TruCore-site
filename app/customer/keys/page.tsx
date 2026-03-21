@@ -10,6 +10,7 @@ import {
   createCustomerKey,
   revokeCustomerKey,
   rotateCustomerKey,
+  ApiError,
 } from "@/lib/customer-auth";
 import type {
   CustomerKey,
@@ -73,7 +74,7 @@ export default function CustomerKeysPage() {
       setKeys(data.keys);
       setError("");
     } catch (err) {
-      if (err instanceof Error && err.message === "Session expired") {
+      if (err instanceof ApiError && err.code === "unauthorized") {
         router.replace("/login");
         return;
       }
@@ -106,11 +107,11 @@ export default function CustomerKeysPage() {
       setCreateLabel("");
       await loadKeys();
     } catch (err) {
-      if (err instanceof Error && err.message === "Session expired") {
+      if (err instanceof ApiError && err.code === "unauthorized") {
         router.replace("/login");
         return;
       }
-      if (err instanceof Error && err.message.toLowerCase().includes("email") && err.message.toLowerCase().includes("verif")) {
+      if (err instanceof ApiError && err.code === "email_not_verified") {
         setVerifyRequired(true);
       } else {
         setError(err instanceof Error ? err.message : "Failed to create key");
@@ -141,11 +142,11 @@ export default function CustomerKeysPage() {
       setConfirmRevokeId(null);
       await loadKeys();
     } catch (err) {
-      if (err instanceof Error && err.message === "Session expired") {
+      if (err instanceof ApiError && err.code === "unauthorized") {
         router.replace("/login");
         return;
       }
-      if (err instanceof Error && err.message.toLowerCase().includes("email") && err.message.toLowerCase().includes("verif")) {
+      if (err instanceof ApiError && err.code === "email_not_verified") {
         setVerifyRequired(true);
         setConfirmRevokeId(null);
       } else {
@@ -171,11 +172,11 @@ export default function CustomerKeysPage() {
       setConfirmRotateId(null);
       await loadKeys();
     } catch (err) {
-      if (err instanceof Error && err.message === "Session expired") {
+      if (err instanceof ApiError && err.code === "unauthorized") {
         router.replace("/login");
         return;
       }
-      if (err instanceof Error && err.message.toLowerCase().includes("email") && err.message.toLowerCase().includes("verif")) {
+      if (err instanceof ApiError && err.code === "email_not_verified") {
         setVerifyRequired(true);
         setConfirmRotateId(null);
       } else {

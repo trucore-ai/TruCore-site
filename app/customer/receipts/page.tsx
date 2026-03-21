@@ -9,6 +9,7 @@ import {
   fetchReceipts,
   fetchReceiptDetail,
   verifyReceipt,
+  ApiError,
 } from "@/lib/customer-auth";
 
 // ---------------------------------------------------------------------------
@@ -113,7 +114,7 @@ export default function CustomerReceiptsPage() {
         );
       })
       .catch((err) => {
-        if (err instanceof Error && err.message === "Session expired") {
+        if (err instanceof ApiError && err.code === "unauthorized") {
           router.replace("/login");
         } else {
           setError(
@@ -148,7 +149,7 @@ export default function CustomerReceiptsPage() {
         const d = await fetchReceiptDetail(receiptId);
         setDetail(d);
       } catch (err) {
-        if (err instanceof Error && err.message === "Session expired") {
+        if (err instanceof ApiError && err.code === "unauthorized") {
           router.replace("/login");
         } else {
           setDetailError(

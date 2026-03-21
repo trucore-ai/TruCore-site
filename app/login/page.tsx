@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { login, storeAuth, requestVerificationEmail } from "@/lib/customer-auth";
+import { login, storeAuth, requestVerificationEmail, ApiError } from "@/lib/customer-auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,7 +29,11 @@ export default function LoginPage() {
         router.push("/customer/dashboard");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      if (err instanceof ApiError && err.code === "rate_limit_exceeded") {
+        setError(err.message);
+      } else {
+        setError(err instanceof Error ? err.message : "Login failed");
+      }
     } finally {
       setLoading(false);
     }

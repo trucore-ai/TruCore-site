@@ -3,13 +3,13 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { confirmVerificationEmail } from "@/lib/customer-auth";
+import { confirmVerificationEmail, ApiError } from "@/lib/customer-auth";
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
-  const [status, setStatus] = useState<"loading" | "success" | "error">(
+  const [status, setStatus] = useState<"loading" | "success" | "error" | "expired">(
     token ? "loading" : "error",
   );
   const [errorMsg, setErrorMsg] = useState(
@@ -22,10 +22,14 @@ function VerifyEmailContent() {
     confirmVerificationEmail(token)
       .then(() => setStatus("success"))
       .catch((err) => {
-        setStatus("error");
-        setErrorMsg(
-          err instanceof Error ? err.message : "Verification failed",
-        );
+        if (err instanceof ApiError && err.code === "verification_token_expired") {
+          setStatus("expired");
+        } else {
+          setStatus("error");
+          setErrorMsg(
+            err instanceof Error ? err.message : "Verification failed",
+          );
+        }
       });
   }, [token]);
 
@@ -64,6 +68,39 @@ function VerifyEmailContent() {
             <p className="text-sm text-slate-400">
               Your account is now fully activated. You can manage API keys
               and access all features.
+            </p>
+            <Link
+              href="/customer/dashboard"
+              className="inline-block rounded-lg bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-primary-400"
+            >
+              Go to dashboard
+            </Link>
+          </>
+        )}
+
+        {status === "expired" && (
+          <>
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/20">
+              <svg
+                className="h-8 w-8 text-amber-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-semibold text-slate-100">
+              Verification link expired
+            </h1>
+            <p className="text-sm text-slate-400">
+              This verification link has expired. You can request a new one
+              from your dashboard.
             </p>
             <Link
               href="/customer/dashboard"
