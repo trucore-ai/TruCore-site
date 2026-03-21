@@ -571,3 +571,100 @@ export async function fetchFullDashboard(): Promise<{
     adoption,
   };
 }
+
+// ── Admin user management ────────────────────────────────────
+
+export const AdminUserSummarySchema = z.object({
+  user_id: z.string(),
+  email: z.string(),
+  tenant_id: z.string(),
+  created_at: z.number(),
+  email_verified: z.boolean(),
+  email_verified_at: z.number().nullable(),
+  email_verification_sent_at: z.number().nullable(),
+  password_reset_sent_at: z.number().nullable(),
+});
+
+export const AdminUserListSchema = z.object({
+  users: z.array(AdminUserSummarySchema),
+  count: z.number(),
+});
+
+export const AdminUserDetailSchema = z.object({
+  user: z.object({
+    user_id: z.string(),
+    email: z.string(),
+    tenant_id: z.string(),
+    created_at: z.number(),
+    email_verified: z.boolean(),
+    email_verified_at: z.number().nullable(),
+    email_verification_sent_at: z.number().nullable(),
+    has_pending_verification_token: z.boolean(),
+    verification_token_expires_at: z.number().nullable(),
+    password_reset_sent_at: z.number().nullable(),
+    password_reset_expires_at: z.number().nullable(),
+    password_reset_used_at: z.number().nullable(),
+    has_pending_reset_token: z.boolean(),
+  }),
+});
+
+export type AdminUserSummary = z.infer<typeof AdminUserSummarySchema>;
+export type AdminUserList = z.infer<typeof AdminUserListSchema>;
+export type AdminUserDetail = z.infer<typeof AdminUserDetailSchema>;
+
+export function fetchAdminUsers(
+  email?: string,
+  limit = 50,
+): Promise<DashboardResult<AdminUserList>> {
+  const params = new URLSearchParams();
+  if (email) params.set("email", email);
+  params.set("limit", String(limit));
+  return dashboardFetch(
+    `/admin/users?${params.toString()}`,
+    AdminUserListSchema,
+  );
+}
+
+export function fetchAdminUserDetail(
+  userId: string,
+): Promise<DashboardResult<AdminUserDetail>> {
+  return dashboardFetch(
+    `/admin/users/${encodeURIComponent(userId)}`,
+    AdminUserDetailSchema,
+  );
+}
+
+/**
+ * Call an admin user action endpoint (POST). Returns { ok, error? }.
+ * Used for: resend verification, revoke verification, revoke reset.
+ */
+export async function adminUserAction(
+  userId: string,
+  action: "verification/resend" | "verification/revoke-pending" | "password-reset/revoke-pending",
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const base = getBaseUrl();
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+    const apiKey = process.env.ATF_API_KEY;
+    if (apiKey) {
+      headers["x-api-key"] = apiKey;
+    }
+    const res = await fetch(
+      `${base}/admin/users/${encodeURIComponent(userId)}/${action}`,
+      { method: "POST", headers, cache: "no-store" },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { ok: false, error: `HTTP ${res.status}: ${text}` };
+    }
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
