@@ -378,9 +378,17 @@ export default function CustomerDashboardPage() {
         {/* API Keys table */}
         {data && data.api_keys && data.api_keys.length > 0 && (
           <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6">
-            <h2 className="mb-4 text-sm font-medium text-slate-300">
-              API Keys
-            </h2>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-medium text-slate-300">
+                API Keys
+              </h2>
+              <Link
+                href="/customer/keys"
+                className="text-xs text-primary-400 hover:text-primary-300 transition"
+              >
+                Manage API Keys &rarr;
+              </Link>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>

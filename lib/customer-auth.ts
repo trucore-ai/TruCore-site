@@ -380,3 +380,126 @@ export async function verifyReceipt(
 
   return res.json();
 }
+
+// ---------------------------------------------------------------------------
+// Customer API key management
+// ---------------------------------------------------------------------------
+
+export interface CustomerKey {
+  key_id: string;
+  label: string;
+  status: string;
+  created_at: number;
+  last_used_at?: number | null;
+  preview: string;
+}
+
+export interface CustomerKeyListResponse {
+  keys: CustomerKey[];
+  count: number;
+}
+
+export interface CustomerKeyCreateResponse extends CustomerKey {
+  raw_secret: string;
+}
+
+export interface CustomerKeyRotateResponse extends CustomerKey {
+  raw_secret: string;
+  rotated_from: string;
+}
+
+export async function fetchCustomerKeys(): Promise<CustomerKeyListResponse> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${ATF_API_BASE}/customer/keys`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) throw new Error("Failed to fetch API keys");
+
+  return res.json();
+}
+
+export async function createCustomerKey(
+  label: string = "",
+): Promise<CustomerKeyCreateResponse> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${ATF_API_BASE}/customer/keys`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ label }),
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.detail || "Failed to create API key");
+  }
+
+  return res.json();
+}
+
+export async function revokeCustomerKey(keyId: string): Promise<void> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(
+    `${ATF_API_BASE}/customer/keys/${encodeURIComponent(keyId)}/revoke`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.detail || "Failed to revoke key");
+  }
+}
+
+export async function rotateCustomerKey(
+  keyId: string,
+): Promise<CustomerKeyRotateResponse> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(
+    `${ATF_API_BASE}/customer/keys/${encodeURIComponent(keyId)}/rotate`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.detail || "Failed to rotate key");
+  }
+
+  return res.json();
+}
