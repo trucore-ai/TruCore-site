@@ -629,7 +629,7 @@ export default function CustomerDashboardPage() {
                 ))}
               </div>
               <p className="text-xs text-slate-500 italic">
-                Protected by ATF &middot; Dry run (no on-chain transaction)
+                Protected by ATF &middot; Dry run &mdash; no on-chain transaction
               </p>
             </div>
           )}
@@ -654,13 +654,44 @@ export default function CustomerDashboardPage() {
                 <h3 className="text-xs font-medium text-emerald-300">
                   &#x2705; Trade Receipt
                 </h3>
-                <button
-                  onClick={handleCopyReceipt}
-                  className="rounded-md border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10"
-                >
-                  {receiptCopied ? "Copied!" : "Copy JSON"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
+                      (obReceipt as Record<string, unknown>).execution_mode === "real"
+                        ? "bg-blue-500/20 text-blue-300"
+                        : "bg-slate-500/20 text-slate-300"
+                    }`}
+                  >
+                    {(obReceipt as Record<string, unknown>).execution_mode === "real"
+                      ? "Executed on-chain"
+                      : "Simulated execution"}
+                  </span>
+                  <button
+                    onClick={handleCopyReceipt}
+                    className="rounded-md border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10"
+                  >
+                    {receiptCopied ? "Copied!" : "Copy JSON"}
+                  </button>
+                </div>
               </div>
+              {/* Show tx signature for real executions */}
+              {!!((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.tx_signature && (
+                <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-3 py-2">
+                  <p className="text-[10px] text-blue-400 font-medium mb-0.5">Transaction Signature</p>
+                  <p className="text-xs text-blue-200 font-mono break-all">
+                    {((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).tx_signature as string}
+                  </p>
+                </div>
+              )}
+              {/* Show execution error if real mode failed */}
+              {!!((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.execution_error && (
+                <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2">
+                  <p className="text-[10px] text-red-400 font-medium mb-0.5">Execution Error</p>
+                  <p className="text-xs text-red-300">
+                    {((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).execution_error as string}
+                  </p>
+                </div>
+              )}
               <pre className="overflow-x-auto rounded-lg bg-neutral-900 p-3 text-xs text-slate-200 font-mono">
                 {JSON.stringify(obReceipt, null, 2)}
               </pre>
