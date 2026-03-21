@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
+import { getPublicFeatures, groupFeaturesByPlan } from "@/lib/feature-flags";
+import type { PublicFeatureEntry } from "@/lib/dashboard-client";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -86,7 +88,10 @@ const plans = [
 // Page
 // ---------------------------------------------------------------------------
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const catalogFeatures = await getPublicFeatures();
+  const featuresByPlan = groupFeaturesByPlan(catalogFeatures);
+
   return (
     <Container>
       <Section className="fade-in-up">
@@ -166,6 +171,21 @@ export default function PricingPage() {
                   <li key={f} className="flex items-start gap-2">
                     <span className="mt-0.5 text-emerald-400">&#x2713;</span>
                     {f}
+                  </li>
+                ))}
+
+                {/* Catalog-driven features */}
+                {(featuresByPlan[plan.tier.toLowerCase()] ?? []).map((cf) => (
+                  <li key={cf.feature_key} className="flex items-start gap-2">
+                    <span className="mt-0.5 text-emerald-400">&#x2713;</span>
+                    <span>
+                      {cf.title}
+                      {cf.access_mode === "request_only" && (
+                        <span className="ml-1 text-[10px] text-amber-400">
+                          (request access)
+                        </span>
+                      )}
+                    </span>
                   </li>
                 ))}
               </ul>

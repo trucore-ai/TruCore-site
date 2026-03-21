@@ -668,3 +668,110 @@ export async function adminUserAction(
     };
   }
 }
+
+// ── Feature Catalog ──────────────────────────────────────────
+
+export const FeatureEntrySchema = z.object({
+  feature_key: z.string(),
+  surface: z.enum(["api", "cli", "plugin", "other"]),
+  title: z.string(),
+  description: z.string(),
+  enabled: z.boolean(),
+  visibility: z.enum(["hidden", "visible", "gated"]),
+  required_plan: z.enum(["free", "pro", "enterprise"]),
+  access_mode: z.enum(["self_serve", "request_only", "admin_only"]),
+  metered: z.boolean(),
+  billing_dimension: z.string().nullable().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export const AdminFeatureListSchema = z.object({
+  features: z.array(FeatureEntrySchema),
+  count: z.number(),
+});
+
+/** Public-facing feature entry (no tags/billing internals) */
+export const PublicFeatureEntrySchema = z.object({
+  feature_key: z.string(),
+  surface: z.enum(["api", "cli", "plugin", "other"]),
+  title: z.string(),
+  description: z.string(),
+  visibility: z.enum(["hidden", "visible", "gated"]),
+  required_plan: z.enum(["free", "pro", "enterprise"]),
+  access_mode: z.enum(["self_serve", "request_only", "admin_only"]),
+  metered: z.boolean(),
+});
+
+export const PublicFeatureCatalogSchema = z.object({
+  features: z.array(PublicFeatureEntrySchema),
+  count: z.number(),
+});
+
+export type FeatureEntry = z.infer<typeof FeatureEntrySchema>;
+export type AdminFeatureList = z.infer<typeof AdminFeatureListSchema>;
+export type PublicFeatureEntry = z.infer<typeof PublicFeatureEntrySchema>;
+export type PublicFeatureCatalog = z.infer<typeof PublicFeatureCatalogSchema>;
+
+export function fetchAdminFeatures(
+  surface?: string,
+): Promise<DashboardResult<AdminFeatureList>> {
+  const params = new URLSearchParams();
+  if (surface) params.set("surface", surface);
+  const qs = params.toString();
+  return dashboardFetch(
+    `/admin/features${qs ? `?${qs}` : ""}`,
+    AdminFeatureListSchema,
+  );
+}
+
+export function fetchAdminFeatureDetail(
+  featureKey: string,
+): Promise<DashboardResult<{ feature: FeatureEntry }>> {
+  return dashboardFetch(
+    `/admin/features/${encodeURIComponent(featureKey)}`,
+    z.object({ feature: FeatureEntrySchema }),
+  );
+}
+
+export async function updateAdminFeature(
+  featureKey: string,
+  patch: Record<string, unknown>,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const base = getBaseUrl();
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+    const apiKey = process.env.ATF_API_KEY;
+    if (apiKey) {
+      headers["x-api-key"] = apiKey;
+    }
+    const res = await fetch(
+      `${base}/admin/features/${encodeURIComponent(featureKey)}`,
+      { method: "POST", headers, body: JSON.stringify(patch), cache: "no-store" },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { ok: false, error: `HTTP ${res.status}: ${text}` };
+    }
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+export function fetchPublicFeatureCatalog(
+  surface?: string,
+): Promise<DashboardResult<PublicFeatureCatalog>> {
+  const params = new URLSearchParams();
+  if (surface) params.set("surface", surface);
+  const qs = params.toString();
+  return dashboardFetch(
+    `/features/catalog${qs ? `?${qs}` : ""}`,
+    PublicFeatureCatalogSchema,
+  );
+}
