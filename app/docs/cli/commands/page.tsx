@@ -166,14 +166,33 @@ export default function CommandReferencePage() {
           </p>
         </div>
 
-        {/* Recommended: npx */}
+        {/* Recommended: global install */}
         <div className="rounded-xl border border-primary-300/20 bg-neutral-950/50 p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="rounded bg-primary-300/20 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-primary-200">
               Recommended
             </span>
-            <h3 className="text-lg font-semibold text-slate-100">Run with npx (zero install)</h3>
+            <h3 className="text-lg font-semibold text-slate-100">Install globally</h3>
           </div>
+          <p className="text-sm text-slate-300">
+            Install once and use the short <code className="font-mono text-slate-200">atf</code> command everywhere.
+          </p>
+          <AtfCopyCommand
+            label="Install globally"
+            command={`npm install -g @trucore/atf@${cliVersion}`}
+          />
+          <p className="text-sm text-slate-300">
+            Then run commands directly:
+          </p>
+          <AtfCopyCommand
+            label="Example: first trade"
+            command="atf trade"
+          />
+        </div>
+
+        {/* Alternative: npx */}
+        <div className="rounded-xl border border-white/10 bg-neutral-950/50 p-5 space-y-3">
+          <h3 className="text-lg font-semibold text-slate-100">Alternative: Run with npx (zero install)</h3>
           <p className="text-sm text-slate-300">
             No installation required. npx downloads the pinned version on first run and caches it locally.
           </p>
@@ -189,29 +208,19 @@ export default function CommandReferencePage() {
             Version pinned to <code className="font-mono text-slate-300">{cliVersion}</code> for
             reproducibility. Never use <code className="font-mono text-slate-300">@latest</code>.
           </p>
-        </div>
-
-        {/* Alternative: global install */}
-        <div className="rounded-xl border border-white/10 bg-neutral-950/50 p-5 space-y-3">
-          <h3 className="text-lg font-semibold text-slate-100">Alternative: Global Install</h3>
-          <p className="text-sm text-slate-300">
-            For frequent use, install globally and invoke with the short{" "}
-            <code className="font-mono text-slate-200">atf</code> command.
-          </p>
-          <AtfCopyCommand
-            label="Install globally"
-            command={`npm install -g @trucore/atf@${cliVersion}`}
-          />
-          <p className="text-sm text-slate-300">
-            Then run commands directly:
-          </p>
-          <AtfCopyCommand
-            label="Example"
-            command="atf trade"
-          />
           <p className="text-xs text-slate-400">
             When this documentation shows bare <code className="font-mono text-slate-300">atf</code> commands,
             it assumes either a global install or an equivalent alias.
+          </p>
+        </div>
+
+        {/* Troubleshooting */}
+        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+          <p className="text-sm font-semibold text-amber-400">Wrong package name?</p>
+          <p className="mt-1 text-sm text-slate-300">
+            If you see <code className="font-mono text-slate-200">npm ERR! 404</code> for{" "}
+            <code className="font-mono text-slate-200">@trucore/atf-cli</code>, use the correct name:{" "}
+            <code className="font-mono text-primary-200">@trucore/atf</code>
           </p>
         </div>
       </section>

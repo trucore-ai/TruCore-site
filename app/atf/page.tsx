@@ -207,7 +207,7 @@ export default function ATFPage() {
           <p className="mt-2 text-sm text-slate-400">
             Install globally with{" "}
             <code className="font-mono text-slate-300">npm install -g @trucore/atf@{cliVersion}</code>,{" "}
-            or prefix each command with{" "}
+            or run without installing with{" "}
             <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion}</code>.{" "}
             <TrackedLink
               href="/docs/cli/commands#install"

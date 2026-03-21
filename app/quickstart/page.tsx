@@ -4,6 +4,8 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
 import { CopyBlock } from "@/components/copy-block";
+import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
   title: "Quickstart — Try ATF in Four Commands | TruCore",
@@ -15,6 +17,8 @@ const CLI_TRADE = `atf trade`;
 const CLI_SETUP = `atf setup`;
 const CLI_DOCTOR = `atf doctor`;
 const CLI_VERIFY = `atf verify <receipt-id>`;
+
+const cliVersion = getAtfCliVersion();
 
 export default function QuickstartPage() {
   return (
@@ -34,6 +38,29 @@ export default function QuickstartPage() {
         </div>
       </Section>
 
+      {/* ── Install ── */}
+      <Section id="install" divider className="fade-in-up">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+            Install the CLI
+          </h2>
+          <p className="mt-4 text-lg leading-[1.5] text-slate-300">
+            Install globally and use the short <code className="text-slate-200">atf</code> command for every step below.
+          </p>
+          <div className="mt-6">
+            <AtfCopyCommand
+              label="Install globally"
+              command={`npm install -g @trucore/atf@${cliVersion}`}
+              testId="quickstart-install"
+            />
+          </div>
+          <p className="mt-3 text-sm text-slate-400">
+            Or run without installing:{" "}
+            <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion} trade</code>
+          </p>
+        </div>
+      </Section>
+
       {/* ── Step 1 — Try a protected trade ── */}
       <Section id="step-1" divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl">
@@ -42,7 +69,7 @@ export default function QuickstartPage() {
             Try a protected trade
           </h2>
           <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Works immediately with zero setup. Demo mode runs by default &mdash;
+            Works immediately with zero setup. Demo mode runs by default,
             safe to try, no on-chain execution.
           </p>
           <div className="mt-6">

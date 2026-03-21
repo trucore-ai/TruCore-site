@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
+import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
   title: "Quickstart",
   description: "A concise ATF quickstart from policy definition to receipt recording.",
 };
+
+const cliVersion = getAtfCliVersion();
 
 export default function DocsQuickstartPage() {
   return (
@@ -18,6 +22,19 @@ export default function DocsQuickstartPage() {
           validate every transaction against policy, and record receipts for auditability.
         </p>
       </header>
+
+      {/* ── Install ── */}
+      <section className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-5 space-y-3">
+        <HeadingAnchor id="install">Install the CLI</HeadingAnchor>
+        <AtfCopyCommand
+          label="Install globally (recommended)"
+          command={`npm install -g @trucore/atf@${cliVersion}`}
+        />
+        <p className="text-sm text-slate-400">
+          Or run without installing:{" "}
+          <code className="font-mono text-slate-300">{`npx @trucore/atf@${cliVersion} trade`}</code>
+        </p>
+      </section>
 
       <section className="space-y-4">
         <HeadingAnchor id="what-youre-building">What you&apos;re building</HeadingAnchor>
