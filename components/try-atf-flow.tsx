@@ -1,10 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { trackEvent } from "@/lib/analytics";
+
+// ---------------------------------------------------------------------------
+// Internal funnel telemetry (POST to /api/events)
+// ---------------------------------------------------------------------------
+
+function sendFunnelEvent(
+  event: string,
+  meta?: { decision?: string },
+) {
+  try {
+    fetch("/api/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event,
+        page: "/try",
+        ...meta,
+      }),
+    }).catch(() => {
+      /* fire-and-forget */
+    });
+  } catch {
+    /* never break UI */
+  }
+}
 
 type PolicyResult = {
   policy: string;
@@ -66,9 +91,17 @@ export function TryAtfFlow() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Track page view once on mount
+  useEffect(() => {
+    trackEvent("try_page_viewed");
+    sendFunnelEvent("try_page_viewed");
+  }, []);
+
   async function handleSampleIntent() {
     setError(null);
     setLoading(true);
+    trackEvent("try_sample_clicked");
+    sendFunnelEvent("try_sample_clicked");
     try {
       const res = await fetch(`${getApiBaseUrl()}/sandbox/sample-intent`);
       if (res.status === 429) {
@@ -83,6 +116,7 @@ export function TryAtfFlow() {
       setIntent(data);
       setStep("intent-loaded");
       trackEvent("try_atf_sample_intent");
+      sendFunnelEvent("try_sample_loaded");
     } catch {
       setError("Network error. Could not reach the ATF API.");
     } finally {
@@ -94,6 +128,8 @@ export function TryAtfFlow() {
     if (!intent) return;
     setError(null);
     setLoading(true);
+    trackEvent("try_protect_clicked");
+    sendFunnelEvent("try_protect_clicked");
     try {
       const res = await fetch(`${getApiBaseUrl()}/sandbox/protect`, {
         method: "POST",
@@ -102,18 +138,24 @@ export function TryAtfFlow() {
       });
       if (res.status === 429) {
         setError("Rate limit reached. Please wait a moment and try again.");
+        sendFunnelEvent("try_protect_failed");
         return;
       }
       if (!res.ok) {
         setError(`Request failed (${res.status})`);
+        sendFunnelEvent("try_protect_failed");
         return;
       }
       const data: ProtectResponse = await res.json();
       setResult(data);
       setStep("protected");
       trackEvent("try_atf_protect", { decision: data.decision });
+      sendFunnelEvent("try_protect_succeeded", {
+        decision: data.decision,
+      });
     } catch {
       setError("Network error. Could not reach the ATF API.");
+      sendFunnelEvent("try_protect_failed");
     } finally {
       setLoading(false);
     }
@@ -268,6 +310,10 @@ export function TryAtfFlow() {
             </p>
             <Link
               href="/signup"
+              onClick={() => {
+                trackEvent("try_signup_cta_clicked");
+                sendFunnelEvent("try_signup_cta_clicked");
+              }}
               className="mt-4 inline-flex items-center justify-center rounded-xl bg-accent-500 px-8 py-3 text-base font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
             >
               Create Account
