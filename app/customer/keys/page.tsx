@@ -42,6 +42,7 @@ export default function CustomerKeysPage() {
   const router = useRouter();
   const [keys, setKeys] = useState<CustomerKey[]>([]);
   const [error, setError] = useState("");
+  const [verifyRequired, setVerifyRequired] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Create flow state
@@ -98,6 +99,7 @@ export default function CustomerKeysPage() {
     try {
       setCreating(true);
       setError("");
+      setVerifyRequired(false);
       const result: CustomerKeyCreateResponse =
         await createCustomerKey(createLabel);
       setNewSecret(result.raw_secret);
@@ -108,7 +110,11 @@ export default function CustomerKeysPage() {
         router.replace("/login");
         return;
       }
-      setError(err instanceof Error ? err.message : "Failed to create key");
+      if (err instanceof Error && err.message.toLowerCase().includes("email") && err.message.toLowerCase().includes("verif")) {
+        setVerifyRequired(true);
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to create key");
+      }
     } finally {
       setCreating(false);
     }
@@ -130,6 +136,7 @@ export default function CustomerKeysPage() {
     try {
       setRevoking(true);
       setError("");
+      setVerifyRequired(false);
       await revokeCustomerKey(keyId);
       setConfirmRevokeId(null);
       await loadKeys();
@@ -138,7 +145,12 @@ export default function CustomerKeysPage() {
         router.replace("/login");
         return;
       }
-      setError(err instanceof Error ? err.message : "Failed to revoke key");
+      if (err instanceof Error && err.message.toLowerCase().includes("email") && err.message.toLowerCase().includes("verif")) {
+        setVerifyRequired(true);
+        setConfirmRevokeId(null);
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to revoke key");
+      }
     } finally {
       setRevoking(false);
     }
@@ -152,6 +164,7 @@ export default function CustomerKeysPage() {
     try {
       setRotating(true);
       setError("");
+      setVerifyRequired(false);
       const result: CustomerKeyRotateResponse =
         await rotateCustomerKey(keyId);
       setRotatedSecret(result.raw_secret);
@@ -162,7 +175,12 @@ export default function CustomerKeysPage() {
         router.replace("/login");
         return;
       }
-      setError(err instanceof Error ? err.message : "Failed to rotate key");
+      if (err instanceof Error && err.message.toLowerCase().includes("email") && err.message.toLowerCase().includes("verif")) {
+        setVerifyRequired(true);
+        setConfirmRotateId(null);
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to rotate key");
+      }
     } finally {
       setRotating(false);
     }
@@ -213,6 +231,22 @@ export default function CustomerKeysPage() {
       {error && (
         <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
           {error}
+        </div>
+      )}
+
+      {/* Email verification required banner */}
+      {verifyRequired && (
+        <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-4 space-y-2">
+          <p className="text-sm text-amber-200">
+            Email verification required. You must verify your email before
+            creating, revoking, or rotating API keys.
+          </p>
+          <Link
+            href="/customer/dashboard"
+            className="inline-block rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-white/10"
+          >
+            Go to dashboard to verify
+          </Link>
         </div>
       )}
 

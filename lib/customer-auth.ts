@@ -58,6 +58,7 @@ export interface AuthResult {
   token: string;
   tenant_id: string;
   api_key?: string;
+  email_verified?: boolean;
 }
 
 export async function signup(
@@ -500,6 +501,88 @@ export async function rotateCustomerKey(
     const body = await res.json().catch(() => ({}));
     throw new Error(body?.detail || "Failed to rotate key");
   }
+
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Email verification
+// ---------------------------------------------------------------------------
+
+export interface VerificationStatus {
+  email: string;
+  email_verified: boolean;
+  email_verified_at: number | null;
+  verification_pending: boolean;
+}
+
+export async function requestVerificationEmail(): Promise<{ status: string }> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${ATF_API_BASE}/auth/verify-email/request`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({}),
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (res.status === 429) {
+    const body = await res.json().catch(() => ({}));
+    const secs =
+      body?.retry_after_seconds ?? res.headers.get("Retry-After") ?? "";
+    throw new Error(
+      secs
+        ? `Too many resend attempts. Please try again in ${secs} seconds.`
+        : "Too many resend attempts. Please try again later.",
+    );
+  }
+
+  if (!res.ok) throw new Error("Failed to resend verification email");
+
+  return res.json();
+}
+
+export async function confirmVerificationEmail(
+  verifyToken: string,
+): Promise<{ status: string; email?: string }> {
+  const res = await fetch(`${ATF_API_BASE}/auth/verify-email/confirm`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: verifyToken }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(
+      body?.detail?.message || body?.detail || "Verification failed",
+    );
+  }
+
+  return res.json();
+}
+
+export async function fetchVerificationStatus(): Promise<VerificationStatus> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${ATF_API_BASE}/auth/verify-email/status`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new Error("Session expired");
+  }
+
+  if (!res.ok) throw new Error("Failed to fetch verification status");
 
   return res.json();
 }

@@ -14,6 +14,7 @@ import {
   fetchActivation,
   markActivationStep,
   fetchReceipts,
+  requestVerificationEmail,
 } from "@/lib/customer-auth";
 
 // ---------------------------------------------------------------------------
@@ -23,6 +24,7 @@ import {
 interface DashboardData {
   user_id: string;
   email: string;
+  email_verified?: boolean;
   tenant_id: string;
   tenant: { plan_tier: string; status: string } | null;
   api_keys: Array<{
@@ -100,6 +102,11 @@ export default function CustomerDashboardPage() {
     null,
   );
 
+  // Verification
+  const [emailVerified, setEmailVerified] = useState(true);
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+
   const savedApiKey = typeof window !== "undefined" ? getApiKey() : null;
 
   // -----------------------------------------------------------------------
@@ -117,6 +124,7 @@ export default function CustomerDashboardPage() {
       .then((d) => {
         const dd = d as unknown as DashboardData;
         setData(dd);
+        if (dd.email_verified !== undefined) setEmailVerified(dd.email_verified);
         if (dd.receipt_count !== undefined) setReceiptCount(dd.receipt_count);
         // If the dashboard already returns activation, use it
         if (dd.activation) {
@@ -306,6 +314,38 @@ export default function CustomerDashboardPage() {
         {error && (
           <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
             {error}
+          </div>
+        )}
+
+        {/* Email verification banner */}
+        {!emailVerified && (
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-4 space-y-2">
+            <p className="text-sm text-amber-200">
+              Your email is not verified. Verify to unlock full access
+              (API key management and other sensitive actions).
+            </p>
+            {resendSuccess && (
+              <p className="text-xs text-emerald-300">
+                Verification email resent.
+              </p>
+            )}
+            <button
+              onClick={async () => {
+                setResending(true);
+                setResendSuccess(false);
+                try {
+                  await requestVerificationEmail();
+                  setResendSuccess(true);
+                } catch {
+                  // Non-fatal
+                }
+                setResending(false);
+              }}
+              disabled={resending}
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-white/10 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {resending ? "Resending…" : "Resend verification email"}
+            </button>
           </div>
         )}
 

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { login, storeAuth } from "@/lib/customer-auth";
+import { login, storeAuth, requestVerificationEmail } from "@/lib/customer-auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,6 +11,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [unverified, setUnverified] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -20,11 +23,29 @@ export default function LoginPage() {
     try {
       const result = await login(email, password);
       storeAuth(result.token, result.tenant_id, result.api_key);
-      router.push("/customer/dashboard");
+      if (result.email_verified === false) {
+        setUnverified(true);
+      } else {
+        router.push("/customer/dashboard");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    setResending(true);
+    setResendSuccess(false);
+    setError("");
+    try {
+      await requestVerificationEmail();
+      setResendSuccess(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resend");
+    } finally {
+      setResending(false);
     }
   }
 
@@ -39,6 +60,35 @@ export default function LoginPage() {
             Access your ATF dashboard and API keys
           </p>
         </div>
+
+        {unverified && (
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-4 space-y-3">
+            <p className="text-sm text-amber-200">
+              Your email is not verified. Some features (like managing API
+              keys) are restricted until you verify.
+            </p>
+            {resendSuccess && (
+              <p className="text-xs text-emerald-300">
+                Verification email resent.
+              </p>
+            )}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleResend}
+                disabled={resending}
+                className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-white/10 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {resending ? "Resending…" : "Resend verification email"}
+              </button>
+              <button
+                onClick={() => router.push("/customer/dashboard")}
+                className="rounded-lg bg-primary-500 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-primary-400"
+              >
+                Continue to dashboard
+              </button>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {error && (
