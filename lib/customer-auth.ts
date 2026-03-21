@@ -72,6 +72,14 @@ export async function signup(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
+    if (res.status === 429) {
+      const secs = body?.retry_after_seconds ?? res.headers.get("Retry-After") ?? "";
+      throw new Error(
+        secs
+          ? `Too many signup attempts. Please try again in ${secs} seconds.`
+          : "Too many signup attempts. Please try again later.",
+      );
+    }
     const msg =
       body?.detail?.message || body?.detail || "Signup failed";
     throw new Error(msg);
@@ -92,6 +100,14 @@ export async function login(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
+    if (res.status === 429) {
+      const secs = body?.retry_after_seconds ?? res.headers.get("Retry-After") ?? "";
+      throw new Error(
+        secs
+          ? `Too many login attempts. Please try again in ${secs} seconds.`
+          : "Too many login attempts. Please try again later.",
+      );
+    }
     const msg =
       body?.detail?.message || body?.detail || "Login failed";
     throw new Error(msg);
@@ -135,6 +151,16 @@ export async function fetchSampleIntent(): Promise<Record<string, unknown>> {
     throw new Error("Session expired");
   }
 
+  if (res.status === 429) {
+    const body = await res.json().catch(() => ({}));
+    const secs = body?.retry_after_seconds ?? "";
+    throw new Error(
+      secs
+        ? `Rate limit reached. Please try again in ${secs} seconds.`
+        : "Rate limit reached. Please try again later.",
+    );
+  }
+
   if (!res.ok) throw new Error("Failed to fetch sample intent");
 
   return res.json();
@@ -160,6 +186,16 @@ export async function simulateProtection(
     throw new Error("Session expired");
   }
 
+  if (res.status === 429) {
+    const body = await res.json().catch(() => ({}));
+    const secs = body?.retry_after_seconds ?? "";
+    throw new Error(
+      secs
+        ? `Rate limit reached. Please try again in ${secs} seconds.`
+        : "Rate limit reached. Please try again later.",
+    );
+  }
+
   if (!res.ok) throw new Error("Protection simulation failed");
 
   return res.json();
@@ -183,6 +219,16 @@ export async function executeSample(
   if (res.status === 401) {
     clearAuth();
     throw new Error("Session expired");
+  }
+
+  if (res.status === 429) {
+    const body = await res.json().catch(() => ({}));
+    const secs = body?.retry_after_seconds ?? "";
+    throw new Error(
+      secs
+        ? `Rate limit reached. Please try again in ${secs} seconds.`
+        : "Rate limit reached. Please try again later.",
+    );
   }
 
   if (!res.ok) throw new Error("Sample execution failed");
