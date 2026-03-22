@@ -21,6 +21,7 @@ interface FeatureFlags {
   pricing_page_enabled: boolean;
   upgrade_cta_enabled: boolean;
   monetization_enabled: boolean;
+  launch_mode: string | null;
 }
 
 /**
@@ -59,6 +60,7 @@ export async function getFeatureFlags(): Promise<FeatureFlags> {
       pricing_page_enabled: Boolean(settings?.pricing_page_enabled),
       upgrade_cta_enabled: Boolean(settings?.upgrade_cta_enabled),
       monetization_enabled: Boolean(settings?.monetization_enabled),
+      launch_mode: (json?.launch_mode as string) ?? null,
     };
   } catch {
     return _envDefaults();
@@ -73,6 +75,7 @@ function _envDefaults(): FeatureFlags {
       process.env.ATF_UPGRADE_CTA_ENABLED === "true",
     monetization_enabled:
       process.env.ATF_MONETIZATION_ENABLED === "true",
+    launch_mode: process.env.ATF_LAUNCH_MODE ?? null,
   };
 }
 

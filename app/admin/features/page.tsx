@@ -1,5 +1,7 @@
 import { fetchAdminFeatures, type FeatureEntry } from "@/lib/dashboard-client";
 import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
+import { LaunchModeBanner } from "@/components/dashboard/launch-mode-banner";
+import { getFeatureFlags } from "@/lib/feature-flags";
 import { logSecurityEvent } from "@/lib/security-log";
 import Link from "next/link";
 
@@ -34,9 +36,14 @@ export default async function AdminFeaturesPage({
 
   let degraded = false;
   let features: FeatureEntry[] = [];
+  let launchMode: string | null = null;
 
   try {
-    const result = await fetchAdminFeatures(surfaceFilter || undefined);
+    const [result, flags] = await Promise.all([
+      fetchAdminFeatures(surfaceFilter || undefined),
+      getFeatureFlags(),
+    ]);
+    launchMode = flags.launch_mode;
     if (result.ok) {
       features = result.data.features;
     } else {
@@ -54,9 +61,12 @@ export default async function AdminFeaturesPage({
   return (
     <div className="min-h-screen bg-neutral-950 p-6 text-slate-100 md:p-10">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Feature Entitlement Matrix
-        </h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold tracking-tight">
+            Feature Entitlement Matrix
+          </h1>
+          <LaunchModeBanner launchMode={launchMode} />
+        </div>
         <div className="flex items-center gap-3">
           <a
             href="/admin/users"
