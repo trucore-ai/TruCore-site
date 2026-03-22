@@ -15,7 +15,9 @@ import {
   markActivationStep,
   fetchReceipts,
   requestVerificationEmail,
+  fetchUpgradeRequests,
   ApiError,
+  type UpgradeRequestData,
 } from "@/lib/customer-auth";
 
 // ---------------------------------------------------------------------------
@@ -46,7 +48,7 @@ interface DashboardData {
   email: string;
   email_verified?: boolean;
   tenant_id: string;
-  tenant: { plan_tier: string; status: string } | null;
+  tenant: { plan_tier: string; status: string; real_execution_enabled?: boolean; real_execution_network?: string } | null;
   api_keys: Array<{
     key_id: string;
     label: string;
@@ -203,6 +205,9 @@ export default function CustomerDashboardPage() {
     null,
   );
 
+  // Upgrade requests
+  const [pendingUpgrade, setPendingUpgrade] = useState<UpgradeRequestData | null>(null);
+
   // Verification
   const [emailVerified, setEmailVerified] = useState(true);
   const [resending, setResending] = useState(false);
@@ -263,6 +268,18 @@ export default function CustomerDashboardPage() {
         const r = res as { receipts?: ReceiptSummary[]; count?: number };
         if (r.count !== undefined) setReceiptCount((prev) => Math.max(prev, r.count!));
         if (r.receipts && r.receipts.length > 0) setRecentReceipt(r.receipts[0]);
+      })
+      .catch(() => {
+        // Non-fatal
+      });
+
+    // Pending upgrade requests
+    fetchUpgradeRequests()
+      .then((res) => {
+        const pending = (res.requests || []).find(
+          (r: UpgradeRequestData) => r.status === "pending",
+        );
+        if (pending) setPendingUpgrade(pending);
       })
       .catch(() => {
         // Non-fatal
@@ -501,11 +518,16 @@ export default function CustomerDashboardPage() {
                         {data.tenant.status}
                       </span>
                     )}
+                    {data.tenant?.real_execution_enabled && (
+                      <span className="inline-block rounded-full bg-blue-500/20 border border-blue-400/30 px-2 py-0.5 text-[10px] font-semibold text-blue-300">
+                        Real Execution &middot; {data.tenant.real_execution_network ?? "devnet"}
+                      </span>
+                    )}
                   </div>
                 </div>
                 {tier === "free" && (
                   <Link
-                    href="/pricing"
+                    href="/upgrade?plan=pro"
                     className="rounded-lg bg-accent-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-400"
                   >
                     Upgrade to Pro
@@ -552,13 +574,32 @@ export default function CustomerDashboardPage() {
                 <p className="text-xs text-slate-500">
                   You&apos;re on the <span className="text-slate-300 font-medium">Free plan</span>.{" "}
                   <Link
-                    href="/pricing"
+                    href="/upgrade?plan=pro"
                     className="text-primary-400 underline hover:text-primary-300"
                   >
                     Upgrade to Pro
                   </Link>{" "}
                   for higher limits and real execution capacity.
                 </p>
+              )}
+
+              {/* Pending upgrade request notice */}
+              {pendingUpgrade && (
+                <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 px-4 py-3">
+                  <p className="text-xs text-amber-300">
+                    You have a pending upgrade request for the{" "}
+                    <span className="font-semibold capitalize">
+                      {pendingUpgrade.requested_plan}
+                    </span>{" "}
+                    plan.{" "}
+                    <Link
+                      href="/upgrade"
+                      className="underline hover:text-amber-200"
+                    >
+                      View status
+                    </Link>
+                  </p>
+                </div>
               )}
             </section>
           );
@@ -876,7 +917,7 @@ export default function CustomerDashboardPage() {
 
           {/* Step 3: Execute — show if at step 2 (simulation done, not yet executed) */}
           {!activationLoading && obStep === 2 && (
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <button
                 onClick={handleExecute}
                 disabled={obLoading}
@@ -884,6 +925,11 @@ export default function CustomerDashboardPage() {
               >
                 {obLoading ? "Executing\u2026" : "Execute Sample Trade"}
               </button>
+              <p className="text-[10px] text-slate-500">
+                {data?.tenant?.real_execution_enabled
+                  ? `Real execution enabled \u00b7 ${data.tenant.real_execution_network ?? "devnet"}`
+                  : "Simulated mode \u2014 no on-chain transaction"}
+              </p>
             </div>
           )}
 
@@ -915,14 +961,27 @@ export default function CustomerDashboardPage() {
                 </div>
               </div>
               {/* Show tx signature for real executions */}
-              {!!((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.tx_signature && (
-                <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-3 py-2">
-                  <p className="text-[10px] text-blue-400 font-medium mb-0.5">Transaction Signature</p>
-                  <p className="text-xs text-blue-200 font-mono break-all">
-                    {((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).tx_signature as string}
-                  </p>
-                </div>
-              )}
+              {!!((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.tx_signature && (() => {
+                const sig = ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).tx_signature as string;
+                const network = ((obReceipt as Record<string, unknown>).network as string) ?? "devnet";
+                const explorerUrl = `https://explorer.solana.com/tx/${encodeURIComponent(sig)}${network === "devnet" ? "?cluster=devnet" : ""}`;
+                return (
+                  <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-3 py-2">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <p className="text-[10px] text-blue-400 font-medium">Transaction Signature</p>
+                      <a
+                        href={explorerUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-blue-400 hover:text-blue-300 underline transition"
+                      >
+                        View on Solana Explorer &rarr;
+                      </a>
+                    </div>
+                    <p className="text-xs text-blue-200 font-mono break-all">{sig}</p>
+                  </div>
+                );
+              })()}
               {/* Show execution error if real mode failed */}
               {!!((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.execution_error && (
                 <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2">
