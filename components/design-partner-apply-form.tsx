@@ -69,47 +69,36 @@ export function DesignPartnerApplyForm() {
           &#10003; Application received
         </p>
 
-        {state.schedulingUrl ? (
-          <>
-            <p className="text-lg text-slate-200">
-              Next: book a 15-minute fit check so we can learn about your setup
-              and share what ATF can do for your stack.
-            </p>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <p className="text-lg text-slate-200">
+          Next: book a 15-minute fit check so we can learn about your setup
+          and share what ATF can do for your stack.
+        </p>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Link
+            href={state.schedulingUrl || "/contact?subject=Design+Partner+Fit+Check"}
+            {...(state.schedulingUrl ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            onClick={() =>
+              trackEvent("design_partner_book_click", {
+                location: "atf_apply_success",
+              })
+            }
+            data-testid="design-partner-scheduling-link"
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-accent-500 px-6 text-lg font-semibold text-white shadow-md transition-all hover:bg-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-neutral-950"
+          >
+            Book a fit check
+          </Link>
+          {state.emailEnabled && (
+            <span className="text-sm text-slate-400">
+              Didn&apos;t get the email? Check spam or contact{" "}
               <a
-                href={state.schedulingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() =>
-                  trackEvent("design_partner_book_click", {
-                    location: "atf_apply_success",
-                  })
-                }
-                data-testid="design-partner-scheduling-link"
-                className="inline-flex h-12 items-center justify-center rounded-xl bg-accent-500 px-6 text-lg font-semibold text-white shadow-md transition-all hover:bg-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-neutral-950"
+                href="mailto:info@trucore.xyz"
+                className="font-medium text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
               >
-                Book a fit check
+                info@trucore.xyz
               </a>
-              {state.emailEnabled && (
-                <span className="text-sm text-slate-400">
-                  Prefer email?{" "}
-                  <a
-                    href="mailto:info@trucore.xyz"
-                    className="font-medium text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
-                  >
-                    Reply to your confirmation.
-                  </a>
-                </span>
-              )}
-            </div>
-          </>
-        ) : (
-          <p className="text-lg text-slate-200">
-            {state.emailEnabled
-              ? "We\u2019ll follow up by email within one business day."
-              : "We\u2019ll follow up within one business day."}
-          </p>
-        )}
+            </span>
+          )}
+        </div>
 
         {/* ── While you wait — activation next steps ── */}
         <div className="mt-4 border-t border-white/10 pt-4">
@@ -144,8 +133,9 @@ export function DesignPartnerApplyForm() {
 
   return (
     <form action={dispatch} data-testid="design-partner-form" className="space-y-5" noValidate>
-      {/* Hidden intent */}
+      {/* Hidden intent + source */}
       <input type="hidden" name="intent" value="design_partner" />
+      <input type="hidden" name="source" value="atf_apply_page" />
 
       {/* Honeypot */}
       <div className="absolute left-[-9999px]" aria-hidden="true">

@@ -35,6 +35,9 @@ const LOGIN_HTML = `<!DOCTYPE html>
     button{margin-top:1rem;width:100%;padding:0.5rem;border:none;border-radius:0.375rem;
       background:#6366f1;color:#fff;font-size:0.875rem;font-weight:500;cursor:pointer;transition:background 0.15s}
     button:hover{background:#818cf8}
+    .error{margin-top:0.75rem;padding:0.5rem 0.75rem;border-radius:0.375rem;
+      background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+      color:#fca5a5;font-size:0.8rem;text-align:center}
   </style>
 </head>
 <body>
@@ -45,12 +48,25 @@ const LOGIN_HTML = `<!DOCTYPE html>
       <input id="key" name="key" type="password" required autocomplete="current-password" />
       <button type="submit">Sign in</button>
     </form>
+    %%ERROR_BLOCK%%
   </div>
 </body>
 </html>`;
 
-export async function GET() {
-  return new NextResponse(LOGIN_HTML, {
+function loginPage(error?: string) {
+  const errorHtml = error
+    ? `<div class="error">${error}</div>`
+    : "";
+  return LOGIN_HTML.replace("%%ERROR_BLOCK%%", errorHtml);
+}
+
+export async function GET(request: NextRequest) {
+  const reason = request.nextUrl.searchParams.get("error");
+  let errorMsg: string | undefined;
+  if (reason === "invalid_key") errorMsg = "Invalid dashboard key.";
+  if (reason === "rate_limited") errorMsg = "Too many attempts. Please wait.";
+
+  return new NextResponse(loginPage(errorMsg), {
     status: 200,
     headers: { "Content-Type": "text/html; charset=utf-8" },
   });
@@ -79,7 +95,7 @@ export async function POST(request: NextRequest) {
   if (cooldownSeconds > 0) {
     logSecurityEvent("login_rate_limited", { ip });
     return NextResponse.redirect(
-      new URL("/admin/login", request.url),
+      new URL("/admin/login?error=rate_limited", request.url),
       303,
     );
   }
@@ -91,7 +107,7 @@ export async function POST(request: NextRequest) {
       meta: locked > 0 ? { cooldown_triggered: true } : undefined,
     });
     return NextResponse.redirect(
-      new URL("/admin/login", request.url),
+      new URL("/admin/login?error=invalid_key", request.url),
       303,
     );
   }

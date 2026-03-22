@@ -326,6 +326,79 @@ describe("admin-auth", () => {
       expect(store.has("expired-touch2")).toBe(false);
     });
   });
+
+  /* ---------- self-verifying token fallback (serverless) ---------- */
+
+  describe("self-verifying token fallback", () => {
+    it("validates a token after session store is cleared (cold start)", () => {
+      const token = createSessionToken();
+      expect(isValidSessionToken(token)).toBe(true);
+
+      // Simulate serverless cold start: store is empty
+      _getSessionStore().clear();
+      expect(_getSessionStore().size).toBe(0);
+
+      // Token should still validate via HMAC fallback
+      expect(isValidSessionToken(token)).toBe(true);
+
+      // Should re-register in the store
+      expect(_getSessionStore().has(token)).toBe(true);
+    });
+
+    it("touchSession works after cold-start re-registration", () => {
+      const token = createSessionToken();
+      _getSessionStore().clear();
+
+      // touchSession should self-verify and register
+      expect(touchSession(token)).toBe(true);
+      expect(_getSessionStore().has(token)).toBe(true);
+    });
+
+    it("getAdminSessionFromCookies works after cold start", async () => {
+      const token = createSessionToken();
+      _getSessionStore().clear();
+
+      mocks.cookieValues.set(ADMIN_COOKIE_NAME, token);
+      const result = await getAdminSessionFromCookies();
+      expect(result).toBe(true);
+    });
+
+    it("rejects self-verifying token with wrong HMAC", () => {
+      const token = createSessionToken();
+      _getSessionStore().clear();
+
+      // Tamper with the HMAC portion
+      const parts = token.split(".");
+      const tampered = `${parts[0]}.${parts[1]}.${"a".repeat(64)}`;
+      expect(isValidSessionToken(tampered)).toBe(false);
+    });
+
+    it("rejects self-verifying token past absolute expiry", () => {
+      const token = createSessionToken();
+      _getSessionStore().clear();
+
+      // Backdate: create a token with old issuedAt
+      const parts = token.split(".");
+      const oldIat = Date.now() - (ADMIN_COOKIE_MAX_AGE + 1) * 1000;
+      // We can't recompute the HMAC externally, so use createSessionToken and modify store
+      const token2 = createSessionToken();
+      const record = _getSessionStore().get(token2)!;
+      record.issuedAt = oldIat;
+      record.lastSeenAt = oldIat;
+
+      // Primary path should reject
+      expect(isValidSessionToken(token2)).toBe(false);
+    });
+
+    it("self-verifying token format has three dot-separated parts", () => {
+      const token = createSessionToken();
+      const parts = token.split(".");
+      expect(parts.length).toBe(3);
+      expect(Number(parts[0])).toBeGreaterThan(0); // issuedAt
+      expect(parts[1].length).toBe(32); // nonce (16 bytes hex)
+      expect(parts[2].length).toBe(64); // HMAC-SHA256 hex
+    });
+  });
 });
 
 afterAll(() => {

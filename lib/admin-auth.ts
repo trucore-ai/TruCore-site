@@ -126,9 +126,41 @@ export function isAdminKeyValid(key: string | null | undefined): boolean {
 /* ---------- signed token helpers ---------- */
 
 /**
- * Create an HMAC-signed session token and register it in the store.
- * Combines a timestamp with a cryptographic random nonce so that
- * tokens are unique even if two logins occur at the same millisecond.
+ * Token format: `<issuedAt>.<nonce>.<hmac>`
+ *
+ * Self-verifying: the issuedAt and nonce are embedded in the token so
+ * validation does not require the in-memory session store. This is
+ * critical for serverless runtimes (e.g. Vercel) where the POST handler
+ * and the subsequent redirect may hit different function instances.
+ *
+ * When the session store IS available (same process), revocation and
+ * idle timeout are still enforced. When it is NOT, only HMAC validity
+ * and absolute expiry are checked.
+ */
+
+/** Compute the HMAC for a given payload. */
+function computeTokenHmac(secret: string, issuedAt: number, nonce: string): string {
+  return createHmac("sha256", secret)
+    .update(`${issuedAt}:${nonce}`)
+    .digest("hex");
+}
+
+/** Parse a self-verifying token. Returns null on any malformed input. */
+function parseToken(token: string): { issuedAt: number; nonce: string; hmac: string } | null {
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+  const issuedAt = Number(parts[0]);
+  if (!Number.isFinite(issuedAt) || issuedAt <= 0) return null;
+  const nonce = parts[1];
+  if (!nonce || nonce.length !== 32) return null; // 16 bytes hex = 32 chars
+  const hmac = parts[2];
+  if (!hmac || hmac.length !== 64) return null; // sha256 hex = 64 chars
+  return { issuedAt, nonce, hmac };
+}
+
+/**
+ * Create an HMAC-signed self-verifying session token and register it
+ * in the store.
  */
 export function createSessionToken(): string {
   const secret = process.env.ADMIN_DASHBOARD_KEY;
@@ -138,62 +170,97 @@ export function createSessionToken(): string {
 
   const now = Date.now();
   const nonce = randomBytes(16).toString("hex");
-  const token = createHmac("sha256", secret)
-    .update(`${now}:${nonce}`)
-    .digest("hex");
+  const hmac = computeTokenHmac(secret, now, nonce);
+  const token = `${now}.${nonce}.${hmac}`;
 
   sessionStore.set(token, { issuedAt: now, lastSeenAt: now });
   return token;
 }
 
 /**
- * Validate a session token against the store.
- * Checks: existence, structure, revocation, absolute expiry, idle timeout.
+ * Validate a session token.
+ *
+ * Primary path: check the in-memory session store for full validation
+ * (revocation, idle timeout, absolute expiry).
+ *
+ * Fallback path: if the token is not in the store (serverless cold start),
+ * verify the HMAC signature and check absolute expiry. On success, the
+ * session is re-registered in the store for subsequent requests.
+ *
  * Fail-closed on any ambiguity.
  */
 export function isValidSessionToken(
   token: string | null | undefined,
 ): boolean {
   if (!token) return false;
-  const record = sessionStore.get(token);
-  if (record === undefined) return false;
 
-  /* Malformed record — fail closed */
-  if (
-    typeof record.issuedAt !== "number" ||
-    typeof record.lastSeenAt !== "number"
-  ) {
-    logSecurityEvent("invalid_session_rejected", {
-      meta: { reason: "malformed" },
-    });
-    sessionStore.delete(token);
-    return false;
+  const record = sessionStore.get(token);
+
+  /* ── Primary path: in-memory store has the session ── */
+  if (record !== undefined) {
+    /* Malformed record — fail closed */
+    if (
+      typeof record.issuedAt !== "number" ||
+      typeof record.lastSeenAt !== "number"
+    ) {
+      logSecurityEvent("invalid_session_rejected", {
+        meta: { reason: "malformed" },
+      });
+      sessionStore.delete(token);
+      return false;
+    }
+
+    /* Revoked session */
+    if (record.revokedAt !== undefined) {
+      logSecurityEvent("revoked_session_rejected");
+      return false;
+    }
+
+    const now = Date.now();
+
+    /* Absolute session lifetime exceeded */
+    const absoluteAge = (now - record.issuedAt) / 1000;
+    if (absoluteAge > ADMIN_COOKIE_MAX_AGE) {
+      logSecurityEvent("session_expired");
+      sessionStore.delete(token);
+      return false;
+    }
+
+    /* Idle timeout exceeded */
+    const idleAge = (now - record.lastSeenAt) / 1000;
+    if (idleAge > IDLE_TIMEOUT_SECONDS) {
+      logSecurityEvent("session_idle_timeout");
+      sessionStore.delete(token);
+      return false;
+    }
+
+    return true;
   }
 
-  /* Revoked session */
-  if (record.revokedAt !== undefined) {
-    logSecurityEvent("revoked_session_rejected");
+  /* ── Fallback path: self-verifying token (serverless cold start) ── */
+  const secret = process.env.ADMIN_DASHBOARD_KEY;
+  if (!secret) return false;
+
+  const parsed = parseToken(token);
+  if (!parsed) return false;
+
+  const expectedHmac = computeTokenHmac(secret, parsed.issuedAt, parsed.nonce);
+  if (!constantTimeEqual(parsed.hmac, expectedHmac)) {
+    logSecurityEvent("invalid_session_rejected", {
+      meta: { reason: "hmac_mismatch" },
+    });
     return false;
   }
 
   const now = Date.now();
-
-  /* Absolute session lifetime exceeded */
-  const absoluteAge = (now - record.issuedAt) / 1000;
+  const absoluteAge = (now - parsed.issuedAt) / 1000;
   if (absoluteAge > ADMIN_COOKIE_MAX_AGE) {
     logSecurityEvent("session_expired");
-    sessionStore.delete(token);
     return false;
   }
 
-  /* Idle timeout exceeded */
-  const idleAge = (now - record.lastSeenAt) / 1000;
-  if (idleAge > IDLE_TIMEOUT_SECONDS) {
-    logSecurityEvent("session_idle_timeout");
-    sessionStore.delete(token);
-    return false;
-  }
-
+  /* Re-register in the store so subsequent requests use the primary path */
+  sessionStore.set(token, { issuedAt: parsed.issuedAt, lastSeenAt: now });
   return true;
 }
 
@@ -216,12 +283,31 @@ export function revokeSessionToken(
  * Writes are throttled to at most once per LAST_SEEN_THROTTLE_SECONDS
  * to avoid write amplification.
  * Returns true if the session is still valid, false otherwise.
+ *
+ * If the token is not in the store (serverless cold start) but has been
+ * validated by isValidSessionToken (which re-registers it), this will
+ * find it in the store. If it's STILL not there, re-verify and register.
  */
 export function touchSession(token: string): boolean {
   sweepSessions();
 
-  const record = sessionStore.get(token);
-  if (!record || record.revokedAt !== undefined) return false;
+  let record = sessionStore.get(token);
+
+  /* Token not in store — try self-verifying registration */
+  if (!record) {
+    const secret = process.env.ADMIN_DASHBOARD_KEY;
+    if (!secret) return false;
+    const parsed = parseToken(token);
+    if (!parsed) return false;
+    const expectedHmac = computeTokenHmac(secret, parsed.issuedAt, parsed.nonce);
+    if (!constantTimeEqual(parsed.hmac, expectedHmac)) return false;
+    const now = Date.now();
+    if ((now - parsed.issuedAt) / 1000 > ADMIN_COOKIE_MAX_AGE) return false;
+    sessionStore.set(token, { issuedAt: parsed.issuedAt, lastSeenAt: now });
+    return true;
+  }
+
+  if (record.revokedAt !== undefined) return false;
 
   const now = Date.now();
   const elapsed = (now - record.lastSeenAt) / 1000;
