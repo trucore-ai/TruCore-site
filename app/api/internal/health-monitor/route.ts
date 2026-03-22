@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * Internal health monitor — checks ATF backend availability.
@@ -7,6 +7,8 @@ import { NextResponse } from "next/server";
  * consecutive failures in-memory and sends alert/recovery emails
  * via Resend when thresholds are crossed.
  *
+ * Authorization: requires CRON_SECRET (set by Vercel for cron jobs).
+ *
  * Environment variables:
  *   ATF_HEALTH_URL          — URL to check  (default: https://api.trucore.xyz/health)
  *   ALERT_EMAIL_TO          — recipient for alert emails
@@ -14,6 +16,7 @@ import { NextResponse } from "next/server";
  *   FAILURE_THRESHOLD       — consecutive failures before alert (default: 3)
  *   RESEND_API_KEY          — Resend API key
  *   ALERT_EMAIL_FROM        — sender address (default: TruCore Monitor <alerts@trucore.xyz>)
+ *   CRON_SECRET             — shared secret for cron authorization
  */
 
 const RESEND_API_URL = "https://api.resend.com/emails";
@@ -103,7 +106,19 @@ async function sendAlertEmail(params: {
 // Check logic
 // ---------------------------------------------------------------------------
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // --- Authorization: only Vercel cron or callers with CRON_SECRET ---
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const auth = request.headers.get("authorization");
+    if (auth !== `Bearer ${cronSecret}`) {
+      return NextResponse.json(
+        { ok: false, error: "unauthorized" },
+        { status: 401, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+  }
+
   const config = getConfig();
 
   if (!config.emailTo) {

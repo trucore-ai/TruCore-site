@@ -32,6 +32,13 @@ export default function SimulateVerifyExecuteGuidePage() {
       {/* ── Prerequisites ── */}
       <section className="space-y-4">
         <HeadingAnchor id="prerequisites">Prerequisites</HeadingAnchor>
+
+        <div className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-5 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Recommended: install globally</p>
+          <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="sve-install-global" />
+          <p className="mt-1 text-sm text-slate-400">Or run without installing: <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion} &lt;command&gt;</code></p>
+        </div>
+
         <ul className="list-disc space-y-1 pl-6 text-sm text-slate-300">
           <li><code className="font-mono text-slate-200">doctor</code> passes with no errors.</li>
           <li>An active profile with a configured wallet and RPC endpoint.</li>

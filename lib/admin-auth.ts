@@ -118,9 +118,9 @@ function sweepSessions(): void {
 /* ---------- key validation (used by login route) ---------- */
 
 export function isAdminKeyValid(key: string | null | undefined): boolean {
-  const expected = process.env.ADMIN_DASHBOARD_KEY;
+  const expected = process.env.ADMIN_DASHBOARD_KEY?.trim();
   if (!expected || !key) return false;
-  return constantTimeEqual(key, expected);
+  return constantTimeEqual(key.trim(), expected);
 }
 
 /* ---------- signed token helpers ---------- */

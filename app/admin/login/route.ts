@@ -90,6 +90,13 @@ export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const key = formData.get("key") as string | null;
 
+  /* Safe debug signal — never logs the actual secret */
+  const envKey = process.env.ADMIN_DASHBOARD_KEY;
+  console.info(
+    `[admin-login] ADMIN_DASHBOARD_KEY present: ${envKey ? "yes" : "no"}` +
+      (envKey ? `, length: ${envKey.length}` : ""),
+  );
+
   /* ── rate-limit check ── */
   const cooldownSeconds = checkLoginThrottle(ip);
   if (cooldownSeconds > 0) {

@@ -86,7 +86,8 @@ describe("admin-auth", () => {
   it("validates key with strict exact matching behavior", () => {
     expect(isAdminKeyValid("super-secret-admin-key")).toBe(true);
     expect(isAdminKeyValid("super-secret-admin-kex")).toBe(false);
-    expect(isAdminKeyValid("super-secret-admin-key ")).toBe(false);
+    expect(isAdminKeyValid("super-secret-admin-key ")).toBe(true); // trimmed
+    expect(isAdminKeyValid(" super-secret-admin-key")).toBe(true); // trimmed
     expect(isAdminKeyValid("super-secret-admin-ke")).toBe(false);
   });
 

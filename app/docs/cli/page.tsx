@@ -3,7 +3,7 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { TrackedLink } from "@/components/tracked-link";
-import { SafeToTryBanner } from "@/components/safe-to-try-banner";
+import { SafeToTryBanner, WhatHappensBlock } from "@/components/safe-to-try-banner";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -105,15 +105,12 @@ export default function DocsCliPage() {
           ATF CLI Documentation
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          Everything you need to use the ATF CLI. Start with <code className="font-mono text-slate-200">doctor</code>,
-          explore devnet burner mode, sign transactions, and verify receipts locally.
+          Install, run your first trade, explore advanced commands.
         </p>
         <p className="text-sm text-slate-400">
           Pinned version: <code className="font-mono text-primary-200">@trucore/atf@{cliVersion}</code>
         </p>
-        <div className="mt-4">
-          <SafeToTryBanner />
-        </div>
+        <SafeToTryBanner />
       </header>
 
       {/* ── Quick nav ── */}
@@ -132,9 +129,6 @@ export default function DocsCliPage() {
       {/* ── Install the CLI ── */}
       <section className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-6 space-y-4">
         <HeadingAnchor id="install">Install the CLI</HeadingAnchor>
-        <p className="text-slate-300">
-          Get started with a global install or run directly with npx. Node.js 18+ required.
-        </p>
 
         <div className="space-y-3">
           <div>
@@ -149,12 +143,19 @@ export default function DocsCliPage() {
         </div>
       </section>
 
+      {/* ── Try it now ── */}
+      <section className="rounded-xl border border-accent-500/30 bg-accent-500/5 p-5 space-y-3">
+        <HeadingAnchor id="try-it-now">Try a protected trade</HeadingAnchor>
+        <AtfCopyCommand command="atf trade" testId="cli-first-trade" />
+        <WhatHappensBlock />
+      </section>
+
       {/* ── Run This First ── */}
       <section className="space-y-4">
         <HeadingAnchor id="run-this-first">Run This First: Doctor</HeadingAnchor>
         <p className="max-w-3xl text-slate-300">
-          Before you do anything else, run <code className="font-mono text-slate-200">doctor</code>.
-          It checks your environment, validates RPC connectivity, and confirms the CLI is working.
+          Run <code className="font-mono text-slate-200">doctor</code> to check your environment,
+          RPC connectivity, and confirm the CLI is working.
         </p>
         <AtfCopyCommand
           label="Health check"

@@ -7,7 +7,7 @@ import { TrackedLink } from "@/components/tracked-link";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { SimulateVerifyExecuteFlow } from "@/components/simulate-verify-execute-flow";
-import { SafeToTryBanner } from "@/components/safe-to-try-banner";
+import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components/safe-to-try-banner";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -128,9 +128,8 @@ export default function ATFPage() {
               Agent Transaction Firewall
             </h1>
             <p className="mt-6 max-w-3xl text-xl leading-[1.6] text-slate-200">
-              Run a protected trade in one command. Set up without .env friction.
-              Diagnose instantly. Verify and share receipts. ATF ships a complete
-              product loop for both human operators and bot developers on Solana.
+              One command to run a protected trade. Zero config.
+              Verify and share receipts. Built for bot developers and AI agents on Solana.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -156,6 +155,12 @@ export default function ATFPage() {
 
             <div className="mt-6">
               <SafeToTryBanner />
+            </div>
+
+            {/* ── First command in hero ── */}
+            <div className="mt-6 max-w-xl">
+              <AtfCopyCommand command="atf trade" testId="hero-first-command" />
+              <WhatHappensBlock />
             </div>
 
             {/* ── Micro-nav ── */}
@@ -234,9 +239,7 @@ export default function ATFPage() {
               command="atf trade"
               testId="golden-path-trade"
             />
-            <p className="mt-1 text-sm text-slate-400">
-              Safe to try. No wallet needed. No on-chain execution.
-            </p>
+            <WhatHappensBlock />
           </div>
 
           <div>
@@ -277,6 +280,10 @@ export default function ATFPage() {
               Verify integrity. Share with human-readable text or bot-friendly output.
             </p>
           </div>
+        </div>
+
+        <div className="mt-6 max-w-3xl">
+          <DemoVsRealBlock />
         </div>
 
         <p className="mt-6 max-w-3xl text-sm text-primary-200/80">

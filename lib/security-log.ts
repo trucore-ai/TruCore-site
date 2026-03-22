@@ -32,7 +32,9 @@ export type SecurityEvent =
   | "admin_verification_resend"
   | "admin_verification_revoke"
   | "admin_password_reset_revoke"
-  | "admin_feature_policy_updated";
+  | "admin_feature_policy_updated"
+  | "admin_upgrade_approve"
+  | "admin_upgrade_reject";
 
 export interface SecurityLogContext {
   /** Raw IP string — will be hashed before logging. */

@@ -33,12 +33,10 @@ export default function QuickstartPage() {
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
             Try ATF in Four Commands
           </h1>
-          <p className="mt-6 text-xl leading-[1.6] text-slate-200">
-            Four commands. Zero config. Demo mode runs immediately.
+          <p className="mt-4 text-lg text-slate-300">
+            Zero config. Demo mode runs immediately.
           </p>
-          <div className="mt-6">
-            <SafeToTryBanner />
-          </div>
+          <SafeToTryBanner />
         </div>
       </Section>
 
@@ -48,12 +46,9 @@ export default function QuickstartPage() {
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
             Install the CLI
           </h2>
-          <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Install globally and use the short <code className="text-slate-200">atf</code> command for every step below.
-          </p>
-          <div className="mt-6">
+          <div className="mt-4">
             <AtfCopyCommand
-              label="Install globally"
+              label="Install globally (recommended)"
               command={`npm install -g @trucore/atf@${cliVersion}`}
               testId="quickstart-install"
             />
@@ -72,8 +67,8 @@ export default function QuickstartPage() {
             <span className="mr-2 font-mono text-sm text-primary-200">01</span>
             Try a protected trade
           </h2>
-          <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Works immediately with zero setup. No wallet needed.
+          <p className="mt-3 text-sm text-slate-400">
+            Works immediately. No wallet needed.
           </p>
           <div className="mt-6">
             <CopyBlock
@@ -97,13 +92,10 @@ export default function QuickstartPage() {
             <span className="mr-2 font-mono text-sm text-primary-200">02</span>
             Connect your API key
           </h2>
-          <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Connect your API key to move from demo to real mode.
-          </p>
           <div className="mt-4">
             <DemoVsRealBlock />
           </div>
-          <div className="mt-6">
+          <div className="mt-4">
             <CopyBlock
               label="CLI — interactive setup"
               value={CLI_SETUP}
@@ -120,10 +112,8 @@ export default function QuickstartPage() {
             <span className="mr-2 font-mono text-sm text-primary-200">03</span>
             Diagnose your setup
           </h2>
-          <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            One command checks everything: API key, RPC, wallet.
-            You&apos;ll see either
-            <strong className="text-slate-100">&ldquo;\u2713 Ready for real trades&rdquo;</strong> or a list of what to fix.
+          <p className="mt-3 text-sm text-slate-400">
+            Checks API key, RPC, and wallet in one pass.
           </p>
           <div className="mt-6">
             <CopyBlock
@@ -142,10 +132,8 @@ export default function QuickstartPage() {
             <span className="mr-2 font-mono text-sm text-primary-200">04</span>
             Verify and share a receipt
           </h2>
-          <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-            Verify = proof. Every trade produces a receipt.
-            Run <code className="text-slate-200">atf verify</code> to confirm ATF approved
-            and finalized the execution. Share the link as proof.
+          <p className="mt-3 text-sm text-slate-400">
+            Verify = proof. Confirm ATF approved the execution and share the link.
           </p>
           <div className="mt-6">
             <CopyBlock

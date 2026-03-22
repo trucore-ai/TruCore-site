@@ -150,20 +150,14 @@ export default function FirstProtectedTradePage() {
           Your First Protected Trade
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          Protect your first bot intent in minutes. Submit a swap intent, receive a cryptographic receipt,
-          and verify it independently. No new dependencies required.
+          Submit a swap, receive a receipt, verify the hash. No new dependencies required.
         </p>
-        <div className="mt-4">
-          <SafeToTryBanner />
-        </div>
+        <SafeToTryBanner />
       </header>
 
       {/* ── Install ── */}
       <section className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-6 space-y-4">
         <HeadingAnchor id="install">Install the CLI</HeadingAnchor>
-        <p className="text-slate-300">
-          Get started with a global install or run directly with npx. Node.js 18+ required.
-        </p>
 
         <div className="space-y-3">
           <div>
@@ -181,9 +175,6 @@ export default function FirstProtectedTradePage() {
       {/* ── Run Your First Protected Trade ── */}
       <section className="rounded-xl border border-accent-500/30 bg-accent-500/5 p-6 space-y-4">
         <HeadingAnchor id="run-first-trade">Run Your First Protected Trade</HeadingAnchor>
-        <p className="text-slate-300">
-          Demo mode works out of the box. No wallet required. No on-chain execution.
-        </p>
         <WhatHappensBlock />
 
         <div className="mt-4">

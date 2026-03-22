@@ -775,3 +775,87 @@ export function fetchPublicFeatureCatalog(
     PublicFeatureCatalogSchema,
   );
 }
+
+// ── Admin Upgrade Requests ───────────────────────────────────
+
+export const UpgradeRequestSchema = z.object({
+  request_id: z.string(),
+  tenant_id: z.string(),
+  user_id: z.string(),
+  requested_plan: z.string(),
+  requested_features: z.array(z.string()),
+  reason: z.string(),
+  status: z.enum(["pending", "approved", "rejected", "cancelled"]),
+  created_at: z.number(),
+  reviewed_at: z.number(),
+  reviewed_by: z.string(),
+  review_note: z.string(),
+});
+
+export const AdminUpgradeListSchema = z.object({
+  requests: z.array(UpgradeRequestSchema),
+  count: z.number(),
+});
+
+export type UpgradeRequestEntry = z.infer<typeof UpgradeRequestSchema>;
+export type AdminUpgradeList = z.infer<typeof AdminUpgradeListSchema>;
+
+export function fetchAdminUpgradeRequests(
+  status?: string,
+  requestedPlan?: string,
+): Promise<DashboardResult<AdminUpgradeList>> {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  if (requestedPlan) params.set("requested_plan", requestedPlan);
+  const qs = params.toString();
+  return dashboardFetch(
+    `/admin/upgrades${qs ? `?${qs}` : ""}`,
+    AdminUpgradeListSchema,
+  );
+}
+
+export function fetchAdminUpgradeDetail(
+  requestId: string,
+): Promise<DashboardResult<{ request: UpgradeRequestEntry }>> {
+  return dashboardFetch(
+    `/admin/upgrades/${encodeURIComponent(requestId)}`,
+    z.object({ request: UpgradeRequestSchema }),
+  );
+}
+
+export async function adminUpgradeAction(
+  requestId: string,
+  action: "approve" | "reject",
+  note = "",
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const base = getBaseUrl();
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+    const apiKey = process.env.ATF_API_KEY;
+    if (apiKey) {
+      headers["x-api-key"] = apiKey;
+    }
+    const res = await fetch(
+      `${base}/admin/upgrades/${encodeURIComponent(requestId)}/${action}`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ note }),
+        cache: "no-store",
+      },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { ok: false, error: `HTTP ${res.status}: ${text}` };
+    }
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}

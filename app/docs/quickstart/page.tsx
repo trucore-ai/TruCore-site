@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
-import { SafeToTryBanner } from "@/components/safe-to-try-banner";
+import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components/safe-to-try-banner";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -19,12 +19,9 @@ export default function DocsQuickstartPage() {
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">Quickstart</p>
         <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">Quickstart</h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          ATF sits between agent intent and chain execution. You define guardrails once, issue scoped permits,
-          validate every transaction against policy, and record receipts for auditability.
+          One install, one command. You will see a decision and a verifiable receipt.
         </p>
-        <div className="mt-4">
-          <SafeToTryBanner />
-        </div>
+        <SafeToTryBanner />
       </header>
 
       {/* ── Install ── */}
@@ -38,6 +35,38 @@ export default function DocsQuickstartPage() {
           Or run without installing:{" "}
           <code className="font-mono text-slate-300">{`npx @trucore/atf@${cliVersion} trade`}</code>
         </p>
+      </section>
+
+      {/* ── First command ── */}
+      <section className="rounded-xl border border-accent-500/30 bg-accent-500/5 p-5 space-y-3">
+        <HeadingAnchor id="first-command">Run your first protected trade</HeadingAnchor>
+        <AtfCopyCommand command="atf trade" />
+        <WhatHappensBlock />
+      </section>
+
+      {/* ── Demo vs Real ── */}
+      <section className="space-y-4">
+        <HeadingAnchor id="demo-vs-real">Demo mode vs Real mode</HeadingAnchor>
+        <DemoVsRealBlock />
+      </section>
+
+      {/* ── Next steps (golden path) ── */}
+      <section className="space-y-4">
+        <HeadingAnchor id="next-commands">Next steps</HeadingAnchor>
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Enable real trades</p>
+            <AtfCopyCommand command="atf setup" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Check readiness</p>
+            <AtfCopyCommand command="atf doctor" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Verify proof</p>
+            <AtfCopyCommand command="atf verify <receipt-id>" />
+          </div>
+        </div>
       </section>
 
       <section className="space-y-4">

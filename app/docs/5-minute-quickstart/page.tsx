@@ -5,6 +5,7 @@ import { CopyBlock } from "@/components/copy-block";
 import { trackEvent } from "@/lib/analytics";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { SingleCommandQuickstart } from "@/components/single-command-quickstart";
+import { SafeToTryBanner } from "@/components/safe-to-try-banner";
 
 const CURL_EXAMPLE = `BASE_URL="${"${BASE_URL:-http://127.0.0.1:3000}"}"
 curl -sS "$BASE_URL/api/simulate" \\
@@ -27,12 +28,9 @@ export default function DocsFiveMinuteQuickstartPage() {
           5-Minute Developer Quickstart
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          Start with the golden path: <code className="font-mono text-slate-200">atf trade</code>,{" "}
-          <code className="font-mono text-slate-200">atf setup</code>,{" "}
-          <code className="font-mono text-slate-200">atf doctor</code>,{" "}
-          <code className="font-mono text-slate-200">atf verify</code>.
-          Or use an API key and run one request to see deterministic policy output.
+          Run one command to see a deterministic decision and receipt.
         </p>
+        <SafeToTryBanner />
       </header>
 
       <SingleCommandQuickstart location="quickstart" showV1StabilityContract />

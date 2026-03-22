@@ -619,3 +619,106 @@ export async function validateResetToken(
 
   return res.json();
 }
+
+// ---------------------------------------------------------------------------
+// Upgrade requests
+// ---------------------------------------------------------------------------
+
+export interface UpgradeRequestData {
+  request_id: string;
+  tenant_id: string;
+  user_id: string;
+  requested_plan: string;
+  requested_features: string[];
+  reason: string;
+  status: "pending" | "approved" | "rejected" | "cancelled";
+  created_at: number;
+  reviewed_at: number;
+  reviewed_by: string;
+  review_note: string;
+}
+
+export async function submitUpgradeRequest(params: {
+  requested_plan: string;
+  requested_features?: string[];
+  reason?: string;
+}): Promise<{ request: UpgradeRequestData }> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${ATF_API_BASE}/customer/upgrades/request`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(params),
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new ApiError("unauthorized", "Session expired");
+  }
+
+  if (!res.ok) {
+    await throwApiError(res, "Failed to submit upgrade request");
+  }
+
+  const data = await res.json();
+  if (data.error) {
+    throw new ApiError(data.error.code, data.error.message);
+  }
+
+  return data;
+}
+
+export async function fetchUpgradeRequests(): Promise<{
+  requests: UpgradeRequestData[];
+}> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(`${ATF_API_BASE}/customer/upgrades`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new ApiError("unauthorized", "Session expired");
+  }
+
+  if (!res.ok) throw new Error("Failed to fetch upgrade requests");
+
+  return res.json();
+}
+
+export async function cancelUpgradeRequest(
+  requestId: string,
+): Promise<{ request: UpgradeRequestData }> {
+  const token = getToken();
+  if (!token) throw new Error("Not authenticated");
+
+  const res = await fetch(
+    `${ATF_API_BASE}/customer/upgrades/${encodeURIComponent(requestId)}/cancel`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new ApiError("unauthorized", "Session expired");
+  }
+
+  if (!res.ok) {
+    await throwApiError(res, "Failed to cancel upgrade request");
+  }
+
+  const data = await res.json();
+  if (data.error) {
+    throw new ApiError(data.error.code, data.error.message);
+  }
+
+  return data;
+}
