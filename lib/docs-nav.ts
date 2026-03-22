@@ -14,13 +14,54 @@ export const LAST_UPDATED = "2026-03-05";
 
 export const sections: DocsNavSection[] = [
   {
-    title: "Documentation",
+    title: "Getting Started",
     items: [
       {
         title: "Overview",
         href: "/docs",
         description: "Start here for structure, core concepts, and next steps.",
       },
+      {
+        title: "Getting Started",
+        href: "/docs/getting-started",
+        description:
+          "Create an account, verify email, get an API key, and run your first protected trade.",
+      },
+      {
+        title: "Integration Surfaces",
+        href: "/docs/surfaces",
+        description:
+          "API, CLI, and OpenClaw plugin — capabilities, maturity, and when to use each surface.",
+      },
+      {
+        title: "Plans & Feature Tiers",
+        href: "/docs/plans",
+        description:
+          "Free, Pro, and Enterprise — rate limits, feature availability, and feature gating.",
+      },
+      {
+        title: "Receipts & Trust",
+        href: "/docs/receipts-and-trust",
+        description:
+          "What receipts prove, how verification works, mock vs real execution, and why receipts matter.",
+      },
+      {
+        title: "Auth & API Keys",
+        href: "/docs/auth",
+        description:
+          "Signup, login, email verification, API key creation/rotation/revocation, and account recovery.",
+      },
+      {
+        title: "Upgrade & Access",
+        href: "/docs/upgrade",
+        description:
+          "Request Pro or Enterprise, track request status, and understand feature gating.",
+      },
+    ],
+  },
+  {
+    title: "Documentation",
+    items: [
       {
         title: "First Protected Trade",
         href: "/docs/first-protected-trade",

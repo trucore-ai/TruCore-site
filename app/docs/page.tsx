@@ -24,6 +24,15 @@ export default function DocsHubPage() {
           The docs are intentionally concise so teams can evaluate integration fit quickly.
         </p>
         <p className="max-w-3xl text-base leading-relaxed text-slate-400">
+          <strong className="text-slate-200">New here?</strong>{" "}
+          Start with{" "}
+          <Link
+            href="/docs/getting-started"
+            className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            Getting Started
+          </Link>
+          {" "}for the full signup-to-receipt walkthrough.{" "}
           <strong className="text-slate-200">Bot developer?</strong>{" "}
           Jump straight to{" "}
           <Link
@@ -32,21 +41,21 @@ export default function DocsHubPage() {
           >
             First Protected Trade
           </Link>
-          {" "}&mdash; protect an intent, get a receipt, and verify it in minutes. Or read{" "}
+          {" "}&mdash; protect an intent, get a receipt, and verify it in minutes. See{" "}
           <Link
-            href="/agent-transaction-firewall"
+            href="/docs/surfaces"
             className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
           >
-            What is ATF?
+            Integration Surfaces
           </Link>
-          {" "}for the full category definition. For receipt semantics, see{" "}
+          {" "}for API/CLI/Plugin coverage, or{" "}
           <Link
-            href="/docs/receipt-specification-v1"
+            href="/docs/plans"
             className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
           >
-            Receipt Specification v1
+            Plans &amp; Feature Tiers
           </Link>
-          .
+          {" "}for what each plan includes.
         </p>
         <div className="gradient-divider mt-2" aria-hidden="true" />
       </header>

@@ -55,7 +55,7 @@ const plans = [
       "Priority support",
       "Advanced usage analytics",
     ],
-    cta: { label: "Request Pro Access", href: "/contact?subject=pro-upgrade" },
+    cta: { label: "Request Pro Access", href: "/upgrade?plan=pro" },
   },
   {
     tier: "Enterprise",
@@ -78,8 +78,8 @@ const plans = [
       "SSO & RBAC (roadmap)",
     ],
     cta: {
-      label: "Contact Sales",
-      href: "/contact?subject=enterprise-inquiry",
+      label: "Request Enterprise",
+      href: "/upgrade?plan=enterprise",
     },
   },
 ] as const;
@@ -231,7 +231,14 @@ export default async function PricingPage() {
               <p className="mt-1 text-sm text-slate-400">
                 You&apos;ll see warnings in your dashboard as you approach limits.
                 Depending on enforcement mode, requests may be soft-warned or
-                blocked. Upgrade to Pro for higher capacity.
+                blocked. Upgrade to Pro for higher capacity. See the{" "}
+                <Link
+                  href="/docs/plans"
+                  className="text-primary-400 underline hover:text-primary-300"
+                >
+                  full feature &amp; plan details
+                </Link>{" "}
+                for the complete availability matrix.
               </p>
             </div>
             <div>
