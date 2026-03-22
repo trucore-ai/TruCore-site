@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/internal/health-monitor",
+      "schedule": "* * * * *"
+    }
+  ],
   "redirects": [
     {
       "source": "/:path*",
