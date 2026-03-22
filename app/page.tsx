@@ -364,6 +364,46 @@ export default function Home() {
         </div>
       </Section>
 
+      {/* ── Start Here — Conversion Path ── */}
+      <Section divider className="fade-in-up fade-delay-2">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="section-label mb-3">Get Started</p>
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
+            Try &rarr; Protect &rarr; Verify &rarr; Upgrade
+          </h2>
+          <p className="mt-4 text-lg leading-[1.5] text-slate-200">
+            Start free. Get receipts for every decision.
+            Upgrade when your bot needs higher caps or real execution.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <TrackedLink
+              href="/try"
+              eventName="home_start_try_click"
+              eventProps={{ location: "home_start_strip" }}
+              className="inline-flex items-center rounded-xl bg-accent-500/15 px-6 py-3 text-base font-semibold text-accent-300 transition-colors hover:bg-accent-500/25"
+            >
+              Try ATF
+            </TrackedLink>
+            <TrackedLink
+              href="/docs/getting-started"
+              eventName="home_start_docs_click"
+              eventProps={{ location: "home_start_strip" }}
+              className="inline-flex items-center rounded-xl border border-primary-300/30 px-6 py-3 text-base font-semibold text-primary-200 transition-colors hover:bg-primary-500/10"
+            >
+              Getting Started
+            </TrackedLink>
+            <TrackedLink
+              href="/pricing"
+              eventName="home_start_pricing_click"
+              eventProps={{ location: "home_start_strip" }}
+              className="inline-flex items-center rounded-xl border border-white/10 px-6 py-3 text-base font-semibold text-slate-300 transition-colors hover:bg-white/[0.05]"
+            >
+              Pricing
+            </TrackedLink>
+          </div>
+        </div>
+      </Section>
+
       {/* ── Why TruCore ── */}
       <div id="why-trucore">
         <WhyNowSection />

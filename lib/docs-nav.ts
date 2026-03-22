@@ -57,6 +57,12 @@ export const sections: DocsNavSection[] = [
         description:
           "Request Pro or Enterprise, track request status, and understand feature gating.",
       },
+      {
+        title: "When to Use ATF",
+        href: "/docs/when-to-use-atf",
+        description:
+          "Mock vs real execution, when Free is enough, when Pro helps, and which bots benefit first.",
+      },
     ],
   },
   {
