@@ -66,15 +66,23 @@ function VerifyEmailContent() {
               Email verified
             </h1>
             <p className="text-sm text-slate-400">
-              Your account is now fully activated. You can manage API keys
-              and access all features.
+              Your account is fully activated. Your next step: go to the
+              dashboard to find your API key and run your first protected trade.
             </p>
-            <Link
-              href="/customer/dashboard"
-              className="inline-block rounded-lg bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-primary-400"
-            >
-              Go to dashboard
-            </Link>
+            <div className="space-y-3">
+              <Link
+                href="/customer/dashboard"
+                className="inline-block w-full rounded-lg bg-primary-500 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-primary-400"
+              >
+                Go to dashboard
+              </Link>
+              <Link
+                href="/docs/first-protected-trade"
+                className="inline-block text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                First protected trade guide &rarr;
+              </Link>
+            </div>
           </>
         )}
 

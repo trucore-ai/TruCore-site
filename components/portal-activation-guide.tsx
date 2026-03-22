@@ -32,9 +32,8 @@ function ZeroActivityGuide() {
           Welcome — let&apos;s protect your first trade
         </h2>
         <p className="text-sm text-slate-300">
-          Your portal is ready but has no activity yet. Complete the steps below
-          to send your first request through the firewall and earn a
-          tamper-evident receipt.
+          Your account is active. Follow the steps below to send your first
+          trade intent through the firewall and get a tamper-evident receipt.
         </p>
       </div>
 
@@ -114,8 +113,8 @@ function EarlyActivityGuide({
           <span className="font-medium text-primary-200">
             {totalRequests} request{totalRequests !== 1 ? "s" : ""}
           </span>{" "}
-          through the firewall. Try verifying a receipt to confirm the integrity
-          chain works end-to-end, or explore builder resources.
+          through the firewall. Verify a receipt to confirm the integrity chain,
+          or explore integration patterns for your bot.
         </p>
       </div>
 

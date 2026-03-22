@@ -77,12 +77,11 @@ export default function Home() {
               Don&apos;t let your bot blow up your wallet.
             </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
-              Run a protected trade in one command. Set up in seconds.
-              Diagnose instantly. Verify and share receipts.
+              Protect any bot trade with one API call. Get a cryptographic receipt.
+              No wallet access. No custody. Free to start.
             </p>
             <p className="mt-3 text-base text-slate-400">
               Built for trading bot developers, AI agent builders, and DeFi protocol integrators on Solana.
-              Readable for humans, structured for agents.
             </p>
 
             {/* CTAs */}
@@ -93,33 +92,23 @@ export default function Home() {
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl px-8 py-4 text-xl font-semibold shadow-glow-accent transition-all bg-accent-500 text-neutral-950 hover:bg-accent-400 hover:shadow-lg"
               >
-                Try ATF
+                Protect Your First Trade
               </TrackedLink>
               <TrackedLink
-                href="/atf/simulator"
-                eventName="hero_simulator_click"
+                href="/docs/getting-started"
+                eventName="hero_docs_click"
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
               >
-                Try sandbox
+                How It Works
               </TrackedLink>
             </div>
 
             <p className="mt-6 text-base text-slate-300/80">
-              Non-custodial. Helius-first RPC. Cryptographic receipts prove every enforcement decision.
-              Human-friendly UX, bot-friendly output.
+              No signup required. No wallet access. Every decision produces a tamper-evident receipt.
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
-              <TrackedLink
-                href="/docs/first-protected-trade"
-                eventName="hero_golden_path_click"
-                eventProps={{ location: "atf_hero", target: "first_protected_trade" }}
-                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-              >
-                First protected trade
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
               <TrackedLink
                 href="/docs/5-minute-quickstart"
                 eventName="hero_quickstart_click"
@@ -130,12 +119,21 @@ export default function Home() {
               </TrackedLink>
               <span aria-hidden="true" className="text-white/20">/</span>
               <TrackedLink
+                href="/pricing"
+                eventName="hero_pricing_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                Pricing
+              </TrackedLink>
+              <span aria-hidden="true" className="text-white/20">/</span>
+              <TrackedLink
                 href="/receipts"
                 eventName="hero_receipts_click"
                 eventProps={{ location: "atf_hero" }}
                 className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
-                View receipts
+                Receipts
               </TrackedLink>
               <span aria-hidden="true" className="text-white/20">/</span>
               <TrackedLink
@@ -145,33 +143,6 @@ export default function Home() {
                 className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
                 What is ATF?
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
-              <TrackedLink
-                href="/process"
-                eventName="process_page_link_click"
-                eventProps={{ location: "atf_hero" }}
-                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-              >
-                How ATF is built
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
-              <TrackedLink
-                href="/enterprise"
-                eventName="enterprise_page_link_click"
-                eventProps={{ location: "atf_hero" }}
-                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-              >
-                Enterprise
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
-              <TrackedLink
-                href="/builders"
-                eventName="hero_builders_link_click"
-                eventProps={{ location: "atf_hero" }}
-                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-              >
-                For builders
               </TrackedLink>
             </div>
 
@@ -419,7 +390,6 @@ export default function Home() {
 
       {/* ── Waitlist / Design Partner CTA ── */}
       <div id="waitlist">
-        <AtfDesignPartnerCta />
         <Section className="fade-in-up">
           <div className="mx-auto max-w-xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-accent-300">
@@ -435,6 +405,7 @@ export default function Home() {
             </Suspense>
           </div>
         </Section>
+        <AtfDesignPartnerCta />
       </div>
 
       {/* ── Moat Signals ── */}

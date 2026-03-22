@@ -141,7 +141,14 @@ export function SimulatorResult({
 
       {result.status === "allowed" ? (
         <div className="space-y-3 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-4">
-          <p className="text-sm font-semibold text-emerald-200">Ready to enforce this in production?</p>
+          <p className="text-sm font-semibold text-emerald-200">
+            Trade approved — receipt issued
+          </p>
+          <p className="text-sm text-emerald-100">
+            The policy engine evaluated this trade against spend caps, protocol allowlists,
+            and slippage bounds. It passed all checks and produced a tamper-evident receipt
+            you can verify independently.
+          </p>
           {isAdminView ? (
             <div className="flex flex-wrap gap-3">
               <TrackedLink
@@ -150,33 +157,22 @@ export function SimulatorResult({
                 eventProps={{ location: "simulator_result", target: "sandbox_key" }}
                 className="inline-flex items-center justify-center rounded-lg border border-primary-300/40 bg-primary-500/15 px-4 py-2 text-sm font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
               >
-                Get Sandbox Key
-              </TrackedLink>
-              <TrackedLink
-                href="/atf/apply"
-                eventName="simulator_upgrade_click"
-                eventProps={{ location: "simulator_result", target: "pilot_apply" }}
-                className="inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition-colors hover:bg-white/10"
-              >
-                Apply for Pilot
+                Manage API Keys
               </TrackedLink>
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-sm text-emerald-100">Upgrade to higher limits with a sandbox API key.</p>
+              <p className="text-sm text-emerald-100">Create a free account to protect real trades and store receipts.</p>
               <TrackedLink
-                href="/atf/apply"
-                eventName="simulator_upgrade_click"
-                eventProps={{ location: "simulator_result", target: "pilot_apply" }}
-                className="inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition-colors hover:bg-white/10"
+                href="/signup"
+                eventName="simulator_signup_click"
+                eventProps={{ location: "simulator_result", target: "signup" }}
+                className="inline-flex items-center justify-center rounded-lg bg-accent-500 px-4 py-2 text-sm font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
               >
-                Apply for Pilot
+                Create Free Account
               </TrackedLink>
             </div>
           )}
-          <p className="text-sm text-emerald-100">
-            Use this receipt hash to log execution decisions in your agent runtime.
-          </p>
           <TrackedLink
             href={`/verify?hash=${encodeURIComponent(result.receipt_hash)}`}
             eventName="simulator_verify_receipt_click"

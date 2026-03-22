@@ -76,6 +76,30 @@ export default function SignupPage() {
             Click the link to activate your account.
           </p>
 
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-left">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              What happens next
+            </p>
+            <ol className="space-y-2 text-sm text-slate-300">
+              <li className="flex gap-2">
+                <span className="shrink-0 font-bold text-accent-300">1.</span>
+                Verify your email (check spam if you don&apos;t see it)
+              </li>
+              <li className="flex gap-2">
+                <span className="shrink-0 font-bold text-slate-400">2.</span>
+                Log in and find your API key on the dashboard
+              </li>
+              <li className="flex gap-2">
+                <span className="shrink-0 font-bold text-slate-400">3.</span>
+                Run your first protected trade
+              </li>
+              <li className="flex gap-2">
+                <span className="shrink-0 font-bold text-slate-400">4.</span>
+                View your receipt and verify it
+              </li>
+            </ol>
+          </div>
+
           {error && (
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               {error}
@@ -105,8 +129,8 @@ export default function SignupPage() {
           </div>
 
           <p className="text-xs text-slate-500">
-            You can use your dashboard while unverified, but some actions
-            (like managing API keys) require a verified email.
+            You can browse your dashboard now, but email verification is
+            required to manage API keys.
           </p>
         </div>
       </main>
@@ -121,7 +145,8 @@ export default function SignupPage() {
             Create your account
           </h1>
           <p className="mt-2 text-sm text-slate-400">
-            Get started with TruCore ATF — free tier included
+            Free tier: 100 protect calls/day, tamper-evident receipts, and a dashboard.
+            No credit card required.
           </p>
         </div>
 

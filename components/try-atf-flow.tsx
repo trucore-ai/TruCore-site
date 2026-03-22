@@ -190,7 +190,7 @@ export function TryAtfFlow() {
           {loading && step === "idle"
             ? "Loading..."
             : step === "idle"
-              ? "Try Sample Trade"
+              ? "Load Sample Trade"
               : "Sample loaded ✓"}
         </Button>
 
@@ -214,7 +214,7 @@ export function TryAtfFlow() {
             Step 2
           </p>
           <h3 className="text-xl font-bold text-accent-300">
-            Simulate protection
+            Protect this trade
           </h3>
           <Button
             onClick={handleProtect}
@@ -228,8 +228,8 @@ export function TryAtfFlow() {
             {loading && step === "intent-loaded"
               ? "Evaluating..."
               : step === "protected"
-                ? "Protection complete ✓"
-                : "Simulate Protection"}
+                ? "Protection complete \u2713"
+                : "Run Protection"}
           </Button>
         </div>
       )}
@@ -241,7 +241,7 @@ export function TryAtfFlow() {
             Step 3
           </p>
           <h3 className="text-xl font-bold text-accent-300">
-            Results
+            Receipt &amp; policy breakdown
           </h3>
 
           {/* Decision */}
@@ -304,20 +304,36 @@ export function TryAtfFlow() {
           </Card>
 
           {/* CTA */}
-          <div className="rounded-xl border border-accent-500/30 bg-accent-500/5 p-6 text-center">
+          <div className="rounded-xl border border-accent-500/30 bg-accent-500/5 p-6">
             <p className="text-lg font-semibold text-accent-300">
-              Want to save receipts and run real trades?
+              Your first receipt is ready.
             </p>
-            <Link
-              href="/signup"
-              onClick={() => {
-                trackEvent("try_signup_cta_clicked");
-                sendFunnelEvent("try_signup_cta_clicked");
-              }}
-              className="mt-4 inline-flex items-center justify-center rounded-xl bg-accent-500 px-8 py-3 text-base font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
-            >
-              Create Account
-            </Link>
+            <p className="mt-2 text-sm text-slate-300">
+              This was a sandbox trade. Create an account to protect real trades,
+              store receipts, and get your API key.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-4">
+              <Link
+                href="/signup"
+                onClick={() => {
+                  trackEvent("try_signup_cta_clicked");
+                  sendFunnelEvent("try_signup_cta_clicked");
+                }}
+                className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-8 py-3 text-base font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
+              >
+                Create Free Account
+              </Link>
+              <Link
+                href="/docs/getting-started"
+                onClick={() => {
+                  trackEvent("try_docs_cta_clicked");
+                  sendFunnelEvent("try_docs_cta_clicked");
+                }}
+                className="inline-flex items-center text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                Read how it works &rarr;
+              </Link>
+            </div>
           </div>
 
           {/* Reset */}

@@ -14,7 +14,7 @@ const steps = [
   {
     step: "1",
     title: "Try",
-    desc: "Run a protected trade in the web sandbox. No signup, no wallet, no risk.",
+    desc: "Run a sandbox trade and get a receipt in under 30 seconds. No signup needed.",
     href: "/try",
     cta: "Open Sandbox",
     event: "start_try_click",
@@ -22,18 +22,18 @@ const steps = [
   {
     step: "2",
     title: "Learn",
-    desc: "Understand what ATF enforces, how receipts work, and which integration path fits your bot.",
+    desc: "Understand what ATF enforces: spend caps, protocol allowlists, slippage bounds, and receipts.",
     href: "/docs/getting-started",
-    cta: "Getting Started",
+    cta: "Read Getting Started",
     event: "start_docs_click",
   },
   {
     step: "3",
-    title: "Choose a Plan",
-    desc: "Free for testing and low-volume bots. Pro when you need higher caps or real execution.",
-    href: "/pricing",
-    cta: "View Pricing",
-    event: "start_pricing_click",
+    title: "Sign Up",
+    desc: "Create a free account to get your API key. 100 protect calls/day included. No credit card.",
+    href: "/signup",
+    cta: "Create Account",
+    event: "start_signup_click",
   },
   {
     step: "4",
@@ -57,8 +57,8 @@ export default function StartPage() {
             Start Here
           </h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            Four steps from zero to a verified receipt. Free to try,
-            no signup required for the sandbox.
+            Four steps from zero to a verified receipt. Start in the sandbox
+            — no signup required.
           </p>
         </div>
       </Section>

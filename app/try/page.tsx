@@ -21,13 +21,11 @@ export default function TryPage() {
             Try ATF
           </h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            See how the Agent Transaction Firewall protects trades — no
-            account required. Generate a sample trade, simulate protection,
-            and view your receipt.
+            Submit a sample trade, see the policy engine evaluate it, and get a
+            cryptographic receipt — all in under 30 seconds. No account needed.
           </p>
           <p className="mt-3 text-sm text-slate-400">
-            This is a public sandbox. No real transactions are executed. Rate
-            limited per IP.
+            Public sandbox — no real transactions, no fees. Rate limited per IP.
           </p>
         </div>
       </Section>
