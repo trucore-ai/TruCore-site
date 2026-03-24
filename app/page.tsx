@@ -20,13 +20,13 @@ import { Tilt } from "@/components/ui/tilt";
 import truCoreBanner from "@/images/TruCore-banner-new.png";
 
 export const metadata: Metadata = {
-  title: "TruCore | Developer Security Infrastructure for Solana",
+  title: "TruCore | AI Transaction Systems That Learn",
   description:
-    "Non-custodial developer platform for Solana bots and AI agents. Deterministic enforcement, verifiable receipts, profiles, and Helius-first RPC.",
+    "Protect every transaction and turn execution history into actionable intelligence. Policy-enforced execution with built-in intelligence for Solana bots and AI agents.",
   openGraph: {
-    title: "TruCore | Developer Security Infrastructure for Solana",
+    title: "TruCore | AI Transaction Systems That Learn",
     description:
-      "Non-custodial developer platform for Solana bots and AI agents. Deterministic enforcement, verifiable receipts, profiles, and Helius-first RPC.",
+      "Protect every transaction and turn execution history into actionable intelligence. Policy-enforced execution with built-in intelligence for Solana bots and AI agents.",
     images: [
       {
         url: "/opengraph-image",
@@ -38,9 +38,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TruCore | Developer Security Infrastructure for Solana",
+    title: "TruCore | AI Transaction Systems That Learn",
     description:
-      "Non-custodial developer platform for Solana bots and AI agents. Deterministic enforcement, verifiable receipts, profiles, and Helius-first RPC.",
+      "Protect every transaction and turn execution history into actionable intelligence. Policy-enforced execution with built-in intelligence for Solana bots and AI agents.",
     images: ["/opengraph-image"],
   },
 };
@@ -71,16 +71,19 @@ export default function Home() {
               Solana-native enforcement, multi-chain expanding
             </p>
             <h1 className="mt-4 text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
-              Guardrails for automated finance.
+              AI Transaction Systems That Learn
             </h1>
             <p className="mt-6 text-2xl font-semibold text-amber-200/90">
               Don&apos;t let your bot blow up your wallet.
             </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
-              Protect any bot trade with one API call. Get a cryptographic receipt.
-              No wallet access. No custody. Free to start.
+              Protect every transaction, and turn execution history into actionable
+              intelligence so systems continuously improve how capital is deployed.
             </p>
-            <p className="mt-3 text-base text-slate-400">
+            <p className="mt-3 text-sm leading-relaxed text-slate-300/80">
+              A new category of AI transaction systems: policy-enforced execution with built-in intelligence.
+            </p>
+            <p className="mt-2 text-base text-slate-400">
               Built for trading bot developers, AI agent builders, and DeFi protocol integrators on Solana.
             </p>
 
@@ -219,6 +222,57 @@ export default function Home() {
               </Card>
             </Tilt>
           ))}
+        </div>
+      </Section>
+
+      {/* ── Policy Intelligence Layer ── */}
+      <Section divider className="fade-in-up fade-delay-1">
+        <div className="mb-8 max-w-3xl">
+          <p className="section-label mb-3">Intelligence</p>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
+            Policy Intelligence Layer
+          </h2>
+          <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
+            The Policy Intelligence Layer (PIL) transforms ATF from a transaction
+            firewall into an intelligence system, turning every execution into
+            signal, and every signal into better decisions.
+          </p>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-300">
+            A new primitive: systems that learn from execution without sacrificing
+            determinism or control.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            {
+              title: "Execution History",
+              desc: "Every policy decision is recorded with full context. Receipts become queryable signal for operators.",
+            },
+            {
+              title: "Actionable Intelligence",
+              desc: "Aggregated execution data surfaces patterns, enabling operator-gated policy refinements grounded in real behavior.",
+            },
+            {
+              title: "Controlled Improvement",
+              desc: "Operators review and approve every policy change. The system suggests, humans decide. Deterministic and auditable at every step.",
+            },
+          ].map((item) => (
+            <Tilt key={item.title} maxTilt={6}>
+              <Card className="h-full">
+                <h3 className="text-xl font-bold text-accent-300">{item.title}</h3>
+                <p className="mt-2 text-lg leading-[1.5] text-slate-200">{item.desc}</p>
+              </Card>
+            </Tilt>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Category Positioning ── */}
+      <Section className="fade-in-up fade-delay-1">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
+            Most systems execute transactions. TruCore systems learn from them.
+          </p>
         </div>
       </Section>
 

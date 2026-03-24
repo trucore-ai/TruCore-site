@@ -89,8 +89,10 @@ export default function BuildersPage() {
           </p>
           <p className="mt-6 text-2xl leading-[1.5] text-slate-200">
             ATF enforces spend limits, protocol allowlists, and slippage caps on
-            every transaction your bot or agent submits. Every decision produces a
-            cryptographic receipt you can verify independently.
+            every transaction your bot or agent submits. The Policy Intelligence
+            Layer turns execution history into actionable signal so your systems
+            continuously improve. Every decision produces a cryptographic receipt
+            you can verify independently.
           </p>
           <p className="mt-4 text-lg text-slate-300">
             Non-custodial. Zero new dependencies. Works with your existing signing flow.

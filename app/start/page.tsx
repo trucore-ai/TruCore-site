@@ -58,7 +58,8 @@ export default function StartPage() {
           </h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
             Four steps from zero to a verified receipt. Start in the sandbox
-            — no signup required.
+            — no signup required. Every execution feeds the Policy Intelligence
+            Layer so your system keeps improving.
           </p>
         </div>
       </Section>

@@ -11,13 +11,13 @@ import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
-  title: "ATF Developer Platform | Agent Transaction Firewall",
+  title: "ATF Developer Platform | Policy-Enforced Execution + Intelligence",
   description:
-    "ATF is a non-custodial developer platform for building and operating transactional bots and AI agents on Solana. Comprehensive CLI, public API, native agent tools, profiles, Helius-first RPC, devnet burner mode, and cryptographically verifiable receipts.",
+    "ATF is a non-custodial developer platform for building and operating transactional bots and AI agents on Solana. Policy-enforced execution with built-in intelligence, verifiable receipts, and the Policy Intelligence Layer.",
   openGraph: {
-    title: "ATF Developer Platform | Agent Transaction Firewall",
+    title: "ATF Developer Platform | Policy-Enforced Execution + Intelligence",
     description:
-      "Non-custodial developer security infrastructure for Solana bots, AI agents, and custodians. Comprehensive CLI, API, agent tooling, and verifiable receipts.",
+      "Policy-enforced execution with built-in intelligence for Solana bots, AI agents, and custodians. Comprehensive CLI, API, agent tooling, and verifiable receipts.",
     images: [
       {
         url: "/atf/opengraph-image",
@@ -29,9 +29,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ATF Developer Platform | Agent Transaction Firewall",
+    title: "ATF Developer Platform | Policy-Enforced Execution + Intelligence",
     description:
-      "Non-custodial developer security infrastructure for Solana bots, AI agents, and custodians.",
+      "Policy-enforced execution with built-in intelligence for Solana bots, AI agents, and custodians.",
     images: ["/atf/opengraph-image"],
   },
 };
@@ -128,8 +128,10 @@ export default function ATFPage() {
               Agent Transaction Firewall
             </h1>
             <p className="mt-6 max-w-3xl text-xl leading-[1.6] text-slate-200">
-              One command to run a protected trade. Zero config.
-              Verify and share receipts. Built for bot developers and AI agents on Solana.
+              Protect every transaction, learn from execution history, and
+              continuously improve how capital is deployed. Policy-enforced
+              execution with built-in intelligence for bot developers and AI
+              agents on Solana.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">

@@ -20,8 +20,9 @@ export default function DocsHubPage() {
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">ATF Docs</p>
         <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">Documentation</h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          Start with a practical quickstart, then dive into policy primitives and permit construction.
-          The docs are intentionally concise so teams can evaluate integration fit quickly.
+          Start with a practical quickstart, then dive into policy primitives, permit construction,
+          and the Policy Intelligence Layer. The docs are intentionally concise so teams can
+          evaluate integration fit quickly.
         </p>
         <p className="max-w-3xl text-base leading-relaxed text-slate-400">
           <strong className="text-slate-200">New here?</strong>{" "}
