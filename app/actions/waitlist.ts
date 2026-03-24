@@ -54,11 +54,13 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
   const rawRole = (formData.get("role") as string | null) ?? "";
   const rawUseCase = (formData.get("useCase") as string | null) ?? "";
   const rawIntent = (formData.get("intent") as string | null) ?? "standard";
+  const rawSource = (formData.get("source") as string | null) ?? "homepage";
 
   const email = rawEmail.trim().toLowerCase();
   const role = rawRole.trim() || null;
   const useCase = rawUseCase.trim() || null;
   const intent: WaitlistIntent = rawIntent === "design_partner" ? "design_partner" : "standard";
+  const source = rawSource.trim().slice(0, 64) || "homepage";
 
   /* ---- extract design-partner fields ---- */
   const rawProjectName = (formData.get("projectName") as string | null) ?? "";
@@ -159,7 +161,7 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
       email,
       role,
       useCase,
-      source: "homepage",
+      source,
       userAgent,
       ipHash,
       intent,
@@ -182,6 +184,13 @@ export async function joinWaitlist(formData: FormData): Promise<WaitlistResult> 
       maxAge: COOLDOWN_SECONDS,
       path: "/",
     });
+
+    /* ---- structured log for design-partner submissions ---- */
+    if (intent === "design_partner") {
+      console.log(
+        `[waitlist] design_partner_submission: source=${source} isNew=${isNew}`,
+      );
+    }
 
     /* ---- emails (fire-and-forget, never block success) ---- */
     if (isNew) {

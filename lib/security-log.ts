@@ -28,7 +28,13 @@ export type SecurityEvent =
   | "admin_page_degraded"
   | "metrics_route_rate_limited"
   | "agent_route_rate_limited"
-  | "public_route_rate_limited";
+  | "public_route_rate_limited"
+  | "admin_verification_resend"
+  | "admin_verification_revoke"
+  | "admin_password_reset_revoke"
+  | "admin_feature_policy_updated"
+  | "admin_upgrade_approve"
+  | "admin_upgrade_reject";
 
 export interface SecurityLogContext {
   /** Raw IP string — will be hashed before logging. */

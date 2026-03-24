@@ -2,12 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { CopyBlock } from "@/components/copy-block";
+import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components/safe-to-try-banner";
+import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
   title: "First Protected Trade — Golden Path",
   description:
     "Protect your first bot intent in minutes. Submit a swap, receive a receipt, verify the hash. HTTP, Python, TypeScript, CLI, and OpenClaw paths.",
 };
+
+const cliVersion = getAtfCliVersion();
 
 const INTENT_JSON = `{
   "chain_id": "solana",
@@ -145,18 +150,64 @@ export default function FirstProtectedTradePage() {
           Your First Protected Trade
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          Protect your first bot intent in minutes. Submit a swap intent, receive a cryptographic receipt,
-          and verify it independently. No new dependencies required.
+          Submit a swap, receive a receipt, verify the hash. No new dependencies required.
         </p>
+        <SafeToTryBanner />
       </header>
+
+      {/* ── Install ── */}
+      <section className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-6 space-y-4">
+        <HeadingAnchor id="install">Install the CLI</HeadingAnchor>
+
+        <div className="space-y-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Recommended: install globally</p>
+            <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="fpt-install-global" />
+            <p className="mt-1 text-sm text-slate-400">Then run commands directly with <code className="font-mono text-slate-300">atf</code>.</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Alternative: run without installing</p>
+            <AtfCopyCommand command={`npx @trucore/atf@${cliVersion} trade`} testId="fpt-install-npx" />
+          </div>
+        </div>
+      </section>
+
+      {/* ── Run Your First Protected Trade ── */}
+      <section className="rounded-xl border border-accent-500/30 bg-accent-500/5 p-6 space-y-4">
+        <HeadingAnchor id="run-first-trade">Run Your First Protected Trade</HeadingAnchor>
+        <WhatHappensBlock />
+
+        <div className="mt-4">
+          <DemoVsRealBlock />
+        </div>
+
+        <div className="mt-4 space-y-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">1. Try a protected trade</p>
+            <AtfCopyCommand command="atf trade" testId="fpt-trade" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">2. Connect for real trades</p>
+            <AtfCopyCommand command="atf setup" testId="fpt-setup" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">3. Check readiness</p>
+            <AtfCopyCommand command="atf doctor" testId="fpt-doctor" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">4. Verify proof</p>
+            <AtfCopyCommand command="atf verify <receipt-id>" testId="fpt-verify" />
+          </div>
+        </div>
+      </section>
 
       {/* ── Who this is for ── */}
       <section className="space-y-4">
         <HeadingAnchor id="who-this-is-for">Who This Is For</HeadingAnchor>
         <ul className="space-y-2 text-slate-300">
-          <li><strong className="text-slate-100">Trading bot developers</strong> &mdash; protecting Jupiter, Raydium, or Orca swaps on Solana</li>
-          <li><strong className="text-slate-100">AI agent builders</strong> &mdash; adding policy-enforced guardrails before chain execution</li>
-          <li><strong className="text-slate-100">Anyone</strong> &mdash; who wants to verify that ATF evaluates, receipts, and enforces before a transaction lands</li>
+          <li><strong className="text-slate-100">Trading bot developers</strong> protecting Jupiter, Raydium, or Orca swaps on Solana</li>
+          <li><strong className="text-slate-100">AI agent builders</strong> adding policy-enforced guardrails before chain execution</li>
+          <li><strong className="text-slate-100">Anyone</strong> who wants to verify that ATF evaluates, receipts, and enforces before a transaction lands</li>
         </ul>
       </section>
 
@@ -181,16 +232,16 @@ export default function FirstProtectedTradePage() {
 
       {/* ── Step 1: Define Intent ── */}
       <section className="space-y-4">
-        <HeadingAnchor id="define-intent">Step 1 &mdash; Define Your Intent</HeadingAnchor>
+        <HeadingAnchor id="define-intent">Step 1: Define Your Intent</HeadingAnchor>
         <p className="text-slate-300">
-          A standard SOL &rarr; USDC swap on Jupiter. Every field is plain JSON &mdash; no SDK required.
+          A standard SOL &rarr; USDC swap on Jupiter. Every field is plain JSON, no SDK required.
         </p>
         <CopyBlock label="intent.json" value={INTENT_JSON} />
       </section>
 
       {/* ── Step 2: Protect ── */}
       <section className="space-y-6">
-        <HeadingAnchor id="protect-intent">Step 2 &mdash; Protect the Intent</HeadingAnchor>
+        <HeadingAnchor id="protect-intent">Step 2: Protect the Intent</HeadingAnchor>
         <p className="text-slate-300">Pick your preferred integration path. All produce the same response contract.</p>
 
         <div className="space-y-4">
@@ -215,7 +266,7 @@ export default function FirstProtectedTradePage() {
             Exit codes: <code className="font-mono text-slate-300">0</code> = ALLOW,{" "}
             <code className="font-mono text-slate-300">20</code> = DENY,{" "}
             <code className="font-mono text-slate-300">31</code> = CONFIG_ERROR.{" "}
-            Install: <code className="font-mono text-slate-300">npm i -g @trucore/atf-cli</code>
+            Install: <code className="font-mono text-slate-300">npm install -g @trucore/atf</code>, or run directly with <code className="font-mono text-slate-300">npx @trucore/atf</code>
           </p>
         </div>
 
@@ -255,7 +306,7 @@ export default function FirstProtectedTradePage() {
 
       {/* ── Step 3: Read the Response ── */}
       <section className="space-y-6">
-        <HeadingAnchor id="read-response">Step 3 &mdash; Read the Response</HeadingAnchor>
+        <HeadingAnchor id="read-response">Step 3: Read the Response</HeadingAnchor>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-2">
@@ -296,7 +347,7 @@ export default function FirstProtectedTradePage() {
 
       {/* ── Step 4: Verify the Receipt ── */}
       <section className="space-y-6">
-        <HeadingAnchor id="verify-receipt">Step 4 &mdash; Verify the Receipt</HeadingAnchor>
+        <HeadingAnchor id="verify-receipt">Step 4: Verify the Receipt</HeadingAnchor>
         <p className="text-slate-300">
           The receipt hash proves what ATF decided. Verify it independently using any of these methods:
         </p>
@@ -349,7 +400,7 @@ export default function FirstProtectedTradePage() {
 
       {/* ── Step 5: Success Markers ── */}
       <section className="space-y-4">
-        <HeadingAnchor id="success-markers">Step 5 &mdash; Success Markers</HeadingAnchor>
+        <HeadingAnchor id="success-markers">Step 5: Success Markers</HeadingAnchor>
         <p className="text-slate-300">You have completed the golden path when:</p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-slate-300">
@@ -408,6 +459,21 @@ export default function FirstProtectedTradePage() {
             </Link>
           ))}
         </div>
+      </section>
+
+      {/* ── Troubleshooting ── */}
+      <section className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+        <p className="text-sm font-semibold text-amber-400">Wrong package name?</p>
+        <p className="mt-1 text-sm text-slate-300">
+          If you see <code className="font-mono text-slate-200">npm ERR! 404</code> for{" "}
+          <code className="font-mono text-slate-200">@trucore/atf-cli</code>, use the correct package name:
+        </p>
+        <p className="mt-2 font-mono text-sm text-primary-200">
+          npm install -g @trucore/atf
+        </p>
+        <p className="mt-1 text-xs text-slate-400">
+          The published package is <code className="font-mono text-slate-300">@trucore/atf</code>. The binary is <code className="font-mono text-slate-300">atf</code>.
+        </p>
       </section>
 
       {/* ── Integration help CTA ── */}

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
-import { getAtfCliTag } from "@/lib/version";
+import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { getAtfCliTag, getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
   title: "Perps Enforcement",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 
 export default function DocsPerpsPage() {
   const cliTag = getAtfCliTag();
+  const cliVersion = getAtfCliVersion();
 
   return (
     <article className="space-y-8">
@@ -144,6 +146,11 @@ ATF_ENABLE_MANGO_POLICY=1`}</pre>
       {/* ── CLI quickstart ── */}
       <section className="space-y-4">
         <HeadingAnchor id="cli-quickstart">CLI quickstart</HeadingAnchor>
+        <div className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-5 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Install the CLI</p>
+          <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="perps-install-global" />
+          <p className="text-sm text-slate-400">Or run without installing: <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion} &lt;command&gt;</code></p>
+        </div>
         <p className="text-slate-300">
           The ATF CLI includes perps-specific commands. Install the CLI pinned to the current release:
         </p>

@@ -44,3 +44,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# proof generation output (ephemeral)
+docs/growth/proof-output/
+.env*.local

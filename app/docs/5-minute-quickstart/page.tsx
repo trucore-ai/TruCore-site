@@ -5,6 +5,7 @@ import { CopyBlock } from "@/components/copy-block";
 import { trackEvent } from "@/lib/analytics";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { SingleCommandQuickstart } from "@/components/single-command-quickstart";
+import { SafeToTryBanner } from "@/components/safe-to-try-banner";
 
 const CURL_EXAMPLE = `BASE_URL="${"${BASE_URL:-http://127.0.0.1:3000}"}"
 curl -sS "$BASE_URL/api/simulate" \\
@@ -27,8 +28,9 @@ export default function DocsFiveMinuteQuickstartPage() {
           5-Minute Developer Quickstart
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          Start with a key, run one request, and verify deterministic policy output in minutes.
+          Run one command to see a deterministic decision and receipt.
         </p>
+        <SafeToTryBanner />
       </header>
 
       <SingleCommandQuickstart location="quickstart" showV1StabilityContract />

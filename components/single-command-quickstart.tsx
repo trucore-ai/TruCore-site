@@ -12,8 +12,9 @@ type SingleCommandQuickstartProps = {
   showV1StabilityContract?: boolean;
 };
 
-const METHODS: Array<{ id: OneLineMethod; label: string }> = [
-  { id: "npx", label: "npx" },
+const METHODS: Array<{ id: OneLineMethod; label: string; note?: string }> = [
+  { id: "global", label: "Install globally", note: "Recommended" },
+  { id: "npx", label: "npx", note: "Alternative" },
   { id: "curl", label: "curl" },
 ];
 
@@ -22,7 +23,7 @@ export function SingleCommandQuickstart({
   compact = false,
   showV1StabilityContract = false,
 }: SingleCommandQuickstartProps) {
-  const [method, setMethod] = useState<OneLineMethod>("npx");
+  const [method, setMethod] = useState<OneLineMethod>("global");
   const [isCopied, setIsCopied] = useState(false);
 
   const command = useMemo(() => oneLineCommandFor(method), [method]);
@@ -54,6 +55,9 @@ export function SingleCommandQuickstart({
       <p className="text-sm font-semibold uppercase tracking-[0.12em] text-primary-200">Single Command Quickstart</p>
       <p className="mt-2 text-lg text-slate-200">
         Run one command. Get a deterministic decision + receipt hash.
+      </p>
+      <p className="mt-1 text-sm text-emerald-400">
+        Safe to try. No wallet needed. Takes ~5&nbsp;seconds.
       </p>
       <p className="mt-2 text-sm text-slate-300">
         CLI pinned: <span className="font-mono text-slate-200">@trucore/atf@{getAtfCliTag()}</span>
@@ -87,7 +91,7 @@ export function SingleCommandQuickstart({
                   : "border-primary-300/40 bg-primary-500/20 text-primary-100 hover:border-primary-300/70"
               }`}
             >
-              {option.label}
+              {option.note ? `${option.label} (${option.note})` : option.label}
             </button>
           );
         })}

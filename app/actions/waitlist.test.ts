@@ -190,6 +190,42 @@ describe("joinWaitlist", () => {
     );
   });
 
+  it("propagates source field from formData when provided", async () => {
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "src-test@example.com",
+        role: "Builder",
+        useCase: "Agent authorization",
+        intent: "standard",
+        source: "atf_apply_page",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(mocks.upsertWaitlistSignupMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: "atf_apply_page",
+      }),
+    );
+  });
+
+  it("defaults source to homepage when not provided in formData", async () => {
+    const result = await joinWaitlist(
+      buildFormData({
+        email: "default-src@example.com",
+        role: "Builder",
+        intent: "standard",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(mocks.upsertWaitlistSignupMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: "homepage",
+      }),
+    );
+  });
+
   it("silently succeeds honeypot submissions without DB or email side effects", async () => {
     const result = await joinWaitlist(
       buildFormData({

@@ -16,8 +16,11 @@ const whyNowCards = [
     title: "Trust doesn’t scale, enforcement does",
     description:
       "Human trust checks cannot keep pace with machine-speed decisions. Deterministic enforcement is how systems stay reliable as volume rises.",
-  },
-];
+  },  {
+    title: "Execution must become intelligence",
+    description:
+      "Protecting transactions is necessary but insufficient. Systems that learn from execution history, under operator control, make better decisions over time without sacrificing determinism.",
+  },];
 
 export function WhyNowSection() {
   return (
@@ -26,10 +29,10 @@ export function WhyNowSection() {
         <h2 className="text-4xl font-bold tracking-tight text-accent-300">Why Now</h2>
         <p className="mt-4 text-2xl leading-[1.4] text-slate-200">
           Autonomous finance is entering a phase where execution is real, adversaries are active,
-          and risk surfaces compound quickly. The window to add hard enforcement is now.
+          and risk surfaces compound quickly. The window to add hard enforcement, and intelligence that learns from it, is now.
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {whyNowCards.map((card) => (
           <Card key={card.title}>
             <h3 className="text-xl font-bold text-accent-300">{card.title}</h3>

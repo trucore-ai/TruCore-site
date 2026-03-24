@@ -19,6 +19,10 @@ export function getSecurityHeaderRules() {
       ],
     },
     {
+      source: "/customer/:path*",
+      headers: [...SENSITIVE_ROUTE_ROBOTS_HEADERS, ...SENSITIVE_ROUTE_NO_STORE_HEADERS],
+    },
+    {
       source: "/portal/:path*",
       headers: [...SENSITIVE_ROUTE_ROBOTS_HEADERS, ...SENSITIVE_ROUTE_NO_STORE_HEADERS],
     },

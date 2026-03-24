@@ -2,6 +2,7 @@
 
 import { useActionState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { joinWaitlist, type WaitlistResult, type WaitlistIntent } from "@/app/actions/waitlist";
 import { trackEvent } from "@/lib/analytics";
 
@@ -89,12 +90,26 @@ export function WaitlistForm() {
 
         {isPartnerSuccess ? (
           <>
-            {state.schedulingUrl ? (
-              <>
-                <p className="text-lg text-slate-200">
-                  Next: book a 15-minute fit check.
-                </p>
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <p className="text-lg text-slate-200">
+              Next: book a 15-minute fit check.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Link
+                href={state.schedulingUrl || "/contact?subject=Design+Partner+Fit+Check"}
+                {...(state.schedulingUrl ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                onClick={() =>
+                  trackEvent("design_partner_book_click", {
+                    location: "waitlist_success",
+                  })
+                }
+                data-testid="waitlist-scheduling-link"
+                className="inline-flex h-12 items-center justify-center rounded-xl bg-accent-500 px-6 text-lg font-semibold text-white shadow-md transition-all hover:bg-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-neutral-950"
+              >
+                Book a fit check
+              </Link>
+              {state.emailEnabled && (
+                <span className="text-sm text-slate-400">
+                  Didn&apos;t get the email? Check spam or contact{" "}
                   <a
                     href={state.schedulingUrl}
                     target="_blank"
@@ -107,28 +122,11 @@ export function WaitlistForm() {
                     data-testid="waitlist-scheduling-link"
                     className="inline-flex h-12 items-center justify-center rounded-xl bg-accent-500 px-6 text-lg font-semibold text-white shadow-md transition-all hover:bg-accent-400 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 focus:ring-offset-neutral-950"
                   >
-                    Book a fit check
+                    info@trucore.xyz
                   </a>
-                  {state.emailEnabled && (
-                    <span className="text-sm text-slate-400">
-                      Prefer email?{" "}
-                      <a
-                        href="mailto:info@trucore.xyz"
-                        className="font-medium text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
-                      >
-                        Reply to your confirmation.
-                      </a>
-                    </span>
-                  )}
-                </div>
-              </>
-            ) : (
-              <p className="text-lg text-slate-200">
-                {state.emailEnabled
-                  ? "We\u2019ll follow up by email within one business day."
-                  : "We\u2019ll follow up within one business day."}
-              </p>
-            )}
+                </span>
+              )}
+            </div>
           </>
         ) : (
           <p className="text-lg text-slate-200">

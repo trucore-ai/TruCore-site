@@ -1,0 +1,158 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - link "TruCore home" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img "TruCore logo" [ref=e7]
+          - generic [ref=e8]: TruCore
+        - navigation "Primary" [ref=e9]:
+          - link "Home" [ref=e10] [cursor=pointer]:
+            - /url: /#hero
+          - link "ATF" [ref=e11] [cursor=pointer]:
+            - /url: /atf
+          - link "Receipts" [ref=e12] [cursor=pointer]:
+            - /url: /receipts
+          - link "Verify" [ref=e13] [cursor=pointer]:
+            - /url: /#verify
+          - link "Integrations" [ref=e14] [cursor=pointer]:
+            - /url: /#integrations
+          - link "Why TruCore" [ref=e15] [cursor=pointer]:
+            - /url: /#why-trucore
+          - link "Pricing" [ref=e16] [cursor=pointer]:
+            - /url: /pricing
+          - link "Try ATF" [ref=e17] [cursor=pointer]:
+            - /url: /try
+    - main [ref=e19]:
+      - main [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]:
+            - heading "Sign in to TruCore" [level=1] [ref=e23]
+            - paragraph [ref=e24]: Access your ATF dashboard and API keys
+          - generic [ref=e25]:
+            - generic [ref=e26]: Failed to fetch
+            - generic [ref=e27]:
+              - generic [ref=e28]: Email
+              - textbox "Email" [ref=e29]:
+                - /placeholder: you@example.com
+                - text: unverified@test.trucore.xyz
+            - generic [ref=e30]:
+              - generic [ref=e31]: Password
+              - textbox "Password" [ref=e32]:
+                - /placeholder: ••••••••
+                - text: TestPassword123!
+            - button "Sign in" [ref=e33] [cursor=pointer]
+            - link "Forgot password?" [ref=e35] [cursor=pointer]:
+              - /url: /forgot-password
+          - paragraph [ref=e36]:
+            - text: Don't have an account?
+            - link "Sign up" [ref=e37] [cursor=pointer]:
+              - /url: /signup
+    - contentinfo [ref=e38]:
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - link "TruCore home" [ref=e44] [cursor=pointer]:
+              - /url: /
+              - img "TruCore logo" [ref=e45]
+              - generic [ref=e46]: TruCore
+            - paragraph [ref=e47]: Deterministic policy enforcement and tamper-evident receipts for autonomous finance.
+            - generic [ref=e48]:
+              - link "X" [ref=e49] [cursor=pointer]:
+                - /url: https://x.com/TruCore_AI
+              - link "GitHub" [ref=e50] [cursor=pointer]:
+                - /url: https://github.com/TruCore-AI
+              - link "Discord" [ref=e51] [cursor=pointer]:
+                - /url: https://discord.gg/hZWTn6Vr
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - paragraph [ref=e54]: Product
+              - generic [ref=e55]:
+                - link "ATF" [ref=e56] [cursor=pointer]:
+                  - /url: /atf
+                - link "ATF Primer" [ref=e57] [cursor=pointer]:
+                  - /url: /atf/primer
+                - link "ATF Roadmap" [ref=e58] [cursor=pointer]:
+                  - /url: /atf/roadmap
+                - link "Enterprise" [ref=e59] [cursor=pointer]:
+                  - /url: /enterprise
+                - link "Pricing" [ref=e60] [cursor=pointer]:
+                  - /url: /pricing
+                - link "For Builders" [ref=e61] [cursor=pointer]:
+                  - /url: /builders
+            - generic [ref=e62]:
+              - paragraph [ref=e63]: Resources
+              - generic [ref=e64]:
+                - link "Docs" [ref=e65] [cursor=pointer]:
+                  - /url: /docs
+                - link "ATF CLI" [ref=e66] [cursor=pointer]:
+                  - /url: /docs/cli
+                - link "Verification" [ref=e67] [cursor=pointer]:
+                  - /url: /docs/verify
+                - link "API" [ref=e68] [cursor=pointer]:
+                  - /url: /docs/api
+                - link "Whitepaper" [ref=e69] [cursor=pointer]:
+                  - /url: /atf/whitepaper
+                - link "Verify Receipt" [ref=e70] [cursor=pointer]:
+                  - /url: /verify
+                - link "Receipts Explorer" [ref=e71] [cursor=pointer]:
+                  - /url: /receipts
+                - link "Demo Live" [ref=e72] [cursor=pointer]:
+                  - /url: /demo
+                - link "Blog" [ref=e73] [cursor=pointer]:
+                  - /url: /blog
+                - link "Feedback" [ref=e74] [cursor=pointer]:
+                  - /url: /feedback
+            - generic [ref=e75]:
+              - paragraph [ref=e76]: Company
+              - generic [ref=e77]:
+                - link "Status" [ref=e78] [cursor=pointer]:
+                  - /url: /status
+                - link "Changelog" [ref=e79] [cursor=pointer]:
+                  - /url: /docs/changelog
+                - link "Contact" [ref=e80] [cursor=pointer]:
+                  - /url: /contact
+                - link "Manifesto" [ref=e81] [cursor=pointer]:
+                  - /url: /manifesto
+            - generic [ref=e82]:
+              - paragraph [ref=e83]: Support
+              - generic [ref=e84]:
+                - link "Terms" [ref=e85] [cursor=pointer]:
+                  - /url: /terms
+                - link "Privacy" [ref=e86] [cursor=pointer]:
+                  - /url: /privacy
+                - link "Security" [ref=e87] [cursor=pointer]:
+                  - /url: /security
+                - link "Email" [ref=e88] [cursor=pointer]:
+                  - /url: mailto:info@trucore.xyz
+                - link "Feedback" [ref=e89] [cursor=pointer]:
+                  - /url: /feedback
+                - link "Waitlist" [ref=e90] [cursor=pointer]:
+                  - /url: /atf#updates
+        - generic [ref=e91]:
+          - generic [ref=e92]: For Automated Integrators
+          - link "Integration Runbook" [ref=e93] [cursor=pointer]:
+            - /url: /docs/agent-discovery
+          - generic [ref=e94]: "|"
+          - generic [ref=e95]: .well-known/atf.json manifest
+        - generic [ref=e96]:
+          - generic [ref=e97]:
+            - link "Permit Schema v1" [ref=e98] [cursor=pointer]:
+              - /url: /docs/permit-schema-v1
+            - generic [ref=e99]: "|"
+            - link "Build With ATF" [ref=e100] [cursor=pointer]:
+              - /url: /build-with-atf
+            - generic [ref=e101]: "|"
+            - link "How ATF is built" [ref=e102] [cursor=pointer]:
+              - /url: /process
+            - generic [ref=e103]: "|"
+            - 'button "Animations: Off" [ref=e104] [cursor=pointer]'
+          - paragraph [ref=e105]: © 2026 TruCore. Trustless enforcement for AI-driven capital.
+        - paragraph [ref=e106]: unknown · — · cli v1.4.0
+  - alert [ref=e107]
+```

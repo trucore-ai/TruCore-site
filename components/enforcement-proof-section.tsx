@@ -63,6 +63,14 @@ export function EnforcementProofSection() {
           <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
           Receipt hash generated for tamper evidence.
         </li>
+        <li className="flex items-start gap-3">
+          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
+          Receipts are shareable and verifiable via CLI or web.
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
+          Output includes both human share text and bot-friendly structured data.
+        </li>
       </ul>
 
       <div className="mt-8 flex flex-wrap gap-4">

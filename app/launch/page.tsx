@@ -9,11 +9,11 @@ import { SingleCommandQuickstart } from "@/components/single-command-quickstart"
 export const metadata: Metadata = {
   title: "Launch",
   description:
-    "Infrastructure for Autonomous Finance. TruCore is launching Agent Transaction Firewall (ATF) with deterministic enforcement and tamper-evident receipts.",
+    "Infrastructure for Autonomous Finance. TruCore launches ATF with deterministic enforcement, tamper-evident receipts, and the Policy Intelligence Layer.",
   openGraph: {
     title: "Infrastructure for Autonomous Finance",
     description:
-      "Launching with Agent Transaction Firewall (ATF), enforceable guardrails for agent transactions.",
+      "Launching with Agent Transaction Firewall (ATF) and the Policy Intelligence Layer: policy-enforced execution with built-in intelligence.",
     images: [
       {
         url: "/launch/opengraph-image",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Infrastructure for Autonomous Finance",
     description:
-      "Launching with Agent Transaction Firewall (ATF), enforceable guardrails for agent transactions.",
+      "Launching with Agent Transaction Firewall (ATF) and the Policy Intelligence Layer: policy-enforced execution with built-in intelligence.",
     images: ["/launch/opengraph-image"],
   },
 };
@@ -42,8 +42,9 @@ export default function LaunchPage() {
             Infrastructure for Autonomous Finance
           </h1>
           <p className="mt-5 text-2xl leading-[1.4] text-slate-200 sm:text-3xl">
-            Launching with Agent Transaction Firewall (ATF), enforceable guardrails for agent
-            transactions.
+            Launching with Agent Transaction Firewall (ATF) and the Policy
+            Intelligence Layer (PIL): policy-enforced execution with built-in
+            intelligence that learns from every transaction.
           </p>
 
           <ul className="mt-6 space-y-2 text-lg text-slate-300 sm:text-xl">
@@ -58,6 +59,10 @@ export default function LaunchPage() {
             <li className="flex items-start gap-3">
               <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
               Tamper-evident receipts
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-400" />
+              Policy Intelligence Layer: execution history becomes actionable signal
             </li>
           </ul>
 

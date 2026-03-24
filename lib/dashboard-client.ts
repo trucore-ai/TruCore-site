@@ -571,3 +571,291 @@ export async function fetchFullDashboard(): Promise<{
     adoption,
   };
 }
+
+// ── Admin user management ────────────────────────────────────
+
+export const AdminUserSummarySchema = z.object({
+  user_id: z.string(),
+  email: z.string(),
+  tenant_id: z.string(),
+  created_at: z.number(),
+  email_verified: z.boolean(),
+  email_verified_at: z.number().nullable(),
+  email_verification_sent_at: z.number().nullable(),
+  password_reset_sent_at: z.number().nullable(),
+});
+
+export const AdminUserListSchema = z.object({
+  users: z.array(AdminUserSummarySchema),
+  count: z.number(),
+});
+
+export const AdminUserDetailSchema = z.object({
+  user: z.object({
+    user_id: z.string(),
+    email: z.string(),
+    tenant_id: z.string(),
+    created_at: z.number(),
+    email_verified: z.boolean(),
+    email_verified_at: z.number().nullable(),
+    email_verification_sent_at: z.number().nullable(),
+    has_pending_verification_token: z.boolean(),
+    verification_token_expires_at: z.number().nullable(),
+    password_reset_sent_at: z.number().nullable(),
+    password_reset_expires_at: z.number().nullable(),
+    password_reset_used_at: z.number().nullable(),
+    has_pending_reset_token: z.boolean(),
+  }),
+});
+
+export type AdminUserSummary = z.infer<typeof AdminUserSummarySchema>;
+export type AdminUserList = z.infer<typeof AdminUserListSchema>;
+export type AdminUserDetail = z.infer<typeof AdminUserDetailSchema>;
+
+export function fetchAdminUsers(
+  email?: string,
+  limit = 50,
+): Promise<DashboardResult<AdminUserList>> {
+  const params = new URLSearchParams();
+  if (email) params.set("email", email);
+  params.set("limit", String(limit));
+  return dashboardFetch(
+    `/admin/users?${params.toString()}`,
+    AdminUserListSchema,
+  );
+}
+
+export function fetchAdminUserDetail(
+  userId: string,
+): Promise<DashboardResult<AdminUserDetail>> {
+  return dashboardFetch(
+    `/admin/users/${encodeURIComponent(userId)}`,
+    AdminUserDetailSchema,
+  );
+}
+
+/**
+ * Call an admin user action endpoint (POST). Returns { ok, error? }.
+ * Used for: resend verification, revoke verification, revoke reset.
+ */
+export async function adminUserAction(
+  userId: string,
+  action: "verification/resend" | "verification/revoke-pending" | "password-reset/revoke-pending",
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const base = getBaseUrl();
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+    const apiKey = process.env.ATF_API_KEY;
+    if (apiKey) {
+      headers["x-api-key"] = apiKey;
+    }
+    const res = await fetch(
+      `${base}/admin/users/${encodeURIComponent(userId)}/${action}`,
+      { method: "POST", headers, cache: "no-store" },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { ok: false, error: `HTTP ${res.status}: ${text}` };
+    }
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+// ── Feature Catalog ──────────────────────────────────────────
+
+export const FeatureEntrySchema = z.object({
+  feature_key: z.string(),
+  surface: z.enum(["api", "cli", "plugin", "other"]),
+  title: z.string(),
+  description: z.string(),
+  enabled: z.boolean(),
+  visibility: z.enum(["hidden", "visible", "gated"]),
+  required_plan: z.enum(["free", "pro", "enterprise"]),
+  access_mode: z.enum(["self_serve", "request_only", "admin_only"]),
+  metered: z.boolean(),
+  billing_dimension: z.string().nullable().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export const AdminFeatureListSchema = z.object({
+  features: z.array(FeatureEntrySchema),
+  count: z.number(),
+});
+
+/** Public-facing feature entry (no tags/billing internals) */
+export const PublicFeatureEntrySchema = z.object({
+  feature_key: z.string(),
+  surface: z.enum(["api", "cli", "plugin", "other"]),
+  title: z.string(),
+  description: z.string(),
+  visibility: z.enum(["hidden", "visible", "gated"]),
+  required_plan: z.enum(["free", "pro", "enterprise"]),
+  access_mode: z.enum(["self_serve", "request_only", "admin_only"]),
+  metered: z.boolean(),
+});
+
+export const PublicFeatureCatalogSchema = z.object({
+  features: z.array(PublicFeatureEntrySchema),
+  count: z.number(),
+});
+
+export type FeatureEntry = z.infer<typeof FeatureEntrySchema>;
+export type AdminFeatureList = z.infer<typeof AdminFeatureListSchema>;
+export type PublicFeatureEntry = z.infer<typeof PublicFeatureEntrySchema>;
+export type PublicFeatureCatalog = z.infer<typeof PublicFeatureCatalogSchema>;
+
+export function fetchAdminFeatures(
+  surface?: string,
+): Promise<DashboardResult<AdminFeatureList>> {
+  const params = new URLSearchParams();
+  if (surface) params.set("surface", surface);
+  const qs = params.toString();
+  return dashboardFetch(
+    `/admin/features${qs ? `?${qs}` : ""}`,
+    AdminFeatureListSchema,
+  );
+}
+
+export function fetchAdminFeatureDetail(
+  featureKey: string,
+): Promise<DashboardResult<{ feature: FeatureEntry }>> {
+  return dashboardFetch(
+    `/admin/features/${encodeURIComponent(featureKey)}`,
+    z.object({ feature: FeatureEntrySchema }),
+  );
+}
+
+export async function updateAdminFeature(
+  featureKey: string,
+  patch: Record<string, unknown>,
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const base = getBaseUrl();
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+    const apiKey = process.env.ATF_API_KEY;
+    if (apiKey) {
+      headers["x-api-key"] = apiKey;
+    }
+    const res = await fetch(
+      `${base}/admin/features/${encodeURIComponent(featureKey)}`,
+      { method: "POST", headers, body: JSON.stringify(patch), cache: "no-store" },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { ok: false, error: `HTTP ${res.status}: ${text}` };
+    }
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+export function fetchPublicFeatureCatalog(
+  surface?: string,
+): Promise<DashboardResult<PublicFeatureCatalog>> {
+  const params = new URLSearchParams();
+  if (surface) params.set("surface", surface);
+  const qs = params.toString();
+  return dashboardFetch(
+    `/features/catalog${qs ? `?${qs}` : ""}`,
+    PublicFeatureCatalogSchema,
+  );
+}
+
+// ── Admin Upgrade Requests ───────────────────────────────────
+
+export const UpgradeRequestSchema = z.object({
+  request_id: z.string(),
+  tenant_id: z.string(),
+  user_id: z.string(),
+  requested_plan: z.string(),
+  requested_features: z.array(z.string()),
+  reason: z.string(),
+  status: z.enum(["pending", "approved", "rejected", "cancelled"]),
+  created_at: z.number(),
+  reviewed_at: z.number(),
+  reviewed_by: z.string(),
+  review_note: z.string(),
+});
+
+export const AdminUpgradeListSchema = z.object({
+  requests: z.array(UpgradeRequestSchema),
+  count: z.number(),
+});
+
+export type UpgradeRequestEntry = z.infer<typeof UpgradeRequestSchema>;
+export type AdminUpgradeList = z.infer<typeof AdminUpgradeListSchema>;
+
+export function fetchAdminUpgradeRequests(
+  status?: string,
+  requestedPlan?: string,
+): Promise<DashboardResult<AdminUpgradeList>> {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  if (requestedPlan) params.set("requested_plan", requestedPlan);
+  const qs = params.toString();
+  return dashboardFetch(
+    `/admin/upgrades${qs ? `?${qs}` : ""}`,
+    AdminUpgradeListSchema,
+  );
+}
+
+export function fetchAdminUpgradeDetail(
+  requestId: string,
+): Promise<DashboardResult<{ request: UpgradeRequestEntry }>> {
+  return dashboardFetch(
+    `/admin/upgrades/${encodeURIComponent(requestId)}`,
+    z.object({ request: UpgradeRequestSchema }),
+  );
+}
+
+export async function adminUpgradeAction(
+  requestId: string,
+  action: "approve" | "reject",
+  note = "",
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const base = getBaseUrl();
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+    const apiKey = process.env.ATF_API_KEY;
+    if (apiKey) {
+      headers["x-api-key"] = apiKey;
+    }
+    const res = await fetch(
+      `${base}/admin/upgrades/${encodeURIComponent(requestId)}/${action}`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ note }),
+        cache: "no-store",
+      },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { ok: false, error: `HTTP ${res.status}: ${text}` };
+    }
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
