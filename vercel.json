@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/internal/health-monitor",
-      "schedule": "* * * * *"
+      "schedule": "0 * * * *"
     }
   ],
   "redirects": [
