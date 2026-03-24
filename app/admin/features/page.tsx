@@ -68,12 +68,12 @@ export default async function AdminFeaturesPage({
           <LaunchModeBanner launchMode={launchMode} />
         </div>
         <div className="flex items-center gap-3">
-          <a
+          <Link
             href="/admin/users"
             className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20"
           >
             Users
-          </a>
+          </Link>
           <a
             href="/admin/keys"
             className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20"

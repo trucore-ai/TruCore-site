@@ -16,6 +16,7 @@ After completing any task (stage implementation, bug fix, refactor, etc.), **alw
 Before executing any prompt that gives architectural, API, or auth-related direction, **always read the relevant internal docs first**. Internal documentation in this repo is more accurate than prompt assumptions.
 
 Specifically:
+
 - Check `docs/` (product/, growth/, security-hardening-closeout.md, admin-e2e-runbook.md) for existing decisions
 - Check `docs/product/SITE_ONBOARDING_AUDIT.md` for onboarding architecture state
 - Read `lib/customer-auth.ts` to understand the actual auth model before proxying calls

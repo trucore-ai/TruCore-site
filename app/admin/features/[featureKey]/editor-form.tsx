@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface FeatureEditorFormProps {
   featureKey: string;
@@ -175,12 +176,12 @@ export function FeatureEditorForm({
         >
           {saving ? "Saving…" : "Save Changes"}
         </button>
-        <a
+        <Link
           href="/admin/features"
           className="rounded border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/20"
         >
           Back to Features
-        </a>
+        </Link>
       </div>
     </form>
   );

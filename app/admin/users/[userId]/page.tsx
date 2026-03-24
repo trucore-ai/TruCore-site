@@ -3,6 +3,7 @@ import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state"
 import { logSecurityEvent } from "@/lib/security-log";
 import { UserActionPanel } from "./action-panel";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -50,12 +51,12 @@ export default async function AdminUserDetailPage({
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <a
+          <Link
             href="/admin/users"
             className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
           >
             &larr; Users
-          </a>
+          </Link>
           <h1 className="text-2xl font-bold tracking-tight">User Detail</h1>
         </div>
         <form method="POST" action="/admin/logout">

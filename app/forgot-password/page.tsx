@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
           </h1>
           <p className="text-sm text-slate-400">
             If an account exists for{" "}
-            <span className="font-medium text-slate-200">{email}</span>, we've
+            <span className="font-medium text-slate-200">{email}</span>, we&apos;ve
             sent a password reset link.
           </p>
           <p className="text-xs text-slate-500">

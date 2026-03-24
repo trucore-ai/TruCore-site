@@ -291,7 +291,7 @@ export function revokeSessionToken(
 export function touchSession(token: string): boolean {
   sweepSessions();
 
-  let record = sessionStore.get(token);
+  const record = sessionStore.get(token);
 
   /* Token not in store — try self-verifying registration */
   if (!record) {

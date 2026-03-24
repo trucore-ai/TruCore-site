@@ -75,7 +75,7 @@ test.describe("customer onboarding flow", () => {
 
   test("full onboarding: generate → simulate → execute", async ({ page }) => {
     // Set up activation mock to progress through steps
-    let stepState = { steps_completed: [] as string[], onboarding_completed: false };
+    const stepState = { steps_completed: [] as string[], onboarding_completed: false };
 
     await page.route("**/dashboard/activation", (route) => {
       if (route.request().method() === "POST") {

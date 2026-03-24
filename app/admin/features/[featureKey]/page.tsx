@@ -1,6 +1,7 @@
 import { fetchAdminFeatureDetail, type FeatureEntry } from "@/lib/dashboard-client";
 import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
 import { logSecurityEvent } from "@/lib/security-log";
+import Link from "next/link";
 import { FeatureEditorForm } from "./editor-form";
 
 export const dynamic = "force-dynamic";
@@ -43,12 +44,12 @@ export default async function FeatureDetailPage({
     <div className="min-h-screen bg-neutral-950 p-6 text-slate-100 md:p-10">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <a
+          <Link
             href="/admin/features"
             className="text-xs text-slate-400 transition hover:text-slate-200"
           >
             &larr; Feature Matrix
-          </a>
+          </Link>
           <h1 className="mt-1 text-2xl font-bold tracking-tight">
             {f?.title || decodedKey}
           </h1>

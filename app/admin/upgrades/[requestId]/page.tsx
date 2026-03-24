@@ -4,6 +4,7 @@ import {
 } from "@/lib/dashboard-client";
 import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state";
 import { logSecurityEvent } from "@/lib/security-log";
+import Link from "next/link";
 import { UpgradeReviewActions } from "./review-actions";
 
 export const dynamic = "force-dynamic";
@@ -60,12 +61,12 @@ export default async function UpgradeDetailPage({
     <div className="min-h-screen bg-neutral-950 p-6 text-slate-100 md:p-10">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <a
+          <Link
             href="/admin/upgrades"
             className="text-xs text-slate-400 transition hover:text-slate-200"
           >
             &larr; Upgrade Requests
-          </a>
+          </Link>
           <h1 className="mt-1 text-2xl font-bold tracking-tight">
             Review Upgrade Request
           </h1>

@@ -71,18 +71,18 @@ export default async function AdminUpgradesPage({
           Upgrade Requests
         </h1>
         <div className="flex items-center gap-3">
-          <a
+          <Link
             href="/admin/users"
             className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20"
           >
             Users
-          </a>
-          <a
+          </Link>
+          <Link
             href="/admin/features"
             className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20"
           >
             Features
-          </a>
+          </Link>
           <a
             href="/admin/audit"
             className="rounded border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/20"
