@@ -7,6 +7,12 @@ import { Card } from "@/components/ui/card";
 import { trackEvent } from "@/lib/analytics";
 
 // ---------------------------------------------------------------------------
+// Same-origin proxy routes used for sandbox calls (avoids CORS on api.trucore.xyz)
+// ---------------------------------------------------------------------------
+
+const SANDBOX_API = "/api/sandbox";
+
+// ---------------------------------------------------------------------------
 // Internal funnel telemetry (POST to /api/events)
 // ---------------------------------------------------------------------------
 
@@ -77,13 +83,6 @@ type ProtectResponse = {
 
 type Step = "idle" | "intent-loaded" | "protected";
 
-function getApiBaseUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_ATF_API_URL?.replace(/\/+$/, "") ??
-    "https://api.trucore.xyz"
-  );
-}
-
 export function TryAtfFlow() {
   const [step, setStep] = useState<Step>("idle");
   const [intent, setIntent] = useState<SampleIntentResponse | null>(null);
@@ -103,9 +102,13 @@ export function TryAtfFlow() {
     trackEvent("try_sample_clicked");
     sendFunnelEvent("try_sample_clicked");
     try {
-      const res = await fetch(`${getApiBaseUrl()}/sandbox/sample-intent`);
+      const res = await fetch(`${SANDBOX_API}/sample-intent`);
       if (res.status === 429) {
         setError("Rate limit reached. Please wait a moment and try again.");
+        return;
+      }
+      if (res.status === 502) {
+        setError("The sandbox API is temporarily unavailable. Please try again in a moment.");
         return;
       }
       if (!res.ok) {
@@ -118,7 +121,7 @@ export function TryAtfFlow() {
       trackEvent("try_atf_sample_intent");
       sendFunnelEvent("try_sample_loaded");
     } catch {
-      setError("Network error. Could not reach the ATF API.");
+      setError("Could not reach the sandbox. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -131,13 +134,18 @@ export function TryAtfFlow() {
     trackEvent("try_protect_clicked");
     sendFunnelEvent("try_protect_clicked");
     try {
-      const res = await fetch(`${getApiBaseUrl()}/sandbox/protect`, {
+      const res = await fetch(`${SANDBOX_API}/protect`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(intent.intent),
       });
       if (res.status === 429) {
         setError("Rate limit reached. Please wait a moment and try again.");
+        sendFunnelEvent("try_protect_failed");
+        return;
+      }
+      if (res.status === 502) {
+        setError("The sandbox API is temporarily unavailable. Please try again in a moment.");
         sendFunnelEvent("try_protect_failed");
         return;
       }
@@ -154,7 +162,7 @@ export function TryAtfFlow() {
         decision: data.decision,
       });
     } catch {
-      setError("Network error. Could not reach the ATF API.");
+      setError("Could not reach the sandbox. Please check your connection and try again.");
       sendFunnelEvent("try_protect_failed");
     } finally {
       setLoading(false);
