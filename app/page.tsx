@@ -20,13 +20,13 @@ import { Tilt } from "@/components/ui/tilt";
 import truCoreBanner from "@/images/TruCore-banner-new.png";
 
 export const metadata: Metadata = {
-  title: "TruCore | AI Transaction Systems That Learn",
+  title: "TruCore | Intelligent Control for AI Transactions",
   description:
-    "Protect every transaction and turn execution history into actionable intelligence. Policy-enforced execution with built-in intelligence for Solana bots and AI agents.",
+    "Protect every transaction, learn from execution history, and improve how capital is deployed with deterministic intelligence and operator-gated control.",
   openGraph: {
-    title: "TruCore | AI Transaction Systems That Learn",
+    title: "TruCore | Intelligent Control for AI Transactions",
     description:
-      "Protect every transaction and turn execution history into actionable intelligence. Policy-enforced execution with built-in intelligence for Solana bots and AI agents.",
+      "Protect every transaction, learn from execution history, and improve how capital is deployed with deterministic intelligence and operator-gated control.",
     images: [
       {
         url: "/opengraph-image",
@@ -38,9 +38,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TruCore | AI Transaction Systems That Learn",
+    title: "TruCore | Intelligent Control for AI Transactions",
     description:
-      "Protect every transaction and turn execution history into actionable intelligence. Policy-enforced execution with built-in intelligence for Solana bots and AI agents.",
+      "Protect every transaction, learn from execution history, and improve how capital is deployed with deterministic intelligence and operator-gated control.",
     images: ["/opengraph-image"],
   },
 };
@@ -71,14 +71,14 @@ export default function Home() {
               Solana-native enforcement, multi-chain expanding
             </p>
             <h1 className="mt-4 text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
-              AI Transaction Systems That Learn
+              Intelligent Control for AI Transactions
             </h1>
             <p className="mt-6 text-2xl font-semibold text-amber-200/90">
               Don&apos;t let your bot blow up your wallet.
             </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
-              Protect every transaction, and turn execution history into actionable
-              intelligence so systems continuously improve how capital is deployed.
+              Protect every transaction, learn from execution history, and improve
+              how capital is deployed with deterministic intelligence and operator-gated control.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-slate-300/80">
               A new category of AI transaction systems: policy-enforced execution with built-in intelligence.
