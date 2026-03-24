@@ -4,12 +4,24 @@
  * - Stores JWT in localStorage (client-side only)
  * - Provides signup / login API calls against the ATF API
  * - Auth guard utility for protected pages
+ *
+ * NOTE: signup, login, and verify-email calls are routed through same-origin
+ * Next.js API proxy routes (/api/customer/auth/*) to avoid browser CORS
+ * dependency on api.trucore.xyz for onboarding-critical paths.
+ * Post-auth calls that carry Authorization headers still target ATF_API_BASE
+ * directly and are deferred for proxy migration (see docs/onboarding/SITE_API_PROXY_AUDIT.md).
  */
 
 import { parseApiError, getUserFacingMessage } from "@/lib/auth-errors";
 
 const ATF_API_BASE =
   process.env.NEXT_PUBLIC_ATF_API_URL || "https://api.trucore.xyz";
+
+// Same-origin proxy base for onboarding-critical unauthenticated auth calls.
+// On the server (SSR/RSC) this will be an empty string — these functions are
+// client-only (called from "use client" pages), so the relative path resolves
+// to the same origin as the browser.
+const AUTH_PROXY_BASE = "/api/customer/auth";
 
 const TOKEN_KEY = "atf_customer_token";
 const TENANT_KEY = "atf_customer_tenant";
@@ -92,7 +104,7 @@ export async function signup(
   email: string,
   password: string,
 ): Promise<AuthResult> {
-  const res = await fetch(`${ATF_API_BASE}/auth/signup`, {
+  const res = await fetch(`${AUTH_PROXY_BASE}/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -109,7 +121,7 @@ export async function login(
   email: string,
   password: string,
 ): Promise<AuthResult> {
-  const res = await fetch(`${ATF_API_BASE}/auth/login`, {
+  const res = await fetch(`${AUTH_PROXY_BASE}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -504,7 +516,7 @@ export async function requestVerificationEmail(): Promise<{ status: string }> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
 
-  const res = await fetch(`${ATF_API_BASE}/auth/verify-email/request`, {
+  const res = await fetch(`${AUTH_PROXY_BASE}/verify-email/request`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -530,7 +542,7 @@ export async function requestVerificationEmail(): Promise<{ status: string }> {
 export async function confirmVerificationEmail(
   verifyToken: string,
 ): Promise<{ status: string; email?: string }> {
-  const res = await fetch(`${ATF_API_BASE}/auth/verify-email/confirm`, {
+  const res = await fetch(`${AUTH_PROXY_BASE}/verify-email/confirm`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token: verifyToken }),
