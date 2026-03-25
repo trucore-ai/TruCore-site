@@ -9,6 +9,7 @@ import { Container } from "@/components/ui/container";
 import { HeroBackgroundPulses } from "@/components/hero-background-pulses";
 import { MotionToggle } from "@/components/motion-toggle";
 import { ReleaseBadge } from "@/components/status/release-badge";
+import { HeaderAuthActions } from "@/components/header-auth-actions";
 import { SkipLink } from "@/components/skip-link";
 import { TrackedLink } from "@/components/tracked-link";
 import { UTM_COOKIE_MAX_AGE, UTM_COOKIE_NAME, UTM_QUERY_KEYS } from "@/lib/utm";
@@ -279,6 +280,7 @@ export default function RootLayout({
                   Try ATF
                 </Link>
               </nav>
+              <HeaderAuthActions />
             </Container>
             <div className="gradient-divider absolute inset-x-0 bottom-0" aria-hidden="true" />
           </header>
