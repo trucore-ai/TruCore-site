@@ -7,7 +7,7 @@ import { logSecurityEvent } from "@/lib/security-log";
  *  GET /api/dashboard/tenant?id=<tenantId>
  *
  *  Internal polling endpoint for the TenantDetailShell client
- *  component. Gated behind admin session cookie — only
+ *  component. Gated behind admin session cookie - only
  *  platform_operator role can access.
  *
  *  Proxies the ATF /dashboard/tenants/:id call and

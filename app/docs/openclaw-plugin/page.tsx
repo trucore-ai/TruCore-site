@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  Canonical tool surface — matches @trucore/trucore-atf@0.2.11     */
+/*  Canonical tool surface - matches @trucore/trucore-atf@0.2.11     */
 /* ------------------------------------------------------------------ */
 const TOOLS: Array<{ name: string; description: string; category: string }> = [
   {

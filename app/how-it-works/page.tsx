@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 export const metadata: Metadata = {
   title: "How ATF Works",
   description:
-    "Architecture overview of the Agent Transaction Firewall — how ATF evaluates transaction intents, enforces policies, and produces verifiable execution receipts.",
+    "Architecture overview of the Agent Transaction Firewall - how ATF evaluates transaction intents, enforces policies, and produces verifiable execution receipts.",
 };
 
 const FLOW_STEPS = [
@@ -81,7 +81,7 @@ export default function HowItWorksPage() {
               Intent Protection
             </h2>
             <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-              Agents submit a structured transaction intent — not a raw signed
+              Agents submit a structured transaction intent - not a raw signed
               transaction. ATF validates the intent before any signing occurs,
               meaning malformed or policy-violating transactions never reach the
               network. The protect endpoint accepts the intent, evaluates it, and
@@ -103,7 +103,7 @@ export default function HowItWorksPage() {
               allowed to do. The evaluation engine checks every intent against
               active policies in sequence. Policies can enforce constraints on
               token allowlists, slippage bounds, maximum notional value, target
-              programs, and more. Evaluation is deterministic — the same intent
+              programs, and more. Evaluation is deterministic - the same intent
               and policy set always produce the same result.
             </p>
           </Card>
@@ -118,7 +118,7 @@ export default function HowItWorksPage() {
               Execution Receipts
             </h2>
             <p className="mt-4 text-lg leading-[1.5] text-slate-300">
-              Every evaluated transaction — approved or rejected — produces an
+              Every evaluated transaction - approved or rejected - produces an
               execution receipt. Receipts include the original intent, the policy
               version that was applied, the evaluation result, and a SHA-256
               content hash. Receipts are immutable once generated and can be
@@ -186,7 +186,7 @@ export default function HowItWorksPage() {
                 Quickstart &rarr;
               </Link>
               <span className="text-base text-slate-400">
-                {" "}— copy-paste a protected transaction in under 60 seconds
+                {" "} -  copy-paste a protected transaction in under 60 seconds
               </span>
             </li>
           </ul>

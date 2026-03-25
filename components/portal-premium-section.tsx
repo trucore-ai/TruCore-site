@@ -1,10 +1,10 @@
 /* ────────────────────────────────────────────────────────────────
- *  PortalPremiumSection — hidden gating wrapper for premium
+ *  PortalPremiumSection - hidden gating wrapper for premium
  *  analytics sections in the tenant-facing portal.
  *
  *  Renders children only when the tenant has an active premium
  *  analytics entitlement (preview, paid, or bundled).
- *  For inactive/expired tenants, renders nothing — no paywall,
+ *  For inactive/expired tenants, renders nothing - no paywall,
  *  no upgrade prompt, no visible indication of gating.
  *
  *  Usage:

@@ -9,9 +9,9 @@ import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
-  title: "Quickstart — Try ATF in Four Commands | TruCore",
+  title: "Quickstart - Try ATF in Four Commands | TruCore",
   description:
-    "Run a protected trade, set up your API key, diagnose your environment, and verify a receipt — all from the CLI in under 60 seconds.",
+    "Run a protected trade, set up your API key, diagnose your environment, and verify a receipt - all from the CLI in under 60 seconds.",
 };
 
 const CLI_TRADE = `atf trade`;
@@ -60,7 +60,7 @@ export default function QuickstartPage() {
         </div>
       </Section>
 
-      {/* ── Step 1 — Try a protected trade ── */}
+      {/* ── Step 1 - Try a protected trade ── */}
       <Section id="step-1" divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
@@ -72,7 +72,7 @@ export default function QuickstartPage() {
           </p>
           <div className="mt-6">
             <CopyBlock
-              label="CLI — run a protected trade"
+              label="CLI - run a protected trade"
               value={CLI_TRADE}
               copyButtonLabel="Copy"
             />
@@ -85,7 +85,7 @@ export default function QuickstartPage() {
         </div>
       </Section>
 
-      {/* ── Step 2 — Connect your API key ── */}
+      {/* ── Step 2 - Connect your API key ── */}
       <Section id="step-2" divider className="fade-in-up fade-delay-2">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
@@ -97,7 +97,7 @@ export default function QuickstartPage() {
           </div>
           <div className="mt-4">
             <CopyBlock
-              label="CLI — interactive setup"
+              label="CLI - interactive setup"
               value={CLI_SETUP}
               copyButtonLabel="Copy"
             />
@@ -105,7 +105,7 @@ export default function QuickstartPage() {
         </div>
       </Section>
 
-      {/* ── Step 3 — Diagnose setup ── */}
+      {/* ── Step 3 - Diagnose setup ── */}
       <Section id="step-3" divider className="fade-in-up fade-delay-3">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
@@ -117,7 +117,7 @@ export default function QuickstartPage() {
           </p>
           <div className="mt-6">
             <CopyBlock
-              label="CLI — diagnose environment"
+              label="CLI - diagnose environment"
               value={CLI_DOCTOR}
               copyButtonLabel="Copy"
             />
@@ -125,7 +125,7 @@ export default function QuickstartPage() {
         </div>
       </Section>
 
-      {/* ── Step 4 — Verify a receipt ── */}
+      {/* ── Step 4 - Verify a receipt ── */}
       <Section id="step-4" divider className="fade-in-up fade-delay-4">
         <div className="mx-auto max-w-3xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
@@ -137,7 +137,7 @@ export default function QuickstartPage() {
           </p>
           <div className="mt-6">
             <CopyBlock
-              label="CLI — verify a receipt"
+              label="CLI - verify a receipt"
               value={CLI_VERIFY}
               copyButtonLabel="Copy"
             />
@@ -169,15 +169,15 @@ export default function QuickstartPage() {
           <ul className="mt-4 space-y-2 text-base text-slate-300">
             <li className="flex items-start gap-2">
               <span className="mt-0.5 text-primary-200">&#x2713;</span>
-              <span><strong className="text-slate-100">Human output</strong> — clear status, actionable next steps, share snippets</span>
+              <span><strong className="text-slate-100">Human output</strong> - clear status, actionable next steps, share snippets</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-0.5 text-primary-200">&#x2713;</span>
-              <span><strong className="text-slate-100">Bot output</strong> — <code className="text-slate-200">machine_summary</code>, <code className="text-slate-200">suggested_action</code>, <code className="text-slate-200">suggested_command</code></span>
+              <span><strong className="text-slate-100">Bot output</strong> - <code className="text-slate-200">machine_summary</code>, <code className="text-slate-200">suggested_action</code>, <code className="text-slate-200">suggested_command</code></span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-0.5 text-primary-200">&#x2713;</span>
-              <span><strong className="text-slate-100">Distribution</strong> — replay command, share snippet, bot-friendly line</span>
+              <span><strong className="text-slate-100">Distribution</strong> - replay command, share snippet, bot-friendly line</span>
             </li>
           </ul>
         </div>
@@ -197,7 +197,7 @@ export default function QuickstartPage() {
               >
                 First Protected Trade
               </Link>{" "}
-              — end-to-end walkthrough with HTTP, Python, TypeScript, CLI, and OpenClaw
+              - end-to-end walkthrough with HTTP, Python, TypeScript, CLI, and OpenClaw
             </li>
             <li>
               <Link
@@ -206,7 +206,7 @@ export default function QuickstartPage() {
               >
                 CLI Reference
               </Link>{" "}
-              — advanced bot and operator commands beyond the golden path
+              - advanced bot and operator commands beyond the golden path
             </li>
             <li>
               <Link
@@ -215,7 +215,7 @@ export default function QuickstartPage() {
               >
                 How ATF Works
               </Link>{" "}
-              — architecture overview and execution flow
+              - architecture overview and execution flow
             </li>
           </ul>
         </div>

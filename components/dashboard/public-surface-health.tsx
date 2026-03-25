@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  PublicSurfaceHealth — compact operator panel summarising
+ *  PublicSurfaceHealth - compact operator panel summarising
  *  the hardened public perimeter in one place.
  *
  *  Receives aggregate rate-limit counters from the shared
@@ -176,12 +176,12 @@ export function PublicSurfaceHealth({ data: raw, loading, error }: PublicSurface
       {/* ── status message ── */}
       {isDegraded ? (
         <p className="mt-2 text-xs text-amber-400/80">
-          Rate limiting active on public perimeter — review route
+          Rate limiting active on public perimeter - review route
           breakdowns below.
         </p>
       ) : (
         <p className="mt-2 text-xs text-emerald-400/70">
-          Public perimeter healthy — no throttles detected.
+          Public perimeter healthy - no throttles detected.
         </p>
       )}
 

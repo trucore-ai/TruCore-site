@@ -56,13 +56,13 @@ export async function GET() {
       },
       accepted_categories: ALLOWED_CATEGORIES,
       schema: {
-        agent_id: "string (optional) — your bot or agent identifier",
+        agent_id: "string (optional) - your bot or agent identifier",
         agent_framework:
-          "string (optional) — e.g. openclaw, langchain, langgraph, custom",
-        category: `string (optional) — one of: ${ALLOWED_CATEGORIES.join(", ")}`,
-        message: "string (required) — your feedback, question, or message",
+          "string (optional) - e.g. openclaw, langchain, langgraph, custom",
+        category: `string (optional) - one of: ${ALLOWED_CATEGORIES.join(", ")}`,
+        message: "string (required) - your feedback, question, or message",
         context:
-          "object (optional) — any additional structured data you want to include",
+          "object (optional) - any additional structured data you want to include",
       },
       example_request: {
         method: "POST",
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Log to stdout so Vercel log drain / observability can pick it up.
-  // No PII stored — only hashed IP for rate-limit dedup.
+  // No PII stored - only hashed IP for rate-limit dedup.
   const entry = {
     type: "bot_feedback",
     ts: new Date().toISOString(),

@@ -51,7 +51,7 @@ export default function SignupPage() {
       await requestVerificationEmail();
       setResendSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to resend");
+      setError(err instanceof Error ? err.message : "Verification email is temporarily unavailable. Please try again shortly.");
     } finally {
       setResending(false);
     }
@@ -70,10 +70,14 @@ export default function SignupPage() {
             Check your email
           </h1>
           <p className="text-sm text-slate-400">
-            We sent a verification link to{" "}
+            We&apos;re preparing your verification email for{" "}
             <span className="font-medium text-slate-200">{email}</span>.
             <br />
-            Click the link to activate your account.
+            Click the link in that email to activate your account.
+          </p>
+          <p className="text-xs text-slate-500">
+            If it doesn&apos;t arrive right away, check spam or try resending
+            in a few minutes.
           </p>
 
           <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4 text-left">
@@ -108,7 +112,7 @@ export default function SignupPage() {
 
           {resendSuccess && (
             <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
-              Verification email resent successfully.
+              Verification email requested. It should arrive shortly.
             </div>
           )}
 

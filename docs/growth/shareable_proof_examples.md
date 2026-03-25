@@ -5,7 +5,7 @@
 
 ---
 
-## Example A — Demo Trade (No API Key)
+## Example A - Demo Trade (No API Key)
 
 **Scenario:** First-time user runs `npx @trucore/atf@1.4.2 trade` with no config.
 
@@ -79,7 +79,7 @@ atf trade --in SOL --out USDC --amount-in 0.01
 
 ---
 
-## Example B — Real-Mode Trade (With API Key)
+## Example B - Real-Mode Trade (With API Key)
 
 **Scenario:** Configured user runs `atf trade` with valid API key.
 
@@ -139,7 +139,7 @@ ATF|APPROVED|Jupiter|SAFE|tx=req-7f3a9c2e-41d8-4b5a-9e1f-2c8d6a0b3e5f
 
 ---
 
-## Example C — Edge Case: API Fallback to Demo
+## Example C - Edge Case: API Fallback to Demo
 
 **Scenario:** User has API key configured but the API is unreachable. CLI falls back to demo mode gracefully.
 
@@ -184,7 +184,7 @@ ATF|APPROVED|Jupiter|SAFE|tx=req-7f3a9c2e-41d8-4b5a-9e1f-2c8d6a0b3e5f
 
 ### Key Difference
 
-`api_fell_back: true` — the CLI detected a network issue and fell back to demo mode automatically. No crash. No user intervention. The receipt is still valid and verifiable.
+`api_fell_back: true` - the CLI detected a network issue and fell back to demo mode automatically. No crash. No user intervention. The receipt is still valid and verifiable.
 
 ### Share Snippet
 

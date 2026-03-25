@@ -84,7 +84,7 @@ Once a candidate agrees, capture their testimonial in one of these formats:
 For landing page, README, or tweet.
 
 ```text
-"[exact quote]" — [name/handle], [role]
+"[exact quote]" - [name/handle], [role]
 ```
 
 ### Medium Quote (2-3 lines)
@@ -94,7 +94,7 @@ For blog post or case study teaser.
 ```text
 "[quote line 1]
 [quote line 2]"
-— [name/handle], [role], [company/project if applicable]
+ -  [name/handle], [role], [company/project if applicable]
 ```
 
 ### Full Testimonial (paragraph)

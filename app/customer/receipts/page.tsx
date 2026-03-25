@@ -336,12 +336,12 @@ export default function CustomerReceiptsPage() {
             {/* Verify result */}
             {verifyStatus === "verified" && (
               <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
-                ✅ Verified — receipt integrity confirmed.
+                ✅ Verified - receipt integrity confirmed.
               </div>
             )}
             {verifyStatus === "tampered" && (
               <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-                ❌ Tampered — receipt integrity check failed.
+                ❌ Tampered - receipt integrity check failed.
               </div>
             )}
             {verifyStatus === "error" && (

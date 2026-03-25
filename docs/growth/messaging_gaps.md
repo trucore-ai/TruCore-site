@@ -3,12 +3,12 @@
 > Top confusions identified from reply_bank patterns, conversion_playbook friction points,
 > outreach message structure, and "What NOT to Say" guardrails.
 >
-> Source: analysis of existing growth assets (insights_log empty — gaps inferred from
+> Source: analysis of existing growth assets (insights_log empty - gaps inferred from
 > reply_bank topics, conversion_playbook cases, and messaging structure).
 
 ---
 
-## Gap 1 — "Canonical tamper-evident receipts" is jargon
+## Gap 1 - "Canonical tamper-evident receipts" is jargon
 
 **What users likely say:** "What does that actually do?"  
 **What they mean:** I don't know what "canonical" or "tamper-evident" means in plain English.  
@@ -18,27 +18,27 @@
 
 ---
 
-## Gap 2 — Demo mode vs. real trades confusion
+## Gap 2 - Demo mode vs. real trades confusion
 
 **What users likely say:** "Is this just simulation?"  
 **What they mean:** Will this actually do something, or is it a sandbox?  
 **Why it happens:** `first_trade_pack.md` says "100% deterministic, zero API calls" for demo mode, but social posts say "Real mainnet execution. No simulation." The reader sees `npx ... trade` and doesn't know which version they're getting. The word "demo" signals fake.
 
-**Fix:** Drop "demo mode" from all first-touch messaging. Say: "Runs in safe mode by default — no wallet needed, real receipt format. Add your wallet to trade real tokens." One sentence kills the ambiguity.
+**Fix:** Drop "demo mode" from all first-touch messaging. Say: "Runs in safe mode by default - no wallet needed, real receipt format. Add your wallet to trade real tokens." One sentence kills the ambiguity.
 
 ---
 
-## Gap 3 — "Why do I need this vs. logs?"
+## Gap 3 - "Why do I need this vs. logs?"
 
 **What users likely say:** "How is this different from logs?"  
 **What they mean:** I already log my trades. What does this add?  
-**Why it happens:** The reply_bank has a long answer for this, which means people ask it often enough to need a canned reply. The core messaging never preempts it — no post or DM explains the difference before the question arises.
+**Why it happens:** The reply_bank has a long answer for this, which means people ask it often enough to need a canned reply. The core messaging never preempts it - no post or DM explains the difference before the question arises.
 
-**Fix:** Add the distinction to the first touch: "Logs record what your system says happened. ATF checks the trade before execution and issues a receipt after — so you have proof of what was authorized, not just what was logged."
+**Fix:** Add the distinction to the first touch: "Logs record what your system says happened. ATF checks the trade before execution and issues a receipt after - so you have proof of what was authorized, not just what was logged."
 
 ---
 
-## Gap 4 — npx command requires comfort + trust
+## Gap 4 - npx command requires comfort + trust
 
 **What users likely say:** "Do I need a wallet?" / "Is this safe?"  
 **What they mean:** I'm not going to run a random npm package that touches my money.  
@@ -48,17 +48,17 @@
 
 ---
 
-## Gap 5 — Receipt hash shown before context
+## Gap 5 - Receipt hash shown before context
 
 **What users likely say:** "What is a receipt actually proving?"  
 **What they mean:** You showed me a hex string. I don't know what that means.  
-**Why it happens:** Every social post includes `Receipt hash: 996f95ed83d4c5da` as proof. To someone who hasn't used ATF, a hash is noise. There's no before/after context — no "here's what would have happened WITHOUT ATF, here's what happened WITH it."
+**Why it happens:** Every social post includes `Receipt hash: 996f95ed83d4c5da` as proof. To someone who hasn't used ATF, a hash is noise. There's no before/after context - no "here's what would have happened WITHOUT ATF, here's what happened WITH it."
 
 **Fix:** Replace bare hash with a mini-story: "Trade submitted → policy checked → approved → executed on Jupiter → receipt issued with verifiable hash." The hash is the punchline, not the opening line.
 
 ---
 
-## Gap 6 — Cold DMs are too long
+## Gap 6 - Cold DMs are too long
 
 **What users likely say:** _(no reply)_  
 **What they mean:** I didn't read past line 3.  
@@ -68,23 +68,23 @@
 
 ---
 
-## Gap 7 — "ATF doesn't execute — it approves" is confusing
+## Gap 7 - "ATF doesn't execute - it approves" is confusing
 
 **What users likely say:** "So what actually does the trade?"  
 **What they mean:** If ATF doesn't trade, what's the point?  
-**Why it happens:** The thread posts say "ATF doesn't execute — it approves. The agent executes." This is technically correct but confusing on first read. Users think ATF is the thing that trades.
+**Why it happens:** The thread posts say "ATF doesn't execute - it approves. The agent executes." This is technically correct but confusing on first read. Users think ATF is the thing that trades.
 
 **Fix:** Frame it as a checkpoint: "ATF checks your trade before it runs. If it passes policy, your agent executes. After the trade settles, ATF issues a receipt. Think of it as a guard, not an executor."
 
 ---
 
-## Gap 8 — No answer for "Who else uses this?"
+## Gap 8 - No answer for "Who else uses this?"
 
 **What users likely say:** "Is anyone else using this?"  
 **What they mean:** I don't want to be the first. Show me social proof.  
 **Why it happens:** All messaging focuses on what ATF does, never on who uses it. The conversion_playbook mentions tracking first users but the messaging never references them. Without any social proof signal, skeptics default to "not yet."
 
-**Fix:** As soon as there is one external user, add: "X external users have run their first protected trade." The follow-up template already has a placeholder for this — fill it as soon as data exists.
+**Fix:** As soon as there is one external user, add: "X external users have run their first protected trade." The follow-up template already has a placeholder for this - fill it as soon as data exists.
 
 ---
 

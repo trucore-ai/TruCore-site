@@ -5,7 +5,7 @@ import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
-  title: "ATF Command Reference — Install, Golden Path & Advanced Commands",
+  title: "ATF Command Reference - Install, Golden Path & Advanced Commands",
   description:
     "How to install and run the ATF CLI. Golden-path commands (trade, setup, doctor, verify), advanced command groups, and dual-surface output explained.",
 };
@@ -114,7 +114,7 @@ const DUAL_SURFACE_FIELDS: OutputField[] = [
   { name: "Human-readable output", audience: "Operators", description: "Clear terminal messages with color, status indicators, and actionable next steps. Use --pretty or --format pretty." },
   { name: "machine_summary", audience: "Bots / agents", description: "Concise structured summary of the decision, suitable for automated parsing." },
   { name: "suggested_action", audience: "Bots / agents", description: "Recommended next step the caller should take (e.g., EXECUTE, RETRY, ABORT)." },
-  { name: "suggested_command", audience: "Bots / agents", description: "Ready-to-run CLI command for the suggested action — copy/paste or pipe directly." },
+  { name: "suggested_command", audience: "Bots / agents", description: "Ready-to-run CLI command for the suggested action - copy/paste or pipe directly." },
 ];
 
 export default function CommandReferencePage() {
@@ -227,7 +227,7 @@ export default function CommandReferencePage() {
 
       {/* ── Golden Path ── */}
       <section className="space-y-6">
-        <HeadingAnchor id="golden-path">Golden Path — Start Here</HeadingAnchor>
+        <HeadingAnchor id="golden-path">Golden Path - Start Here</HeadingAnchor>
 
         <p className="max-w-3xl text-slate-300">
           Four commands take you from first trade to verified receipt. This is the recommended
@@ -237,7 +237,7 @@ export default function CommandReferencePage() {
         {/* Flow block */}
         <div className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4">
           <pre className="text-sm text-slate-200 whitespace-pre">
-{`# Golden path — copy and run in order
+{`# Golden path - copy and run in order
 npx @trucore/atf@${cliVersion} trade          # 1. Try a protected trade (demo mode)
 npx @trucore/atf@${cliVersion} setup          # 2. Connect your API key
 npx @trucore/atf@${cliVersion} doctor         # 3. Diagnose your environment
@@ -282,11 +282,11 @@ npx @trucore/atf@${cliVersion} verify <id>    # 4. Verify and share a receipt`}
           </p>
           <ul className="list-disc space-y-1 pl-6 text-sm">
             <li>
-              <strong className="text-slate-100">Humans</strong> — clear, colored terminal
+              <strong className="text-slate-100">Humans</strong> - clear, colored terminal
               messages with status indicators and next-step suggestions.
             </li>
             <li>
-              <strong className="text-slate-100">Bots &amp; agents</strong> — structured JSON
+              <strong className="text-slate-100">Bots &amp; agents</strong> - structured JSON
               with machine-readable fields for automated decision-making.
             </li>
           </ul>
@@ -316,7 +316,7 @@ npx @trucore/atf@${cliVersion} verify <id>    # 4. Verify and share a receipt`}
 
         <p className="text-xs text-slate-400">
           This dual-surface design means a single CLI call can serve an operator monitoring
-          a dashboard <em>and</em> a bot consuming JSON — no format switching required.
+          a dashboard <em>and</em> a bot consuming JSON - no format switching required.
         </p>
       </section>
 
@@ -379,7 +379,7 @@ npx @trucore/atf@${cliVersion} verify <id>    # 4. Verify and share a receipt`}
             structured output.
           </p>
           <ul className="list-disc space-y-1 pl-6 text-sm">
-            <li>Demo mode executes instantly with local simulation — no network calls.</li>
+            <li>Demo mode executes instantly with local simulation - no network calls.</li>
             <li>Real mode performance depends on RPC latency and route complexity.</li>
             <li>Policy evaluation is deterministic and runs before any on-chain execution.</li>
             <li>All outputs are structured JSON by default, suitable for piping and automation.</li>

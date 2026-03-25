@@ -28,21 +28,21 @@ const features: FeatureRow[] = [
   { feature: "Onboarding sample trade", free: "✓", pro: "✓", enterprise: "✓" },
   { feature: "Receipt verification", free: "✓", pro: "✓", enterprise: "✓" },
   { feature: "Community support", free: "✓", pro: "✓", enterprise: "✓" },
-  { feature: "Priority support", free: "—", pro: "✓", enterprise: "✓" },
-  { feature: "Advanced usage analytics", free: "—", pro: "✓", enterprise: "✓" },
-  { feature: "Custom policy configuration", free: "—", pro: "—", enterprise: "✓" },
-  { feature: "Dedicated onboarding", free: "—", pro: "—", enterprise: "✓" },
-  { feature: "SLA guarantees", free: "—", pro: "—", enterprise: "✓" },
-  { feature: "Audit log exports", free: "—", pro: "—", enterprise: "✓" },
-  { feature: "SSO & RBAC", free: "—", pro: "—", enterprise: "Roadmap" },
+  { feature: "Priority support", free: "-", pro: "✓", enterprise: "✓" },
+  { feature: "Advanced usage analytics", free: "-", pro: "✓", enterprise: "✓" },
+  { feature: "Custom policy configuration", free: "-", pro: "-", enterprise: "✓" },
+  { feature: "Dedicated onboarding", free: "-", pro: "-", enterprise: "✓" },
+  { feature: "SLA guarantees", free: "-", pro: "-", enterprise: "✓" },
+  { feature: "Audit log exports", free: "-", pro: "-", enterprise: "✓" },
+  { feature: "SSO & RBAC", free: "-", pro: "-", enterprise: "Roadmap" },
 ];
 
 const surfaces: FeatureRow[] = [
   { feature: "REST API", free: "✓", pro: "✓", enterprise: "✓" },
   { feature: "ATF CLI", free: "✓", pro: "✓", enterprise: "✓" },
   { feature: "OpenClaw Plugin", free: "✓", pro: "✓", enterprise: "✓" },
-  { feature: "Perps enforcement", free: "—", pro: "Request access", enterprise: "✓" },
-  { feature: "DEX guardrails (advanced)", free: "—", pro: "✓", enterprise: "✓" },
+  { feature: "Perps enforcement", free: "-", pro: "Request access", enterprise: "✓" },
+  { feature: "DEX guardrails (advanced)", free: "-", pro: "✓", enterprise: "✓" },
   { feature: "Agent observability", free: "Basic", pro: "Full", enterprise: "Full + export" },
 ];
 

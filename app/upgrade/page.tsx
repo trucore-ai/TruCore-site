@@ -28,7 +28,7 @@ function statusBadge(status: string) {
 }
 
 function fmtDate(epoch: number) {
-  if (!epoch) return "—";
+  if (!epoch) return "-";
   return new Date(epoch * 1000).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -66,7 +66,7 @@ function UpgradePageInner() {
       const data = await fetchUpgradeRequests();
       setRequests(data.requests);
     } catch {
-      // Silently handle — requests list is supplementary
+      // Silently handle - requests list is supplementary
     } finally {
       setLoading(false);
     }

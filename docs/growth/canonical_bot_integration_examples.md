@@ -30,7 +30,7 @@ and automated workflows. This document is canonical developer guidance.
 
 ## Python Example
 
-No extra dependencies required — uses `requests` (standard HTTP client).
+No extra dependencies required - uses `requests` (standard HTTP client).
 
 ```python
 import time
@@ -70,15 +70,15 @@ def protected_trade(from_token: str, to_token: str, amount: str):
         return None
 
     intent_id = intent["audit_id"]
-    print(f"ATF approved — intent_id: {intent_id}")
+    print(f"ATF approved - intent_id: {intent_id}")
 
     # ── Step 3: Execute the swap ──
-    # (Your swap execution logic here — Jupiter, Raydium, etc.)
+    # (Your swap execution logic here - Jupiter, Raydium, etc.)
     tx_signature = execute_swap(from_token, to_token, amount)
     submitted_at = time.time()
 
     if not tx_signature:
-        print("Swap execution failed — no finalize call")
+        print("Swap execution failed - no finalize call")
         return None
 
     # ── Step 4: Call finalize_execution ──
@@ -120,7 +120,7 @@ def protected_trade(from_token: str, to_token: str, amount: str):
         }
 
     except Exception as exc:
-        # ── Step 6: Finalize failed — do NOT fabricate a receipt ──
+        # ── Step 6: Finalize failed - do NOT fabricate a receipt ──
         print(f"⚠ Finalization failed: {exc}")
         print(f"  The on-chain swap succeeded (tx: {tx_signature})")
         print(f"  but no canonical receipt was issued.")
@@ -137,14 +137,14 @@ def protected_trade(from_token: str, to_token: str, amount: str):
 
 
 def execute_swap(from_token: str, to_token: str, amount: str) -> str | None:
-    """Placeholder — your actual swap execution logic."""
+    """Placeholder - your actual swap execution logic."""
     # Execute via Jupiter, Raydium, etc.
     # Return the Solana transaction signature or None on failure.
     raise NotImplementedError("Replace with your swap logic")
 
 
 def get_output_amount(tx_signature: str) -> float:
-    """Placeholder — parse output amount from confirmed transaction."""
+    """Placeholder - parse output amount from confirmed transaction."""
     raise NotImplementedError("Replace with your output parsing logic")
 ```
 
@@ -152,7 +152,7 @@ def get_output_amount(tx_signature: str) -> float:
 
 ## Node.js Example
 
-No extra dependencies required — uses built-in `fetch`.
+No extra dependencies required - uses built-in `fetch`.
 
 ```javascript
 const ATF_API_URL = "https://api.trucore.xyz";
@@ -186,14 +186,14 @@ async function protectedTrade(fromToken, toToken, amount) {
   }
 
   const intentId = intent.audit_id;
-  console.log(`ATF approved — intent_id: ${intentId}`);
+  console.log(`ATF approved - intent_id: ${intentId}`);
 
   // Step 3: Execute the swap
   const submittedAt = Math.floor(Date.now() / 1000);
   const txSignature = await executeSwap(fromToken, toToken, amount);
 
   if (!txSignature) {
-    console.log("Swap execution failed — no finalize call");
+    console.log("Swap execution failed - no finalize call");
     return null;
   }
 
@@ -232,7 +232,7 @@ async function protectedTrade(fromToken, toToken, amount) {
       receiptHash: result.receipt_hash,
     };
   } catch (err) {
-    // Step 6: Finalize failed — do NOT fabricate a receipt
+    // Step 6: Finalize failed - do NOT fabricate a receipt
     console.warn(`⚠ Finalization failed: ${err.message}`);
     console.warn(`  Swap succeeded on-chain (tx: ${txSignature})`);
     console.warn(`  No canonical receipt issued. Mark for reconciliation.`);
@@ -288,7 +288,7 @@ there is no ATF-issued receipt. The correct behavior is:
 
 The `receipt_hash` is a SHA-256 digest over the canonical receipt fields
 (sorted JSON). Any change to any field produces a different hash.
-This is how tamper evidence works — you can recompute the hash from
+This is how tamper evidence works - you can recompute the hash from
 the receipt fields to verify integrity.
 
 ---
@@ -300,7 +300,7 @@ the receipt fields to verify integrity.
 ```json
 {
   "status": "ok",
-  "message": "Execution finalized — canonical receipt issued",
+  "message": "Execution finalized - canonical receipt issued",
   "result": {
     "receipt_id": "rcpt-a1b2c3d4e5f6",
     "receipt_url": "https://verify.trucore.xyz/tx/rcpt-a1b2c3d4e5f6",
@@ -333,4 +333,4 @@ the receipt fields to verify integrity.
 
 _This document is canonical developer guidance for ATF receipt integration.
 All response formats reflect the shipped ATF API. Representative field values
-are used in examples — actual values will differ per execution._
+are used in examples - actual values will differ per execution._

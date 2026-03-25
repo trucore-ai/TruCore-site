@@ -70,9 +70,9 @@ Update each stage with approximate counts daily.
 
 Focus on these (ignore vanity metrics like likes/impressions):
 
-1. **People trying CLI** — strongest intent signal
-2. **Technical questions asked** — shows real evaluation
-3. **"How do I integrate?"** — conversion-ready signal
+1. **People trying CLI** - strongest intent signal
+2. **Technical questions asked** - shows real evaluation
+3. **"How do I integrate?"** - conversion-ready signal
 
 ---
 

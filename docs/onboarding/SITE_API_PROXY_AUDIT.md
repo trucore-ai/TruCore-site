@@ -3,7 +3,7 @@
 **Date:** 2026-03-24
 **Branch:** `feat/pricing-and-usage-ui`
 **Scope:** All direct browser-to-api.trucore.xyz call sites across auth, customer, and onboarding flows.
-**Trigger:** PROMPT 157 — audit(site-auth): remove remaining browser-to-api.trucore.xyz onboarding calls
+**Trigger:** PROMPT 157 - audit(site-auth): remove remaining browser-to-api.trucore.xyz onboarding calls
 
 ---
 
@@ -19,14 +19,14 @@ TruCore-site is a Next.js app deployed on Vercel. The ATF backend lives at `http
 - A server-only `ATF_API_KEY` exists in `.env.vercel` for admin/server-side use only
 
 **Proxy precedent (from /try fix):**
-- `app/api/sandbox/sample-intent/route.ts` — GET proxy, no auth, upstream forward
-- `app/api/sandbox/protect/route.ts` — POST proxy, no auth, body validated + forwarded
+- `app/api/sandbox/sample-intent/route.ts` - GET proxy, no auth, upstream forward
+- `app/api/sandbox/protect/route.ts` - POST proxy, no auth, body validated + forwarded
 
 ---
 
 ## 2. All Direct api.trucore.xyz Call Sites
 
-### A. Source code (runtime calls — the real threat surface)
+### A. Source code (runtime calls - the real threat surface)
 
 | File | Function | HTTP Method | Endpoint | Execution Context | Risk |
 |---|---|---|---|---|---|
@@ -55,17 +55,17 @@ TruCore-site is a Next.js app deployed on Vercel. The ATF backend lives at `http
 
 These are curl examples in doc pages. They are safe because they are string literals displayed to users, not executed by the browser against the API.
 
-- `app/docs/auth/page.tsx` — curl snippets for docs
-- `app/docs/getting-started/page.tsx` — curl snippets
-- `app/docs/first-protected-trade/page.tsx` — curl/Python/TypeScript examples (static examples for devs)
-- `app/docs/receipts-and-trust/page.tsx` — curl snippet
-- `app/docs/upgrade/page.tsx` — curl snippet
-- `app/docs/plans/page.tsx` — base URL reference in text
-- `app/docs/surfaces/page.tsx` — base URL reference in text
-- `app/docs/api/page.tsx` — base URL display
-- `app/examples/protected-swap/page.tsx` — curl snippet
-- `app/integrations/bot/page.tsx` — curl snippet
-- `components/portal-first-protected-trade.tsx` — curl snippet
+- `app/docs/auth/page.tsx` - curl snippets for docs
+- `app/docs/getting-started/page.tsx` - curl snippets
+- `app/docs/first-protected-trade/page.tsx` - curl/Python/TypeScript examples (static examples for devs)
+- `app/docs/receipts-and-trust/page.tsx` - curl snippet
+- `app/docs/upgrade/page.tsx` - curl snippet
+- `app/docs/plans/page.tsx` - base URL reference in text
+- `app/docs/surfaces/page.tsx` - base URL reference in text
+- `app/docs/api/page.tsx` - base URL display
+- `app/examples/protected-swap/page.tsx` - curl snippet
+- `app/integrations/bot/page.tsx` - curl snippet
+- `components/portal-first-protected-trade.tsx` - curl snippet
 
 **These do NOT need to be changed.** They are documentation showing the real API URL, which is correct and expected.
 
@@ -73,18 +73,18 @@ These are curl examples in doc pages. They are safe because they are string lite
 
 ## 3. Risk Classification
 
-### HIGH — onboarding-critical, browser-direct, no prior auth
+### HIGH - onboarding-critical, browser-direct, no prior auth
 
 These 4 functions execute cross-origin from the browser with no Authorization header. A CORS failure on `api.trucore.xyz` breaks the entire onboarding funnel.
 
-1. `signup()` — user cannot register
-2. `login()` — returning user is locked out
-3. `requestVerificationEmail()` — user cannot get a verification resend
-4. `confirmVerificationEmail()` — user cannot activate their account from the email link
+1. `signup()` - user cannot register
+2. `login()` - returning user is locked out
+3. `requestVerificationEmail()` - user cannot get a verification resend
+4. `confirmVerificationEmail()` - user cannot activate their account from the email link
 
 **Fix: proxy through Next.js API routes.** Pattern matches existing `/api/sandbox/protect` route.
 
-### MEDIUM — authenticated calls, token forwarded from browser
+### MEDIUM - authenticated calls, token forwarded from browser
 
 These calls include `Authorization: Bearer {jwt}` from localStorage. The JWT is customer-specific, not a shared secret. Proxying these adds defense-in-depth by hiding the API URL, but is lower priority because:
 - The CORS relationship to `api.trucore.xyz` has already been established at login
@@ -93,16 +93,16 @@ These calls include `Authorization: Bearer {jwt}` from localStorage. The JWT is 
 
 **Fix: defer. Document for next phase.**
 
-### LOW — post-activation flows (receipts, onboarding simulation)
+### LOW - post-activation flows (receipts, onboarding simulation)
 
 Same reasoning as MEDIUM, but these are only reached after a user has successfully logged in and started using the product. Failures here are recoverable via UI retries.
 
 **Fix: defer.**
 
-### SAFE — server-side only
+### SAFE - server-side only
 
-- `health-monitor/route.ts` — runs on the server, result is not user-facing
-- `sandbox/protect` and `sandbox/sample-intent` — already proxied
+- `health-monitor/route.ts` - runs on the server, result is not user-facing
+- `sandbox/protect` and `sandbox/sample-intent` - already proxied
 
 ---
 
@@ -110,8 +110,8 @@ Same reasoning as MEDIUM, but these are only reached after a user has successful
 
 | Call group | Action | Priority |
 |---|---|---|
-| `signup`, `login` | **Fix now** — proxy via `/api/customer/auth/login` and `/api/customer/auth/signup` | P0 (Prompt 157) |
-| `requestVerificationEmail`, `confirmVerificationEmail` | **Fix now** — proxy via `/api/customer/auth/verify-email/*` | P0 (Prompt 157) |
+| `signup`, `login` | **Fix now** - proxy via `/api/customer/auth/login` and `/api/customer/auth/signup` | P0 (Prompt 157) |
+| `requestVerificationEmail`, `confirmVerificationEmail` | **Fix now** - proxy via `/api/customer/auth/verify-email/*` | P0 (Prompt 157) |
 | `fetchDashboard`, `fetchActivation`, `markActivationStep` | Defer | P1 |
 | `fetchCustomerKeys`, `createCustomerKey`, `revokeCustomerKey`, `rotateCustomerKey` | Defer | P1 |
 | `fetchReceipts`, `fetchReceiptDetail`, `verifyReceipt` | Defer | P2 |
@@ -122,20 +122,20 @@ Same reasoning as MEDIUM, but these are only reached after a user has successful
 ## 5. Fix Applied (Prompt 157)
 
 **Files created:**
-- `app/api/customer/auth/login/route.ts` — server-side proxy for POST /auth/login
-- `app/api/customer/auth/signup/route.ts` — server-side proxy for POST /auth/signup
-- `app/api/customer/auth/verify-email/request/route.ts` — proxy for POST /auth/verify-email/request
-- `app/api/customer/auth/verify-email/confirm/route.ts` — proxy for POST /auth/verify-email/confirm
+- `app/api/customer/auth/login/route.ts` - server-side proxy for POST /auth/login
+- `app/api/customer/auth/signup/route.ts` - server-side proxy for POST /auth/signup
+- `app/api/customer/auth/verify-email/request/route.ts` - proxy for POST /auth/verify-email/request
+- `app/api/customer/auth/verify-email/confirm/route.ts` - proxy for POST /auth/verify-email/confirm
 
 **Files modified:**
-- `lib/customer-auth.ts` — updated `login()`, `signup()`, `requestVerificationEmail()`, `confirmVerificationEmail()` to call same-origin proxy routes
+- `lib/customer-auth.ts` - updated `login()`, `signup()`, `requestVerificationEmail()`, `confirmVerificationEmail()` to call same-origin proxy routes
 
 **Pattern used:**
 - Same as `app/api/sandbox/protect/route.ts`
 - Body validated (JSON only, size-limited)
 - IP-based rate limiting via `lib/rate-limit.ts`
 - Timeout set to 8s
-- Upstream error mapped to `{ error, message }` — no stack traces or internal URLs exposed
+- Upstream error mapped to `{ error, message }` - no stack traces or internal URLs exposed
 - `no-store` cache headers on all responses
 
 **Auth note:** Proxy routes for login/signup do NOT add any server-side auth headers (no `ATF_API_KEY`). The ATF backend validates email+password directly. The proxy routes are pass-through.

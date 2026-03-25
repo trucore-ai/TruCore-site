@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  TenantGrowthContext — operator growth drill-down panels
+ *  TenantGrowthContext - operator growth drill-down panels
  *
  *  Composite component for the tenant detail page that renders:
  *  - Activation progress (lifecycle stage visualization)
@@ -429,7 +429,7 @@ export function TenantGrowthContext({ snapshot }: Props) {
         </div>
         <SectionExplainer label="About operator interpretation">
           <p>
-            All interpretations are deterministic and rule-based — derived from
+            All interpretations are deterministic and rule-based - derived from
             activation stage, stall duration, receipt/verify completion, and
             source attribution. No AI or statistical models are used.
           </p>

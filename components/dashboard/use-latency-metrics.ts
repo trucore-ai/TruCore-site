@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  useLatencyMetrics — client-side hook for ATF latency data.
+ *  useLatencyMetrics - client-side hook for ATF latency data.
  *
  *  Fetches /api/admin/latency on mount and polls every 30 s.
  *  Retains last known good data on failure.

@@ -5,7 +5,7 @@ dry-run, and failure scenarios. Each example distinguishes real from representat
 
 ---
 
-## Example A — Real Canonical Execution Success
+## Example A - Real Canonical Execution Success
 
 **Source:** Real mainnet execution via OpenClaw atf-agent (2026-03-19)  
 **Label:** Redacted real
@@ -49,7 +49,7 @@ Receipt:
 ```json
 {
   "status": "ok",
-  "message": "Execution finalized — canonical receipt issued",
+  "message": "Execution finalized - canonical receipt issued",
   "result": {
     "receipt_id": "rcpt-a1b2c3d4e5f6",
     "receipt_url": "https://verify.trucore.xyz/tx/rcpt-a1b2c3d4e5f6",
@@ -67,7 +67,7 @@ Receipt:
 ATF approved the trade **before** any on-chain transaction happened.
 After the swap executed on Jupiter, ATF finalized the execution and issued
 a canonical receipt with a deterministic hash. The receipt was not generated
-client-side — it was issued by the ATF backend.
+client-side - it was issued by the ATF backend.
 
 **Bot/operator takeaway:** Only trust `receipt_id`, `receipt_url`, and
 `receipt_hash` values returned by the ATF `/v1/executions/finalize` endpoint.
@@ -75,7 +75,7 @@ These are the canonical fields.
 
 ---
 
-## Example B — Dry-Run Approval (No Execution)
+## Example B - Dry-Run Approval (No Execution)
 
 **Source:** Devnet dry-run via OpenClaw atf-agent  
 **Label:** Representative (based on real dry-run flow)
@@ -93,13 +93,13 @@ Policy         : All policies passed
   - swap_size_ok
   - slippage_within_limits
 
-DRY RUN — no execution performed.
+DRY RUN - no execution performed.
 Content Hash   : c9a0310ba2a8a48d62cc0336b7d2beb27f9e31565162ef9daba4fe280f9295a4
 
 Receipt:
-  id   : (none — dry run)
-  url  : (none — dry run)
-  hash : (none — dry run)
+  id   : (none - dry run)
+  url  : (none - dry run)
+  hash : (none - dry run)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -121,18 +121,18 @@ no receipt is issued because no execution happened.
 
 **Bot/operator takeaway:** Use dry runs (`confirm_live: false`) to test
 policy compliance before committing to real execution. No receipt will be
-generated — this is correct behavior.
+generated - this is correct behavior.
 
 ---
 
-## Example C — Finalize Failure (Honest Failure)
+## Example C - Finalize Failure (Honest Failure)
 
 **Source:** Representative (based on real error handling code)  
 **Label:** Representative
 
 ### Scenario
 
-The agent's Jupiter swap **succeeded on-chain** — tokens moved, the transaction
+The agent's Jupiter swap **succeeded on-chain** - tokens moved, the transaction
 confirmed on Solana. But the subsequent call to ATF's `/v1/executions/finalize`
 **failed** (e.g., network error, ATF service temporarily unavailable).
 
@@ -158,9 +158,9 @@ Execution:
   Action : Receipt was NOT issued
 
 Receipt:
-  id   : (none — finalize failed)
-  url  : (none — finalize failed)
-  hash : (none — finalize failed)
+  id   : (none - finalize failed)
+  url  : (none - finalize failed)
+  hash : (none - finalize failed)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠ The on-chain swap succeeded but ATF could not issue a canonical receipt.
@@ -170,10 +170,10 @@ Receipt:
 ### What Happened
 
 1. ATF approved the intent ✓
-2. The agent executed the swap — it succeeded on-chain ✓
-3. The agent called `/v1/executions/finalize` — it **failed** ✗
+2. The agent executed the swap - it succeeded on-chain ✓
+3. The agent called `/v1/executions/finalize` - it **failed** ✗
 4. ATF did **not** issue a canonical receipt
-5. The agent surfaced a warning — it did **not** fabricate a receipt
+5. The agent surfaced a warning - it did **not** fabricate a receipt
 
 ### Why This Matters
 

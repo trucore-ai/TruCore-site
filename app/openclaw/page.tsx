@@ -35,7 +35,7 @@ export default function OpenClawPage() {
             </p>
             <p className="mt-4 max-w-3xl text-lg leading-[1.6] text-slate-300">
               This adds policy enforcement and produces deterministic execution
-              receipts — giving bot developers provable guarantees that every
+              receipts - giving bot developers provable guarantees that every
               trade followed the rules.
             </p>
           </div>
@@ -70,7 +70,7 @@ export default function OpenClawPage() {
           </li>
           <li className="flex items-start gap-3">
             <span className="mt-0.5 text-primary-200">&#x2713;</span>
-            Non-custodial — keys never leave the agent
+            Non-custodial - keys never leave the agent
           </li>
         </ul>
       </Section>
@@ -130,7 +130,7 @@ Receipt generated ✓`}
                 First Protected Trade
               </p>
               <p className="mt-1 text-sm text-slate-400">
-                Step-by-step guide — devnet to verified receipt
+                Step-by-step guide - devnet to verified receipt
               </p>
             </div>
             <span className="text-slate-500">&rarr;</span>

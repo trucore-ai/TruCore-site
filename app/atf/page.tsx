@@ -520,7 +520,7 @@ export default function ATFPage() {
             Optimized for Real Execution Environments
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            ATF enforces policy inline with execution — not in batch, not
+            ATF enforces policy inline with execution - not in batch, not
             offline. Every claim below is based on observed behavior from
             mainnet test matrices.
           </p>
@@ -575,27 +575,27 @@ export default function ATFPage() {
             <ul className="mt-3 space-y-1.5 text-sm text-slate-200">
               <li>
                 <span className="text-primary-200/90">SAFE</span>{" "}
-                — under 170,000 compute units (most single-hop routes)
+                - under 170,000 compute units (most single-hop routes)
               </li>
               <li>
                 <span className="text-primary-200/90">BORDERLINE</span>{" "}
-                — 170,000–200,000 CU (observed in multi-hop route variance)
+                - 170,000–200,000 CU (observed in multi-hop route variance)
               </li>
               <li>
                 <span className="text-primary-200/90">Multi-hop routes</span>{" "}
-                — increase compute and latency; CU driven by route composition,
+                - increase compute and latency; CU driven by route composition,
                 not trade amount
               </li>
               <li>
                 <span className="text-primary-200/90">RPC latency</span>{" "}
-                — dominates total execution time in typical conditions
+                - dominates total execution time in typical conditions
               </li>
             </ul>
           </div>
 
           <p className="mt-3 text-xs text-slate-400">
             Based on internal test matrices. Route composition is
-            non-deterministic — actual CU may vary between calls.
+            non-deterministic - actual CU may vary between calls.
           </p>
         </div>
       </Section>

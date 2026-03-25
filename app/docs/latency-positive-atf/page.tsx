@@ -3,9 +3,9 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "Latency-Positive ATF — Faster and Safer Execution",
+  title: "Latency-Positive ATF - Faster and Safer Execution",
   description:
-    "How ATF evolves from security middleware into a latency-positive execution layer — making protected bots faster than unprotected ones.",
+    "How ATF evolves from security middleware into a latency-positive execution layer - making protected bots faster than unprotected ones.",
 };
 
 export default function DocsLatencyPositiveAtfPage() {
@@ -33,7 +33,7 @@ export default function DocsLatencyPositiveAtfPage() {
         </p>
         <p className="text-slate-300">
           The assumption holds if you measure only <strong>middleware overhead in isolation</strong>.
-          But it breaks down when you measure <strong>total workflow latency</strong> — the time
+          But it breaks down when you measure <strong>total workflow latency</strong> - the time
           from intent formation to on-chain submission.
         </p>
       </section>
@@ -56,7 +56,7 @@ export default function DocsLatencyPositiveAtfPage() {
         </p>
         <p className="font-medium text-accent-200">
           The correct benchmark is effective time-to-execution versus a bot doing everything
-          itself — not middleware overhead in isolation.
+          itself - not middleware overhead in isolation.
         </p>
       </section>
 
@@ -77,10 +77,10 @@ export default function DocsLatencyPositiveAtfPage() {
             </thead>
             <tbody className="divide-y divide-white/5">
               <tr><td className="py-2 pr-4 font-medium text-slate-200">ATF decision time</td><td className="py-2">Time for ATF to evaluate policy and return a decision</td></tr>
-              <tr><td className="py-2 pr-4 font-medium text-slate-200">RPC latency</td><td className="py-2">Round-trip to Solana nodes — shared by all bots</td></tr>
-              <tr><td className="py-2 pr-4 font-medium text-slate-200">Quote latency</td><td className="py-2">DEX quote fetch time — shared by all bots</td></tr>
+              <tr><td className="py-2 pr-4 font-medium text-slate-200">RPC latency</td><td className="py-2">Round-trip to Solana nodes - shared by all bots</td></tr>
+              <tr><td className="py-2 pr-4 font-medium text-slate-200">Quote latency</td><td className="py-2">DEX quote fetch time - shared by all bots</td></tr>
               <tr><td className="py-2 pr-4 font-medium text-slate-200">End-to-end protected</td><td className="py-2">Total wall-clock time using ATF, including all of the above</td></tr>
-              <tr><td className="py-2 pr-4 font-medium text-slate-200">Effective delta</td><td className="py-2">Protected latency minus standalone bot baseline — the metric that matters</td></tr>
+              <tr><td className="py-2 pr-4 font-medium text-slate-200">Effective delta</td><td className="py-2">Protected latency minus standalone bot baseline - the metric that matters</td></tr>
             </tbody>
           </table>
         </div>
@@ -88,7 +88,7 @@ export default function DocsLatencyPositiveAtfPage() {
 
       {/* --- Execution Modes --- */}
       <section className="space-y-4">
-        <HeadingAnchor id="execution-modes">Execution Modes — Strict / Balanced / Turbo</HeadingAnchor>
+        <HeadingAnchor id="execution-modes">Execution Modes - Strict / Balanced / Turbo</HeadingAnchor>
         <p className="text-slate-300">
           ATF defines three execution modes that let operators choose their position on the
           safety–speed spectrum. All three modes satisfy the same zero-trust security invariants.
@@ -123,7 +123,7 @@ export default function DocsLatencyPositiveAtfPage() {
           </table>
         </div>
         <p className="text-sm text-slate-400">
-          Freshness values are illustrative. These modes represent a directional design — not
+          Freshness values are illustrative. These modes represent a directional design - not
           current production capabilities.
         </p>
       </section>
@@ -163,11 +163,11 @@ independently every time.           4. Permit issued
           ATF will instrument and report:
         </p>
         <ul className="space-y-2 text-slate-300">
-          <li><strong className="text-slate-200">cache-hit p95</strong> — fast-path decision latency</li>
-          <li><strong className="text-slate-200">cache-miss p95</strong> — worst-case decision latency</li>
-          <li><strong className="text-slate-200">time-to-safe-decision</strong> — intent receipt to permit issuance</li>
-          <li><strong className="text-slate-200">time-to-submission</strong> — intent receipt to transaction readiness</li>
-          <li><strong className="text-slate-200">effective bot-latency delta</strong> — protected workflow minus standalone baseline</li>
+          <li><strong className="text-slate-200">cache-hit p95</strong> - fast-path decision latency</li>
+          <li><strong className="text-slate-200">cache-miss p95</strong> - worst-case decision latency</li>
+          <li><strong className="text-slate-200">time-to-safe-decision</strong> - intent receipt to permit issuance</li>
+          <li><strong className="text-slate-200">time-to-submission</strong> - intent receipt to transaction readiness</li>
+          <li><strong className="text-slate-200">effective bot-latency delta</strong> - protected workflow minus standalone baseline</li>
         </ul>
         <p className="text-slate-300">
           The standalone bot baseline is measured per-flow: the estimated time for an unprotected
@@ -203,7 +203,7 @@ independently every time.           4. Permit issued
         </ul>
         <p className="text-slate-300">
           The long-term vision: ATF as <strong className="text-accent-200">universal capital
-          enforcement for AI agents</strong> — deterministic, verifiable, and latency-positive.
+          enforcement for AI agents</strong> - deterministic, verifiable, and latency-positive.
         </p>
       </section>
 
@@ -248,19 +248,19 @@ independently every time.           4. Permit issued
             <Link href="/docs/atf-architecture" className="text-accent-200 underline underline-offset-2">
               ATF Architecture &amp; Enforcement Model
             </Link>{" "}
-            — threat model, permit schema, deterministic checks
+            - threat model, permit schema, deterministic checks
           </li>
           <li>
             <Link href="/docs/first-protected-trade" className="text-accent-200 underline underline-offset-2">
               First Protected Trade
             </Link>{" "}
-            — try ATF in minutes
+            - try ATF in minutes
           </li>
           <li>
             <Link href="/docs/integration-pattern" className="text-accent-200 underline underline-offset-2">
               Integration Pattern
             </Link>{" "}
-            — how agents call ATF before execution
+            - how agents call ATF before execution
           </li>
         </ul>
         <p className="mt-4 text-sm text-slate-400">
@@ -271,7 +271,7 @@ independently every time.           4. Permit issued
             target="_blank"
             rel="noopener noreferrer"
           >
-            ATF spec — Latency-Positive Positioning
+            ATF spec - Latency-Positive Positioning
           </a>.
         </p>
       </section>

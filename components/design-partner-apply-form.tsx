@@ -100,7 +100,7 @@ export function DesignPartnerApplyForm() {
           )}
         </div>
 
-        {/* ── While you wait — activation next steps ── */}
+        {/* ── While you wait - activation next steps ── */}
         <div className="mt-4 border-t border-white/10 pt-4">
           <p className="text-sm font-semibold text-slate-200">While you wait, get started:</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">

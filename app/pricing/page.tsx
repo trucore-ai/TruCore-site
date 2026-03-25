@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 // ---------------------------------------------------------------------------
-// Plan data — canonical source of truth aligned with backend plan definitions
+// Plan data - canonical source of truth aligned with backend plan definitions
 // ---------------------------------------------------------------------------
 
 const plans = [

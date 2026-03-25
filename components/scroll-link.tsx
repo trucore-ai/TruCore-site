@@ -22,7 +22,7 @@ export function ScrollLink({ targetId, children, className = "" }: ScrollLinkPro
         el.scrollIntoView({ behavior: "smooth", block: "start" });
         window.history.pushState(null, "", `#${targetId}`);
       } else {
-        // Element not on this page — let the browser navigate to /#targetId
+        // Element not on this page - let the browser navigate to /#targetId
         e.preventDefault();
         window.location.href = `/#${targetId}`;
       }

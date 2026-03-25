@@ -63,7 +63,7 @@ export default function ProtectedSwapExamplePage() {
               with reason codes.
             </p>
             <CopyBlock
-              label="curl — protect a swap intent"
+              label="curl - protect a swap intent"
               value={CURL_PROTECT}
               copyButtonLabel="Copy"
               helperText="Replace the endpoint with your local instance if running locally."
@@ -81,7 +81,7 @@ export default function ProtectedSwapExamplePage() {
             <p className="text-sm leading-relaxed text-slate-400">
               After the firewall returns a permit, your bot or agent signs and
               submits the transaction to the network. This step is handled
-              entirely by your execution layer — no wallet integration is
+              entirely by your execution layer - no wallet integration is
               required from the ATF side.
             </p>
             <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] p-4">
@@ -143,7 +143,7 @@ export default function ProtectedSwapExamplePage() {
               >
                 Quickstart
               </Link>{" "}
-              — copy-paste a protected transaction in under 60 seconds.
+              - copy-paste a protected transaction in under 60 seconds.
             </p>
           </div>
 
@@ -160,7 +160,7 @@ export default function ProtectedSwapExamplePage() {
                 >
                   First protected trade guide
                 </Link>{" "}
-                — full walkthrough with policy setup
+                - full walkthrough with policy setup
               </li>
               <li>
                 <Link
@@ -169,7 +169,7 @@ export default function ProtectedSwapExamplePage() {
                 >
                   For bot builders
                 </Link>{" "}
-                — integration paths and audience-specific guidance
+                - integration paths and audience-specific guidance
               </li>
               <li>
                 <Link
@@ -178,7 +178,7 @@ export default function ProtectedSwapExamplePage() {
                 >
                   Verify receipt
                 </Link>{" "}
-                — independent hash verification utility
+                - independent hash verification utility
               </li>
             </ul>
           </section>

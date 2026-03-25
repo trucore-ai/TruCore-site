@@ -10,7 +10,7 @@
  *    Onboarded → First protect → First receipt → First verify → Repeat active
  *
  *  Source attribution:
- *    Inferred from endpoint patterns — bounded approximation,
+ *    Inferred from endpoint patterns - bounded approximation,
  *    not guaranteed accurate. See docs for limitations.
  * ──────────────────────────────────────────────────────────── */
 

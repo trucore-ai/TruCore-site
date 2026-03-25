@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  PortalActivationGuide — renders a state-aware next-step block
+ *  PortalActivationGuide - renders a state-aware next-step block
  *  in the partner portal based on the tenant's activation state.
  *
  *  Replaces the static "Getting Started" checklist with guidance
@@ -12,7 +12,7 @@
  *  States are proxy buckets derived from request volume, NOT proof
  *  of specific user actions. See lib/portal-activation.ts for details.
  *
- *  Server component — no client JS required.
+ *  Server component - no client JS required.
  * ──────────────────────────────────────────────────────────── */
 
 import Link from "next/link";
@@ -29,7 +29,7 @@ function ZeroActivityGuide() {
     <section className="space-y-4 rounded-xl border border-accent-500/30 bg-accent-500/[0.06] p-5">
       <div className="space-y-1">
         <h2 className="text-xl font-semibold text-accent-300">
-          Welcome — let&apos;s protect your first trade
+          Welcome - let&apos;s protect your first trade
         </h2>
         <p className="text-sm text-slate-300">
           Your account is active. Follow the steps below to send your first
@@ -106,7 +106,7 @@ function EarlyActivityGuide({
     <section className="space-y-4 rounded-xl border border-primary-500/30 bg-primary-500/[0.06] p-5">
       <div className="space-y-1">
         <h2 className="text-xl font-semibold text-primary-300">
-          Nice progress — keep building
+          Nice progress - keep building
         </h2>
         <p className="text-sm text-slate-300">
           You&apos;ve sent{" "}

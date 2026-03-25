@@ -3,7 +3,7 @@ import { sha256 } from "@/lib/hash";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
 const TIMEOUT_MS = 8_000;
-const RATE_LIMIT_MAX = 10; // per IP per minute — tighter for auth
+const RATE_LIMIT_MAX = 10; // per IP per minute - tighter for auth
 const MAX_BODY_BYTES = 4 * 1024;
 const NO_STORE = { "Cache-Control": "no-store" };
 

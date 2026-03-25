@@ -52,7 +52,7 @@ export default function ReceiptsAndTrustPage() {
           Receipts &amp; Trust
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          Every ATF decision — allow or deny — produces a tamper-evident receipt.
+          Every ATF decision - allow or deny - produces a tamper-evident receipt.
           Receipts are the proof layer that makes autonomous agent trading auditable.
         </p>
       </header>
@@ -108,7 +108,7 @@ export default function ReceiptsAndTrustPage() {
               </tr>
               <tr className="border-b border-white/5">
                 <td className="py-2 pr-4 font-mono text-xs text-slate-200">decision</td>
-                <td className="py-2">&quot;approved&quot; or &quot;denied&quot; — the policy evaluation result.</td>
+                <td className="py-2">&quot;approved&quot; or &quot;denied&quot; - the policy evaluation result.</td>
               </tr>
               <tr className="border-b border-white/5">
                 <td className="py-2 pr-4 font-mono text-xs text-slate-200">reasons</td>
@@ -188,7 +188,7 @@ export default function ReceiptsAndTrustPage() {
             <p className="text-sm text-slate-300">
               The onboarding flow runs in mock mode by default. Policies are evaluated,
               receipts are generated, but no on-chain transaction is sent.
-              Mock receipts are fully verifiable — they use the same hashing algorithm
+              Mock receipts are fully verifiable - they use the same hashing algorithm
               as production receipts.
             </p>
             <p className="text-sm text-slate-400">
@@ -223,19 +223,19 @@ export default function ReceiptsAndTrustPage() {
         </p>
         <ul className="space-y-2 text-slate-300">
           <li>
-            <strong className="text-slate-100">Accountability</strong> — every decision has a verifiable record,
+            <strong className="text-slate-100">Accountability</strong> - every decision has a verifiable record,
             even if the agent ran unsupervised for hours
           </li>
           <li>
-            <strong className="text-slate-100">Audit trails</strong> — link on-chain transactions back to
+            <strong className="text-slate-100">Audit trails</strong> - link on-chain transactions back to
             the policy evaluation that approved them
           </li>
           <li>
-            <strong className="text-slate-100">Dispute resolution</strong> — if something goes wrong,
+            <strong className="text-slate-100">Dispute resolution</strong> - if something goes wrong,
             receipts prove what ATF decided and why
           </li>
           <li>
-            <strong className="text-slate-100">Compliance</strong> — institutions can demonstrate that
+            <strong className="text-slate-100">Compliance</strong> - institutions can demonstrate that
             every agent trade passed policy controls
           </li>
         </ul>

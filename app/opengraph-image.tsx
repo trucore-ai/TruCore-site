@@ -25,10 +25,10 @@ export default async function OpenGraphImage() {
         latency: `${result.data.avg_request_latency_ms.toFixed(0)}ms`,
       }
     : {
-        protected: "—",
-        receipts: "—",
-        uptime: "—",
-        latency: "—",
+        protected: "-",
+        receipts: "-",
+        uptime: "-",
+        latency: "-",
       };
 
   const cards: { label: string; value: string }[] = [

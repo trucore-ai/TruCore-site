@@ -209,7 +209,7 @@ export default async function AdminFeaturesPage({
                         f.metered ? "text-yellow-300" : "text-slate-500"
                       }`}
                     >
-                      {f.metered ? "Yes" : "—"}
+                      {f.metered ? "Yes" : "-"}
                     </span>
                   </td>
                   <td className="px-4 py-3">

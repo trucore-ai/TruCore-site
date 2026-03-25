@@ -4,7 +4,7 @@
  * POST /api/test/login-throttle/advance
  * Body: { "ms": <positive-integer> }
  *
- * Gated behind ATF_E2E_TEST_SECRET — returns 404 in production.
+ * Gated behind ATF_E2E_TEST_SECRET - returns 404 in production.
  */
 
 import { NextResponse } from "next/server";

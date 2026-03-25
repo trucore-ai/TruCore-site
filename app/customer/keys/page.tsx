@@ -23,7 +23,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 function formatDate(epoch: number): string {
-  if (!epoch) return "—";
+  if (!epoch) return "-";
   // Handle both seconds and milliseconds
   const ms = epoch < 1e12 ? epoch * 1000 : epoch;
   return new Date(ms).toLocaleDateString("en-US", {
@@ -251,7 +251,7 @@ export default function CustomerKeysPage() {
         </div>
       )}
 
-      {/* New secret reveal — shown once on create */}
+      {/* New secret reveal - shown once on create */}
       {newSecret && (
         <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5">
           <p className="mb-2 text-sm font-semibold text-emerald-300">
@@ -281,11 +281,11 @@ export default function CustomerKeysPage() {
         </div>
       )}
 
-      {/* Rotated secret reveal — shown once on rotate */}
+      {/* Rotated secret reveal - shown once on rotate */}
       {rotatedSecret && (
         <div className="mb-6 rounded-xl border border-blue-500/30 bg-blue-500/10 p-5">
           <p className="mb-2 text-sm font-semibold text-blue-300">
-            Key Rotated — New Key
+            Key Rotated - New Key
           </p>
           <p className="mb-3 text-xs text-amber-300">
             This key will only be shown once. The old key has been revoked
@@ -387,7 +387,7 @@ export default function CustomerKeysPage() {
                       {k.preview}
                     </td>
                     <td className="py-2.5 pr-4 text-slate-300">
-                      {k.label || "—"}
+                      {k.label || "-"}
                     </td>
                     <td className="py-2.5 pr-4">
                       <span
@@ -484,7 +484,7 @@ export default function CustomerKeysPage() {
           <strong className="text-slate-400">Revoke</strong> permanently
           deactivates a key. Revoked keys cannot be restored.{" "}
           <strong className="text-slate-400">Rotate</strong> revokes the
-          old key and creates a replacement — existing integrations using
+          old key and creates a replacement - existing integrations using
           the old key will immediately stop working.
         </p>
       </div>

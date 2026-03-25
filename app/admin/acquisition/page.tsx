@@ -29,7 +29,7 @@ import { AdminDegradedState } from "@/components/dashboard/admin-degraded-state"
 import { logSecurityEvent } from "@/lib/security-log";
 
 /* ────────────────────────────────────────────────────────────────
- *  /admin/acquisition — Operator Acquisition Funnel
+ *  /admin/acquisition - Operator Acquisition Funnel
  *
  *  Internal-only view of top-of-funnel builder acquisition signals.
  *  Shows signup volume, time-windowed trends, source/UTM breakdowns,
@@ -80,7 +80,7 @@ export default async function AdminAcquisitionPage() {
           </h1>
           <p className="mt-1 text-xs text-slate-500">
             Top-of-funnel builder interest, lead quality, activation linkage
-            &amp; stall-state visibility — operator only
+            &amp; stall-state visibility - operator only
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -135,7 +135,7 @@ export default async function AdminAcquisitionPage() {
         <SectionHeading>Stall-State Funnel</SectionHeading>
         <p className="mt-1 text-[10px] text-slate-600">
           Where leads stall between signup and product activation.
-          Email-based linkage — partial but directional.
+          Email-based linkage - partial but directional.
         </p>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StallCard
@@ -173,7 +173,7 @@ export default async function AdminAcquisitionPage() {
             Current progress state of recent leads. Derived from API key and
             portal token status. Stall detection uses signup age (&gt;7 days
             without advancing). Limitation: no timestamps for when keys/portal
-            were acquired — &quot;progressing&quot; reflects current state, not recency.
+            were acquired - &quot;progressing&quot; reflects current state, not recency.
           </p>
 
           {/* Progress state breakdown (milestone-based) */}
@@ -254,7 +254,7 @@ export default async function AdminAcquisitionPage() {
         <SectionHeading>Operator Follow-Up Playbook</SectionHeading>
         <p className="mt-1 text-[10px] text-slate-600">
           Quick reference: each next action mapped to the recommended resource(s) to send.
-          Internal-only — not shown to leads.
+          Internal-only - not shown to leads.
         </p>
         <div className="mt-3 overflow-x-auto rounded-lg border border-white/10">
           <table className="w-full text-sm">
@@ -296,7 +296,7 @@ export default async function AdminAcquisitionPage() {
                           <span className="text-[9px] text-slate-500">{entry.primary.href}</span>
                         </a>
                       ) : (
-                        <span className="text-slate-600">—</span>
+                        <span className="text-slate-600">-</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -311,11 +311,11 @@ export default async function AdminAcquisitionPage() {
                           <span className="text-[9px] text-slate-500">{entry.secondary.href}</span>
                         </a>
                       ) : (
-                        <span className="text-slate-600">—</span>
+                        <span className="text-slate-600">-</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500">
-                      {entry.note ?? "—"}
+                      {entry.note ?? "-"}
                     </td>
                   </tr>
                 ),
@@ -330,7 +330,7 @@ export default async function AdminAcquisitionPage() {
         <SectionHeading>Acquisition → Activation Linkage</SectionHeading>
         <p className="mt-1 text-[10px] text-slate-600">
           Signups whose email matches an issued API key or active portal
-          token. Identity linkage is email-based and partial — not all
+          token. Identity linkage is email-based and partial - not all
           ATF tenants enter via the waitlist.
         </p>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -379,7 +379,7 @@ export default async function AdminAcquisitionPage() {
                       <BuildStageBadge stage={row.stage} />
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-slate-100">{row.count}</td>
-                    <td className="px-4 py-3 text-right text-slate-400">{pct(row.count, data.total_signups) ?? "—"}</td>
+                    <td className="px-4 py-3 text-right text-slate-400">{pct(row.count, data.total_signups) ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -440,7 +440,7 @@ export default async function AdminAcquisitionPage() {
                     <td className="px-4 py-3 text-right font-semibold text-slate-100">{row.total}</td>
                     <td className="px-4 py-3 text-right text-slate-200">{row.with_api_key}</td>
                     <td className="px-4 py-3 text-right text-slate-200">{row.with_portal}</td>
-                    <td className="px-4 py-3 text-right text-slate-400">{pct(row.with_api_key, row.total) ?? "—"}</td>
+                    <td className="px-4 py-3 text-right text-slate-400">{pct(row.with_api_key, row.total) ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -474,7 +474,7 @@ export default async function AdminAcquisitionPage() {
                     <td className="px-4 py-3 text-right font-semibold text-slate-100">{row.total}</td>
                     <td className="px-4 py-3 text-right text-slate-200">{row.with_api_key}</td>
                     <td className="px-4 py-3 text-right text-slate-200">{row.with_portal}</td>
-                    <td className="px-4 py-3 text-right text-slate-400">{pct(row.with_api_key, row.total) ?? "—"}</td>
+                    <td className="px-4 py-3 text-right text-slate-400">{pct(row.with_api_key, row.total) ?? "-"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -513,7 +513,7 @@ export default async function AdminAcquisitionPage() {
 
       {/* ── Recent submissions (enriched with follow-up guidance) ── */}
       <div className="mb-8">
-        <SectionHeading>Recent Submissions — With Follow-Up Guidance</SectionHeading>
+        <SectionHeading>Recent Submissions - With Follow-Up Guidance</SectionHeading>
         <p className="mt-1 text-[10px] text-slate-600">
           Last 30 signups sorted by follow-up priority. Each row shows a
           deterministic recommended next action based on API key status,
@@ -534,7 +534,7 @@ export default async function AdminAcquisitionPage() {
         Source → activation cross-tabs help identify which channels produce
         the best downstream outcomes, but sample sizes may be small.
         Vercel Analytics events (builder page views, tracked link clicks)
-        are not joined here — they live in the Vercel dashboard.
+        are not joined here - they live in the Vercel dashboard.
       </div>
         </>
       )}
@@ -803,7 +803,7 @@ function RecentTable({
                 )}
               </td>
               <td className="px-4 py-3 text-slate-400">
-                {row.source ?? "—"}
+                {row.source ?? "-"}
                 {row.utm_source && (
                   <span className="ml-1 text-[9px] text-slate-600">
                     ({row.utm_source})
@@ -814,7 +814,7 @@ function RecentTable({
                 {row.build_stage ? (
                   <BuildStageBadge stage={row.build_stage} />
                 ) : (
-                  <span className="text-slate-600">—</span>
+                  <span className="text-slate-600">-</span>
                 )}
               </td>
               <td className="px-4 py-3">
@@ -840,7 +840,7 @@ function ProgressBadge({
 }) {
   const info = progressByEmail.get(email);
   if (!info) {
-    return <span className="text-slate-600">—</span>;
+    return <span className="text-slate-600">-</span>;
   }
   const stateCfg = PROGRESS_STATE_CONFIG[info.state];
   const signalCfg = PROGRESS_SIGNAL_CONFIG[info.signal];
@@ -909,7 +909,7 @@ function NextActionBadge({
 function PlaybookLinks({ action }: { action: FollowUpAction }) {
   const entry = PLAYBOOK_MAP[action];
   if (!entry.primary && !entry.secondary) {
-    return <span className="text-[10px] text-slate-600">{entry.note ?? "—"}</span>;
+    return <span className="text-[10px] text-slate-600">{entry.note ?? "-"}</span>;
   }
   return (
     <div className="flex flex-wrap items-center gap-1">

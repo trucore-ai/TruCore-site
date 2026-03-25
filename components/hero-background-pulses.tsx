@@ -28,7 +28,7 @@ interface Ray {
   trailLen: number;          // short trail (6-18 pts)
   trail: { x: number; y: number }[];
 
-  /* Dust trail config — every ray gets one, with varying density & speed */
+  /* Dust trail config - every ray gets one, with varying density & speed */
   dustRate: number;          // 0-1 chance per frame to drop a dust particle
   dustSpeedMult: number;     // multiplier on initial scatter velocity
   dustLifetimeMult: number;  // multiplier on dust lifetime
@@ -152,7 +152,7 @@ export function HeroBackgroundPulses() {
       const sinAmp = 1.5 + rand() * 6;
       const headSize = 4 + rand() * 14;
 
-      /* Thicker base width at edge — will taper to near-zero at centre */
+      /* Thicker base width at edge - will taper to near-zero at centre */
       const trailWidth = 2 + rand() * 6;  // 2-8
 
       /* Short trails */
@@ -284,7 +284,7 @@ export function HeroBackgroundPulses() {
 
       ctx.globalCompositeOperation = "lighter";
 
-      /* ── Trail — drawn as individual dots/dashes, not a solid line ── */
+      /* ── Trail - drawn as individual dots/dashes, not a solid line ── */
       if (r.trail.length > 1) {
         for (let i = 0; i < r.trail.length - 1; i++) {
           const t = r.trail[i];
@@ -513,7 +513,7 @@ export function HeroBackgroundPulses() {
         /* ── Spawn dust motes behind the pulse ── */
         const progress = r.age / r.lifetime;
         const pAlpha = perspectiveAlpha(progress);
-        /* Fade dust spawn as ray approaches centre — almost none past 70% */
+        /* Fade dust spawn as ray approaches centre - almost none past 70% */
         const dustFade = progress < 0.35 ? 1 : Math.max(0, 1 - Math.pow((progress - 0.35) / 0.45, 1.8));
         if (pAlpha > 0.05 && dustRef.current.length < MAX_DUST && rand() < r.dustRate * dustFade * (dt / 16.67)) {
           /* Spawn dust along the UNPERTURBED ray path (no gravity offset) */

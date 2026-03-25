@@ -105,7 +105,7 @@ export function UserActionPanel({
         )}
         {emailVerified && (
           <span className="text-xs text-slate-500">
-            Already verified — not available.
+            Already verified - not available.
           </span>
         )}
       </div>

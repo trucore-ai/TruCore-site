@@ -4,7 +4,7 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { CopyBlock } from "@/components/copy-block";
 
 export const metadata: Metadata = {
-  title: "Integration Surfaces — API, CLI & Plugin",
+  title: "Integration Surfaces - API, CLI & Plugin",
   description:
     "How to integrate with ATF: REST API, CLI tool, and OpenClaw plugin. Current capabilities, maturity, and roadmap.",
 };
@@ -63,7 +63,7 @@ const apiEndpoints: SurfaceEntry[] = [
 const cliCommands: SurfaceEntry[] = [
   { name: "atf trade", status: "available", description: "Run a protected trade (demo or real)" },
   { name: "atf setup", status: "available", description: "Configure wallet and RPC for real trades" },
-  { name: "atf doctor", status: "available", description: "Environment health check — RPC, wallet, config" },
+  { name: "atf doctor", status: "available", description: "Environment health check - RPC, wallet, config" },
   { name: "atf verify", status: "available", description: "Verify receipt hash locally" },
   { name: "atf simulate", status: "available", description: "Simulate a transaction without sending" },
   { name: "atf bot protect", status: "available", description: "Protect intent from stdin (pipeline-friendly)" },

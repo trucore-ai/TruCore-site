@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  SourceConversionRollups — operator-only source attribution
+ *  SourceConversionRollups - operator-only source attribution
  *  conversion analysis
  *
  *  Shows per-source activation metrics so the operator can see
@@ -21,7 +21,7 @@ function compactNum(n: number): string {
 }
 
 function pct(part: number, whole: number): string {
-  if (whole <= 0) return "—";
+  if (whole <= 0) return "-";
   return `${Math.round((part / whole) * 100)}%`;
 }
 
@@ -38,7 +38,7 @@ function RollupRow({ r, maxTenants }: { r: SourceRollup; maxTenants: number }) {
   const barWidth = maxTenants > 0 ? Math.max((r.tenantCount / maxTenants) * 100, 2) : 2;
   const convRate = r.protectCount > 0
     ? pct(r.verifyCount, r.protectCount)
-    : "—";
+    : "-";
 
   return (
     <div className="space-y-1.5">

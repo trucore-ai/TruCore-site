@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://trucore.xyz"),
   title: {
     default:
-      "TruCore — Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
+      "TruCore - Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
     template: "%s | TruCore",
   },
   description:
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     url: "https://trucore.xyz",
     siteName: "TruCore",
     title:
-      "TruCore — Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
+      "TruCore - Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
     description:
       "Zero-trust transaction firewall for AI agents. Policy guardrails for swaps, lending, and perps on Solana. OpenClaw plugin and receipts-backed savings reports.",
     images: [
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title:
-      "TruCore — Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
+      "TruCore - Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
     description:
       "Zero-trust transaction firewall for AI agents. OpenClaw plugin, policy guardrails for swaps and perps, and receipts-backed savings reports.",
     images: ["/opengraph-image"],
@@ -197,7 +197,8 @@ export default function RootLayout({
         <HeroBackgroundPulses />
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="glass-surface relative bg-neutral-900/45 backdrop-blur-md">
-            <Container className="flex flex-col items-center gap-1 py-2.5 sm:h-[4.25rem] sm:flex-row sm:justify-between sm:gap-0 sm:py-0">
+            <Container className="flex flex-col items-center gap-1 py-2.5 sm:py-0">
+              <div className="flex w-full items-center justify-between gap-2 sm:h-[4.25rem]">
               <Link
                 href="/"
                 aria-label="TruCore home"
@@ -217,7 +218,7 @@ export default function RootLayout({
               </Link>
               <nav
                 aria-label="Primary"
-                className="flex flex-wrap items-center justify-center gap-x-0.5 gap-y-1 text-xs font-medium text-slate-300 sm:gap-x-1 sm:text-sm md:text-[0.9375rem]"
+                className="hidden flex-wrap items-center justify-center gap-x-0.5 gap-y-1 text-xs font-medium text-slate-300 sm:flex sm:gap-x-1 sm:text-sm md:text-[0.9375rem]"
               >
                 <Link
                   href="/#hero"
@@ -280,7 +281,10 @@ export default function RootLayout({
                   Try ATF
                 </Link>
               </nav>
-              <HeaderAuthActions />
+              <div className="shrink-0">
+                <HeaderAuthActions />
+              </div>
+              </div>
             </Container>
             <div className="gradient-divider absolute inset-x-0 bottom-0" aria-hidden="true" />
           </header>

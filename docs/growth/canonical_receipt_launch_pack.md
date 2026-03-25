@@ -26,9 +26,9 @@ npx @trucore/atf@latest verify <receipt-id>
 
 OpenClaw's atf-agent executed a real Jupiter swap on Solana mainnet through ATF:
 
-1. **ATF approved the intent** — policy checks passed before any on-chain transaction  
-2. **OpenClaw executed the swap** — the trade went through Jupiter's routing  
-3. **ATF finalized the execution** — the backend issued a canonical tamper-evident receipt with a deterministic `receipt_id`, `receipt_url`, and `receipt_hash`
+1. **ATF approved the intent** - policy checks passed before any on-chain transaction  
+2. **OpenClaw executed the swap** - the trade went through Jupiter's routing  
+3. **ATF finalized the execution** - the backend issued a canonical tamper-evident receipt with a deterministic `receipt_id`, `receipt_url`, and `receipt_hash`
 
 This is not a simulation. The canonical receipt was issued by the ATF backend after real execution.
 
@@ -36,7 +36,7 @@ This is not a simulation. The canonical receipt was issued by the ATF backend af
 
 ## Real Execution Evidence
 
-**Mainnet trade — 2026-03-19**
+**Mainnet trade - 2026-03-19**
 
 ```
 Classification : swap
@@ -81,7 +81,7 @@ https://trucore.xyz/atf
 We just shipped canonical receipts for ATF.
 
 Every protected trade now gets a backend-issued tamper-evident receipt
-with a deterministic hash — approved before execution, finalized after.
+with a deterministic hash - approved before execution, finalized after.
 
 Real Jupiter swaps on Solana mainnet are already producing these.
 
@@ -99,7 +99,7 @@ Happy to walk through the flow if you're building agent infra or bots.
 | Hash | Deterministic SHA-256 over canonical fields |
 | Tamper evidence | Content hash changes if any field is modified |
 | Verification | `npx @trucore/atf@latest verify <receipt-id>` |
-| Fabrication | Impossible — only backend can issue |
+| Fabrication | Impossible - only backend can issue |
 | Failure honesty | No receipt issued if finalization fails |
 
 ---
@@ -123,10 +123,10 @@ https://verify.trucore.xyz/tx/rcpt-a1b2c3d4e5f6
 
 | Audience | Key message |
 |---|---|
-| **Bot builders** | Structured receipt with `receipt_id`, `receipt_hash` — machine-readable, deterministic |
+| **Bot builders** | Structured receipt with `receipt_id`, `receipt_hash` - machine-readable, deterministic |
 | **Agent developers** | Pre-execution approval + post-execution receipt = full audit trail |
 | **DeFi teams** | Policy enforcement before trades, tamper-evident proof after |
-| **Partners** | Real mainnet receipts exist today — not vaporware |
+| **Partners** | Real mainnet receipts exist today - not vaporware |
 
 ---
 

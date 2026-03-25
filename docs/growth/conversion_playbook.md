@@ -4,7 +4,7 @@ What to do when someone shows interest. Reduce decision friction, move toward a 
 
 ---
 
-## Case 1 — Curious Builder
+## Case 1 - Curious Builder
 
 **Signal:** "This looks interesting" / "How does it work?" / likes/retweets proof post
 
@@ -13,7 +13,7 @@ What to do when someone shows interest. Reduce decision friction, move toward a 
 **Steps:**
 
 1. **Send first trade pack**
-   > "Here's the zero-config version — one command, no API key needed for demo mode:"
+   > "Here's the zero-config version - one command, no API key needed for demo mode:"
    > `npx @trucore/atf@1.4.2 trade`
 
 2. **Send canonical proof example**
@@ -29,12 +29,12 @@ What to do when someone shows interest. Reduce decision friction, move toward a 
    - Offer the golden path: `npx @trucore/atf@latest doctor` → `setup` → `trade` → `verify`
 
 5. **If they don't run it:**
-   - Don't push — share the receipt format as JSON and let them evaluate on their own terms
+   - Don't push - share the receipt format as JSON and let them evaluate on their own terms
    - Follow up in 3–5 days with the follow-up message template
 
 ---
 
-## Case 2 — Bot Developer
+## Case 2 - Bot Developer
 
 **Signal:** "I run a trading bot" / "Can bots parse this?" / "How does the bot_line work?"
 
@@ -49,7 +49,7 @@ What to do when someone shows interest. Reduce decision friction, move toward a 
 
 2. **Explain the finalize_execution flow**
    > "After your bot executes the trade, call `finalize_execution` to get the canonical receipt."
-   > "The receipt includes a `bot_line` field — single-line, pipe-delimited, designed for log parsing."
+   > "The receipt includes a `bot_line` field - single-line, pipe-delimited, designed for log parsing."
 
 3. **Offer help on first integration**
    > "Want me to walk through how to add this to your current execution flow?"
@@ -62,7 +62,7 @@ What to do when someone shows interest. Reduce decision friction, move toward a 
 
 ---
 
-## Case 3 — Infra / Protocol Team
+## Case 3 - Infra / Protocol Team
 
 **Signal:** "We build execution infrastructure" / "How does this fit with our router?" / "Interesting for our protocol"
 
@@ -71,7 +71,7 @@ What to do when someone shows interest. Reduce decision friction, move toward a 
 **Steps:**
 
 1. **Send proof-oriented summary**
-   > Share `canonical_receipt_launch_pack.md` — the golden path with full flow
+   > Share `canonical_receipt_launch_pack.md` - the golden path with full flow
    > Include the receipt spec highlights: SHA-256 content hash, JCS-canonicalized, deterministic verification
 
 2. **Show canonical receipt story**
@@ -94,7 +94,7 @@ What to do when someone shows interest. Reduce decision friction, move toward a 
 
 ---
 
-## Case 4 — Skeptic
+## Case 4 - Skeptic
 
 **Signal:** "How is this different from logs?" / "Sounds like a wrapper" / "What's the point?"
 
@@ -103,13 +103,13 @@ What to do when someone shows interest. Reduce decision friction, move toward a 
 **Steps:**
 
 1. **Send real canonical receipt example**
-   > Show actual JSON output — receipt_id, receipt_hash, intent, decision, execution result
+   > Show actual JSON output - receipt_id, receipt_hash, intent, decision, execution result
    > "This is a real receipt from a mainnet Jupiter swap. The hash is computed over canonicalized data."
 
 2. **Point to honest failure handling**
    > "If the trade fails, ATF still issues a receipt with the failure reason."
    > "If policy denies, you get a denial receipt before anything executes."
-   > "We don't hide failures — they're part of the canonical record."
+   > "We don't hide failures - they're part of the canonical record."
 
 3. **Avoid over-selling**
    > Don't claim: "This replaces your logging" or "This is trustless"
@@ -117,11 +117,11 @@ What to do when someone shows interest. Reduce decision friction, move toward a 
 
 4. **Let them evaluate**
    > "Try `npx @trucore/atf@1.4.2 trade` and see if the output is useful. If not, no problem."
-   > Don't follow up more than once on a skeptic — let the proof speak.
+   > Don't follow up more than once on a skeptic - let the proof speak.
 
 ---
 
-## Case 5 — "Send Me More Info"
+## Case 5 - "Send Me More Info"
 
 **Signal:** Polite interest but no specific engagement.
 
@@ -142,7 +142,7 @@ What to do when someone shows interest. Reduce decision friction, move toward a 
    > Use the follow-up message template from `outreach_messages.md`
 
 4. **If still no response after follow-up:**
-   > Mark as `no-response` in target list — don't pursue further
+   > Mark as `no-response` in target list - don't pursue further
 
 ---
 

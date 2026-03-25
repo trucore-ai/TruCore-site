@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { Button } from "./button";
 
-describe("Button — prop forwarding", () => {
+describe("Button - prop forwarding", () => {
   it("forwards data-testid to the rendered button", () => {
     render(<Button data-testid="cta-btn">Click</Button>);
     expect(screen.getByTestId("cta-btn")).toBeInTheDocument();

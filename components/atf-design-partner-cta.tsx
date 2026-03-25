@@ -26,7 +26,7 @@ export function AtfDesignPartnerCta({ location = "atf_page" }: AtfDesignPartnerC
         </h2>
         <p className="mt-3 max-w-2xl text-lg leading-[1.4] text-slate-200">
           Working with a limited cohort of early teams integrating ATF into
-          production trading bots on Solana. This is not a waitlist — it is
+          production trading bots on Solana. This is not a waitlist - it is
           hands-on integration support.
         </p>
         <div className="mt-4 max-w-2xl">

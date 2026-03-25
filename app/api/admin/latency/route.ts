@@ -3,7 +3,7 @@
  *
  * Fetches aggregate latency data from the ATF backend
  * (/v1/metrics/latency) and returns it to the admin UI.
- * Protected by withAdminApiAuth — unauthenticated requests
+ * Protected by withAdminApiAuth - unauthenticated requests
  * receive a generic 404 (no detail leakage).
  *
  * Only aggregate, non-sensitive data is forwarded.

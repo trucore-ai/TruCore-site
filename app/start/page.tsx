@@ -5,7 +5,7 @@ import { Section } from "@/components/ui/section";
 import { TrackedLink } from "@/components/tracked-link";
 
 export const metadata: Metadata = {
-  title: "Start Here — Agent Transaction Firewall",
+  title: "Start Here - Agent Transaction Firewall",
   description:
     "Your starting path to ATF: try the sandbox, read the docs, choose a plan, and protect your first trade.",
 };
@@ -58,7 +58,7 @@ export default function StartPage() {
           </h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
             Four steps from zero to a verified receipt. Start in the sandbox
-            — no signup required. Every execution feeds the Policy Intelligence
+            - no signup required. Every execution feeds the Policy Intelligence
             Layer so your system keeps improving.
           </p>
         </div>
@@ -134,8 +134,8 @@ export default function StartPage() {
             </strong>{" "}
             is a pre-execution policy enforcement layer for AI trading agents
             on Solana. It evaluates bot trade intents against deterministic
-            rules — spend caps, venue allowlists, slippage bounds, and
-            time-locked permits — and returns a cryptographic receipt for every
+            rules - spend caps, venue allowlists, slippage bounds, and
+            time-locked permits - and returns a cryptographic receipt for every
             decision.
           </p>
           <p className="text-base leading-relaxed text-slate-300">

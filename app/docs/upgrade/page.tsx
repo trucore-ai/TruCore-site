@@ -99,11 +99,11 @@ export default function UpgradePage() {
               </tr>
               <tr className="border-b border-white/5">
                 <td className="py-2 pr-4 font-mono text-xs text-emerald-300">approved</td>
-                <td className="py-2">Approved — your plan has been upgraded and new limits are active.</td>
+                <td className="py-2">Approved - your plan has been upgraded and new limits are active.</td>
               </tr>
               <tr className="border-b border-white/5">
                 <td className="py-2 pr-4 font-mono text-xs text-red-300">rejected</td>
-                <td className="py-2">Rejected — check the review note for details. You can submit a new request.</td>
+                <td className="py-2">Rejected - check the review note for details. You can submit a new request.</td>
               </tr>
               <tr className="border-b border-white/5">
                 <td className="py-2 pr-4 font-mono text-xs text-slate-300">cancelled</td>

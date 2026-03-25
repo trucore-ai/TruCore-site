@@ -6,7 +6,7 @@ Platform-adapted posts. Each has: hook, proof statement, command/link, CTA.
 
 ## Discord
 
-### Variant 1 — General Dev Channel
+### Variant 1 - General Dev Channel
 
 ```text
 🔥 ATF now issues canonical tamper-evident receipts for Solana trades.
@@ -24,7 +24,7 @@ Anyone building bots or agents that execute trades?
 Would love to hear if this receipt format is useful for your setup.
 ```
 
-### Variant 2 — Bot-Specific Channel
+### Variant 2 - Bot-Specific Channel
 
 ```text
 Built a structured receipt format for trading bots on Solana.
@@ -40,7 +40,7 @@ One command:
 Want the bot integration snippet? It's ~20 lines of Node.js.
 ```
 
-### Variant 3 — Agent Dev Channel
+### Variant 3 - Agent Dev Channel
 
 ```text
 If your agent executes financial transactions, this might matter:
@@ -61,7 +61,7 @@ Would this be useful as a trust boundary for your agent?
 
 ## Telegram
 
-### Variant 1 — Short Proof Post
+### Variant 1 - Short Proof Post
 
 ```text
 ATF canonical receipts are live.
@@ -76,10 +76,10 @@ Receipt is structured JSON + machine-readable bot_line.
 DM me if you want the integration snippet.
 ```
 
-### Variant 2 — Bot-Focused
+### Variant 2 - Bot-Focused
 
 ```text
-Solana bot devs — ATF now gives you:
+Solana bot devs - ATF now gives you:
 
 ✓ Policy check before your bot executes
 ✓ Canonical receipt after settlement
@@ -112,10 +112,10 @@ ATF sits between your agent/bot and on-chain execution:
 ## Receipt format
 
 The receipt includes:
-- `receipt_id` — unique identifier
-- `receipt_hash` — SHA-256 content hash over JCS-canonicalized data
-- `receipt_url` — verification endpoint
-- `bot_line` — single-line machine-readable summary
+- `receipt_id` - unique identifier
+- `receipt_hash` - SHA-256 content hash over JCS-canonicalized data
+- `receipt_url` - verification endpoint
+- `bot_line` - single-line machine-readable summary
 - Full JSON with intent, decision, execution result, and timing
 
 ## Try it
@@ -129,7 +129,7 @@ This runs a real Jupiter swap on Solana mainnet through ATF policy.
 ## Why this matters
 
 - **For bot developers:** Structured, parseable execution proof
-- **For agent developers:** Trust boundary — approval before autonomous execution
+- **For agent developers:** Trust boundary - approval before autonomous execution
 - **For infra teams:** Auditable execution trail with deterministic verification
 
 ## What we're looking for
@@ -149,9 +149,9 @@ Repo: https://github.com/trucore-ai/agent-transaction-firewall
 ### r/solana or r/solanadev
 
 ```text
-Title: We built a transaction firewall that issues tamper-evident receipts for Solana trades — looking for feedback from bot/agent builders
+Title: We built a transaction firewall that issues tamper-evident receipts for Solana trades - looking for feedback from bot/agent builders
 
-I've been building ATF (Agent Transaction Firewall) — a policy and receipt layer
+I've been building ATF (Agent Transaction Firewall) - a policy and receipt layer
 for Solana execution. Here's what we just shipped:
 
 **The flow:**
@@ -182,7 +182,7 @@ npx @trucore/atf@1.4.2 trade
 - Agent developers: would approval-before-execution help your trust model?
 - Anyone: what's missing from the receipt format?
 
-Not trying to sell anything — genuinely looking for feedback on whether
+Not trying to sell anything - genuinely looking for feedback on whether
 this receipt primitive is useful. Happy to share the spec or walk through
 the integration path.
 ```

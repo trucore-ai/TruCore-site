@@ -23,7 +23,7 @@ const PLAN_COLORS: Record<string, string> = {
 };
 
 function fmtDate(epoch: number) {
-  if (!epoch) return "—";
+  if (!epoch) return "-";
   return new Date(epoch * 1000).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -190,7 +190,7 @@ export default async function UpgradeDetailPage({
                 <div>
                   <dt className="text-xs text-slate-500">Reviewed By</dt>
                   <dd className="mt-1 font-mono text-xs text-slate-300">
-                    {request.reviewed_by || "—"}
+                    {request.reviewed_by || "-"}
                   </dd>
                 </div>
                 <div>

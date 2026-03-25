@@ -22,7 +22,7 @@ const PLAN_COLORS: Record<string, string> = {
 };
 
 function fmtDate(epoch: number) {
-  if (!epoch) return "—";
+  if (!epoch) return "-";
   return new Date(epoch * 1000).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -218,7 +218,7 @@ export default async function AdminUpgradesPage({
                   <td className="px-4 py-3 text-xs text-slate-400">
                     {req.requested_features.length > 0
                       ? req.requested_features.length
-                      : "—"}
+                      : "-"}
                   </td>
                   <td className="px-4 py-3">
                     <span

@@ -56,7 +56,7 @@ export default function WhenToUseAtfPage() {
                   First integration. Testing policy rules. CI pipelines.
                   Validating receipt format.
                 </td>
-                <td className="py-3">Free — no signup required</td>
+                <td className="py-3">Free - no signup required</td>
               </tr>
               <tr>
                 <td className="py-3 pr-4 font-semibold text-accent-300">
@@ -96,27 +96,27 @@ export default function WhenToUseAtfPage() {
             <strong className="text-slate-200">
               Evaluating ATF for your bot
             </strong>{" "}
-            — test policy enforcement, verify receipt format, check integration
+            - test policy enforcement, verify receipt format, check integration
             patterns.
           </li>
           <li>
-            <strong className="text-slate-200">Low-frequency bots</strong> —
+            <strong className="text-slate-200">Low-frequency bots</strong>  - 
             bots that execute fewer than 100 trades per day and operate within
             default spend caps (25 SOL per tx).
           </li>
           <li>
-            <strong className="text-slate-200">CI/CD testing</strong> —
+            <strong className="text-slate-200">CI/CD testing</strong>  - 
             integrate protect calls into your test suite to verify policy
             compliance before deployment.
           </li>
           <li>
             <strong className="text-slate-200">Agent framework testing</strong>{" "}
-            — validate that your agent correctly handles ALLOW/DENY responses
+            - validate that your agent correctly handles ALLOW/DENY responses
             and processes receipts.
           </li>
           <li>
             <strong className="text-slate-200">Demos and proof-of-concept</strong>{" "}
-            — show stakeholders how enforcement works without committing to a
+            - show stakeholders how enforcement works without committing to a
             paid plan.
           </li>
         </ul>
@@ -140,31 +140,31 @@ export default function WhenToUseAtfPage() {
             <strong className="text-slate-200">
               Rate limit exceeded
             </strong>{" "}
-            — your bot makes more than 100 protect calls per day.
+            - your bot makes more than 100 protect calls per day.
           </li>
           <li>
-            <strong className="text-slate-200">Spend cap exceeded</strong> —
+            <strong className="text-slate-200">Spend cap exceeded</strong>  - 
             your trades exceed the 25 SOL per-tx cap on Free.
           </li>
           <li>
             <strong className="text-slate-200">
               Real execution needed
             </strong>{" "}
-            — you want ATF-gated real settlement on Solana, not just
+            - you want ATF-gated real settlement on Solana, not just
             mock evaluation.
           </li>
           <li>
             <strong className="text-slate-200">
               Higher-frequency trading
             </strong>{" "}
-            — arbitrage bots, market makers, or agents that execute
+            - arbitrage bots, market makers, or agents that execute
             continuously.
           </li>
           <li>
             <strong className="text-slate-200">
               Custom policy configuration
             </strong>{" "}
-            — tighter or more specific rules than the defaults allow.
+            - tighter or more specific rules than the defaults allow.
           </li>
         </ul>
         <p className="text-sm text-slate-400">
@@ -328,7 +328,7 @@ export default function WhenToUseAtfPage() {
           {[
             {
               title: "Try ATF",
-              desc: "Web sandbox — no signup required",
+              desc: "Web sandbox - no signup required",
               href: "/try",
             },
             {

@@ -3,12 +3,12 @@
  *
  * Public Prometheus-compatible security metrics endpoint.
  *
- * Exposes only safe aggregate counters and gauges — no secrets,
+ * Exposes only safe aggregate counters and gauges - no secrets,
  * tokens, IPs, cookies, or per-user dimensions.
  *
  * Abuse protection:
  * - Lightweight in-memory rate limiter keyed by hashed client IP.
- *   Allows 60 requests per 60-second window — well above typical
+ *   Allows 60 requests per 60-second window - well above typical
  *   Prometheus scrape intervals (15–30 s). Only intended to damp
  *   obvious probe spam, not a hard security boundary.
  *
@@ -37,7 +37,7 @@ const METRICS_RATE_LIMIT_WINDOW_MS = 60_000;
 
 /**
  * Extract a rate-limit key from the request.
- * Uses a truncated hash of the client IP — never stores or returns the raw IP.
+ * Uses a truncated hash of the client IP - never stores or returns the raw IP.
  */
 function rateLimitKey(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");

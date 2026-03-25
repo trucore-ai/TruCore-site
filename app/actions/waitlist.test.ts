@@ -411,7 +411,7 @@ describe("joinWaitlist", () => {
     delete process.env.RESEND_API_KEY;
   });
 
-  it("client rendering does not need message text — ok + intent + emailEnabled suffice", async () => {
+  it("client rendering does not need message text - ok + intent + emailEnabled suffice", async () => {
     const result = await joinWaitlist(
       buildFormData({
         email: "no-message-dep@example.com",

@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  LatencyDashboard — ATF latency & mode performance surface.
+ *  LatencyDashboard - ATF latency & mode performance surface.
  *
  *  Client component that owns the useLatencyMetrics hook and
  *  renders: overall latency percentiles, mode comparison,
@@ -33,7 +33,7 @@ function fmtCount(n: number): string {
 }
 
 function pctLabel(hits: number, total: number): string {
-  if (total === 0) return "—";
+  if (total === 0) return "-";
   return `${((hits / total) * 100).toFixed(1)}%`;
 }
 

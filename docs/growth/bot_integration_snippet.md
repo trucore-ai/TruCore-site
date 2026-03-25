@@ -9,7 +9,7 @@
 
 ```js
 // atf-bot-example.mjs
-// Minimal ATF integration — evaluate a trade, parse the result, act on it.
+// Minimal ATF integration - evaluate a trade, parse the result, act on it.
 // Requires: Node.js >= 18, npx available in PATH
 
 import { execFile } from "node:child_process";
@@ -21,7 +21,7 @@ function runATF(args) {
     }, (err, stdout, stderr) => {
       if (err && !stdout) return reject(new Error(stderr || err.message));
       try {
-        // stdout may include a preamble line before JSON — find the JSON block
+        // stdout may include a preamble line before JSON - find the JSON block
         const jsonStart = stdout.indexOf("{");
         const json = stdout.slice(jsonStart);
         resolve(JSON.parse(json));

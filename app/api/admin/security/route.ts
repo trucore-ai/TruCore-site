@@ -2,7 +2,7 @@
  * Admin security telemetry endpoint.
  *
  * Returns aggregate session and security-event counters.
- * Protected by withAdminApiAuth — unauthenticated requests get a
+ * Protected by withAdminApiAuth - unauthenticated requests get a
  * generic 404 (no detail leakage).
  *
  * Never returns tokens, IPs, cookies, or any secret material.
@@ -23,7 +23,7 @@ import {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-/** Process start time — used to compute uptime. */
+/** Process start time - used to compute uptime. */
 const startedAt = Date.now();
 
 export const GET = withAdminApiAuth(async () => {

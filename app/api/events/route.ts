@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
       ? decision
       : undefined;
 
-  // Structured log — easily parsed by Vercel log drains / grep
+  // Structured log - easily parsed by Vercel log drains / grep
   console.log(
     JSON.stringify({
       type: "funnel_event",

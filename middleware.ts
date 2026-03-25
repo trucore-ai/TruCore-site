@@ -14,6 +14,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE_NAME } from "./lib/admin-constants";
+import {
+  FALLBACK_RESULT,
+  buildVerifyJson,
+  type ProtectResult,
+} from "./lib/verify-demo-data";
 
 /**
  * Paths under /admin that must remain accessible without a session cookie.
@@ -25,8 +30,57 @@ function isAdminPublicPath(pathname: string): boolean {
   return ADMIN_PUBLIC_PATHS.has(pathname);
 }
 
-export function middleware(request: NextRequest) {
+/* ── /verify-demo?format=json — agent-readable JSON output ── */
+
+const VERIFY_JSON_TIMEOUT_MS = 6_000;
+const NO_STORE_HEADERS = { "Cache-Control": "no-store" } as const;
+
+async function handleVerifyDemoJson(
+  request: NextRequest,
+): Promise<NextResponse> {
+  const origin = request.nextUrl.origin;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), VERIFY_JSON_TIMEOUT_MS);
+
+  try {
+    const intentRes = await fetch(
+      `${origin}/api/sandbox/sample-intent`,
+      { signal: controller.signal },
+    );
+    if (!intentRes.ok) throw new Error("intent fetch failed");
+    const intent: unknown = await intentRes.json();
+
+    const protectRes = await fetch(`${origin}/api/sandbox/protect`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(intent),
+      signal: controller.signal,
+    });
+    if (!protectRes.ok) throw new Error("protect call failed");
+    const data: ProtectResult = await protectRes.json();
+
+    return NextResponse.json(buildVerifyJson(data, "live"), {
+      headers: NO_STORE_HEADERS,
+    });
+  } catch {
+    return NextResponse.json(buildVerifyJson(FALLBACK_RESULT, "fallback"), {
+      headers: NO_STORE_HEADERS,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  /* Agent-readable JSON output for /verify-demo */
+  if (
+    pathname === "/verify-demo" &&
+    request.nextUrl.searchParams.get("format") === "json"
+  ) {
+    return handleVerifyDemoJson(request);
+  }
 
   /* Only guard /admin routes */
   if (!pathname.startsWith("/admin")) {
@@ -68,5 +122,5 @@ export function middleware(request: NextRequest) {
  * the negative lookahead recommended by Next.js docs.
  */
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/verify-demo"],
 };

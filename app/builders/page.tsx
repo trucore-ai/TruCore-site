@@ -6,11 +6,11 @@ import { Section } from "@/components/ui/section";
 import { TrackedLink } from "@/components/tracked-link";
 
 export const metadata: Metadata = {
-  title: "For Bot Builders — Get Started with ATF",
+  title: "For Bot Builders - Get Started with ATF",
   description:
     "Protect your trading bot or AI agent in minutes. Spend caps, slippage bounds, protocol allowlists, and cryptographic receipts for every transaction.",
   openGraph: {
-    title: "For Bot Builders — Get Started with ATF",
+    title: "For Bot Builders - Get Started with ATF",
     description:
       "Protect your trading bot or AI agent in minutes. Policy-enforced guardrails and verifiable receipts for autonomous finance on Solana.",
   },
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 const audiences = [
   {
     title: "Trading Bot Developers",
-    desc: "You run Jupiter, Raydium, or Orca swaps on Solana. You want spend caps, slippage bounds, and protocol allowlists enforced before every transaction — without changing your signing flow.",
+    desc: "You run Jupiter, Raydium, or Orca swaps on Solana. You want spend caps, slippage bounds, and protocol allowlists enforced before every transaction - without changing your signing flow.",
     icon: "🤖",
   },
   {

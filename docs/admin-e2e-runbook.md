@@ -1,17 +1,17 @@
-# Admin Security E2E — Local Testing Runbook
+# Admin Security E2E - Local Testing Runbook
 
 ## Running the admin E2E suite
 
 ```bash
 cd /home/kontractkoder/repo/TruCore-site
 
-# Option A — let Playwright start its own server (recommended, deterministic)
+# Option A - let Playwright start its own server (recommended, deterministic)
 ADMIN_DASHBOARD_KEY=e2e-admin-key \
 RECEIPT_SIGNING_KEY=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY= \
 ATF_E2E_TEST_SECRET=e2e-test-secret \
 npx playwright test tests/e2e/admin-auth-flow.spec.ts
 
-# Option B — run the full E2E suite (all specs)
+# Option B - run the full E2E suite (all specs)
 ADMIN_DASHBOARD_KEY=e2e-admin-key \
 RECEIPT_SIGNING_KEY=MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY= \
 ATF_E2E_TEST_SECRET=e2e-test-secret \
@@ -38,7 +38,7 @@ npx playwright test tests/e2e/admin-auth-flow.spec.ts
 |---|---|---|
 | `ADMIN_DASHBOARD_KEY` | Admin login credential (set to any value for E2E) | Yes (real secret) |
 | `RECEIPT_SIGNING_KEY` | Receipt HMAC signing key | Yes |
-| `ATF_E2E_TEST_SECRET` | Gates test-only API routes (reset/advance throttle) | **No — never set in production** |
+| `ATF_E2E_TEST_SECRET` | Gates test-only API routes (reset/advance throttle) | **No - never set in production** |
 
 ## Why `ATF_E2E_TEST_SECRET` exists
 
@@ -96,8 +96,8 @@ automatically on push and pull request. It injects `ATF_E2E_TEST_SECRET`
 from a GitHub Actions secret, scoped only to the `e2e` job.
 
 Secrets required in GitHub repo settings:
-- `ADMIN_DASHBOARD_KEY` — used by the e2e job
-- `ATF_E2E_TEST_SECRET` — used by the e2e job only
+- `ADMIN_DASHBOARD_KEY` - used by the e2e job
+- `ATF_E2E_TEST_SECRET` - used by the e2e job only
 
 ---
 
@@ -105,7 +105,7 @@ Secrets required in GitHub repo settings:
 
 ### Endpoint
 
-`GET /api/metrics/security` — **public**, no authentication required.
+`GET /api/metrics/security` - **public**, no authentication required.
 
 Returns aggregate admin/security counters and gauges in Prometheus text
 exposition format (`text/plain; version=0.0.4`). Designed for scraping by
@@ -140,11 +140,11 @@ When the limiter triggers, a `metrics_route_rate_limited` event is logged
 
 The serialized Prometheus output is cached in-memory for **10 seconds**
 to reduce repeated serialization under burst traffic. Metrics are
-approximate within the TTL window — counter and gauge values may lag
+approximate within the TTL window - counter and gauge values may lag
 by up to 10 s after an event occurs.
 
 The cache is process-local and resets on cold start. Downstream
-`Cache-Control: no-store` headers remain unchanged — the caching is
+`Cache-Control: no-store` headers remain unchanged - the caching is
 internal only and does not affect Prometheus staleness detection.
 
 ### Metrics exposed
@@ -213,7 +213,7 @@ which is harmless but provides no additional resolution.
 ### Why these are public
 
 These endpoints serve machine-readable JSON for OpenClaw and other AI
-agents. They expose the same data as the human dashboard — no admin
+agents. They expose the same data as the human dashboard - no admin
 mutations, no secrets, no PII. They remain publicly accessible without
 authentication.
 
@@ -275,9 +275,9 @@ fallback panel and logs an `admin_page_degraded` security event.
 
 Operators can now see these events through the authenticated admin UI:
 
-- **Admin Metrics page** (`/admin/metrics`) — an "Admin Page Stability"
+- **Admin Metrics page** (`/admin/metrics`) - an "Admin Page Stability"
   panel shows the aggregate degraded render count and a per-page breakdown.
-- **Admin security API** (`/api/admin/security`) — the JSON payload
+- **Admin security API** (`/api/admin/security`) - the JSON payload
   includes `admin_page_degraded_total` and `admin_page_degraded_by_page`.
 
 ### What is exposed
@@ -289,14 +289,14 @@ Operators can now see these events through the authenticated admin UI:
 
 ### Safety guarantees
 
-- Only aggregate numeric counts are shown — no raw errors, stack traces,
+- Only aggregate numeric counts are shown - no raw errors, stack traces,
   IPs, SQL, DSNs, cookies, or tokens.
 - Page names are restricted to a static allowlist of known admin route
   names. Unknown page values are silently ignored.
-- The telemetry API remains gated by `withAdminApiAuth` — unauthenticated
+- The telemetry API remains gated by `withAdminApiAuth` - unauthenticated
   requests receive a generic 404.
 - The UI panel is a client component that fetches from the authenticated
-  API — it inherits the same session protection.
+  API - it inherits the same session protection.
 
 ### Process-local limitations
 
@@ -321,10 +321,10 @@ security event with a safe action label.
 
 Operators can see these events through the authenticated admin UI:
 
-- **Admin Metrics page** (`/admin/metrics`) — an "Admin Mutation
+- **Admin Metrics page** (`/admin/metrics`) - an "Admin Mutation
   Stability" section shows the aggregate degraded mutation count and an
   optional per-action breakdown.
-- **Admin security API** (`/api/admin/security`) — the JSON payload
+- **Admin security API** (`/api/admin/security`) - the JSON payload
   includes `admin_action_degraded_total` and
   `admin_action_degraded_by_action`.
 
@@ -346,14 +346,14 @@ Unknown action names are silently ignored.
 
 ### Safety guarantees
 
-- Only aggregate numeric counts — no raw errors, stack traces, IPs, SQL,
+- Only aggregate numeric counts - no raw errors, stack traces, IPs, SQL,
   DSNs, cookies, or tokens.
 - Action labels are restricted to a static allowlist. Unknown values are
   silently dropped.
-- The telemetry API remains gated by `withAdminApiAuth` —
+- The telemetry API remains gated by `withAdminApiAuth`  - 
   unauthenticated requests receive a generic 404.
 - The UI panel is a client component that fetches from the authenticated
-  API — it inherits the same session protection.
+  API - it inherits the same session protection.
 
 ### Process-local limitations
 
@@ -373,10 +373,10 @@ route label.
 
 Operators can see these events through the authenticated admin UI:
 
-- **Admin Metrics page** (`/admin/metrics`) — an "Admin API Stability"
+- **Admin Metrics page** (`/admin/metrics`) - an "Admin API Stability"
   section shows the aggregate degraded API call count and an optional
   per-route breakdown.
-- **Admin security API** (`/api/admin/security`) — the JSON payload
+- **Admin security API** (`/api/admin/security`) - the JSON payload
   includes `admin_api_degraded_total` and
   `admin_api_degraded_by_route`.
 
@@ -407,19 +407,19 @@ Unknown route names are silently ignored.
 
 - **Green** (zero failures): "No degraded admin API calls detected."
 - **Amber** (non-zero): "Temporary control-plane API instability
-  detected — backend API failures handled safely." with per-route
+  detected - backend API failures handled safely." with per-route
   breakdown grid.
 
 ### Safety guarantees
 
-- Only aggregate numeric counts — no raw errors, stack traces, IPs, SQL,
+- Only aggregate numeric counts - no raw errors, stack traces, IPs, SQL,
   DSNs, cookies, or tokens.
 - Route labels are restricted to a static allowlist. Unknown values are
   silently dropped.
-- The telemetry API remains gated by `withAdminApiAuth` —
+- The telemetry API remains gated by `withAdminApiAuth`  - 
   unauthenticated requests receive a generic 404.
 - The UI panel is a client component that fetches from the authenticated
-  API — it inherits the same session protection.
+  API - it inherits the same session protection.
 
 ### Process-local limitations
 
@@ -448,7 +448,7 @@ one of two backends:
 
 ### Fail-closed rules
 
-- If a DB connection string exists, **DB is always used** — even if the
+- If a DB connection string exists, **DB is always used** - even if the
   fallback flag is set. This prevents accidental memory-mode in staging
   that has a DB.
 - `NODE_ENV=production` **never** uses the memory backend, regardless of flags.

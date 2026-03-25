@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  AdminTelemetrySection — client wrapper that owns the shared
+ *  AdminTelemetrySection - client wrapper that owns the shared
  *  useAdminSecurityTelemetry hook and distributes data to the
  *  PublicSurfaceHealth and AdminDegradedTelemetry panels.
  *

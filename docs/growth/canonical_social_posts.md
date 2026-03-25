@@ -5,7 +5,7 @@ All examples are technically accurate. Representative output is labeled.
 
 ---
 
-## POST SET 1 — Simple Proof Post
+## POST SET 1 - Simple Proof Post
 
 **Platform:** X / Discord / Farcaster  
 **Goal:** One command, one execution, one canonical receipt.
@@ -41,7 +41,7 @@ npx @trucore/atf@latest trade
 
 ---
 
-## POST SET 2 — Thread
+## POST SET 2 - Thread
 
 **Platform:** X thread / blog  
 **Goal:** Walk through the full canonical receipt flow.
@@ -51,7 +51,7 @@ npx @trucore/atf@latest trade
 ```text
 We just shipped canonical receipts for ATF.
 
-Here's what that means — a thread on the first real tamper-evident
+Here's what that means - a thread on the first real tamper-evident
 execution receipts for agent-driven trades.
 ```
 
@@ -61,7 +61,7 @@ execution receipts for agent-driven trades.
 Step 1: Intent
 
 The agent sends a trade intent to ATF.
-ATF evaluates it against policy — token limits, slippage, allowlists.
+ATF evaluates it against policy - token limits, slippage, allowlists.
 
 If policy passes → APPROVED.
 If not → DENIED. No execution happens.
@@ -79,7 +79,7 @@ Real tokens. Real routing. Real on-chain transaction.
 
 TX: 26Raeks...Cy877a (mainnet)
 
-ATF doesn't execute — it approves. The agent executes.
+ATF doesn't execute - it approves. The agent executes.
 ```
 
 ### Post 4/5
@@ -117,7 +117,7 @@ Docs: https://trucore.xyz/atf
 
 ---
 
-## POST SET 3 — Builder / Bot Angle
+## POST SET 3 - Builder / Bot Angle
 
 **Platform:** X / Discord / developer communities  
 **Goal:** Machine-readable receipt structure for bot operators.
@@ -184,7 +184,7 @@ Docs: https://trucore.xyz/atf
 | _(redacted real)_ | Real execution with sensitive fields shortened or masked |
 
 In the posts above:
-- `receipt_hash: 996f95ed83d4c5da` — **redacted real** (from mainnet execution 2026-03-19)
-- `TX: 26Raeks...Cy877a` — **redacted real** (Solana mainnet)
-- JSON block in Post Set 3 — **representative** (marked in post)
-- All flow descriptions — **real** (reflect shipped ATF behavior)
+- `receipt_hash: 996f95ed83d4c5da` - **redacted real** (from mainnet execution 2026-03-19)
+- `TX: 26Raeks...Cy877a` - **redacted real** (Solana mainnet)
+- JSON block in Post Set 3 - **representative** (marked in post)
+- All flow descriptions - **real** (reflect shipped ATF behavior)

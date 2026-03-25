@@ -1,4 +1,4 @@
-# Security Hardening Phase — Closeout & Launch-Readiness
+# Security Hardening Phase - Closeout & Launch-Readiness
 
 ## 1. Overview
 
@@ -32,10 +32,10 @@ Session store: in-memory `Map<token, {issuedAt, lastSeenAt, revokedAt}>`. Tokens
 
 ### Fail-closed enforcement layers
 
-1. **Middleware** (`middleware.ts`) — checks cookie presence on `/admin/*`; missing cookie → redirect to `/admin/login`. Runs on edge runtime.
-2. **Layout guard** (`app/admin/layout.tsx`) — calls `getAdminSessionFromCookies()` before rendering any admin page. Invalid session → redirect.
-3. **API wrapper** (`lib/admin-api-auth.ts` / `withAdminApiAuth()`) — validates session + CSRF origin on mutations. Denial returns generic **404** (not 401).
-4. **Server-action wrapper** (`lib/admin-action-auth.ts` / `withAdminAction()`) — validates session; catches inner errors and returns `{ error: "temporarily_unavailable" }`.
+1. **Middleware** (`middleware.ts`) - checks cookie presence on `/admin/*`; missing cookie → redirect to `/admin/login`. Runs on edge runtime.
+2. **Layout guard** (`app/admin/layout.tsx`) - calls `getAdminSessionFromCookies()` before rendering any admin page. Invalid session → redirect.
+3. **API wrapper** (`lib/admin-api-auth.ts` / `withAdminApiAuth()`) - validates session + CSRF origin on mutations. Denial returns generic **404** (not 401).
+4. **Server-action wrapper** (`lib/admin-action-auth.ts` / `withAdminAction()`) - validates session; catches inner errors and returns `{ error: "temporarily_unavailable" }`.
 
 ### Error leakage guarantees
 
@@ -136,7 +136,7 @@ Per-IP isolation: different IPs never interfere. Successful login clears the fai
 
 429 responses include:
 
-- `Retry-After: <seconds>` — computed from `resetEpochSeconds - now`
+- `Retry-After: <seconds>` - computed from `resetEpochSeconds - now`
 - `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 
 ### What this mitigates
@@ -195,7 +195,7 @@ Counters and log labels are gated by hardcoded allowlists:
 - `KNOWN_ADMIN_API_ROUTES`: keys/create, keys/revoke, keys/issue-for-partner, …
 - `KNOWN_AGENT_ROUTES`: agent/dashboard, agent/tenant, agent/stream
 
-Unknown labels are rejected — prevents unbounded cardinality and noise injection.
+Unknown labels are rejected - prevents unbounded cardinality and noise injection.
 
 ### Admin telemetry UI
 
@@ -229,7 +229,7 @@ Unknown labels are rejected — prevents unbounded cardinality and noise injecti
 
 ### Banned-pattern scanning
 
-The perimeter regression suite defines `BANNED_PATTERNS` — a list of regex patterns that must never appear in any response body facing an unauthenticated or end-user caller:
+The perimeter regression suite defines `BANNED_PATTERNS` - a list of regex patterns that must never appear in any response body facing an unauthenticated or end-user caller:
 
 ```
 postgres://, DATABASE_URL, ECONNREFUSED, password, SELECT/INSERT,
@@ -241,7 +241,7 @@ relation … does not exist, stack-trace frames, Bearer, .pem, DSN, 127.0.0.x:po
 
 ## 7. Known Limitations
 
-These are intentional or infrastructure-level constraints — not defects.
+These are intentional or infrastructure-level constraints - not defects.
 
 | Limitation | Impact | Mitigation path |
 |---|---|---|
@@ -249,7 +249,7 @@ These are intentional or infrastructure-level constraints — not defects.
 | **No cross-instance session aggregation** | Each isolate has its own session store | External session store (Redis) if horizontal scaling is needed |
 | **Polling-based telemetry** | Admin metrics page is not real-time; refresh interval set client-side | WebSocket push or SSE if sub-second visibility is required |
 | **No persistence of security counters** | Prometheus metrics reset on restart | Export to external Prometheus / Grafana for persistence |
-| **Public routes intentionally unauthenticated** | `/api/simulate`, `/api/health`, `/api/public-metrics` accept anonymous traffic | By design — rate limits guard against abuse |
+| **Public routes intentionally unauthenticated** | `/api/simulate`, `/api/health`, `/api/public-metrics` accept anonymous traffic | By design - rate limits guard against abuse |
 | **NAT / shared-IP throttle collisions** | Users behind the same NAT share a login-throttle bucket | Acceptable trade-off; cooldown is 15 min, not permanent |
 
 

@@ -1,12 +1,12 @@
 /* ────────────────────────────────────────────────────────────────
- *  GrowthTriagePanel — operator-only follow-up prioritization
+ *  GrowthTriagePanel - operator-only follow-up prioritization
  *
  *  Surfaces triaged tenants sorted by follow-up priority so the
  *  operator can quickly identify who to reach out to, who is
  *  stuck, and who is converting well.
  *
  *  Deterministic, rule-based. Derived entirely from existing
- *  adoption data. Operator-only — never shown to tenant users.
+ *  adoption data. Operator-only - never shown to tenant users.
  * ──────────────────────────────────────────────────────────── */
 
 "use client";

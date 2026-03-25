@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  AdminDegradedTelemetry — operator-visible degraded-page counters
+ *  AdminDegradedTelemetry - operator-visible degraded-page counters
  *
  *  Receives aggregate degraded admin-page counts from the shared
  *  useAdminSecurityTelemetry hook and renders a compact summary card.
@@ -115,7 +115,7 @@ export function AdminDegradedTelemetry({ data, loading, error }: AdminDegradedTe
 
       {hasAny && (
         <p className="mt-2 text-xs text-amber-400/80">
-          Backend instability observed — some admin pages returned
+          Backend instability observed - some admin pages returned
           temporary fallback content.
         </p>
       )}
@@ -169,7 +169,7 @@ export function AdminDegradedTelemetry({ data, loading, error }: AdminDegradedTe
 
         {hasActionAny && (
           <p className="mt-2 text-xs text-amber-400/80">
-            Admin mutation instability observed — action failures handled
+            Admin mutation instability observed - action failures handled
             safely.
           </p>
         )}
@@ -224,7 +224,7 @@ export function AdminDegradedTelemetry({ data, loading, error }: AdminDegradedTe
 
         {hasApiAny && (
           <p className="mt-2 text-xs text-amber-400/80">
-            Temporary control-plane API instability detected — backend API
+            Temporary control-plane API instability detected - backend API
             failures handled safely.
           </p>
         )}
@@ -279,7 +279,7 @@ export function AdminDegradedTelemetry({ data, loading, error }: AdminDegradedTe
 
         {hasAgentRlAny && (
           <p className="mt-2 text-xs text-amber-400/80">
-            Public bot-facing route throttles detected — rate limiting
+            Public bot-facing route throttles detected - rate limiting
             is active on agent endpoints.
           </p>
         )}
@@ -334,7 +334,7 @@ export function AdminDegradedTelemetry({ data, loading, error }: AdminDegradedTe
 
         {hasPublicRlAny && (
           <p className="mt-2 text-xs text-amber-400/80">
-            Public endpoint throttles detected — rate limiting
+            Public endpoint throttles detected - rate limiting
             is active on public demo/verify/status routes.
           </p>
         )}

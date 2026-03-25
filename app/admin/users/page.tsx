@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 function fmtEpoch(epoch: number | null) {
-  if (!epoch) return "—";
+  if (!epoch) return "-";
   const d = new Date(epoch * 1000);
   return d.toLocaleString("en-US", {
     month: "short",

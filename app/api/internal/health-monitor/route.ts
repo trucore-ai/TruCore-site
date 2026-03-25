@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Internal health monitor — checks ATF backend availability.
+ * Internal health monitor - checks ATF backend availability.
  *
  * Designed to be called by Vercel cron (every minute).  Tracks
  * consecutive failures in-memory and sends alert/recovery emails
@@ -10,13 +10,13 @@ import { NextRequest, NextResponse } from "next/server";
  * Authorization: requires CRON_SECRET (set by Vercel for cron jobs).
  *
  * Environment variables:
- *   ATF_HEALTH_URL          — URL to check  (default: https://api.trucore.xyz/health)
- *   ALERT_EMAIL_TO          — recipient for alert emails
- *   HEALTH_CHECK_TIMEOUT_MS — fetch timeout (default: 5000)
- *   FAILURE_THRESHOLD       — consecutive failures before alert (default: 3)
- *   RESEND_API_KEY          — Resend API key
- *   ALERT_EMAIL_FROM        — sender address (default: TruCore Monitor <alerts@trucore.xyz>)
- *   CRON_SECRET             — shared secret for cron authorization
+ *   ATF_HEALTH_URL          - URL to check  (default: https://api.trucore.xyz/health)
+ *   ALERT_EMAIL_TO          - recipient for alert emails
+ *   HEALTH_CHECK_TIMEOUT_MS - fetch timeout (default: 5000)
+ *   FAILURE_THRESHOLD       - consecutive failures before alert (default: 3)
+ *   RESEND_API_KEY          - Resend API key
+ *   ALERT_EMAIL_FROM        - sender address (default: TruCore Monitor <alerts@trucore.xyz>)
+ *   CRON_SECRET             - shared secret for cron authorization
  */
 
 const RESEND_API_URL = "https://api.resend.com/emails";
@@ -67,7 +67,7 @@ async function sendAlertEmail(params: {
   const { config } = params;
   if (!config.resendApiKey || !config.emailTo) {
     console.warn(
-      "[health-monitor] Cannot send alert — RESEND_API_KEY or ALERT_EMAIL_TO not configured",
+      "[health-monitor] Cannot send alert - RESEND_API_KEY or ALERT_EMAIL_TO not configured",
     );
     return false;
   }

@@ -77,7 +77,7 @@ export default async function AdminMetricsPage() {
         </div>
       </div>
 
-      {/* Security Telemetry — shared data, auto-refresh, manual refresh */}
+      {/* Security Telemetry - shared data, auto-refresh, manual refresh */}
       <AdminTelemetrySection />
 
       {!metrics ? (

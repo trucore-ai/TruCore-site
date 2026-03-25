@@ -4,7 +4,7 @@
 
 ---
 
-## Post 1 — Simple Hook
+## Post 1 - Simple Hook
 
 ```
 Run a protected trade in one command.
@@ -21,11 +21,11 @@ No setup. No API key. Just run it.
 
 ---
 
-## Post 2 — Proof Thread (4 tweets)
+## Post 2 - Proof Thread (4 tweets)
 
 **Tweet 1:**
 ```
-How ATF protects agent trades — in 4 steps.
+How ATF protects agent trades - in 4 steps.
 
 Step 1: Run a trade.
 
@@ -68,7 +68,7 @@ Try it: npx @trucore/atf@1.4.2 trade
 
 ---
 
-## Post 3 — Builder Angle
+## Post 3 - Builder Angle
 
 ```
 ATF output is readable for humans, structured for agents.

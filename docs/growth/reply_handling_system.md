@@ -23,7 +23,7 @@ saw post → replied → got answer → tried CLI → ran trade → design partn
 ### Response Template
 
 ```text
-Thanks — easiest way to try it:
+Thanks - easiest way to try it:
 
   npx @trucore/atf@latest trade
 
@@ -41,7 +41,7 @@ Takes about 30 seconds. Let me know what you think of the output.
 ### Follow-Up (48 hours, no reply)
 
 ```text
-Hey — did you get a chance to try the CLI? Here's what the output looks like:
+Hey - did you get a chance to try the CLI? Here's what the output looks like:
 
 ⚡ ATF Protected Trade
 Route: Jupiter (SAFE (142k CU))
@@ -67,7 +67,7 @@ Quick version:
 3. ATF issues a canonical receipt AFTER settlement
 
 The receipt is backend-issued (not client-generated), with a deterministic
-SHA-256 hash. Any field change breaks the hash — that's tamper evidence.
+SHA-256 hash. Any field change breaks the hash - that's tamper evidence.
 
 Most agent infra has no post-execution proof. This adds one.
 
@@ -84,7 +84,7 @@ One command to see it:
 ### Follow-Up (72 hours, no reply)
 
 ```text
-Hey — following up. If you want to see the receipt format without running
+Hey - following up. If you want to see the receipt format without running
 anything, here's a real output example:
 
   Classification: swap
@@ -108,10 +108,10 @@ Happy to answer any questions.
 ```text
 Fair question. Here's the trust model:
 
-- Receipts are backend-issued — the client can't fabricate them
+- Receipts are backend-issued - the client can't fabricate them
 - The receipt hash is SHA-256 over JCS-canonicalized data
 - If finalization fails, no receipt is generated (we showed this on Day 4)
-- Signing is not shipped yet — we're not claiming it until it's real
+- Signing is not shipped yet - we're not claiming it until it's real
 
 The CLI is the simplest entry point, but ATF is API-first:
   POST /v1/intents/protect → policy evaluation
@@ -125,17 +125,17 @@ I'd rather you run one trade and evaluate the output than take my word for it.
 
 ### Next Action
 
-- Don't argue — share proof once, let them evaluate
+- Don't argue - share proof once, let them evaluate
 - If they push back again → acknowledge their concern, share the failure case example, move on
 - If they run the CLI → they'll self-convert based on output quality
 
-### Follow-Up (5 days — only if they engaged)
+### Follow-Up (5 days - only if they engaged)
 
 ```text
-Hey — no pressure on ATF. If you're evaluating trust models for execution
+Hey - no pressure on ATF. If you're evaluating trust models for execution
 infra, the failure handling example might be the most relevant part:
 
-When finalize fails, ATF surfaces the failure — no fake receipt is generated.
+When finalize fails, ATF surfaces the failure - no fake receipt is generated.
 The swap happened on-chain, but without backend confirmation, we don't
 pretend it has a canonical receipt. That's the design choice.
 
@@ -194,8 +194,8 @@ to walk through the API?
 ### Follow-Up (48 hours)
 
 ```text
-Hey — did the integration example make sense? The Python version is ~20 lines,
-Node.js is ~15 lines. No SDK dependency — just standard HTTP calls.
+Hey - did the integration example make sense? The Python version is ~20 lines,
+Node.js is ~15 lines. No SDK dependency - just standard HTTP calls.
 
 Let me know if you want to try a real execution or if you have questions
 about the finalize payload format.
@@ -207,10 +207,10 @@ about the finalize payload format.
 
 **Signal:** DM sent, no reply after 72+ hours
 
-### Response Template (First Follow-Up — Day 4–5)
+### Response Template (First Follow-Up - Day 4–5)
 
 ```text
-Hey — following up on my message about ATF canonical receipts.
+Hey - following up on my message about ATF canonical receipts.
 
 Quick reminder: policy approves before execution, canonical receipt
 issued after settlement. Backend-issued, tamper-evident.
@@ -221,7 +221,7 @@ One command to try it:
 Either way, no pressure. Thought it might be relevant to what you're building.
 ```
 
-### Response Template (Final Follow-Up — Day 7)
+### Response Template (Final Follow-Up - Day 7)
 
 ```text
 Last follow-up on ATF. During this week:
@@ -290,14 +290,14 @@ Incoming reply
 
 Every reply chain should converge to one of:
 
-1. **They ran the CLI** — `npx @trucore/atf@latest trade`
-2. **They want the integration guide** — send canonical_bot_integration_examples.md
-3. **They want a walkthrough** — schedule 15-min call
-4. **They're not interested** — mark and move on
+1. **They ran the CLI** - `npx @trucore/atf@latest trade`
+2. **They want the integration guide** - send canonical_bot_integration_examples.md
+3. **They want a walkthrough** - schedule 15-min call
+4. **They're not interested** - mark and move on
 
 Don't force it. Let the proof do the work.
 
 ---
 
 _Response templates are adapted from reply_bank.md and outreach_messages.md.
-No new claims — only sequenced responses based on signal type._
+No new claims - only sequenced responses based on signal type._

@@ -70,7 +70,7 @@ https://trucore.xyz/docs/first-protected-trade
 **Body:**
 
 ```
-AI trading bots execute transactions autonomously — but they can make
+AI trading bots execute transactions autonomously - but they can make
 costly mistakes. Wrong liquidity pools, excessive slippage, or
 malicious prompt injections can drain funds in seconds.
 

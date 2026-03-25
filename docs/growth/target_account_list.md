@@ -89,4 +89,4 @@ Structured outreach target list. Update status and next follow-up as conversatio
 2. **Update status** after each outreach action
 3. **Set next follow-up** date when a conversation is active
 4. **Move to `design-partner`** when someone commits to trying ATF in their product
-5. **Review weekly** — drop `no-response` targets after 2 follow-ups, double down on `conversation` and `cli-run` targets
+5. **Review weekly** - drop `no-response` targets after 2 follow-ups, double down on `conversation` and `cli-run` targets

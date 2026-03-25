@@ -9,7 +9,7 @@ Audience-specific message variants. Each anchored to real proof with a concrete 
 Use for: someone you've interacted with before, who builds bots or agents on Solana.
 
 ```text
-Hey — we just shipped canonical tamper-evident receipts for ATF.
+Hey - we just shipped canonical tamper-evident receipts for ATF.
 
 Quick version: policy approves before execution, Jupiter swap runs on-chain,
 then ATF issues a canonical receipt after settlement.
@@ -35,7 +35,7 @@ is useful for your setup?
 Use for: someone you haven't talked to, who runs a trading bot or Solana project.
 
 ```text
-Hi — I'm building ATF, a transaction firewall for Solana agents and bots.
+Hi - I'm building ATF, a transaction firewall for Solana agents and bots.
 
 We just shipped something I think is relevant to what you're building:
 canonical tamper-evident receipts.
@@ -61,7 +61,7 @@ Can I send you one canonical receipt example so you can see the format?
 Use for: teams building execution infrastructure, DEX protocols, or wallet tooling.
 
 ```text
-Hi [name] — I'm working on ATF (Agent Transaction Firewall), a policy
+Hi [name] - I'm working on ATF (Agent Transaction Firewall), a policy
 and receipt layer for Solana execution.
 
 We recently shipped canonical tamper-evident receipts. The flow:
@@ -91,11 +91,11 @@ Or I can send the receipt spec and a real example first.
 Use for: more formal outreach where DM isn't appropriate.
 
 ```text
-Subject: Canonical receipts for Solana execution — would this be useful?
+Subject: Canonical receipts for Solana execution - would this be useful?
 
 Hi [name],
 
-We built ATF — a transaction firewall that evaluates policy before
+We built ATF - a transaction firewall that evaluates policy before
 execution and issues canonical tamper-evident receipts after settlement.
 
 Current state:
@@ -125,7 +125,7 @@ Best,
 Use for: anyone who didn't reply to variants A–D.
 
 ```text
-Hey — following up on my message about ATF canonical receipts.
+Hey - following up on my message about ATF canonical receipts.
 
 Since I reached out, we've had [X] external users run their first
 protected trade. (Update this number as it grows.)
@@ -136,7 +136,7 @@ Quick reminder of what it does:
 - Issues a tamper-evident receipt
 
 If the receipt format would be useful for [their specific use case],
-I can send a real example — takes 30 seconds to see if it's relevant.
+I can send a real example - takes 30 seconds to see if it's relevant.
 
 Either way, no pressure. Just thought it might save you some
 execution trust plumbing.
@@ -148,11 +148,11 @@ execution trust plumbing.
 
 **For bot builders:** Emphasize `bot_line` field, structured JSON output, and machine-parseable format. Mention the `--stdin` flag for piping intents.
 
-**For agent developers:** Emphasize trust boundary — approval before execution means the agent can prove it was authorized. Receipt proves what actually happened.
+**For agent developers:** Emphasize trust boundary - approval before execution means the agent can prove it was authorized. Receipt proves what actually happened.
 
 **For infra teams:** Emphasize deterministic verification, canonicalized data, and the fact that receipts are backend-issued (not client-fabricated).
 
-**For protocol teams:** Emphasize ecosystem trust — agents using ATF can prove they followed policy before touching the protocol.
+**For protocol teams:** Emphasize ecosystem trust - agents using ATF can prove they followed policy before touching the protocol.
 
 ---
 

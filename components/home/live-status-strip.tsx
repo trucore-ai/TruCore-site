@@ -30,7 +30,7 @@ const RETRY_DELAY_MS = 500;
 /* ── Helpers ──────────────────────────────────────────────── */
 
 function compactNum(n: number): string {
-  if (n == null || Number.isNaN(n)) return "—";
+  if (n == null || Number.isNaN(n)) return "-";
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return n.toLocaleString();
@@ -99,7 +99,7 @@ export function LiveStatusStrip() {
         });
         if (res.ok) return (await res.json()) as PublicMetrics;
       } catch {
-        /* network error — fall through to retry / fail */
+        /* network error - fall through to retry / fail */
       }
       if (attempt === 0) {
         await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));

@@ -25,7 +25,7 @@ export default function BotIntegrationGuidePage() {
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
             ATF sits between your bot&apos;s transaction intent and on-chain
             execution. Every trade passes through policy validation and produces
-            a verifiable receipt — no custody changes, no extra dependencies.
+            a verifiable receipt - no custody changes, no extra dependencies.
           </p>
         </div>
       </Section>
@@ -130,7 +130,7 @@ await verify(sig, receiptHash);`}
           <ul className="mt-4 space-y-3 text-base text-slate-200">
             <li className="flex items-start gap-3">
               <span className="mt-0.5 text-primary-200">&#x2713;</span>
-              Non-custodial — your bot keeps its keys
+              Non-custodial - your bot keeps its keys
             </li>
             <li className="flex items-start gap-3">
               <span className="mt-0.5 text-primary-200">&#x2713;</span>
@@ -160,7 +160,7 @@ await verify(sig, receiptHash);`}
               >
                 Quickstart
               </Link>{" "}
-              — copy-paste a protected transaction in under 60 seconds.
+              - copy-paste a protected transaction in under 60 seconds.
             </p>
           </div>
         </div>

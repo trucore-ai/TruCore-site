@@ -4,7 +4,7 @@
  * Compact banner showing the active ATF launch mode.
  *
  * Renders inside admin pages so operators always know which
- * launch posture is active.  Shows "—" if no mode is set.
+ * launch posture is active.  Shows "-" if no mode is set.
  */
 
 const MODE_LABELS: Record<string, { label: string; color: string }> = {
@@ -34,7 +34,7 @@ export function LaunchModeBanner({
   launchMode: string | null;
 }) {
   const entry = launchMode ? MODE_LABELS[launchMode] : null;
-  const label = entry?.label ?? launchMode ?? "—";
+  const label = entry?.label ?? launchMode ?? "-";
   const color = entry?.color ?? "bg-white/10 text-slate-400";
 
   return (

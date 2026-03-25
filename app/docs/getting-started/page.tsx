@@ -4,7 +4,7 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { CopyBlock } from "@/components/copy-block";
 
 export const metadata: Metadata = {
-  title: "Getting Started — ATF Developer Guide",
+  title: "Getting Started - ATF Developer Guide",
   description:
     "Create an account, get an API key, and protect your first trade with the Agent Transaction Firewall in minutes.",
 };
@@ -80,10 +80,10 @@ export default function GettingStartedPage() {
           deterministic, tamper-evident receipt.
         </p>
         <ul className="space-y-2 text-slate-300">
-          <li><strong className="text-slate-100">Protect</strong> — submit an intent, get an allow/deny decision with reasons</li>
-          <li><strong className="text-slate-100">Receipt</strong> — every decision produces a content-hashed receipt you can verify</li>
-          <li><strong className="text-slate-100">Verify</strong> — confirm receipt integrity anytime via API or CLI</li>
-          <li><strong className="text-slate-100">Fail-closed</strong> — if ATF can&apos;t evaluate, the trade is denied (never silently approved)</li>
+          <li><strong className="text-slate-100">Protect</strong> - submit an intent, get an allow/deny decision with reasons</li>
+          <li><strong className="text-slate-100">Receipt</strong> - every decision produces a content-hashed receipt you can verify</li>
+          <li><strong className="text-slate-100">Verify</strong> - confirm receipt integrity anytime via API or CLI</li>
+          <li><strong className="text-slate-100">Fail-closed</strong> - if ATF can&apos;t evaluate, the trade is denied (never silently approved)</li>
         </ul>
         <p className="text-slate-400">
           Currently supporting <strong className="text-slate-300">Solana</strong> (Jupiter, Raydium, Orca swaps &amp; lending protocols).
@@ -214,14 +214,14 @@ export default function GettingStartedPage() {
             className="group rounded-lg border border-white/10 p-5 transition-colors hover:border-white/20"
           >
             <h3 className="font-bold text-accent-300 group-hover:text-accent-200">Integration Surfaces &rarr;</h3>
-            <p className="mt-1 text-sm text-slate-400">API, CLI, and OpenClaw plugin — what&apos;s available and what&apos;s coming.</p>
+            <p className="mt-1 text-sm text-slate-400">API, CLI, and OpenClaw plugin - what&apos;s available and what&apos;s coming.</p>
           </Link>
           <Link
             href="/docs/plans"
             className="group rounded-lg border border-white/10 p-5 transition-colors hover:border-white/20"
           >
             <h3 className="font-bold text-accent-300 group-hover:text-accent-200">Plans &amp; Feature Tiers &rarr;</h3>
-            <p className="mt-1 text-sm text-slate-400">Free, Pro, and Enterprise — limits, features, and how to upgrade.</p>
+            <p className="mt-1 text-sm text-slate-400">Free, Pro, and Enterprise - limits, features, and how to upgrade.</p>
           </Link>
           <Link
             href="/docs/auth"

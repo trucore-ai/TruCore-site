@@ -5,10 +5,10 @@
 
 ---
 
-## DAY 1 — FIRST PROOF DROP
+## DAY 1 - FIRST PROOF DROP
 
 **Platform:** X  
-**Proof asset:** Receipt A (redacted real — mainnet 2026-03-19)  
+**Proof asset:** Receipt A (redacted real - mainnet 2026-03-19)  
 **Format:** Single post
 
 ### Post
@@ -32,14 +32,14 @@ Real mainnet execution. No simulation.
 
 ### CTA
 
-"Try it — one command, one protected trade, one canonical receipt."
+"Try it - one command, one protected trade, one canonical receipt."
 
 ---
 
-## DAY 2 — THREAD (HOW IT WORKS)
+## DAY 2 - THREAD (HOW IT WORKS)
 
 **Platform:** X thread  
-**Proof asset:** Receipt B (redacted real — full flow walkthrough)  
+**Proof asset:** Receipt B (redacted real - full flow walkthrough)  
 **Format:** 5-post thread
 
 ### Post 1/5
@@ -47,7 +47,7 @@ Real mainnet execution. No simulation.
 ```text
 We just shipped canonical receipts for ATF.
 
-Here's what that means — a thread on the first real tamper-evident
+Here's what that means - a thread on the first real tamper-evident
 execution receipts for agent-driven trades.
 ```
 
@@ -57,7 +57,7 @@ execution receipts for agent-driven trades.
 Step 1: Intent
 
 The agent sends a trade intent to ATF.
-ATF evaluates it against policy — token limits, slippage, allowlists.
+ATF evaluates it against policy - token limits, slippage, allowlists.
 
 If policy passes → APPROVED.
 If not → DENIED. No execution happens.
@@ -75,7 +75,7 @@ Real tokens. Real routing. Real on-chain transaction.
 
 TX: 26Raeks...Cy877a (mainnet)
 
-ATF doesn't execute — it approves. The agent executes.
+ATF doesn't execute - it approves. The agent executes.
 ```
 
 ### Post 4/5
@@ -117,7 +117,7 @@ Docs: https://trucore.xyz/atf
 
 ---
 
-## DAY 3 — BUILDER ANGLE
+## DAY 3 - BUILDER ANGLE
 
 **Platform:** X / Discord / developer communities  
 **Proof asset:** Dry-run output (Example B) + bot_line format  
@@ -153,11 +153,11 @@ npx @trucore/atf@latest trade
 
 ### CTA
 
-"If you're building a Solana bot, I can send the integration example — ~20 lines of Python."
+"If you're building a Solana bot, I can send the integration example - ~20 lines of Python."
 
 ---
 
-## DAY 4 — FAILURE HONESTY
+## DAY 4 - FAILURE HONESTY
 
 **Platform:** X  
 **Proof asset:** Failure case (Example C from canonical_proof_examples.md)  
@@ -174,9 +174,9 @@ Real scenario:
   ✗ ATF finalize call failed (503)
 
 Result:
-  receipt_id:   (none — finalize failed)
-  receipt_url:  (none — finalize failed)
-  receipt_hash: (none — finalize failed)
+  receipt_id:   (none - finalize failed)
+  receipt_url:  (none - finalize failed)
+  receipt_hash: (none - finalize failed)
 
   ⚠ The swap succeeded but no canonical receipt was issued.
   Execution flagged for reconciliation.
@@ -185,7 +185,7 @@ ATF did NOT fabricate a receipt.
 ATF did NOT pretend finalization succeeded.
 
 This is how an honest system handles failure.
-The trade happened — but without backend confirmation,
+The trade happened - but without backend confirmation,
 no receipt is generated. Period.
 
 Most infra hides failures. We surface them.
@@ -197,16 +197,16 @@ Most infra hides failures. We surface them.
 
 ---
 
-## DAY 5 — REPEAT PROOF
+## DAY 5 - REPEAT PROOF
 
 **Platform:** X  
-**Proof asset:** Receipt C (fresh execution — new token pair or amount)  
+**Proof asset:** Receipt C (fresh execution - new token pair or amount)  
 **Format:** Single post
 
 ### Post
 
 ```text
-Another canonical ATF receipt — day 5.
+Another canonical ATF receipt - day 5.
 
   Route:    Jupiter
   Decision: APPROVED
@@ -231,7 +231,7 @@ _Update the external user count with real numbers as they come in._
 
 ---
 
-## DAY 6 — USE CASE
+## DAY 6 - USE CASE
 
 **Platform:** X / Discord  
 **Proof asset:** Integration snippet from canonical_bot_integration_examples.md  
@@ -240,7 +240,7 @@ _Update the external user count with real numbers as they come in._
 ### Post
 
 ```text
-How a bot uses ATF in production — 6 steps:
+How a bot uses ATF in production - 6 steps:
 
 1. Send intent to ATF       → POST /v1/intents/protect
 2. Check if approved         → decision == "approved"
@@ -268,7 +268,7 @@ Then integrate:
 
 ---
 
-## DAY 7 — SUMMARY / MOMENTUM
+## DAY 7 - SUMMARY / MOMENTUM
 
 **Platform:** X  
 **Proof asset:** Multiple receipt hashes from the week  
@@ -305,18 +305,18 @@ _Update [X] placeholders with real numbers from the week._
 
 ### CTA
 
-"If you've been watching — now's the time to try one protected trade."
+"If you've been watching - now's the time to try one protected trade."
 
 ---
 
 ## Post Guidelines
 
-1. **Keep it short** — under 280 characters for the hook, expand in thread or follow-up only
-2. **Include proof** — every post has a receipt hash, CLI command, or output example
-3. **No hype words** — no "revolutionary," "game-changing," "first-ever"
-4. **Label clearly** — real output is real, representative is labeled
-5. **One CTA per post** — don't split attention
-6. **Cross-post selectively** — X is primary, Discord/Farcaster for Days 3 and 6
+1. **Keep it short** - under 280 characters for the hook, expand in thread or follow-up only
+2. **Include proof** - every post has a receipt hash, CLI command, or output example
+3. **No hype words** - no "revolutionary," "game-changing," "first-ever"
+4. **Label clearly** - real output is real, representative is labeled
+5. **One CTA per post** - don't split attention
+6. **Cross-post selectively** - X is primary, Discord/Farcaster for Days 3 and 6
 
 ---
 
@@ -332,4 +332,4 @@ _Update [X] placeholders with real numbers from the week._
 ---
 
 _All posts reuse content from canonical_social_posts.md, canonical_proof_examples.md,
-and shareable_proof_examples.md. No new content invented — only sequenced and adapted._
+and shareable_proof_examples.md. No new content invented - only sequenced and adapted._

@@ -6,7 +6,7 @@ import { TryAtfFlow } from "@/components/try-atf-flow";
 export const metadata: Metadata = {
   title: "Try ATF",
   description:
-    "Try the Agent Transaction Firewall instantly — no signup required. See policy enforcement and receipts in action.",
+    "Try the Agent Transaction Firewall instantly - no signup required. See policy enforcement and receipts in action.",
 };
 
 export default function TryPage() {
@@ -18,14 +18,14 @@ export default function TryPage() {
             Public Sandbox
           </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">
-            Try ATF
+            Protect a sample trade
           </h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            Submit a sample trade, see the policy engine evaluate it, and get a
-            cryptographic receipt — all in under 30 seconds. No account needed.
+            Load a sample Solana trade, run it through ATF, and inspect the
+            policy decision and receipt.
           </p>
           <p className="mt-3 text-sm text-slate-400">
-            Public sandbox — no real transactions, no fees. Rate limited per IP.
+            Public sandbox - no real transactions, no fees. Rate limited per IP.
           </p>
         </div>
       </Section>

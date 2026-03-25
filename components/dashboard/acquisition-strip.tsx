@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  AcquisitionStrip — server-rendered acquisition funnel summary
+ *  AcquisitionStrip - server-rendered acquisition funnel summary
  *
  *  Lightweight top-of-funnel snapshot for the operator dashboard.
  *  Data sourced from the site waitlist DB, not from ATF. Renders
@@ -32,7 +32,7 @@ export async function AcquisitionStrip() {
   try {
     data = await getAcquisitionFunnelSnapshot();
   } catch {
-    // DB may not be connected — degrade silently
+    // DB may not be connected - degrade silently
   }
 
   if (!data || data.total_signups === 0) {

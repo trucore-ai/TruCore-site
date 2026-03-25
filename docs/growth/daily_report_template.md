@@ -4,7 +4,7 @@
 
 ---
 
-## Day 1 — 2026-03-XX
+## Day 1 - 2026-03-XX
 
 - **Posts:** 0
 - **DMs sent:** 0
@@ -25,7 +25,7 @@ _None yet_
 
 ---
 
-## Day 2 — 2026-03-XX
+## Day 2 - 2026-03-XX
 
 - **Posts:**
 - **DMs sent:**
@@ -43,7 +43,7 @@ _None yet_
 
 ---
 
-## Day 3 — 2026-03-XX
+## Day 3 - 2026-03-XX
 
 - **Posts:**
 - **DMs sent:**
@@ -61,7 +61,7 @@ _None yet_
 
 ---
 
-## Day 4 — 2026-03-XX
+## Day 4 - 2026-03-XX
 
 - **Posts:**
 - **DMs sent:**
@@ -79,7 +79,7 @@ _None yet_
 
 ---
 
-## Day 5 — 2026-03-XX
+## Day 5 - 2026-03-XX
 
 - **Posts:**
 - **DMs sent:**
@@ -97,7 +97,7 @@ _None yet_
 
 ---
 
-## Day 6 — 2026-03-XX
+## Day 6 - 2026-03-XX
 
 - **Posts:**
 - **DMs sent:**
@@ -115,7 +115,7 @@ _None yet_
 
 ---
 
-## Day 7 — 2026-03-XX
+## Day 7 - 2026-03-XX
 
 - **Posts:**
 - **DMs sent:**

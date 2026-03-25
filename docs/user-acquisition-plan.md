@@ -26,14 +26,14 @@ Messaging:
 - Strong short positioning:
   “TruCore ATF is policy-enforced transaction protection for AI trading agents.”
 
-Phase 1 — Foundation:
+Phase 1 - Foundation:
 - Build one golden path:
   install -> configure -> protect a Jupiter swap -> get a receipt -> verify it
 - Publish copy-paste integrations for HTTP, Python, TypeScript, OpenClaw, curl
 - Default safe policy setup for new users
 - Make proof page tangible with example intent / enforcement / receipt / verify flow
 
-Phase 2 — Proof:
+Phase 2 - Proof:
 - Complete OpenClaw dogfooding flow
 - Publicly show:
   bot intent -> ATF enforcement -> transaction result -> receipt verification
@@ -44,7 +44,7 @@ Phase 2 — Proof:
   proof thread/video
 - Maintain compatibility matrix for integrations
 
-Phase 3 — Distribution:
+Phase 3 - Distribution:
 - Focus on:
   X
   GitHub discoverability
@@ -55,7 +55,7 @@ Phase 3 — Distribution:
   technical docs/articles
 - Use technical, specific, provable content rather than generic thought leadership
 
-Phase 4 — Conversion:
+Phase 4 - Conversion:
 - Tighten site conversion ladder:
   discover -> understand -> copy snippet -> protect sample intent -> see receipt -> try own bot
 - Improve:
@@ -67,7 +67,7 @@ Phase 4 — Conversion:
   setup simplicity
 - Minimize painful env-var/manual config friction
 
-Phase 5 — Retention:
+Phase 5 - Retention:
 - Keep early adopters through:
   reliability
   stable integration contracts

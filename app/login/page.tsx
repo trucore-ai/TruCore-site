@@ -47,7 +47,7 @@ export default function LoginPage() {
       await requestVerificationEmail();
       setResendSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to resend");
+      setError(err instanceof Error ? err.message : "Verification email is temporarily unavailable. Please try again shortly.");
     } finally {
       setResending(false);
     }
@@ -73,7 +73,7 @@ export default function LoginPage() {
             </p>
             {resendSuccess && (
               <p className="text-xs text-emerald-300">
-                Verification email resent.
+                Verification email requested. It should arrive shortly.
               </p>
             )}
             <div className="flex items-center gap-2">

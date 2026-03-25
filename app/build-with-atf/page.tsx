@@ -47,7 +47,7 @@ export default function BuildWithAtfPage() {
               ATF outputs are dual-surface: every command produces operator-friendly terminal output and
               machine-readable JSON with <code className="text-slate-300">machine_summary</code>,{" "}
               <code className="text-slate-300">suggested_action</code>, and{" "}
-              <code className="text-slate-300">suggested_command</code> fields — ready for automation.
+              <code className="text-slate-300">suggested_command</code> fields - ready for automation.
             </p>
           </Card>
 

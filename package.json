@@ -11,6 +11,7 @@
     "analyze": "ANALYZE=true next build --webpack",
     "start": "next start",
     "lint": "eslint",
+    "lint:copy": "grep -rn '—' app/ components/ docs/ --include='*.ts' --include='*.tsx' --include='*.md' --include='*.mdx' --include='*.js' --include='*.jsx' && echo 'ERROR: em dash found in copy — replace with a regular dash or proper punctuation.' && exit 1 || exit 0",
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "check:atf-manifest": "node scripts/validate_atf_manifest.mjs",
     "lhci": "CHROME_PATH=$(find \"$HOME/.cache/ms-playwright\" -type f -path \"*/chromium-*/chrome-linux*/chrome\" | head -n 1) lhci autorun",

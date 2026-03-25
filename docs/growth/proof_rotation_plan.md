@@ -8,13 +8,13 @@
 
 | Day | Proof Type | Source | Label |
 |-----|-----------|--------|-------|
-| 1 | **Receipt A** — Real mainnet success | canonical_proof_examples.md Example A | Redacted real |
-| 2 | **Receipt B** — Full flow walkthrough | canonical_social_posts.md Post Set 2 (thread) | Redacted real |
-| 3 | **Dry-run** — bot_line + machine_summary | canonical_proof_examples.md Example B + shareable_proof_examples.md | Representative |
-| 4 | **Failure case** — finalize failure | canonical_proof_examples.md Example C | Representative |
-| 5 | **Receipt C** — Fresh execution | New real run (see Generation below) | Real or redacted real |
-| 6 | **Bot example** — integration snippet | canonical_bot_integration_examples.md (Python) | Representative |
-| 7 | **Summary** — multiple receipt hashes | Compilation from Days 1–6 | Mixed |
+| 1 | **Receipt A** - Real mainnet success | canonical_proof_examples.md Example A | Redacted real |
+| 2 | **Receipt B** - Full flow walkthrough | canonical_social_posts.md Post Set 2 (thread) | Redacted real |
+| 3 | **Dry-run** - bot_line + machine_summary | canonical_proof_examples.md Example B + shareable_proof_examples.md | Representative |
+| 4 | **Failure case** - finalize failure | canonical_proof_examples.md Example C | Representative |
+| 5 | **Receipt C** - Fresh execution | New real run (see Generation below) | Real or redacted real |
+| 6 | **Bot example** - integration snippet | canonical_bot_integration_examples.md (Python) | Representative |
+| 7 | **Summary** - multiple receipt hashes | Compilation from Days 1–6 | Mixed |
 
 ---
 
@@ -52,11 +52,11 @@ details in each thread post (policy reasons, execution route, receipt fields).
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Decision       : APPROVED
 Policy         : All policies passed
-DRY RUN — no execution performed.
+DRY RUN - no execution performed.
 
 Receipt:
-  id   : (none — dry run)
-  hash : (none — dry run)
+  id   : (none - dry run)
+  hash : (none - dry run)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -77,9 +77,9 @@ Source: Representative output based on real dry-run flow.
   Action : Receipt was NOT issued
 
 Receipt:
-  id   : (none — finalize failed)
-  url  : (none — finalize failed)
-  hash : (none — finalize failed)
+  id   : (none - finalize failed)
+  url  : (none - finalize failed)
+  hash : (none - finalize failed)
 ```
 
 Source: Representative output based on real error handling code.
@@ -88,7 +88,7 @@ Source: Representative output based on real error handling code.
 
 ### Receipt C (Day 5)
 
-A fresh execution run — different from Receipt A.
+A fresh execution run - different from Receipt A.
 
 Options:
 - Different amount (e.g., 0.005 SOL instead of 0.001 SOL)
@@ -112,7 +112,7 @@ Python integration snippet showing the 6-step flow:
 # 6. Handle finalize failure
 ```
 
-Source: canonical_bot_integration_examples.md — no new code invented.
+Source: canonical_bot_integration_examples.md - no new code invented.
 
 ---
 
@@ -148,13 +148,13 @@ npx @trucore/atf@latest trade
 ### Option 2: Demo Mode
 
 ```bash
-# Run without API key — produces demo receipt
+# Run without API key - produces demo receipt
 npx @trucore/atf@latest trade
 ```
 
 - Requires: Nothing (no API key needed)
 - Produces: Demo receipt with demo_ prefix
-- Label: **representative** — clearly mark as demo in posts
+- Label: **representative** - clearly mark as demo in posts
 
 ### Option 3: OpenClaw atf-agent
 
@@ -201,7 +201,7 @@ Every proof example in a post or DM must be labeled:
 
 - Never present demo output as real without labeling
 - Never present representative examples as specific executions
-- Never invent receipt hashes — use real hashes or clearly label as representative
+- Never invent receipt hashes - use real hashes or clearly label as representative
 
 ---
 
@@ -209,10 +209,10 @@ Every proof example in a post or DM must be labeled:
 
 Before posting each day, verify:
 
-1. **Different proof type** — not the same format as yesterday
-2. **Different angle** — success vs. failure vs. integration vs. dry-run
-3. **Different audience focus** — bot builders vs. agent devs vs. infra teams
-4. **Fresh data** — Day 5 must use a new receipt, not Receipt A again
+1. **Different proof type** - not the same format as yesterday
+2. **Different angle** - success vs. failure vs. integration vs. dry-run
+3. **Different audience focus** - bot builders vs. agent devs vs. infra teams
+4. **Fresh data** - Day 5 must use a new receipt, not Receipt A again
 
 If you notice repetition:
 - Swap the order (e.g., move failure to Day 3 instead of Day 4)
@@ -223,10 +223,10 @@ If you notice repetition:
 
 ## References
 
-- [canonical_proof_examples.md](canonical_proof_examples.md) — Examples A, B, C
-- [shareable_proof_examples.md](shareable_proof_examples.md) — Demo, real-mode, fallback examples
-- [canonical_social_posts.md](canonical_social_posts.md) — Post sets with labeled proof
-- [canonical_receipt_launch_pack.md](canonical_receipt_launch_pack.md) — Golden path CLI commands
+- [canonical_proof_examples.md](canonical_proof_examples.md) - Examples A, B, C
+- [shareable_proof_examples.md](shareable_proof_examples.md) - Demo, real-mode, fallback examples
+- [canonical_social_posts.md](canonical_social_posts.md) - Post sets with labeled proof
+- [canonical_receipt_launch_pack.md](canonical_receipt_launch_pack.md) - Golden path CLI commands
 
 ---
 

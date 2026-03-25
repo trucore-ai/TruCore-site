@@ -24,43 +24,43 @@ describe("middleware — admin route guard", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
-  it("allows non-admin routes through", () => {
-    const res = middleware(makeRequest("/docs/getting-started"));
+  it("allows non-admin routes through", async () => {
+    const res = await middleware(makeRequest("/docs/getting-started"));
     expect(res.status).toBe(200); // NextResponse.next()
     expect(res.headers.get("x-middleware-next")).toBeTruthy();
   });
 
-  it("allows /admin/login without session cookie", () => {
-    const res = middleware(makeRequest("/admin/login"));
+  it("allows /admin/login without session cookie", async () => {
+    const res = await middleware(makeRequest("/admin/login"));
     expect(res.status).toBe(200);
     expect(res.headers.get("x-middleware-next")).toBeTruthy();
   });
 
-  it("redirects /admin/waitlist to /admin/login when no cookie", () => {
-    const res = middleware(makeRequest("/admin/waitlist"));
+  it("redirects /admin/waitlist to /admin/login when no cookie", async () => {
+    const res = await middleware(makeRequest("/admin/waitlist"));
     expect(res.status).toBe(307);
     const location = res.headers.get("location");
     expect(location).toContain("/admin/login");
   });
 
-  it("redirects /admin/keys to /admin/login when no cookie", () => {
-    const res = middleware(makeRequest("/admin/keys"));
+  it("redirects /admin/keys to /admin/login when no cookie", async () => {
+    const res = await middleware(makeRequest("/admin/keys"));
     expect(res.status).toBe(307);
     const location = res.headers.get("location");
     expect(location).toContain("/admin/login");
   });
 
-  it("allows /admin/waitlist when session cookie is present", () => {
-    const res = middleware(
+  it("allows /admin/waitlist when session cookie is present", async () => {
+    const res = await middleware(
       makeRequest("/admin/waitlist", { [ADMIN_COOKIE_NAME]: "some-token" }),
     );
     expect(res.status).toBe(200);
     expect(res.headers.get("x-middleware-next")).toBeTruthy();
   });
 
-  it("logs admin_route_denied when denying", () => {
+  it("logs admin_route_denied when denying", async () => {
     const spy = vi.spyOn(console, "warn");
-    middleware(makeRequest("/admin/audit"));
+    await middleware(makeRequest("/admin/audit"));
     expect(spy).toHaveBeenCalled();
     const msg = spy.mock.calls.find((c) =>
       (c[0] as string).includes("admin_route_denied"),
@@ -68,10 +68,10 @@ describe("middleware — admin route guard", () => {
     expect(msg).toBeTruthy();
   });
 
-  it("strips search params from redirect URL", () => {
+  it("strips search params from redirect URL", async () => {
     const url = new URL("/admin/waitlist?tab=design", "http://localhost:3000");
     const req = new NextRequest(url);
-    const res = middleware(req);
+    const res = await middleware(req);
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get("location")!);
     expect(location.pathname).toBe("/admin/login");

@@ -1,9 +1,9 @@
 /* ────────────────────────────────────────────────────────────────
- *  AdminDegradedState — safe fallback panel for admin pages
+ *  AdminDegradedState - safe fallback panel for admin pages
  *
  *  Renders when a DB-backed admin page cannot load its data.
  *  Shows operator-useful messaging without leaking backend details.
- *  Server component — no "use client" directive needed.
+ *  Server component - no "use client" directive needed.
  * ──────────────────────────────────────────────────────────── */
 
 type AdminDegradedStateProps = {

@@ -73,7 +73,7 @@ export default function AuthPage() {
         <CopyBlock label="json" value={SIGNUP_RESPONSE} />
         <p className="text-slate-400">
           Signup creates a tenant, generates your first API key, and returns a JWT for
-          authenticated requests. The API key secret is displayed only once — save it immediately.
+          authenticated requests. The API key secret is displayed only once - save it immediately.
         </p>
         <div className="rounded-lg border border-white/10 bg-white/[0.02] p-4 space-y-2">
           <h4 className="text-sm font-bold text-slate-200">Requirements</h4>
@@ -179,7 +179,7 @@ export default function AuthPage() {
         <CopyBlock label="bash" value={ROTATE_KEY_CURL} />
         <p className="text-sm text-slate-400">
           Rotation revokes the old key and issues a new one in a single operation.
-          The new secret is returned once — update your bot configuration immediately.
+          The new secret is returned once - update your bot configuration immediately.
         </p>
 
         <h3 className="text-xl font-bold text-accent-300">Revoke a Key</h3>
@@ -269,9 +269,9 @@ export default function AuthPage() {
       <section className="space-y-4">
         <HeadingAnchor id="security">Security Notes</HeadingAnchor>
         <ul className="space-y-2 text-slate-300">
-          <li><strong className="text-slate-100">Passwords</strong> are hashed with bcrypt — plaintext is never stored</li>
+          <li><strong className="text-slate-100">Passwords</strong> are hashed with bcrypt - plaintext is never stored</li>
           <li><strong className="text-slate-100">Tokens</strong> (verification, reset) are stored as SHA-256 hashes</li>
-          <li><strong className="text-slate-100">API key secrets</strong> are hashed after first display — store securely</li>
+          <li><strong className="text-slate-100">API key secrets</strong> are hashed after first display - store securely</li>
           <li><strong className="text-slate-100">JWT tokens</strong> expire after 24 hours</li>
           <li><strong className="text-slate-100">Rate limiting</strong> protects all auth endpoints from brute-force attempts</li>
         </ul>

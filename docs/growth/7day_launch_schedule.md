@@ -14,14 +14,14 @@ Publish real ATF proof (canonical receipts) every day for 7 days to:
 
 ---
 
-## DAY 1 — FIRST PROOF DROP
+## DAY 1 - FIRST PROOF DROP
 
 **Theme:** One command, one receipt. Simple.
 
 **Post:**
-- Simple proof post — 1 command → 1 canonical receipt
+- Simple proof post - 1 command → 1 canonical receipt
 - Attach: Receipt A (real mainnet, receipt hash `996f95ed83d4c5da`)
-- See: [daily_post_assets.md](daily_post_assets.md) — Day 1
+- See: [daily_post_assets.md](daily_post_assets.md) - Day 1
 
 **DM Block:**
 - Send warm DM (outreach_messages.md variant A) to 5–10 targeted builders
@@ -32,18 +32,18 @@ Publish real ATF proof (canonical receipts) every day for 7 days to:
 
 **CTA:** `npx @trucore/atf@latest trade`
 
-**Goal:** First reactions — likes, replies, DM responses
+**Goal:** First reactions - likes, replies, DM responses
 
 ---
 
-## DAY 2 — THREAD (HOW IT WORKS)
+## DAY 2 - THREAD (HOW IT WORKS)
 
 **Theme:** Walk through the full flow: approval → execution → receipt
 
 **Post:**
 - 5-part thread explaining the canonical receipt flow
 - Attach: Receipt B (redacted real execution with full flow walkthrough)
-- See: [daily_post_assets.md](daily_post_assets.md) — Day 2
+- See: [daily_post_assets.md](daily_post_assets.md) - Day 2
 
 **DM Block:**
 - Follow up with Day 1 DM recipients who haven't replied
@@ -54,18 +54,18 @@ Publish real ATF proof (canonical receipts) every day for 7 days to:
 
 **CTA:** "Try it: `npx @trucore/atf@latest trade`"
 
-**Goal:** Understanding — people grasp the 3-step flow
+**Goal:** Understanding - people grasp the 3-step flow
 
 ---
 
-## DAY 3 — BUILDER ANGLE
+## DAY 3 - BUILDER ANGLE
 
 **Theme:** Machine-readable receipts for bots and agents
 
 **Post:**
 - Highlight `bot_line` field and `machine_summary` JSON
 - Attach: Dry-run output (Example B from canonical_proof_examples.md)
-- See: [daily_post_assets.md](daily_post_assets.md) — Day 3
+- See: [daily_post_assets.md](daily_post_assets.md) - Day 3
 
 **DM Block:**
 - DM bot developers specifically (target_account_list.md category 1)
@@ -76,11 +76,11 @@ Publish real ATF proof (canonical receipts) every day for 7 days to:
 
 **CTA:** Point to canonical_bot_integration_examples.md
 
-**Goal:** Integration interest — someone asks for the API docs
+**Goal:** Integration interest - someone asks for the API docs
 
 ---
 
-## DAY 4 — FAILURE HONESTY
+## DAY 4 - FAILURE HONESTY
 
 **Theme:** What happens when finalization fails (the trust post)
 
@@ -88,7 +88,7 @@ Publish real ATF proof (canonical receipts) every day for 7 days to:
 - Show the finalize failure example (Example C from canonical_proof_examples.md)
 - Key message: ATF never fabricates receipts when finalization fails
 - Attach: Failure case output
-- See: [daily_post_assets.md](daily_post_assets.md) — Day 4
+- See: [daily_post_assets.md](daily_post_assets.md) - Day 4
 
 **DM Block:**
 - DM skeptics and infra teams (target_account_list.md category 3)
@@ -99,34 +99,34 @@ Publish real ATF proof (canonical receipts) every day for 7 days to:
 
 **CTA:** Honest failure handling as a trust signal
 
-**Goal:** Trust — this is the post that converts skeptics
+**Goal:** Trust - this is the post that converts skeptics
 
 ---
 
-## DAY 5 — REPEAT PROOF
+## DAY 5 - REPEAT PROOF
 
-**Theme:** Fresh receipt — consistency signal
+**Theme:** Fresh receipt - consistency signal
 
 **Post:**
 - New receipt from a fresh execution (Receipt C)
 - Different token pair or amount to show variety
 - Attach: Receipt C (new real or representative receipt)
-- See: [daily_post_assets.md](daily_post_assets.md) — Day 5
+- See: [daily_post_assets.md](daily_post_assets.md) - Day 5
 
 **DM Block:**
-- Second wave outreach — 5 new targets from categories 2, 4, 6
+- Second wave outreach - 5 new targets from categories 2, 4, 6
 - Follow up with all open conversations from Days 1–4
 - Use outreach_messages.md variant E for follow-ups
 
-**Target Audience:** Broader Solana ecosystem — aggregators, routing layers
+**Target Audience:** Broader Solana ecosystem - aggregators, routing layers
 
 **CTA:** `npx @trucore/atf@latest trade`
 
-**Goal:** Consistency — showing up every day builds credibility
+**Goal:** Consistency - showing up every day builds credibility
 
 ---
 
-## DAY 6 — USE CASE
+## DAY 6 - USE CASE
 
 **Theme:** How a bot would actually use this
 
@@ -134,7 +134,7 @@ Publish real ATF proof (canonical receipts) every day for 7 days to:
 - Concrete integration walkthrough (Python or Node.js snippet)
 - Show the 6-step flow from canonical_bot_integration_examples.md
 - Attach: Bot integration example output
-- See: [daily_post_assets.md](daily_post_assets.md) — Day 6
+- See: [daily_post_assets.md](daily_post_assets.md) - Day 6
 
 **DM Block:**
 - DM agent framework teams (target_account_list.md category 2)
@@ -145,19 +145,19 @@ Publish real ATF proof (canonical receipts) every day for 7 days to:
 
 **CTA:** Offer walkthrough or send receipt spec
 
-**Goal:** Relevance — someone sees how it fits their stack
+**Goal:** Relevance - someone sees how it fits their stack
 
 ---
 
-## DAY 7 — SUMMARY / MOMENTUM
+## DAY 7 - SUMMARY / MOMENTUM
 
-**Theme:** Recap the week — multiple receipts, real usage
+**Theme:** Recap the week - multiple receipts, real usage
 
 **Post:**
 - Summary post: recap receipts generated, flow demonstrated, interest received
 - Reference posts from Days 1–6
 - Attach: Multiple receipt hashes from the week
-- See: [daily_post_assets.md](daily_post_assets.md) — Day 7
+- See: [daily_post_assets.md](daily_post_assets.md) - Day 7
 
 **DM Block:**
 - DM strongest leads for conversion (anyone who replied, ran CLI, or asked questions)
@@ -168,7 +168,7 @@ Publish real ATF proof (canonical receipts) every day for 7 days to:
 
 **CTA:** Design partner signup or scheduled walkthrough
 
-**Goal:** Close conversations — convert interest into active users
+**Goal:** Close conversations - convert interest into active users
 
 ---
 

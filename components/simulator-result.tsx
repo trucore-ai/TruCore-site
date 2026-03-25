@@ -142,7 +142,7 @@ export function SimulatorResult({
       {result.status === "allowed" ? (
         <div className="space-y-3 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-4">
           <p className="text-sm font-semibold text-emerald-200">
-            Trade approved — receipt issued
+            Trade approved - receipt issued
           </p>
           <p className="text-sm text-emerald-100">
             The policy engine evaluated this trade against spend caps, protocol allowlists,

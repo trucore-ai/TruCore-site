@@ -19,6 +19,7 @@ import {
   ApiError,
   type UpgradeRequestData,
 } from "@/lib/customer-auth";
+import RunTestRequest from "@/components/run-test-request";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -249,7 +250,7 @@ export default function CustomerDashboardPage() {
         }
       });
 
-    // Activation state (dedicated call — covers case where /dashboard/me
+    // Activation state (dedicated call - covers case where /dashboard/me
     // doesn't embed activation yet)
     fetchActivation()
       .then((act) => {
@@ -258,7 +259,7 @@ export default function CustomerDashboardPage() {
         setObStep(stepFromActivation(a));
       })
       .catch(() => {
-        // Non-fatal — activation endpoint might not exist on older backend
+        // Non-fatal - activation endpoint might not exist on older backend
       })
       .finally(() => setActivationLoading(false));
 
@@ -310,7 +311,7 @@ export default function CustomerDashboardPage() {
   }
 
   // -----------------------------------------------------------------------
-  // Onboarding handlers — now with backend persistence
+  // Onboarding handlers - now with backend persistence
   // -----------------------------------------------------------------------
 
   const handleGenerateSample = useCallback(async () => {
@@ -326,7 +327,7 @@ export default function CustomerDashboardPage() {
         const act = (await markActivationStep("sample_generated")) as unknown as ActivationState;
         setActivation(act);
       } catch {
-        // Step completed in UI even if persistence fails — will retry on next refresh
+        // Step completed in UI even if persistence fails - will retry on next refresh
       }
     } catch (e) {
       setObError(
@@ -444,7 +445,7 @@ export default function CustomerDashboardPage() {
             </p>
             {resendSuccess && (
               <p className="text-xs text-emerald-300">
-                Verification email resent.
+                Verification email requested. It should arrive shortly.
               </p>
             )}
             <button
@@ -455,7 +456,7 @@ export default function CustomerDashboardPage() {
                   await requestVerificationEmail();
                   setResendSuccess(true);
                 } catch {
-                  // Non-fatal
+                  setError("Verification email is temporarily unavailable. Please try again shortly.");
                 }
                 setResending(false);
               }}
@@ -474,7 +475,7 @@ export default function CustomerDashboardPage() {
               Your API Key
             </h2>
             <p className="mt-1 text-xs text-slate-400">
-              Copy this now — it will not be shown again.
+              Copy this now - it will not be shown again.
             </p>
             <div className="mt-3 flex items-center gap-3">
               <code className="flex-1 overflow-x-auto rounded-lg border border-white/10 bg-neutral-900 px-4 py-2.5 font-mono text-sm text-slate-100">
@@ -682,7 +683,7 @@ export default function CustomerDashboardPage() {
                         {k.key_id}
                       </td>
                       <td className="py-2.5 pr-4 text-slate-300">
-                        {k.label || "—"}
+                        {k.label || "-"}
                       </td>
                       <td className="py-2.5 pr-4">
                         <span
@@ -754,9 +755,12 @@ export default function CustomerDashboardPage() {
           </section>
         )}
 
-        {/* First Protected Trade — Onboarding Flow */}
+        {/* Quick Test Request */}
+        <RunTestRequest apiKey={savedApiKey} />
+
+        {/* First Protected Trade - Onboarding Flow */}
         <section className="rounded-xl border border-accent-400/20 bg-accent-500/5 p-6 space-y-5">
-          {/* Header — adapts to completion state */}
+          {/* Header - adapts to completion state */}
           <div className="text-center">
             {onboardingComplete ? (
               <>
@@ -774,7 +778,7 @@ export default function CustomerDashboardPage() {
                   &#x1F680; Run Your First Protected Trade
                 </h2>
                 <p className="mt-1 text-sm text-slate-400">
-                  Experience ATF protection in 3 clicks — no code required.
+                  Experience ATF protection in 3 clicks - no code required.
                 </p>
               </>
             )}
@@ -852,7 +856,7 @@ export default function CustomerDashboardPage() {
             </div>
           )}
 
-          {/* Step 2: Simulate — show if at step 1 (intent generated, not yet simulated) */}
+          {/* Step 2: Simulate - show if at step 1 (intent generated, not yet simulated) */}
           {!activationLoading && obStep === 1 && (
             <div className="text-center">
               <button
@@ -915,7 +919,7 @@ export default function CustomerDashboardPage() {
             </div>
           )}
 
-          {/* Step 3: Execute — show if at step 2 (simulation done, not yet executed) */}
+          {/* Step 3: Execute - show if at step 2 (simulation done, not yet executed) */}
           {!activationLoading && obStep === 2 && (
             <div className="text-center space-y-2">
               <button
@@ -1000,14 +1004,14 @@ export default function CustomerDashboardPage() {
             </div>
           )}
 
-          {/* Resume banner — shown when restored from backend mid-onboarding */}
+          {/* Resume banner - shown when restored from backend mid-onboarding */}
           {!activationLoading &&
             !onboardingComplete &&
             obStep > 0 &&
             !obIntent && (
               <div className="rounded-lg border border-accent-400/20 bg-accent-500/10 px-4 py-3 text-center">
                 <p className="text-sm text-accent-300">
-                  Resume onboarding — you left off at step {obStep + 1}.
+                  Resume onboarding - you left off at step {obStep + 1}.
                 </p>
                 <button
                   onClick={handleGenerateSample}

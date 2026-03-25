@@ -432,7 +432,7 @@ POST https://trucore.xyz/api/bot-feedback
             <code className="font-mono text-slate-200">recipes_v2_hash</code>, the{" "}
             <code className="font-mono text-slate-200">openclaw_plugin</code>{" "}
             descriptor, all endpoint paths, policy capability flags, reason codes, and
-            schema references. The file is a static JSON served directly — no runtime
+            schema references. The file is a static JSON served directly - no runtime
             coupling, Vercel CDN-cached, and always application/json.
           </p>
           <div className="space-y-1">
@@ -479,15 +479,15 @@ openclaw gateway restart`}
             <ul className="ml-5 list-disc space-y-1 text-sm text-slate-300">
               <li>
                 <code className="font-mono text-slate-200">allowNetwork=false</code>{" "}
-                — plugin cannot initiate outbound network calls unless explicitly enabled
+                - plugin cannot initiate outbound network calls unless explicitly enabled
               </li>
               <li>
                 <code className="font-mono text-slate-200">allowExecuteSafe=true</code>{" "}
-                — safe recipe steps (env + verify) can run automatically
+                - safe recipe steps (env + verify) can run automatically
               </li>
               <li>
                 <code className="font-mono text-slate-200">tools_optional=true</code>{" "}
-                — agents can call protect directly without declaring tools upfront
+                - agents can call protect directly without declaring tools upfront
               </li>
             </ul>
           </div>
@@ -736,7 +736,7 @@ ATF_ENABLE_HYPERLIQUID_POLICY=1`}
               <code className="font-mono text-sm text-slate-200">
                 GET /.well-known/atf.json
               </code>{" "}
-              — parse{" "}
+              - parse{" "}
               <code className="font-mono text-sm text-slate-200">recipes_v2</code> and
               confirm{" "}
               <code className="font-mono text-sm text-slate-200">manifest_hash</code>.
@@ -746,14 +746,14 @@ ATF_ENABLE_HYPERLIQUID_POLICY=1`}
               <code className="font-mono text-sm text-slate-200">
                 atf bootstrap --recipe bootstrap_local --format json
               </code>{" "}
-              — initializes config, runs doctor, confirms reachability.
+              - initializes config, runs doctor, confirms reachability.
             </li>
             <li>
               <strong className="text-slate-200">Protect every intent before submission.</strong>{" "}
               <code className="font-mono text-sm text-slate-200">
                 {"echo '<ExecutionRequest JSON>' | atf bot protect --stdin"}
               </code>{" "}
-              — policy evaluated deterministically before the tx is signed.
+              - policy evaluated deterministically before the tx is signed.
             </li>
             <li>
               <strong className="text-slate-200">Save each receipt.</strong> Store the
@@ -786,7 +786,7 @@ ATF_ENABLE_HYPERLIQUID_POLICY=1`}
             {[
               [
                 "Fetch /.well-known/atf.json",
-                "GET https://trucore.xyz/.well-known/atf.json — parse manifest_hash and recipes_v2.",
+                "GET https://trucore.xyz/.well-known/atf.json - parse manifest_hash and recipes_v2.",
               ],
               [
                 "Install @trucore/trucore-atf",
@@ -794,15 +794,15 @@ ATF_ENABLE_HYPERLIQUID_POLICY=1`}
               ],
               [
                 "Run atf bootstrap",
-                "atf bootstrap --format json --recipe bootstrap_local — confirms reachability and initializes config.",
+                "atf bootstrap --format json --recipe bootstrap_local - confirms reachability and initializes config.",
               ],
               [
                 "Verify receipts",
-                "atf receipts verify --last — confirms hash integrity on the most recent receipt.",
+                "atf receipts verify --last - confirms hash integrity on the most recent receipt.",
               ],
               [
                 "Generate savings report",
-                "atf report savings --last 20 — receipt-backed losses-prevented summary.",
+                "atf report savings --last 20 - receipt-backed losses-prevented summary.",
               ],
             ].map(([step, detail], i) => (
               <li

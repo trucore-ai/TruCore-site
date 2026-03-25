@@ -10,7 +10,7 @@ import path from "path";
  * fallback that always wins over any CDN ambiguity.
  *
  * The file is read from `public/.well-known/atf.json` at request time so the
- * canonical source of truth remains a single file — no duplication.
+ * canonical source of truth remains a single file - no duplication.
  */
 export async function GET() {
   const filePath = path.join(process.cwd(), "public", ".well-known", "atf.json");

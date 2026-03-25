@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  useAdminSecurityTelemetry — shared client-side hook for admin
+ *  useAdminSecurityTelemetry - shared client-side hook for admin
  *  security telemetry data.
  *
  *  Deduplicates fetches so both PublicSurfaceHealth and
@@ -10,7 +10,7 @@
  *  - Auto-refresh polling (default 30 s, configurable)
  *  - Manual refresh() with overlap protection
  *  - Retains last known good data on failure
- *  - Safe generic error state — no secrets/details leaked
+ *  - Safe generic error state - no secrets/details leaked
  * ──────────────────────────────────────────────────────────── */
 
 "use client";

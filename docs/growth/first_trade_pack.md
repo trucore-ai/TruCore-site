@@ -1,20 +1,20 @@
 # ATF First Trade Pack
 
 > Copy-paste onboarding block for first-time users.
-> Works in demo mode — no API key, no config, no setup required.
+> Works in demo mode - no API key, no config, no setup required.
 
 ---
 
 ## Run Your First Protected Trade
 
 ```bash
-# 1. Run a protected trade (demo mode — works instantly)
+# 1. Run a protected trade (demo mode - works instantly)
 npx @trucore/atf@1.4.2 trade
 
 # 2. Verify your receipt
 npx @trucore/atf@1.4.2 verify <receipt-id>
 
-# 3. Enable real trades (optional — interactive setup)
+# 3. Enable real trades (optional - interactive setup)
 npx @trucore/atf@1.4.2 setup
 
 # 4. Diagnose your setup
@@ -34,9 +34,9 @@ Decision: APPROVED
 Receipt: https://verify.trucore.xyz/tx/a3ed8521084c
 ```
 
-- **Route** — the DEX route evaluated (Jupiter)
-- **Decision** — APPROVED or DENIED based on policy checks
-- **Receipt** — verifiable proof link
+- **Route** - the DEX route evaluated (Jupiter)
+- **Decision** - APPROVED or DENIED based on policy checks
+- **Receipt** - verifiable proof link
 
 ---
 

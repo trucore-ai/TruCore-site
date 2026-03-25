@@ -51,14 +51,14 @@ Once you have real quotes, convert them into these formats:
 
 ```
 "[exact quote]"
-  — [handle], [role/category]
+  - [handle], [role/category]
 ```
 
 ### README / Landing Page
 
 ```
 > [exact quote]
-> — [handle or "early user"]
+> - [handle or "early user"]
 ```
 
 ### Pitch Deck Slide
