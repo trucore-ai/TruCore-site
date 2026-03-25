@@ -77,8 +77,10 @@ export default function Home() {
               Don&apos;t let your bot blow up your wallet.
             </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
-              Protect every transaction, learn from execution history, and improve
-              how capital is deployed with deterministic intelligence and operator-gated control.
+              A new primitive for AI capital: protect every transaction, prove it
+              with cryptographic receipts, and continuously improve capital
+              deployment with deterministic intelligence, all under
+              operator-gated control.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-slate-300/80">
               A new category of AI transaction systems: policy-enforced execution with built-in intelligence.
@@ -95,15 +97,15 @@ export default function Home() {
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl px-8 py-4 text-xl font-semibold shadow-glow-accent transition-all bg-accent-500 text-neutral-950 hover:bg-accent-400 hover:shadow-lg"
               >
-                Protect Your First Trade
+                Start Protected Trade
               </TrackedLink>
               <TrackedLink
-                href="/docs/getting-started"
-                eventName="hero_docs_click"
+                href="/verify-demo"
+                eventName="hero_receipts_click"
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
               >
-                How It Works
+                View Verified Receipt
               </TrackedLink>
             </div>
 
@@ -137,6 +139,15 @@ export default function Home() {
                 className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
               >
                 Receipts
+              </TrackedLink>
+              <span aria-hidden="true" className="text-white/20">/</span>
+              <TrackedLink
+                href="/r/example"
+                eventName="hero_example_receipt_click"
+                eventProps={{ location: "atf_hero" }}
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                Example Verified Receipt
               </TrackedLink>
               <span aria-hidden="true" className="text-white/20">/</span>
               <TrackedLink
@@ -178,7 +189,7 @@ export default function Home() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { step: "1", cmd: "atf trade", desc: "Run a protected trade. Demo mode works out of the box — no API key required." },
+            { step: "1", cmd: "atf trade", desc: "Run a protected trade. Demo mode works out of the box - no API key required." },
             { step: "2", cmd: "atf setup", desc: "Connect your API key interactively. No .env editing needed." },
             { step: "3", cmd: "atf doctor", desc: "Diagnose your environment. One command checks config, connectivity, and wallet." },
             { step: "4", cmd: "atf verify", desc: "Verify and share a receipt. Human-readable share text and bot-friendly output." },
@@ -298,7 +309,7 @@ export default function Home() {
           {[
             {
               title: "First Protected Trade",
-              desc: "Run atf trade, get a receipt, verify it. One command to try — no config required. HTTP, Python, TypeScript, CLI, and OpenClaw paths also available.",
+              desc: "Run atf trade, get a receipt, verify it. One command to try - no config required. HTTP, Python, TypeScript, CLI, and OpenClaw paths also available.",
               href: "/docs/first-protected-trade",
               event: "explore_first_protected_trade_click",
             },
@@ -389,7 +400,7 @@ export default function Home() {
         </div>
       </Section>
 
-      {/* ── Start Here — Conversion Path ── */}
+      {/* ── Start Here - Conversion Path ── */}
       <Section divider className="fade-in-up fade-delay-2">
         <div className="mx-auto max-w-3xl text-center">
           <p className="section-label mb-3">Get Started</p>

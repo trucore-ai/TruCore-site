@@ -7,7 +7,7 @@ import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
-  title: "First Protected Trade — Golden Path",
+  title: "First Protected Trade - Golden Path",
   description:
     "Protect your first bot intent in minutes. Submit a swap, receive a receipt, verify the hash. HTTP, Python, TypeScript, CLI, and OpenClaw paths.",
 };
@@ -48,7 +48,7 @@ curl -sS "$BASE_URL/v1/bot/protect" \\
     }
   }'`;
 
-const PYTHON_EXAMPLE = `"""protect_golden.py — zero-dependency protect call."""
+const PYTHON_EXAMPLE = `"""protect_golden.py - zero-dependency protect call."""
 import json, urllib.request
 
 BASE_URL = "https://api.trucore.xyz"  # or http://localhost:8000
@@ -75,11 +75,11 @@ with urllib.request.urlopen(req, timeout=20) as resp:
 
 print(json.dumps(result, indent=2))
 if result.get("allow"):
-    print(f"ALLOWED — receipt hash: {result['receipt']['content_hash']}")
+    print(f"ALLOWED - receipt hash: {result['receipt']['content_hash']}")
 else:
-    print(f"DENIED — reason codes: {result.get('reason_codes', [])}")`;
+    print(f"DENIED - reason codes: {result.get('reason_codes', [])}")`;
 
-const NODE_EXAMPLE = `// protect_golden.mjs — zero-dependency protect call (Node 18+)
+const NODE_EXAMPLE = `// protect_golden.mjs - zero-dependency protect call (Node 18+)
 const BASE_URL = process.env.BASE_URL ?? "https://api.trucore.xyz";
 const intent = {
   chain_id: "solana",
@@ -103,9 +103,9 @@ const result = await res.json();
 console.log(JSON.stringify(result, null, 2));
 
 if (result.allow) {
-  console.log("ALLOWED — receipt hash:", result.receipt.content_hash);
+  console.log("ALLOWED - receipt hash:", result.receipt.content_hash);
 } else {
-  console.log("DENIED — reason codes:", result.reason_codes);
+  console.log("DENIED - reason codes:", result.reason_codes);
 }`;
 
 const RESPONSE_ALLOWED = `{
@@ -448,6 +448,7 @@ export default function FirstProtectedTradePage() {
             { title: "OpenClaw Plugin", href: "/docs/openclaw-plugin", desc: "Agent-native policy protection with 13 tools" },
             { title: "Receipt Specification", href: "/docs/receipt-specification-v1", desc: "Formal receipt contract, hash rules, version policy" },
             { title: "Receipt Verifier", href: "/verify", desc: "Paste a content_hash and verify it now" },
+            { title: "Example Verified Receipt", href: "/r/example", desc: "A stable, canonical receipt you can inspect and share" },
           ].map((item) => (
             <Link
               key={item.href}

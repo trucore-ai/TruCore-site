@@ -284,6 +284,17 @@ export default function DocsVerifyPage() {
             </TrackedLink>
             <p className="mt-1.5 text-sm text-slate-400">Review threat model, disclosure policy, and audit status.</p>
           </div>
+          <div className="docs-info-card">
+            <TrackedLink
+              href="/r/example"
+              eventName="docs_verify_next_click"
+              eventProps={{ target: "example-receipt" }}
+              className="text-base font-semibold text-primary-200 transition-colors hover:text-primary-100"
+            >
+              Example Verified Receipt
+            </TrackedLink>
+            <p className="mt-1.5 text-sm text-slate-400">A stable, canonical receipt you can inspect and share.</p>
+          </div>
         </div>
       </section>
     </article>
