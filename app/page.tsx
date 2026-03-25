@@ -17,6 +17,7 @@ import { ProductionReadinessStrip } from "@/components/production-readiness-stri
 import { LiveStatusStrip } from "@/components/home/live-status-strip";
 import { TrackedLink } from "@/components/tracked-link";
 import { Tilt } from "@/components/ui/tilt";
+import { getAtfCliVersion } from "@/lib/version";
 import truCoreBanner from "@/images/TruCore-banner-new.png";
 
 export const metadata: Metadata = {
@@ -203,12 +204,24 @@ export default function Home() {
             </Tilt>
           ))}
         </div>
-        <p className="mt-6 max-w-3xl text-sm text-slate-400">
-          The same run produces operator-friendly terminal output and bot-ready JSON with{" "}
-          <code className="text-slate-300">machine_summary</code>,{" "}
-          <code className="text-slate-300">suggested_action</code>, and{" "}
-          <code className="text-slate-300">suggested_command</code> fields.
-        </p>
+        <div className="mt-6 max-w-3xl space-y-3 text-sm text-slate-400">
+          <p>
+            Open your terminal and install the CLI globally:
+          </p>
+          <pre className="inline-block rounded-md bg-neutral-800/70 px-4 py-2 font-mono text-sm text-slate-200">
+            npm install -g @trucore/atf@{getAtfCliVersion()}
+          </pre>
+          <p>
+            Then run each <code className="text-slate-300">atf</code> command above directly in your terminal.
+            No project setup required.
+          </p>
+          <p>
+            Each command produces operator-friendly terminal output and bot-ready JSON with{" "}
+            <code className="text-slate-300">machine_summary</code>,{" "}
+            <code className="text-slate-300">suggested_action</code>, and{" "}
+            <code className="text-slate-300">suggested_command</code> fields.
+          </p>
+        </div>
       </Section>
 
       {/* ── What ATF Enforces ── */}
