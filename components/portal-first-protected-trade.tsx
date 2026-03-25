@@ -1,5 +1,5 @@
 /* ────────────────────────────────────────────────────────────────
- *  PortalFirstProtectedTrade — quick-copy activation block
+ *  PortalFirstProtectedTrade - quick-copy activation block
  *
  *  Gives portal users a practical "do this next" starting point
  *  by surfacing the canonical curl command from the documented
@@ -25,6 +25,7 @@ type Props = {
 
 const CURL_SNIPPET = `curl -sS https://api.trucore.xyz/v1/bot/protect \\
   -H "Content-Type: application/json" \\
+  -H "x-api-key: YOUR_API_KEY" \\
   -d '{
     "chain_id": "solana",
     "intent_type": "swap",
@@ -68,7 +69,7 @@ export function PortalFirstProtectedTrade({ activationState }: Props) {
       </div>
 
       <CopyBlock
-        label="curl — protect a swap intent"
+        label="curl - protect a swap intent"
         value={CURL_SNIPPET}
         copyButtonLabel="Copy"
         helperText="Replace the endpoint with your local instance if running locally. This command sends a swap intent to the firewall and returns a permit or denial with reason codes."
