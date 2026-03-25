@@ -197,8 +197,11 @@ export default function RootLayout({
         <HeroBackgroundPulses />
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="glass-surface relative bg-neutral-900/45 backdrop-blur-md">
+            <div className="absolute right-4 top-0 z-20 flex h-full items-center sm:right-6 md:right-8">
+              <HeaderAuthActions />
+            </div>
             <Container className="flex flex-col items-center gap-1 py-2.5 sm:py-0">
-              <div className="flex w-full items-center justify-between gap-2 sm:h-[4.25rem]">
+              <div className="flex w-full items-center gap-2 sm:h-[4.25rem]">
               <Link
                 href="/"
                 aria-label="TruCore home"
@@ -218,14 +221,8 @@ export default function RootLayout({
               </Link>
               <nav
                 aria-label="Primary"
-                className="hidden flex-wrap items-center justify-center gap-x-0.5 gap-y-1 text-xs font-medium text-slate-300 sm:flex sm:gap-x-1 sm:text-sm md:text-[0.9375rem]"
+                className="hidden items-center gap-x-1 text-sm font-medium text-slate-300 sm:flex md:text-[0.9375rem]"
               >
-                <Link
-                  href="/#hero"
-                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Home
-                </Link>
                 <Link
                   href="/docs"
                   className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
@@ -243,24 +240,6 @@ export default function RootLayout({
                   className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
                   Receipts
-                </Link>
-                <Link
-                  href="/#verify"
-                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Verify
-                </Link>
-                <Link
-                  href="/#integrations"
-                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Integrations
-                </Link>
-                <Link
-                  href="/#why-trucore"
-                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Why TruCore
                 </Link>
                 <Link
                   href="/pricing"
@@ -281,9 +260,6 @@ export default function RootLayout({
                   Try ATF
                 </Link>
               </nav>
-              <div className="shrink-0">
-                <HeaderAuthActions />
-              </div>
               </div>
             </Container>
             <div className="gradient-divider absolute inset-x-0 bottom-0" aria-hidden="true" />

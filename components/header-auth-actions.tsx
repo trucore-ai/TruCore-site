@@ -25,12 +25,20 @@ export function HeaderAuthActions() {
 
   if (authed) {
     return (
-      <Link
-        href="/customer/dashboard"
-        className="rounded-lg bg-accent-500 px-4 py-1.5 text-xs font-semibold text-neutral-950 transition-all duration-200 hover:bg-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 sm:text-sm"
-      >
-        View Dashboard
-      </Link>
+      <div className="flex items-center gap-2">
+        <Link
+          href="/signup"
+          className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-300 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 sm:text-sm"
+        >
+          Sign Up
+        </Link>
+        <Link
+          href="/customer/dashboard"
+          className="rounded-lg bg-accent-500 px-4 py-1.5 text-xs font-semibold text-neutral-950 transition-all duration-200 hover:bg-accent-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 sm:text-sm"
+        >
+          Dashboard
+        </Link>
+      </div>
     );
   }
 
