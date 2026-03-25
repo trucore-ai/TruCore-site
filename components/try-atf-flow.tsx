@@ -1,10 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { trackEvent } from "@/lib/analytics";
+import { isLoggedIn } from "@/lib/customer-auth";
+
+// ---------------------------------------------------------------------------
+// Auth detection (mirrors header-auth-actions pattern)
+// ---------------------------------------------------------------------------
+
+const subscribeAuth = () => () => {};
+function getAuthSnapshot(): boolean | null {
+  return isLoggedIn();
+}
+function getAuthServerSnapshot(): boolean | null {
+  return null;
+}
 
 // ---------------------------------------------------------------------------
 // Same-origin proxy routes used for sandbox calls (avoids CORS on api.trucore.xyz)
@@ -89,6 +102,13 @@ export function TryAtfFlow() {
   const [result, setResult] = useState<ProtectResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [copiedShare, setCopiedShare] = useState(false);
+
+  const authed = useSyncExternalStore(
+    subscribeAuth,
+    getAuthSnapshot,
+    getAuthServerSnapshot,
+  );
 
   // Track page view once on mount
   useEffect(() => {
@@ -178,6 +198,12 @@ export function TryAtfFlow() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
+      {/* ── Explainer ── */}
+      <p className="text-sm text-slate-400">
+        ATF evaluates the trade against policy and returns a deterministic
+        decision with a verifiable receipt.
+      </p>
+
       {/* ── Step 1: Generate Sample ── */}
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">
@@ -311,36 +337,108 @@ export function TryAtfFlow() {
             </pre>
           </Card>
 
-          {/* CTA */}
+          {/* CTA - auth-aware handoff */}
           <div className="rounded-xl border border-accent-500/30 bg-accent-500/5 p-6">
             <p className="text-lg font-semibold text-accent-300">
               Your first receipt is ready.
             </p>
             <p className="mt-2 text-sm text-slate-300">
-              This was a sandbox trade. Create an account to protect real trades,
-              store receipts, and get your API key.
+              This was a sandbox trade. Take the next step to protect real
+              trades, store receipts, and get your API key.
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-4">
+              {authed ? (
+                <>
+                  <Link
+                    href="/customer/dashboard"
+                    onClick={() => {
+                      trackEvent("try_dashboard_cta_clicked");
+                      sendFunnelEvent("try_dashboard_cta_clicked");
+                    }}
+                    className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-8 py-3 text-base font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
+                  >
+                    View Dashboard
+                  </Link>
+                  <Link
+                    href="/verify-demo"
+                    onClick={() => {
+                      trackEvent("try_verify_cta_clicked");
+                      sendFunnelEvent("try_verify_cta_clicked");
+                    }}
+                    className="inline-flex items-center text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+                  >
+                    View Verified Receipt &rarr;
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/signup"
+                    onClick={() => {
+                      trackEvent("try_signup_cta_clicked");
+                      sendFunnelEvent("try_signup_cta_clicked");
+                    }}
+                    className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-8 py-3 text-base font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
+                  >
+                    Create an Account
+                  </Link>
+                  <Link
+                    href="/verify-demo"
+                    onClick={() => {
+                      trackEvent("try_verify_cta_clicked");
+                      sendFunnelEvent("try_verify_cta_clicked");
+                    }}
+                    className="inline-flex items-center text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+                  >
+                    View Verified Receipt &rarr;
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Receipt proof actions */}
+          <div className="mt-2 space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">
+              Proof Actions
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
               <Link
-                href="/signup"
+                href="/verify-demo"
                 onClick={() => {
-                  trackEvent("try_signup_cta_clicked");
-                  sendFunnelEvent("try_signup_cta_clicked");
+                  trackEvent("try_proof_verify_demo_clicked");
+                  sendFunnelEvent("try_proof_verify_demo_clicked");
                 }}
-                className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-8 py-3 text-base font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
+                className="inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
               >
-                Create Free Account
+                Open Verification Demo
               </Link>
               <Link
-                href="/docs/getting-started"
+                href="/r/example"
                 onClick={() => {
-                  trackEvent("try_docs_cta_clicked");
-                  sendFunnelEvent("try_docs_cta_clicked");
+                  trackEvent("try_proof_example_receipt_clicked");
+                  sendFunnelEvent("try_proof_example_receipt_clicked");
                 }}
-                className="inline-flex items-center text-sm font-semibold text-primary-200 transition-colors hover:text-primary-100"
+                className="inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
               >
-                Read how it works &rarr;
+                Open Example Receipt
               </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard
+                    .writeText("https://www.trucore.xyz/verify-demo?share=1")
+                    .then(() => {
+                      setCopiedShare(true);
+                      setTimeout(() => setCopiedShare(false), 2000);
+                    });
+                  trackEvent("try_proof_copy_share_clicked");
+                  sendFunnelEvent("try_proof_copy_share_clicked");
+                }}
+                className="inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
+              >
+                {copiedShare ? "\u2713 Copied" : "Copy Share Link"}
+              </button>
             </div>
           </div>
 
