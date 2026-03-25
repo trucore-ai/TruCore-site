@@ -8,6 +8,7 @@ import {
 } from "@/lib/partner-portal";
 import { derivePortalActivationState } from "@/lib/portal-activation";
 import { PortalActivationGuide } from "@/components/portal-activation-guide";
+import { PortalActivationProgress } from "@/components/portal-activation-progress";
 import { PortalFirstProtectedTrade } from "@/components/portal-first-protected-trade";
 import { PortalCreateKeyGuide } from "@/components/portal-create-key-guide";
 import { PortalVerifyPanel } from "@/components/portal-verify-panel";
@@ -88,6 +89,8 @@ export default async function PartnerPortalPage() {
               <span className="text-slate-400">Project:</span> {projectName}
             </p>
           </div>
+
+          <PortalActivationProgress activation={activation} />
         </header>
 
         {/* ── API-key-aware activation guidance ─────────────────
@@ -239,7 +242,7 @@ export default async function PartnerPortalPage() {
 
         {/* ── Future premium analytics sections ─────────────────
          *  Gated by entitlement. Preview/paid/bundled tenants
-         *  see these. Inactive tenants silently see nothing —
+         *  see these. Inactive tenants silently see nothing  - 
          *  no paywall, no upgrade prompt.
          *
          *  Currently all portal tenants are design-partner preview
