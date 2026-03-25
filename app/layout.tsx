@@ -201,7 +201,7 @@ export default function RootLayout({
               <HeaderAuthActions />
             </div>
             <Container className="flex flex-col items-center gap-1 py-2.5 sm:py-0">
-              <div className="flex w-full items-center gap-2 sm:h-[4.25rem]">
+              <div className="flex w-full items-center gap-6 sm:h-[4.25rem]">
               <Link
                 href="/"
                 aria-label="TruCore home"
