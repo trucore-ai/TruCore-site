@@ -44,6 +44,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  let bodyText: string;
+  try {
+    bodyText = await req.text();
+  } catch {
+    bodyText = "{}";
+  }
+
   const upstream = `${getAtfApiBase()}/auth/verify-email/request`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -55,6 +62,7 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
         Authorization: authHeader,
       },
+      body: bodyText,
       signal: controller.signal,
     });
     clearTimeout(timer);

@@ -512,9 +512,12 @@ export interface VerificationStatus {
   verification_pending: boolean;
 }
 
-export async function requestVerificationEmail(): Promise<{ status: string }> {
+export async function requestVerificationEmail(email?: string): Promise<{ status: string }> {
   const token = getToken();
   if (!token) throw new Error("Not authenticated");
+
+  const payload: Record<string, string> = {};
+  if (email) payload.email = email;
 
   const res = await fetch(`${AUTH_PROXY_BASE}/verify-email/request`, {
     method: "POST",
@@ -522,7 +525,7 @@ export async function requestVerificationEmail(): Promise<{ status: string }> {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({}),
+    body: JSON.stringify(payload),
   });
 
   if (res.status === 401) {

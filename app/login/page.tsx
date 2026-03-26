@@ -44,7 +44,7 @@ export default function LoginPage() {
     setResendSuccess(false);
     setError("");
     try {
-      await requestVerificationEmail();
+      await requestVerificationEmail(email);
       setResendSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Verification email is temporarily unavailable. Please try again shortly.");
