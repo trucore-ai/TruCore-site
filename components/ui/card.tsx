@@ -11,7 +11,7 @@ type CardProps = {
 export function Card({ children, className = "" }: CardProps) {
   return (
     <article
-      className={`glass-panel h-full rounded-xl p-8 ${className}`.trim()}
+      className={`glass-panel h-full rounded-2xl border bg-background p-6 shadow-sm transition-all duration-150 hover:shadow-md ${className}`.trim()}
     >
       <GlassFrontOverlay />
       <div className="glass-hover-flash" />

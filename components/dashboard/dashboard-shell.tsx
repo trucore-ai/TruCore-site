@@ -129,12 +129,12 @@ export function DashboardShell({ initial }: Props) {
   }, [lastRefresh]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* ── Page header ─────────────────────────────────────── */}
       <div>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-50">
+            <h1 className="text-lg font-semibold tracking-tight text-slate-50">
               Operator Dashboard
             </h1>
             <p className="mt-1 text-[13px] leading-relaxed text-slate-500">
@@ -166,7 +166,7 @@ export function DashboardShell({ initial }: Props) {
       />
 
       {/* ── Attention Queue + Top Changes ───────────────────── */}
-      <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
+      <div className="grid gap-6 lg:grid-cols-2">
         <AttentionQueue items={queueItems} />
         <TopChanges items={changeItems} />
       </div>
@@ -236,7 +236,7 @@ export function DashboardShell({ initial }: Props) {
       </section>
 
       {/* ── Enforcement + Activity (2-col on lg) ────────────── */}
-      <div className="grid gap-5 lg:grid-cols-2 lg:gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         <section id="enforcement" className="scroll-mt-6" aria-label="Enforcement posture">
           {renderSection(
             data.enforcement,

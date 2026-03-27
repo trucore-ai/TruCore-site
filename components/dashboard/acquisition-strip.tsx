@@ -37,7 +37,7 @@ export async function AcquisitionStrip() {
 
   if (!data || data.total_signups === 0) {
     return (
-      <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 shadow-sm transition-all duration-150 hover:shadow-md">
         <p className="text-xs text-slate-600">
           Acquisition funnel data not available. Waitlist signups will
           appear here once builders start applying.
@@ -60,9 +60,9 @@ export async function AcquisitionStrip() {
   const progressStateSummary = computeProgressStateSummary(progressRows);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h3 className="text-lg font-semibold text-slate-200">
           Top-of-Funnel Acquisition
         </h3>
         <a
@@ -181,7 +181,7 @@ function Chip({
 }) {
   return (
     <div
-      className={`rounded-lg border px-3 py-2 ${
+      className={`rounded-2xl border px-4 py-3 shadow-sm transition-all duration-150 hover:shadow-md ${
         accent
           ? "border-primary-300/15 bg-primary-500/[0.04]"
           : "border-white/10 bg-white/5"

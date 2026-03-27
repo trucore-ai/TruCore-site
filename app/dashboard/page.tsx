@@ -56,11 +56,11 @@ export default async function DashboardPage() {
   return (
     <Container>
       <Section className="fade-in-up">
-        <div className="mx-auto max-w-5xl space-y-6">
+        <div className="mx-auto max-w-5xl space-y-8">
           {/* Server-rendered acquisition funnel (site DB, not ATF) */}
           <section
             id="acquisition"
-            className="scroll-mt-6 rounded-lg border border-white/10 bg-white/[0.02] p-4"
+            className="scroll-mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-6 shadow-sm transition-all duration-150 hover:shadow-md"
             aria-label="Acquisition funnel"
           >
             <AcquisitionStrip />

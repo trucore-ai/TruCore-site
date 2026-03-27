@@ -190,7 +190,7 @@ export function StatusLiveChecks() {
   }, [hasFailures, isLoading]);
 
   const indicatorClass = (level: StatusLevel) => {
-    const base = "h-2.5 w-2.5 rounded-full";
+    const base = "h-2 w-2 rounded-full";
 
     if (level === "ok") return `${base} bg-emerald-400`;
     if (level === "warn") return `${base} bg-orange-400`;
@@ -201,7 +201,7 @@ export function StatusLiveChecks() {
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-3xl font-bold text-accent-300">Current Status</h2>
+        <h2 className="text-lg font-semibold text-accent-300">Current Status</h2>
         <Badge className={statusBadge.className}>{statusBadge.label}</Badge>
       </div>
 
@@ -213,13 +213,13 @@ export function StatusLiveChecks() {
         {checks.map((check) => (
           <div
             key={check.label}
-            className="glass-panel flex flex-wrap items-center justify-between gap-3 rounded-lg px-5 py-3"
+            className="glass-panel flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-background px-6 py-4 shadow-sm transition-all duration-150 hover:shadow-md"
           >
             <div className="min-w-0">
-              <p className="text-xl text-slate-200">{check.label}</p>
+              <p className="text-base font-semibold text-slate-200">{check.label}</p>
               <p className="text-sm text-slate-400 break-words">{check.details}</p>
             </div>
-            <span className="inline-flex items-center gap-2 text-sm text-slate-300">
+            <span className="inline-flex items-center gap-2 whitespace-nowrap text-sm text-slate-300">
               <span aria-hidden="true" className={indicatorClass(check.level)} />
               {check.level === "ok"
                 ? "Healthy"
@@ -237,7 +237,7 @@ export function StatusLiveChecks() {
         <Button
           type="button"
           variant="secondary"
-          className="px-5 py-2 text-base"
+          className="text-sm"
           onClick={() => {
             void runChecks();
           }}

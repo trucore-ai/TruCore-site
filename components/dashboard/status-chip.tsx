@@ -115,15 +115,15 @@ export function StatusChip({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${p.bg} ${p.text} ${p.border} ${className}`.trim()}
+      className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize ${p.bg} ${p.text} ${p.border} ${className}`.trim()}
     >
-      <span className="relative flex h-1.5 w-1.5">
+      <span className="relative flex h-2 w-2">
         {pulse && (
           <span
             className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 ${p.dot}`}
           />
         )}
-        <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${p.dot}`} />
+        <span className={`relative inline-flex h-2 w-2 rounded-full ${p.dot}`} />
       </span>
       {displayLabel}
     </span>
