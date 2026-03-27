@@ -13,6 +13,7 @@ const NO_STORE = { "Cache-Control": "no-store" } as const;
 
 function getAtfApiBase(): string {
   return (
+    process.env.FIREWALL_API_BASE_URL?.replace(/\/+$/, "") ??
     process.env.NEXT_PUBLIC_ATF_API_URL?.replace(/\/+$/, "") ??
     "https://api.trucore.xyz"
   );
