@@ -133,7 +133,7 @@ export function DashboardShell({ initial }: Props) {
       {/* ── Page header ─────────────────────────────────────── */}
       <div>
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold tracking-tight text-slate-50">
               Operator Dashboard
             </h1>
@@ -141,12 +141,12 @@ export function DashboardShell({ initial }: Props) {
               Platform-wide system health, enforcement posture, and tenant overview &mdash; operator access only
             </p>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-primary-300/10 bg-primary-500/[0.04] px-3.5 py-1.5">
+          <div className="flex max-w-full flex-wrap items-center gap-2 rounded-full border border-primary-300/10 bg-primary-500/[0.04] px-3.5 py-1.5">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
             </span>
-            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
+            <span className="break-words text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
               Live &middot; Updated {formatSecondsAgo(secondsAgo)} &middot; Polling every 5s
             </span>
           </div>

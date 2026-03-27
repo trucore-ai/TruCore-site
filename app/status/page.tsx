@@ -18,7 +18,7 @@ export default function StatusPage() {
     <Container>
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
+          <h1 className="text-3xl font-bold tracking-tight text-accent-200 sm:text-4xl lg:text-5xl">
             System Status
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
@@ -90,11 +90,11 @@ export default function StatusPage() {
           </Card>
 
           {/* Release Metadata */}
-          <div className="glass-panel rounded-xl p-6 text-center">
+          <div className="glass-panel rounded-xl p-6 text-center break-words">
             <p className="text-sm text-slate-400">Release metadata</p>
             <p className="mt-2 text-sm text-slate-300">
               Commit:{" "}
-              <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-slate-300">
+              <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-xs text-slate-300 break-all">
                 {release.siteCommit ?? "unavailable"}
               </code>
             </p>

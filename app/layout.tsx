@@ -140,7 +140,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden antialiased`}
       >
         <Script id="trucore-motion-preference-init" strategy="beforeInteractive">
           {`(function() {
@@ -265,7 +265,7 @@ export default function RootLayout({
             <div className="gradient-divider absolute inset-x-0 bottom-0" aria-hidden="true" />
           </header>
 
-          <main id="main" className="flex-1">
+          <main id="main" className="min-w-0 flex-1">
             {children}
           </main>
 

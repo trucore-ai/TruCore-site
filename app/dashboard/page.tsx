@@ -56,7 +56,7 @@ export default async function DashboardPage() {
   return (
     <Container>
       <Section className="fade-in-up">
-        <div className="mx-auto max-w-7xl space-y-6">
+        <div className="mx-auto max-w-5xl space-y-6">
           {/* Server-rendered acquisition funnel (site DB, not ATF) */}
           <section
             id="acquisition"

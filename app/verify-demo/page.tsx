@@ -185,7 +185,7 @@ function VerifyDemoContent() {
       <Section className="fade-in-up">
         <div className="max-w-3xl">
           <Badge className="mb-4">{isFallback ? "Example" : "Live Demo"}</Badge>
-          <h1 className="text-4xl font-bold tracking-tight text-accent-300 sm:text-5xl">
+          <h1 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl lg:text-5xl">
             Instant Verified Receipt
           </h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
@@ -274,36 +274,38 @@ function VerifyDemoContent() {
                 Deterministic result - the same input always produces the same
                 decision and receipt hash.
               </p>
-              <button
-                type="button"
-                onClick={handleCopyShareLink}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
-              >
-                {copied ? "✓ Copied" : "Copy Share Link"}
-              </button>
-              <a
-                href="/api/verify-demo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 ml-3 inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
-              >
-                Agent JSON
-              </a>
-              <button
-                type="button"
-                onClick={handleCopyAgentJsonUrl}
-                className="mt-4 ml-3 inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
-              >
-                {copiedAgentUrl ? "✓ Copied" : "Copy Agent JSON URL"}
-              </button>
-              <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("Just ran a protected trade through ATF.\n\nPolicy enforced.\nDeterministic decision.\nCryptographic receipt.\n\nThis is what AI transaction safety should look like:\nhttps://www.trucore.xyz/verify-demo?share=1")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 ml-3 inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
-              >
-                Share on X
-              </a>
+              <div className="mt-4 flex flex-wrap items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={handleCopyShareLink}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
+                >
+                  {copied ? "✓ Copied" : "Copy Share Link"}
+                </button>
+                <a
+                  href="/api/verify-demo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
+                >
+                  Agent JSON
+                </a>
+                <button
+                  type="button"
+                  onClick={handleCopyAgentJsonUrl}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
+                >
+                  {copiedAgentUrl ? "✓ Copied" : "Copy Agent JSON URL"}
+                </button>
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("Just ran a protected trade through ATF.\n\nPolicy enforced.\nDeterministic decision.\nCryptographic receipt.\n\nThis is what AI transaction safety should look like:\nhttps://www.trucore.xyz/verify-demo?share=1")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-primary-300/20 bg-primary-500/10 px-3 py-1.5 text-xs font-medium text-primary-200 transition-colors hover:bg-primary-500/20"
+                >
+                  Share on X
+                </a>
+              </div>
             </Card>
 
             {/* Full Receipt JSON */}

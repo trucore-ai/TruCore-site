@@ -213,11 +213,11 @@ export function StatusLiveChecks() {
         {checks.map((check) => (
           <div
             key={check.label}
-            className="glass-panel flex items-center justify-between rounded-lg px-5 py-3"
+            className="glass-panel flex flex-wrap items-center justify-between gap-3 rounded-lg px-5 py-3"
           >
-            <div>
+            <div className="min-w-0">
               <p className="text-xl text-slate-200">{check.label}</p>
-              <p className="text-sm text-slate-400">{check.details}</p>
+              <p className="text-sm text-slate-400 break-words">{check.details}</p>
             </div>
             <span className="inline-flex items-center gap-2 text-sm text-slate-300">
               <span aria-hidden="true" className={indicatorClass(check.level)} />

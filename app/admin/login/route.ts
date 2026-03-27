@@ -24,8 +24,8 @@ const LOGIN_HTML = `<!DOCTYPE html>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{min-height:100vh;display:flex;align-items:center;justify-content:center;
-      background:#0a0a0a;color:#e2e8f0;font-family:system-ui,sans-serif}
-    .card{width:100%;max-width:360px;padding:2rem;border-radius:0.75rem;
+      overflow-x:hidden;padding:1rem;background:#0a0a0a;color:#e2e8f0;font-family:system-ui,sans-serif}
+    .card{width:min(100%,360px);padding:2rem;border-radius:0.75rem;
       border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03)}
     h1{font-size:1.25rem;font-weight:600;margin-bottom:1.5rem;text-align:center}
     label{display:block;font-size:0.75rem;color:#94a3b8;margin-bottom:0.25rem}

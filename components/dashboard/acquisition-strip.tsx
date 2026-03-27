@@ -61,7 +61,7 @@ export async function AcquisitionStrip() {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
           Top-of-Funnel Acquisition
         </h3>

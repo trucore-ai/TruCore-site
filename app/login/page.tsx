@@ -55,7 +55,7 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full min-w-0 max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-slate-100">
             Sign in to TruCore
@@ -76,7 +76,7 @@ export default function LoginPage() {
                 Verification email requested. It should arrive shortly.
               </p>
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleResend}
                 disabled={resending}
