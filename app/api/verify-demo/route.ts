@@ -47,7 +47,8 @@ export async function GET(req: NextRequest) {
       signal: controller.signal,
     });
     if (!intentRes.ok) throw new Error(`sample-intent ${intentRes.status}`);
-    const intent: unknown = await intentRes.json();
+    const intentBody = await intentRes.json();
+    const intent = (intentBody as Record<string, unknown>).intent ?? intentBody;
 
     const protectRes = await fetch(`${base}/sandbox/protect`, {
       method: "POST",
