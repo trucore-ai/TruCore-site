@@ -18,6 +18,10 @@ type SnapshotPayload = {
   ts: string;
   commit: string | null;
   env: string | null;
+  firewall_api?: {
+    configured: boolean;
+    reachable: boolean;
+  };
 };
 
 function formatTimestamp(value: Date | null) {
@@ -37,6 +41,11 @@ export function StatusLiveChecks() {
       label: "Health Endpoint",
       level: "loading",
       details: "Checking /api/health",
+    },
+    {
+      label: "Firewall API",
+      level: "loading",
+      details: "Checking backend reachability",
     },
   ]);
   const [snapshot, setSnapshot] = useState<SnapshotPayload | null>(null);
@@ -73,6 +82,7 @@ export function StatusLiveChecks() {
     let websiteOk = false;
     let healthOk = false;
     let snapshotOk = false;
+    let snapshotData: SnapshotPayload | null = null;
 
     if (websiteResult.status === "fulfilled") {
       websiteOk = websiteResult.value.ok;
@@ -85,12 +95,15 @@ export function StatusLiveChecks() {
     if (snapshotResult.status === "fulfilled") {
       snapshotOk = snapshotResult.value.ok;
       if (snapshotResult.value.ok) {
-        const data = (await snapshotResult.value.json()) as SnapshotPayload;
-        setSnapshot(data);
+        snapshotData = (await snapshotResult.value.json()) as SnapshotPayload;
+        setSnapshot(snapshotData);
       }
     } else {
       setSnapshot(null);
     }
+
+    const firewallConfigured = snapshotData?.firewall_api?.configured ?? false;
+    const firewallReachable = snapshotData?.firewall_api?.reachable ?? false;
 
     const nextChecks: LiveCheck[] = [
       {
@@ -115,6 +128,23 @@ export function StatusLiveChecks() {
         label: "Health Endpoint",
         level: healthOk ? "ok" : "down",
         details: healthOk ? "/api/health responded with 200" : "/api/health probe failed",
+      },
+      {
+        label: "Firewall API",
+        level: !snapshotOk
+          ? "down"
+          : firewallReachable
+            ? "ok"
+            : firewallConfigured
+              ? "warn"
+              : "down",
+        details: !snapshotOk
+          ? "Unable to retrieve backend status"
+          : firewallReachable
+            ? "Backend reachable and responding"
+            : firewallConfigured
+              ? "Configured but not responding"
+              : "Not configured",
       },
     ];
 
@@ -171,7 +201,7 @@ export function StatusLiveChecks() {
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-3xl font-bold text-accent-300">Live Checks</h2>
+        <h2 className="text-3xl font-bold text-accent-300">Current Status</h2>
         <Badge className={statusBadge.className}>{statusBadge.label}</Badge>
       </div>
 
