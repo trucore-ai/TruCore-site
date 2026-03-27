@@ -21,13 +21,13 @@ import { getAtfCliVersion } from "@/lib/version";
 import truCoreBanner from "@/images/TruCore-banner-new.png";
 
 export const metadata: Metadata = {
-  title: "TruCore | Intelligent Control for AI Transactions",
+  title: "TruCore | Policy-Enforced Protection for AI Agents",
   description:
-    "Protect every transaction, learn from execution history, and improve how capital is deployed with deterministic intelligence and operator-gated control.",
+    "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
   openGraph: {
-    title: "TruCore | Intelligent Control for AI Transactions",
+    title: "TruCore | Policy-Enforced Protection for AI Agents",
     description:
-      "Protect every transaction, learn from execution history, and improve how capital is deployed with deterministic intelligence and operator-gated control.",
+      "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
     images: [
       {
         url: "/opengraph-image",
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TruCore | Intelligent Control for AI Transactions",
+    title: "TruCore | Policy-Enforced Protection for AI Agents",
     description:
-      "Protect every transaction, learn from execution history, and improve how capital is deployed with deterministic intelligence and operator-gated control.",
+      "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
     images: ["/opengraph-image"],
   },
 };
@@ -69,25 +69,19 @@ export default function Home() {
           />
           <div className="relative z-10 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
-              Solana-native enforcement, multi-chain expanding
+              For Solana AI agents and trading bots
             </p>
             <h1 className="mt-4 text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
-              Intelligent Control for AI Transactions
+              Protect Every Transaction
             </h1>
             <p className="mt-6 text-2xl font-semibold text-amber-200/90">
-              Don&apos;t let your bot blow up your wallet.
+              Policy enforced before execution. Verified receipt after decision.
             </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
-              A new primitive for AI capital: protect every transaction, prove it
-              with cryptographic receipts, and continuously improve capital
-              deployment with deterministic intelligence, all under
-              operator-gated control.
+              TruCore adds a tamper-evident layer to AI agent transactions on Solana. Set policy rules, verify decisions with cryptographic receipts, and prove what your bot did.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-slate-300/80">
-              A new category of AI transaction systems: policy-enforced execution with built-in intelligence.
-            </p>
-            <p className="mt-2 text-base text-slate-400">
-              Built for trading bot developers, AI agent builders, and DeFi protocol integrators on Solana.
+              No signup required. No wallet access. Built for traders, protocol teams, and agent builders.
             </p>
 
             {/* CTAs */}
@@ -98,7 +92,7 @@ export default function Home() {
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl px-8 py-4 text-xl font-semibold shadow-glow-accent transition-all bg-accent-500 text-neutral-950 hover:bg-accent-400 hover:shadow-lg"
               >
-                Start Protected Trade
+                Try the Demo
               </TrackedLink>
               <TrackedLink
                 href="/verify-demo"
@@ -106,12 +100,12 @@ export default function Home() {
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
               >
-                View Verified Receipt
+                Verify a Receipt
               </TrackedLink>
             </div>
 
             <p className="mt-6 text-base text-slate-300/80">
-              No signup required. No wallet access. Every decision produces a tamper-evident receipt.
+              No signup or wallet required. See a real protected trade and cryptographic receipt.
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
@@ -170,7 +164,7 @@ export default function Home() {
         <SecurityIntegrityStrip />
         <LiveStatusStrip />
         <p className="mt-2 text-center text-[13px] leading-relaxed text-slate-400/70">
-          Solana-native enforcement infrastructure with live API, tamper-evident receipts, and deployable control-plane services.
+          Live API enforcement on Solana. Every policy decision creates a verifiable receipt. Status reflects real system state.
         </p>
         <p className="pt-1 text-right text-xs text-slate-500/60">
           Last updated: {lastUpdated}

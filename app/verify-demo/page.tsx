@@ -110,14 +110,14 @@ function VerifyDemoContent() {
                 <div className="flex items-center justify-center gap-2">
                   <span className="inline-block h-3 w-3 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,.5)]" />
                   <span className="text-sm font-semibold uppercase tracking-wider text-green-300">
-                    Verified by ATF
+                    ATF Verified
                   </span>
                 </div>
 
                 {/* Decision */}
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-wider text-primary-200">
-                    Decision
+                    Policy Decision
                   </p>
                   <p
                     className={`mt-2 text-5xl font-bold ${
@@ -161,7 +161,7 @@ function VerifyDemoContent() {
                                   : "bg-red-400"
                               }`}
                             />
-                            {(rule as Record<string, string>).policy ?? "—"}
+                            {(rule as Record<string, string>).policy ?? "-"}
                           </li>
                         ))}
                       </ul>
@@ -186,11 +186,13 @@ function VerifyDemoContent() {
         <div className="max-w-3xl">
           <Badge className="mb-4">{isFallback ? "Example" : "Live Demo"}</Badge>
           <h1 className="text-4xl font-bold tracking-tight text-accent-300 sm:text-5xl">
-            Instant Verified Receipt
+            Live Protected Trade Receipt
           </h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            A real ATF policy decision and cryptographic receipt, generated in
-            real time - no signup, no wallet required.
+            A real policy-enforced decision from ATF, generated live with a cryptographic receipt proving what happened. No signup. No wallet required.
+          </p>
+          <p className="mt-3 text-base text-slate-400">
+            This is a real transaction evaluated in real time. Every decision is deterministic: the same input always produces the same decision and receipt.
           </p>
         </div>
 
@@ -208,8 +210,7 @@ function VerifyDemoContent() {
             {/* Fallback notice */}
             {isFallback && (
               <div className="rounded-lg border border-amber-500/20 bg-amber-950/10 px-4 py-3 text-sm text-amber-200/90">
-                Live demo temporarily unavailable. Showing a verified example
-                receipt.
+                Live demo temporarily unavailable. Showing a verified example receipt from recent execution.
               </div>
             )}
 
@@ -271,8 +272,7 @@ function VerifyDemoContent() {
                 </p>
               )}
               <p className="mt-2 text-sm text-slate-400">
-                Deterministic result - the same input always produces the same
-                decision and receipt hash.
+                This hash is deterministic: the same policy-protected transaction always produces the same receipt and hash.
               </p>
               <button
                 type="button"
@@ -322,18 +322,17 @@ function VerifyDemoContent() {
         {!loading && result && (
           <div className="mt-16 rounded-2xl border border-primary-300/20 bg-primary-500/[0.04] px-6 py-10 text-center sm:px-10">
             <h2 className="text-2xl font-bold tracking-tight text-primary-100 sm:text-3xl">
-              Now try protected execution
+              Ready to protect your transactions?
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base text-slate-300">
-              See how ATF evaluates a sample trade in real time, or create an
-              account to continue into the dashboard.
+              Try a protected trade or inspect this receipt further.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button href="/try" variant="primary" size="default">
-                Protect a Sample Trade
+                Try Protected Trade
               </Button>
-              <Button href="/signup" variant="secondary" size="default">
-                Create an Account
+              <Button href="/docs/receipt-specification-v1" variant="secondary" size="default">
+                Learn Receipt Format
               </Button>
             </div>
           </div>
