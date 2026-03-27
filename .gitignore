@@ -48,3 +48,6 @@ next-env.d.ts
 # proof generation output (ephemeral)
 docs/growth/proof-output/
 .env*.local
+
+# stray debug/verify scripts
+_verify_key.mjs

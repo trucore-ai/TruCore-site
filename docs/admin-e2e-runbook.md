@@ -77,7 +77,7 @@ curl -s -o /dev/null -w '%{http_code}' -X POST \
 
 | Test | What it verifies |
 |---|---|
-| Logged-out redirect | Unauthenticated → middleware redirects to `/admin/login` |
+| Logged-out redirect | Unauthenticated → proxy (formerly middleware) redirects to `/admin/login` |
 | Login page accessible | `/admin/login` serves the form |
 | Invalid credentials denied | Wrong key → no cookie, stays on login |
 | Authenticated lifecycle | Login → cookie set (HttpOnly, Strict, /admin) → API access → logout → session revoked |
