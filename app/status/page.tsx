@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { StatusLiveChecks } from "@/components/status-live-checks";
 import { getReleaseMetadata } from "@/lib/version";
 
@@ -11,12 +10,6 @@ export const metadata: Metadata = {
   description:
     "Current operational status of TruCore systems, monitoring details, and incident reporting information.",
 };
-
-const systems = [
-  { name: "Website", status: "Operational" },
-  { name: "Waitlist API", status: "Operational" },
-  { name: "Admin Tools", status: "Operational" },
-];
 
 export default function StatusPage() {
   const release = getReleaseMetadata();
@@ -36,25 +29,7 @@ export default function StatusPage() {
 
       <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-8">
-          {/* Current Status */}
-          <Card>
-            <h2 className="text-3xl font-bold text-accent-300">
-              Current Status
-            </h2>
-            <div className="mt-4 space-y-3">
-              {systems.map((sys) => (
-                <div
-                  key={sys.name}
-                  className="glass-panel flex items-center justify-between rounded-lg px-5 py-3"
-                >
-                  <span className="text-xl text-slate-200">{sys.name}</span>
-                  <Badge className="bg-emerald-600/20 text-emerald-300 border-emerald-500/30">
-                    {sys.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <StatusLiveChecks />
 
           {/* Monitoring */}
           <Card>
@@ -71,8 +46,6 @@ export default function StatusPage() {
               These checks run in your browser, no personal data is sent.
             </p>
           </Card>
-
-          <StatusLiveChecks />
 
           {/* Incident Reporting */}
           <Card>
