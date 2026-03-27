@@ -42,7 +42,7 @@ export default function DocsHubPage() {
           >
             First Protected Trade
           </Link>
-          {" "}&mdash; protect an intent, get a receipt, and verify it in minutes. See{" "}
+          {" "}to protect an intent, get a receipt, and verify it in minutes. See{" "}
           <Link
             href="/docs/surfaces"
             className="font-semibold text-primary-200 transition-colors hover:text-primary-100"

@@ -31,13 +31,13 @@ export const sections: DocsNavSection[] = [
         title: "Integration Surfaces",
         href: "/docs/surfaces",
         description:
-          "API, CLI, and OpenClaw plugin — capabilities, maturity, and when to use each surface.",
+          "API, CLI, and OpenClaw plugin: capabilities, maturity, and when to use each surface.",
       },
       {
         title: "Plans & Feature Tiers",
         href: "/docs/plans",
         description:
-          "Free, Pro, and Enterprise — rate limits, feature availability, and feature gating.",
+          "Free, Pro, and Enterprise: rate limits, feature availability, and feature gating.",
       },
       {
         title: "Receipts & Trust",
@@ -120,7 +120,7 @@ export const sections: DocsNavSection[] = [
         title: "Latency-Positive ATF",
         href: "/docs/latency-positive-atf",
         description:
-          "How ATF evolves into a latency-positive execution layer — making protected bots faster, not slower.",
+          "How ATF evolves into a latency-positive execution layer - making protected bots faster, not slower.",
       },
       {
         title: "Perps Enforcement",

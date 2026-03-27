@@ -138,7 +138,7 @@ function UsageMeter({
       </div>
       {isExceeded && (
         <p className="text-[10px] text-red-400">
-          Limit reached &mdash;{" "}
+          Limit reached -{" "}
           <Link
             href="/pricing"
             className="underline hover:text-red-300"
@@ -149,7 +149,7 @@ function UsageMeter({
       )}
       {isWarning && !isExceeded && (
         <p className="text-[10px] text-amber-400">
-          Approaching limit &mdash;{" "}
+          Approaching limit -{" "}
           <Link
             href="/pricing"
             className="underline hover:text-amber-300"
@@ -245,7 +245,7 @@ export default function CustomerDashboardPage() {
           router.replace("/login");
         } else {
           setError(
-            err instanceof Error ? err.message : "Failed to load dashboard",
+            "Dashboard data unavailable. Refresh to try again.",
           );
         }
       });
@@ -799,7 +799,7 @@ export default function CustomerDashboardPage() {
 
           {/* Step indicators */}
           {!activationLoading && (
-            <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-xs text-slate-500">
               {["Generate", "Simulate", "Execute", "Receipt"].map(
                 (label, i) => {
                   // For restored steps, step >= i+1 means completed
@@ -822,7 +822,7 @@ export default function CustomerDashboardPage() {
                         {label}
                       </span>
                       {i < 3 && (
-                        <span className="mx-1 text-slate-600">&mdash;</span>
+                        <span className="mx-1 text-slate-600">-</span>
                       )}
                     </div>
                   );
@@ -914,7 +914,7 @@ export default function CustomerDashboardPage() {
                 ))}
               </div>
               <p className="text-xs text-slate-500 italic">
-                Protected by ATF &middot; Dry run &mdash; no on-chain transaction
+                Protected by ATF &middot; Dry run - no on-chain transaction
               </p>
             </div>
           )}
