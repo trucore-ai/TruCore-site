@@ -274,6 +274,15 @@ function VerifyDemoContent() {
               <p className="mt-2 text-sm text-slate-400">
                 This hash is deterministic: the same policy-protected transaction always produces the same receipt and hash.
               </p>
+              <div className="mt-4 space-y-2 rounded-lg border border-primary-300/20 bg-primary-500/[0.06] p-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">What This Receipt Proves</p>
+                <ul className="mt-2 space-y-1 text-xs text-slate-300">
+                  <li>? The exact policy rules that were applied</li>
+                  <li>? The deterministic decision made (ALLOW or DENY)</li>
+                  <li>? The precise transaction inputs used</li>
+                </ul>
+                <p className="mt-2 text-xs text-slate-400">Anyone with this receipt can independently verify the decision was made correctly.</p>
+              </div>
               <button
                 type="button"
                 onClick={handleCopyShareLink}
@@ -325,7 +334,7 @@ function VerifyDemoContent() {
               Ready to protect your transactions?
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base text-slate-300">
-              Try a protected trade or inspect this receipt further.
+              You just verified a protected transaction. Next step is to protect your own.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button href="/try" variant="primary" size="default">

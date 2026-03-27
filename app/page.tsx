@@ -159,6 +159,15 @@ export default function Home() {
         </div>
       </Section>
 
+
+      {/* ?? Proof Anchor: Why This Works ?? */}
+      <div className="my-8 rounded-xl border border-primary-300/30 bg-primary-500/[0.06] px-6 py-8">
+        <p className="text-center text-lg text-slate-200">
+          <span className="font-semibold text-primary-100">Every decision is enforced before execution.</span>
+          {" "}Every result produces a cryptographic receipt.{" "}
+          <span className="font-semibold  text-primary-100">You can verify it independently.</span>
+        </p>
+      </div>
       {/* ── Trust Signals & Live Status ── */}
       <div className="space-y-3 pb-8 sm:pb-10">
         <SecurityIntegrityStrip />
@@ -243,6 +252,40 @@ export default function Home() {
         </div>
       </Section>
 
+
+      {/* ?? First Protected Trade: Step by Step ?? */}
+      <Section divider className="fade-in-up fade-delay-1">
+        <div className="mb-8 max-w-2xl">
+          <p className="section-label mb-3">How It Works</p>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
+            First Protected Trade, Step by Step
+          </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            Every trade follows the same enforced path: policy evaluated, decision made, receipt generated, result verified.
+          </p>
+        </div>
+        <div className="space-y-3">
+          {[
+            { num: "1", title: "Submit", desc: "You submit a transaction. ATF receives it with your policy rules." },
+            { num: "2", title: "Evaluate", desc: "Every policy rule is checked: spend caps, protocols, slippage, TTL." },
+            { num: "3", title: "Decide", desc: "Policy decision is made deterministically. ALLOW or DENY." },
+            { num: "4", title: "Enforce", desc: "If ALLOW: transaction is executed. If DENY: blocked automatically." },
+            { num: "5", title: "Verify", desc: "Cryptographic receipt proves what happened. Anyone can verify it." },
+          ].map((item) => (
+            <div key={item.num} className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-accent-400 bg-accent-500/20">
+                  <span className="font-bold text-accent-300">{item.num}</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-primary-100">{item.title}</h3>
+                <p className="mt-1 text-slate-300">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
       {/* ── Policy Intelligence Layer ── */}
       <Section divider className="fade-in-up fade-delay-1">
         <div className="mb-8 max-w-3xl">
