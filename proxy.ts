@@ -1,12 +1,12 @@
 /**
- * Next.js middleware — centralized coarse gate for admin routes.
+ * Next.js proxy — centralized coarse gate for admin routes.
  *
  * Session tokens are stored in an in-memory server-side map, so
- * authoritative validation cannot run at the edge. This middleware
+ * authoritative validation cannot run at the edge. This proxy
  * therefore only checks cookie *presence* as a fast first-pass
  * filter. Authoritative server-side validation in pages/API
  * handlers (assertAdminSession / getAdminSessionFromCookies) is
- * still required and is NOT replaced by this middleware.
+ * still required and is NOT replaced by this proxy.
  *
  * Fail-closed: missing cookie, missing config, or any unexpected
  * state → redirect to /admin/login.
@@ -71,7 +71,7 @@ async function handleVerifyDemoJson(
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   /* Agent-readable JSON output for /verify-demo */
@@ -97,7 +97,7 @@ export async function middleware(request: NextRequest) {
 
   if (!sessionCookie) {
     /*
-     * Log via console.warn — middleware runs at the edge so we
+     * Log via console.warn — proxy runs on the server so we
      * cannot import the full security-log helper (it uses
      * node:crypto). The format mirrors the server-side pattern
      * for grep-friendliness.
@@ -117,7 +117,7 @@ export async function middleware(request: NextRequest) {
 }
 
 /**
- * Matcher: run middleware only on /admin paths.
+ * Matcher: run proxy only on /admin paths and /verify-demo.
  * Excludes Next.js internals and static files automatically via
  * the negative lookahead recommended by Next.js docs.
  */
