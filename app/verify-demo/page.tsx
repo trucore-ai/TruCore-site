@@ -322,18 +322,18 @@ function VerifyDemoContent() {
         {!loading && result && (
           <div className="mt-16 rounded-2xl border border-primary-300/20 bg-primary-500/[0.04] px-6 py-10 text-center sm:px-10">
             <h2 className="text-2xl font-bold tracking-tight text-primary-100 sm:text-3xl">
-              Now try protected execution
+              Ready to run your own?
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base text-slate-300">
-              See how ATF evaluates a sample trade in real time, or create an
-              account to continue into the dashboard.
+              Use the live sandbox to protect a sample trade, or jump straight
+              to your first real request with the test API key.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button href="/try" variant="primary" size="default">
                 Protect a Sample Trade
               </Button>
-              <Button href="/signup" variant="secondary" size="default">
-                Create an Account
+              <Button href="/try#api-key" variant="secondary" size="default">
+                Get Test API Key
               </Button>
             </div>
           </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { TryAtfFlow } from "@/components/try-atf-flow";
+import { ApiKeySection } from "@/components/api-key-section";
 
 export const metadata: Metadata = {
   title: "Try ATF",
@@ -32,6 +33,10 @@ export default function TryPage() {
 
       <Section divider className="pt-0 fade-in-up fade-delay-1">
         <TryAtfFlow />
+      </Section>
+
+      <Section divider className="fade-in-up fade-delay-2">
+        <ApiKeySection />
       </Section>
     </Container>
   );
