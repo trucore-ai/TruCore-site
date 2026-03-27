@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Badge } from "@/components/ui/badge";
+import { trackEvent } from "@/lib/track";
 import {
   FALLBACK_RESULT,
   type ProtectResult,
@@ -48,6 +49,9 @@ function VerifyDemoContent() {
   useEffect(() => {
     let cancelled = false;
 
+    trackEvent("entered_verify_demo");
+    trackEvent("page_view", { page: "verify-demo" });
+
     async function run() {
       try {
         const intentRes = await fetch("/api/sandbox/sample-intent");
@@ -74,11 +78,15 @@ function VerifyDemoContent() {
           );
         }
         const data: ProtectResult = await protectRes.json();
-        if (!cancelled) setResult(data);
+        if (!cancelled) {
+          setResult(data);
+          trackEvent("completed_verify_demo", { fallback: false });
+        }
       } catch {
         if (!cancelled) {
           setResult(FALLBACK_RESULT);
           setIsFallback(true);
+          trackEvent("completed_verify_demo", { fallback: true });
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -161,7 +169,7 @@ function VerifyDemoContent() {
                                   : "bg-red-400"
                               }`}
                             />
-                            {(rule as Record<string, string>).policy ?? "—"}
+                            {(rule as Record<string, string>).policy ?? "-"}
                           </li>
                         ))}
                       </ul>
@@ -329,7 +337,15 @@ function VerifyDemoContent() {
               account to continue into the dashboard.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button href="/try" variant="primary" size="default">
+              <Button
+                href="/try"
+                variant="primary"
+                size="default"
+                onClick={() => {
+                  trackEvent("clicked_start_trade");
+                  trackEvent("cta_verify_to_trade");
+                }}
+              >
                 Protect a Sample Trade
               </Button>
               <Button href="/signup" variant="secondary" size="default">

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { TryAtfFlow } from "@/components/try-atf-flow";
+import { TrackedLink } from "@/components/tracked-link";
+import { PageViewTracker } from "@/components/page-view-tracker";
 
 export const metadata: Metadata = {
   title: "Try ATF",
@@ -12,6 +14,7 @@ export const metadata: Metadata = {
 export default function TryPage() {
   return (
     <Container>
+      <PageViewTracker page="try" />
       <Section className="fade-in-up">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
@@ -27,10 +30,21 @@ export default function TryPage() {
           <p className="mt-3 text-sm text-slate-400">
             Public sandbox - no real transactions, no fees. Rate limited per IP.
           </p>
+          <div className="mt-6">
+            <TrackedLink
+              href="#try-flow"
+              eventName="try_run_sample_click"
+              trackName="cta_try_primary"
+              eventProps={{ location: "try_header" }}
+              className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-6 py-3 text-base font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
+            >
+              Run a Sample Trade
+            </TrackedLink>
+          </div>
         </div>
       </Section>
 
-      <Section divider className="pt-0 fade-in-up fade-delay-1">
+      <Section id="try-flow" divider className="pt-0 fade-in-up fade-delay-1">
         <TryAtfFlow />
       </Section>
     </Container>
