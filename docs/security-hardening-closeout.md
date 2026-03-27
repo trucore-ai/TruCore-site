@@ -32,7 +32,7 @@ Session store: in-memory `Map<token, {issuedAt, lastSeenAt, revokedAt}>`. Tokens
 
 ### Fail-closed enforcement layers
 
-1. **Middleware** (`middleware.ts`) - checks cookie presence on `/admin/*`; missing cookie → redirect to `/admin/login`. Runs on edge runtime.
+1. **Proxy (formerly middleware)** (`proxy.ts`) - checks cookie presence on `/admin/*`; missing cookie → redirect to `/admin/login`. Runs on the server (Node.js runtime).
 2. **Layout guard** (`app/admin/layout.tsx`) - calls `getAdminSessionFromCookies()` before rendering any admin page. Invalid session → redirect.
 3. **API wrapper** (`lib/admin-api-auth.ts` / `withAdminApiAuth()`) - validates session + CSRF origin on mutations. Denial returns generic **404** (not 401).
 4. **Server-action wrapper** (`lib/admin-action-auth.ts` / `withAdminAction()`) - validates session; catches inner errors and returns `{ error: "temporarily_unavailable" }`.

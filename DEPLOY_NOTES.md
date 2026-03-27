@@ -43,7 +43,7 @@ The following checks confirmed no code-level routing issue exists:
 |------|---------|
 | `vercel.json` | Only contains a `www` to apex redirect. No wildcard rewrites. |
 | `next.config.ts` | Security headers only. No `rewrites` or `redirects` arrays. |
-| `middleware.ts` | Does not exist. No global middleware intercepting requests. |
+| `proxy.ts` | Request boundary handler (Next.js 16). Guards admin routes and serves `/verify-demo`. |
 | `public/.well-known/atf.json` | Present. Contains `openclaw_plugin` at line 132. |
 | `app/docs/agent-discovery/page.tsx` | Present. Exports valid metadata and page component. |
 
