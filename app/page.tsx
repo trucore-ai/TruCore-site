@@ -92,7 +92,7 @@ export default function Home() {
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl px-8 py-4 text-xl font-semibold shadow-glow-accent transition-all bg-accent-500 text-neutral-950 hover:bg-accent-400 hover:shadow-lg"
               >
-                Try the Demo
+                Start Your First Protected Trade
               </TrackedLink>
               <TrackedLink
                 href="/verify-demo"
@@ -107,6 +107,17 @@ export default function Home() {
             <p className="mt-6 text-base text-slate-300/80">
               No signup or wallet required. See a real protected trade and cryptographic receipt.
             </p>
+            <div className="mt-4 max-w-2xl rounded-lg border border-primary-300/20 bg-primary-500/[0.06] p-4">
+              <p className="text-sm font-semibold text-primary-100">What happens next:</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-300">
+                <li>You submit a transaction</li>
+                <li>ATF evaluates policy</li>
+                <li>You receive a decision and receipt</li>
+              </ul>
+              <p className="mt-3 text-sm text-slate-300">
+                You stay in control. You can start in safe mode with no real execution.
+              </p>
+            </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
               <TrackedLink
@@ -249,6 +260,40 @@ export default function Home() {
               </Card>
             </Tilt>
           ))}
+        </div>
+      </Section>
+
+      {/* ── First Trade Activation ── */}
+      <Section divider className="fade-in-up fade-delay-1">
+        <div className="mb-8 max-w-3xl">
+          <p className="section-label mb-3">Activation</p>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
+            Make Your First Protected Trade
+          </h2>
+          <p className="mt-4 text-lg leading-[1.5] text-slate-200">
+            You can test ATF safely before using real funds.
+          </p>
+          <p className="mt-2 text-sm text-slate-300">
+            No setup required for demo. No risk to try.
+          </p>
+        </div>
+        <div className="space-y-3 rounded-xl border border-white/[0.08] bg-neutral-900/40 p-6">
+          <p className="text-sm text-slate-200"><span className="font-semibold text-primary-100">Step 1:</span> Run a sample transaction using demo or dry-run.</p>
+          <p className="text-sm text-slate-200"><span className="font-semibold text-primary-100">Step 2:</span> Review the decision and receipt to understand policy and output.</p>
+          <p className="text-sm text-slate-200"><span className="font-semibold text-primary-100">Step 3:</span> Run your own protected trade with real or controlled input.</p>
+          <p className="pt-2 text-sm text-slate-300">
+            You stay in control. You can start in safe mode with no real execution.
+          </p>
+        </div>
+        <div className="mt-6">
+          <TrackedLink
+            href="/try"
+            eventName="home_first_trade_activation_click"
+            eventProps={{ location: "home_activation_section" }}
+            className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-6 py-3 text-base font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
+          >
+            Start Your First Protected Trade
+          </TrackedLink>
         </div>
       </Section>
 
@@ -468,7 +513,7 @@ export default function Home() {
               eventProps={{ location: "home_start_strip" }}
               className="inline-flex items-center rounded-xl bg-accent-500/15 px-6 py-3 text-base font-semibold text-accent-300 transition-colors hover:bg-accent-500/25"
             >
-              Try ATF
+              Start Your First Protected Trade
             </TrackedLink>
             <TrackedLink
               href="/docs/getting-started"

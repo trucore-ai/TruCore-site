@@ -331,14 +331,14 @@ function VerifyDemoContent() {
         {!loading && result && (
           <div className="mt-16 rounded-2xl border border-primary-300/20 bg-primary-500/[0.04] px-6 py-10 text-center sm:px-10">
             <h2 className="text-2xl font-bold tracking-tight text-primary-100 sm:text-3xl">
-              Ready to protect your transactions?
+              Ready to run your own?
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base text-slate-300">
-              You just verified a protected transaction. Next step is to protect your own.
+              Start your first protected trade.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button href="/try" variant="primary" size="default">
-                Try Protected Trade
+                Start Your First Protected Trade
               </Button>
               <Button href="/docs/receipt-specification-v1" variant="secondary" size="default">
                 Learn Receipt Format
