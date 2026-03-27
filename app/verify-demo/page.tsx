@@ -58,7 +58,8 @@ function VerifyDemoContent() {
               `Failed to fetch sample intent (${intentRes.status})`,
           );
         }
-        const intent: unknown = await intentRes.json();
+        const intentBody = await intentRes.json();
+        const intent = (intentBody as Record<string, unknown>).intent ?? intentBody;
 
         const protectRes = await fetch("/api/sandbox/protect", {
           method: "POST",
