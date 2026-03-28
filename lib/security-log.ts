@@ -375,6 +375,80 @@ export function getCustomerRouteFailureCounts(): Record<string, number> {
   }
 }
 
+/* ---------- route failure alerting thresholds ---------- */
+
+const ATF_ALERT_ROUTE_FAILURE_THRESHOLD = Math.max(
+  1,
+  Number(process.env.ATF_ALERT_ROUTE_FAILURE_THRESHOLD) || 5,
+);
+const ATF_ALERT_ROUTE_FAILURE_WINDOW_MS =
+  Math.max(1, Number(process.env.ATF_ALERT_ROUTE_FAILURE_WINDOW_SECONDS) || 60) * 1000;
+
+interface RouteAlertState {
+  /** Timestamps of failures inside the current window. */
+  timestamps: number[];
+  /** Last time an alert was sent for this route. */
+  lastAlertTs: number;
+}
+
+const routeAlertState = new Map<string, RouteAlertState>();
+
+/**
+ * Evaluate whether we should fire an operator alert for a failing route.
+ * Returns true at most once per window per route.
+ */
+export function shouldTriggerRouteFailureAlert(route: string): boolean {
+  if (!KNOWN_CUSTOMER_ROUTES.has(route)) return false;
+
+  const now = Date.now();
+  let state = routeAlertState.get(route);
+  if (!state) {
+    state = { timestamps: [], lastAlertTs: 0 };
+    routeAlertState.set(route, state);
+  }
+
+  // Record this failure timestamp
+  state.timestamps.push(now);
+
+  // Prune old entries outside the window
+  const windowStart = now - ATF_ALERT_ROUTE_FAILURE_WINDOW_MS;
+  state.timestamps = state.timestamps.filter((t) => t >= windowStart);
+
+  // Check threshold
+  if (state.timestamps.length < ATF_ALERT_ROUTE_FAILURE_THRESHOLD) return false;
+
+  // Rate-limit: don't alert again within the same window
+  if (now - state.lastAlertTs < ATF_ALERT_ROUTE_FAILURE_WINDOW_MS) return false;
+
+  state.lastAlertTs = now;
+  return true;
+}
+
+/**
+ * Return a snapshot of recent route failure alert state for ops visibility.
+ * Keys are safe static route labels only. Never throws.
+ */
+export function getRecentRouteFailureStats(): Record<
+  string,
+  { failuresInWindow: number; lastAlertTs: number }
+> {
+  try {
+    const now = Date.now();
+    const windowStart = now - ATF_ALERT_ROUTE_FAILURE_WINDOW_MS;
+    const result: Record<string, { failuresInWindow: number; lastAlertTs: number }> = {};
+    for (const [route, state] of routeAlertState) {
+      const recent = state.timestamps.filter((t) => t >= windowStart);
+      result[route] = {
+        failuresInWindow: recent.length,
+        lastAlertTs: state.lastAlertTs,
+      };
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
 /** Exposed for tests only — reset all counters. */
 export function _resetSecurityEventCounters(): void {
   securityEventCounters.clear();
@@ -384,4 +458,5 @@ export function _resetSecurityEventCounters(): void {
   agentRouteRateLimitedCounts.clear();
   publicRouteRateLimitedCounts.clear();
   customerRouteFailureCounts.clear();
+  routeAlertState.clear();
 }

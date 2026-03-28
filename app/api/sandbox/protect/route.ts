@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sha256 } from "@/lib/hash";
 import { consumeRateLimit } from "@/lib/rate-limit";
-import { logSecurityEvent } from "@/lib/security-log";
+import { logSecurityEvent, shouldTriggerRouteFailureAlert, getCustomerRouteFailureCounts } from "@/lib/security-log";
+import { sendRouteFailureAlert } from "@/lib/ops-alerts";
 
 const TIMEOUT_MS = 8_000;
 const RATE_LIMIT_MAX = 20; // per IP per minute
@@ -92,16 +93,27 @@ export async function POST(req: NextRequest) {
     clearTimeout(timer);
     const body = await res.text();
     if (!res.ok) {
+      const failureClass = res.status >= 500 ? "upstream_5xx" : "upstream_4xx";
       logSecurityEvent("customer_route_failure", {
         ip,
         meta: {
           route: "sandbox/protect",
           upstream_target: "atf-api",
-          failure_class: res.status >= 500 ? "upstream_5xx" : "upstream_4xx",
+          failure_class: failureClass,
           status: res.status,
           environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
         },
       });
+      if (shouldTriggerRouteFailureAlert("sandbox/protect")) {
+        try {
+          const counts = getCustomerRouteFailureCounts();
+          await sendRouteFailureAlert("sandbox/protect", failureClass, {
+            countInWindow: counts["sandbox/protect"] ?? 0,
+          });
+        } catch {
+          console.error("[ops-alert] alert send failed for sandbox/protect");
+        }
+      }
     }
     return new NextResponse(body, {
       status: res.status,
@@ -122,6 +134,16 @@ export async function POST(req: NextRequest) {
         environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
       },
     });
+    if (shouldTriggerRouteFailureAlert("sandbox/protect")) {
+      try {
+        const counts = getCustomerRouteFailureCounts();
+        await sendRouteFailureAlert("sandbox/protect", "network_error", {
+          countInWindow: counts["sandbox/protect"] ?? 0,
+        });
+      } catch {
+        console.error("[ops-alert] alert send failed for sandbox/protect");
+      }
+    }
     return NextResponse.json(
       {
         error: "upstream_unavailable",
