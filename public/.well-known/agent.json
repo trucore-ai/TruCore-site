@@ -1,0 +1,72 @@
+{
+  "version": "1",
+  "name": "TruCore ATF",
+  "product": "Agent Transaction Firewall",
+  "description": "Policy-enforced transaction protection for AI agents.",
+  "entrypoint": "https://trucore.xyz/agent",
+  "builders_url": "https://trucore.xyz/builders",
+  "status_url": "https://trucore.xyz/status",
+  "api_base_url": "https://api.trucore.xyz",
+  "discovery_keywords": [
+    "agent",
+    "bot",
+    "transaction protection",
+    "preflight",
+    "quota planning",
+    "execute-best",
+    "self-upgrade",
+    "monetization"
+  ],
+  "bot_flow": [
+    {
+      "step": 1,
+      "endpoint": "/v1/bot/preflight",
+      "purpose": "simulate one intent",
+      "state_mutation": false
+    },
+    {
+      "step": 2,
+      "endpoint": "/v1/bot/preflight/compare",
+      "purpose": "rank multiple candidate intents",
+      "state_mutation": false
+    },
+    {
+      "step": 3,
+      "endpoint": "/v1/bot/quota/plan",
+      "purpose": "estimate safe throughput",
+      "state_mutation": false
+    },
+    {
+      "step": 4,
+      "endpoint": "/v1/bot/quota/plan-batch",
+      "purpose": "estimate safe batch size",
+      "state_mutation": false
+    },
+    {
+      "step": 5,
+      "endpoint": "/v1/bot/execute-best",
+      "purpose": "select and execute the best option",
+      "state_mutation": true
+    },
+    {
+      "step": 6,
+      "endpoint": "/v1/bot/self-upgrade",
+      "purpose": "request free-to-pro self-upgrade when allowed",
+      "state_mutation": true
+    }
+  ],
+  "upgrade_signals": {
+    "meta_field": "_meta.upgrade",
+    "possible_reasons": [
+      "quota_near_limit",
+      "quota_exceeded",
+      "monetization_disabled",
+      "self_serve_upgrade_disabled"
+    ]
+  },
+  "policy_notes": {
+    "self_upgrade_requires_operator_policy": true,
+    "quota_meta_available": true,
+    "planning_endpoints_read_only": true
+  }
+}
