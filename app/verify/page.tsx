@@ -5,6 +5,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { TrackedLink } from "@/components/tracked-link";
 import { VerifyPageCta } from "@/components/verify-page-cta";
+import { ReceiptShareActions } from "@/components/receipt-share-actions";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -214,6 +215,14 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
           shouldAutofetchSignature={shouldAutofetchSignature}
         />
       </Section>
+
+      {initialHash ? (
+        <Section className="pt-0 fade-in-up fade-delay-1">
+          <div className="max-w-3xl">
+            <ReceiptShareActions hash={initialHash} />
+          </div>
+        </Section>
+      ) : null}
 
       {/* ── Primary CTA for shared traffic ── */}
       {isFromShare ? (

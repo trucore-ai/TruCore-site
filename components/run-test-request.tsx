@@ -8,7 +8,7 @@ const SAMPLE_INTENT = {
   output_mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
   amount_lamports: 1000000,
   protocol: "jupiter",
-  max_slippage_bps: 50,
+  slippage_bps: 50,
 };
 
 const ATF_ENDPOINT = "https://api.trucore.xyz/sandbox/protect";

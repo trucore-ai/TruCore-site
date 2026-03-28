@@ -5,28 +5,25 @@
  * - Provides signup / login API calls against the ATF API
  * - Auth guard utility for protected pages
  *
- * NOTE: signup, login, and verify-email calls are routed through same-origin
- * Next.js API proxy routes (/api/customer/auth/*) to avoid browser CORS
- * dependency on api.trucore.xyz for onboarding-critical paths.
- * Post-auth calls that carry Authorization headers still target ATF_API_BASE
- * directly and are deferred for proxy migration (see docs/onboarding/SITE_API_PROXY_AUDIT.md).
+ * All customer-facing flows route through same-origin Next.js API proxy routes
+ * to avoid browser CORS dependency on api.trucore.xyz and keep backend URLs
+ * controlled server-side. This includes:
+ * - Auth: /api/customer/auth/*
+ * - Dashboard: /api/dashboard/*
+ * - Onboarding: /api/onboarding/*
+ * - Receipts: /api/customer/receipts/*
  */
 
 import { parseApiError, getUserFacingMessage } from "@/lib/auth-errors";
 
-const ATF_API_BASE =
-  process.env.NEXT_PUBLIC_ATF_API_URL || "https://api.trucore.xyz";
-
-// Same-origin proxy base for onboarding-critical unauthenticated auth calls.
-// On the server (SSR/RSC) this will be an empty string — these functions are
-// client-only (called from "use client" pages), so the relative path resolves
-// to the same origin as the browser.
+ const ATF_API_BASE =
+   process.env.NEXT_PUBLIC_ATF_API_URL || "https://api.trucore.xyz";
+ 
+ // Same-origin proxy bases for all authenticated customer calls.
 const AUTH_PROXY_BASE = "/api/customer/auth";
-
-// Same-origin proxy bases for first-use authenticated calls.
-// These avoid CORS/origin drift and keep credentials controlled server-side.
 const DASHBOARD_PROXY_BASE = "/api/dashboard";
 const ONBOARDING_PROXY_BASE = "/api/onboarding";
+const RECEIPTS_PROXY_BASE = "/api/customer/receipts";
 
 const TOKEN_KEY = "atf_customer_token";
 const TENANT_KEY = "atf_customer_tenant";
@@ -370,7 +367,7 @@ export async function fetchReceipts(
   params: ReceiptListParams = {},
 ): Promise<Record<string, unknown>> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
 
   const query = new URLSearchParams();
   if (params.limit !== undefined) query.set("limit", String(params.limit));
@@ -381,18 +378,32 @@ export async function fetchReceipts(
   if (params.protected_by) query.set("protected_by", params.protected_by);
 
   const qs = query.toString();
-  const url = `${ATF_API_BASE}/customer/receipts${qs ? `?${qs}` : ""}`;
+  const url = `${RECEIPTS_PROXY_BASE}${qs ? `?${qs}` : ""}`;
 
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the receipts service.");
+  }
 
   if (res.status === 401) {
     clearAuth();
-    throw new ApiError("unauthorized", "Session expired");
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
   }
 
-  if (!res.ok) throw new Error("Failed to fetch receipts");
+  if (res.status >= 500) {
+    throw new ApiError("upstream_5xx", "Receipts service is temporarily unavailable.");
+  }
+
+  if (!res.ok) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "We couldn't load your receipts right now.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
+  }
 
   return res.json();
 }
@@ -401,19 +412,37 @@ export async function fetchReceiptDetail(
   receiptId: string,
 ): Promise<Record<string, unknown>> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
 
-  const res = await fetch(
-    `${ATF_API_BASE}/customer/receipts/${encodeURIComponent(receiptId)}`,
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
+  let res: Response;
+  try {
+    res = await fetch(
+      `${RECEIPTS_PROXY_BASE}/${encodeURIComponent(receiptId)}`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the receipts service.");
+  }
 
   if (res.status === 401) {
     clearAuth();
-    throw new ApiError("unauthorized", "Session expired");
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
   }
 
-  if (!res.ok) throw new Error("Receipt not found");
+  if (res.status === 404) {
+    throw new ApiError("not_found", "Receipt not found.");
+  }
+
+  if (res.status >= 500) {
+    throw new ApiError("upstream_5xx", "Receipts service is temporarily unavailable.");
+  }
+
+  if (!res.ok) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "We couldn't load this receipt.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
+  }
 
   return res.json();
 }
@@ -422,28 +451,42 @@ export async function verifyReceipt(
   receiptIdOrObject: string | Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
 
   const body: Record<string, unknown> =
     typeof receiptIdOrObject === "string"
       ? { receipt_id: receiptIdOrObject }
       : { receipt: receiptIdOrObject };
 
-  const res = await fetch(`${ATF_API_BASE}/customer/receipts/verify`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(body),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${RECEIPTS_PROXY_BASE}/verify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the verification service.");
+  }
 
   if (res.status === 401) {
     clearAuth();
-    throw new ApiError("unauthorized", "Session expired");
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
   }
 
-  if (!res.ok) throw new Error("Verification failed");
+  if (res.status >= 500) {
+    throw new ApiError("upstream_5xx", "Verification service is temporarily unavailable.");
+  }
+
+  if (!res.ok) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "We couldn't verify this receipt.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
+  }
 
   return res.json();
 }

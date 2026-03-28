@@ -1,0 +1,116 @@
+PROMPT 276 - feat(site): agent discovery page + well-known agent manifest
+=========================================================================
+
+Objective
+---------
+Added a canonical public agent discovery surface for TruCore so bots can find
+what ATF is, how to start, which bot-facing endpoints exist, and how quota,
+upgrade, and execution flows work.
+
+Files added
+-----------
+1. app/agent/page.tsx
+2. app/.well-known/agent.json/route.ts
+3. public/.well-known/agent.json
+
+Final /agent page sections
+--------------------------
+A. Header
+   - Title: "Agent Integration Guide"
+   - Subtext: "Use TruCore ATF to simulate, compare, protect, and upgrade
+     AI-driven transactions."
+
+B. Canonical Bot Flow (6 steps)
+   1. Preflight a single intent - /v1/bot/preflight
+   2. Compare multiple options - /v1/bot/preflight/compare
+   3. Plan quota and batch usage - /v1/bot/quota/plan
+   4. Execute the best option - /v1/bot/execute-best
+   5. Read quota and upgrade signals - Any bot endpoint
+   6. Request self-upgrade when allowed - /v1/bot/self-upgrade
+
+C. Bot-Facing Endpoints Table
+   - POST /v1/bot/preflight (read-only, no mutation)
+   - POST /v1/bot/preflight/compare (read-only, no mutation)
+   - GET /v1/bot/quota/plan (read-only, no mutation)
+   - POST /v1/bot/quota/plan-batch (read-only, no mutation)
+   - POST /v1/bot/execute-best (mutates state)
+   - POST /v1/bot/self-upgrade (mutates state)
+   - GET /v1/bot/upgrade/status (read-only, no mutation)
+
+D. Upgrade Behavior
+   - Quota pressure signals (_meta.upgrade)
+   - Policy-gated self-upgrade (reasons: monetization_disabled,
+     self_serve_upgrade_disabled)
+   - When blocked, bots should stop retrying and follow next_action
+
+E. Discovery Links
+   - /builders
+   - /status
+   - /.well-known/agent.json
+
+Final manifest schema (/.well-known/agent.json)
+-----------------------------------------------
+{
+  "version": "1",
+  "name": "TruCore ATF",
+  "product": "Agent Transaction Firewall",
+  "description": "Policy-enforced transaction protection for AI agents.",
+  "entrypoint": "https://trucore.xyz/agent",
+  "builders_url": "https://trucore.xyz/builders",
+  "status_url": "https://trucore.xyz/status",
+  "api_base_url": "https://api.trucore.xyz",
+  "discovery_keywords": [
+    "agent", "bot", "transaction protection", "preflight",
+    "quota planning", "execute-best", "self-upgrade", "monetization"
+  ],
+  "bot_flow": [
+    { "step": 1, "endpoint": "/v1/bot/preflight", "purpose": "simulate one intent", "state_mutation": false },
+    { "step": 2, "endpoint": "/v1/bot/preflight/compare", "purpose": "rank multiple candidate intents", "state_mutation": false },
+    { "step": 3, "endpoint": "/v1/bot/quota/plan", "purpose": "estimate safe throughput", "state_mutation": false },
+    { "step": 4, "endpoint": "/v1/bot/quota/plan-batch", "purpose": "estimate safe batch size", "state_mutation": false },
+    { "step": 5, "endpoint": "/v1/bot/execute-best", "purpose": "select and execute the best option", "state_mutation": true },
+    { "step": 6, "endpoint": "/v1/bot/self-upgrade", "purpose": "request free-to-pro self-upgrade when allowed", "state_mutation": true }
+  ],
+  "upgrade_signals": {
+    "meta_field": "_meta.upgrade",
+    "possible_reasons": [
+      "quota_near_limit", "quota_exceeded",
+      "monetization_disabled", "self_serve_upgrade_disabled"
+    ]
+  },
+  "policy_notes": {
+    "self_upgrade_requires_operator_policy": true,
+    "quota_meta_available": true,
+    "planning_endpoints_read_only": true
+  }
+}
+
+Backend doc links included
+--------------------------
+No external backend doc links were included. The manifest and /agent page are
+self-contained per the prompt requirements. The /.well-known/agent.json manifest
+serves as the machine-readable discovery source.
+
+Validation
+----------
+- npm run lint: no new errors (3 pre-existing warnings unrelated to this change)
+- Build: pre-existing type error in lib/customer-auth.ts (unrelated uncommitted change)
+- New files typecheck successfully
+
+Acceptance criteria status
+--------------------------
+- /agent exists and explains the real bot flow: PASS
+- /.well-known/agent.json exists and is machine-readable: PASS
+- Manifest matches current backend behavior: PASS
+- Self-upgrade policy gating described accurately: PASS
+- No new dependencies: PASS
+- No fake capabilities introduced: PASS
+- No em dashes in visible copy: PASS
+
+Branch
+------
+feat/agent-discovery-surface -> pushed to origin
+
+Commit
+------
+feat(site): add agent discovery page and well-known agent manifest
