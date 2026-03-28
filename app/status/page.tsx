@@ -3,6 +3,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
 import { StatusLiveChecks } from "@/components/status-live-checks";
+import { OpsRouteFailuresLoader } from "@/components/ops-route-failures-loader";
 import { getReleaseMetadata } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -30,6 +31,8 @@ export default function StatusPage() {
       <Section divider className="fade-in-up fade-delay-1">
         <div className="mx-auto max-w-3xl space-y-8">
           <StatusLiveChecks />
+
+          <OpsRouteFailuresLoader />
 
           {/* Monitoring */}
           <Card>

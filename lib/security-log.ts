@@ -430,16 +430,17 @@ export function shouldTriggerRouteFailureAlert(route: string): boolean {
  */
 export function getRecentRouteFailureStats(): Record<
   string,
-  { failuresInWindow: number; lastAlertTs: number }
+  { failuresInWindow: number; lastFailureTs: number; lastAlertTs: number }
 > {
   try {
     const now = Date.now();
     const windowStart = now - ATF_ALERT_ROUTE_FAILURE_WINDOW_MS;
-    const result: Record<string, { failuresInWindow: number; lastAlertTs: number }> = {};
+    const result: Record<string, { failuresInWindow: number; lastFailureTs: number; lastAlertTs: number }> = {};
     for (const [route, state] of routeAlertState) {
       const recent = state.timestamps.filter((t) => t >= windowStart);
       result[route] = {
         failuresInWindow: recent.length,
+        lastFailureTs: recent.length > 0 ? Math.max(...recent) : 0,
         lastAlertTs: state.lastAlertTs,
       };
     }
