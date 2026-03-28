@@ -20,6 +20,14 @@ import {
   type UpgradeRequestData,
 } from "@/lib/customer-auth";
 import RunTestRequest from "@/components/run-test-request";
+import {
+  trackDashboardViewed,
+  trackSampleIntentLoaded,
+  trackProtectDryRunStarted,
+  trackProtectDryRunCompleted,
+  trackExecuteSampleStarted,
+  trackExecuteSampleCompleted,
+} from "@/lib/client/journey";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -238,6 +246,9 @@ export default function CustomerDashboardPage() {
       return;
     }
 
+    // Track dashboard view for journey telemetry
+    trackDashboardViewed();
+
     // Dashboard data
     fetchDashboard()
       .then((d) => {
@@ -343,6 +354,9 @@ export default function CustomerDashboardPage() {
       setObIntent(res.intent as Record<string, unknown>);
       setObStep(1);
 
+      // Track sample intent loaded
+      trackSampleIntentLoaded();
+
       // Persist step
       try {
         const act = (await markActivationStep("sample_generated")) as unknown as ActivationState;
@@ -363,10 +377,17 @@ export default function CustomerDashboardPage() {
     if (!obIntent) return;
     setObLoading(true);
     setObError("");
+
+    // Track protect dry run started
+    trackProtectDryRunStarted();
+
     try {
       const res = await simulateProtection(obIntent);
       setObDryRun(res);
       setObStep(2);
+
+      // Track protect dry run completed successfully
+      trackProtectDryRunCompleted(true);
 
       try {
         const receiptId = (res as Record<string, unknown>).receipt
@@ -383,6 +404,8 @@ export default function CustomerDashboardPage() {
         // Non-fatal
       }
     } catch (e) {
+      // Track protect dry run failure
+      trackProtectDryRunCompleted(false);
       setObError(e instanceof ApiError ? e.message : "Protection simulation is temporarily unavailable.");
     } finally {
       setObLoading(false);
@@ -393,10 +416,17 @@ export default function CustomerDashboardPage() {
     if (!obIntent) return;
     setObLoading(true);
     setObError("");
+
+    // Track execute sample started
+    trackExecuteSampleStarted();
+
     try {
       const res = await executeSample(obIntent);
       setObReceipt(res);
       setObStep(3);
+
+      // Track execute sample completed successfully
+      trackExecuteSampleCompleted(true);
 
       try {
         const receiptId = (res as Record<string, unknown>).receipt
@@ -413,6 +443,8 @@ export default function CustomerDashboardPage() {
         // Non-fatal
       }
     } catch (e) {
+      // Track execute sample failure
+      trackExecuteSampleCompleted(false);
       setObError(e instanceof ApiError ? e.message : "Sample trade execution is temporarily unavailable.");
     } finally {
       setObLoading(false);

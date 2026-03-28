@@ -11,6 +11,7 @@ import {
   verifyReceipt,
   ApiError,
 } from "@/lib/customer-auth";
+import { trackReceiptViewed, trackReceiptVerified } from "@/lib/client/journey";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -104,6 +105,9 @@ export default function CustomerReceiptsPage() {
       return;
     }
 
+    // Track receipt page view for journey telemetry
+    trackReceiptViewed();
+
     fetchReceipts({ limit: 20 })
       .then((res) => {
         const r = res as ReceiptsResponse;
@@ -174,8 +178,13 @@ export default function CustomerReceiptsPage() {
       const res = (await verifyReceipt(selectedId)) as VerifyResult;
       const ok = res.verified ?? res.valid ?? res.matches ?? false;
       setVerifyStatus(ok ? "verified" : "tampered");
+
+      // Track receipt verification for journey telemetry
+      trackReceiptVerified(ok);
     } catch {
       setVerifyStatus("error");
+      // Track failed verification attempt
+      trackReceiptVerified(false);
     }
   }, [selectedId]);
 
