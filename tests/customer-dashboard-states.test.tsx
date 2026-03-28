@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 // ---------------------------------------------------------------------------
 // Mocks — must be declared before importing the component
@@ -124,12 +124,16 @@ describe("CustomerDashboardPage — empty state", () => {
 });
 
 describe("CustomerDashboardPage — error state", () => {
-  it("renders error state on upstream failure", async () => {
+  it("renders global error state when both dashboard AND activation fail", async () => {
+    // Both fetches fail - this triggers global error
     mockFetchDashboard.mockRejectedValue(
       new ApiError(
         "upstream_5xx",
         "We couldn't load your dashboard right now. Please try again in a moment.",
       ),
+    );
+    mockFetchActivation.mockRejectedValue(
+      new ApiError("upstream_5xx", "Activation unavailable"),
     );
 
     render(<CustomerDashboardPage />);
@@ -146,12 +150,16 @@ describe("CustomerDashboardPage — error state", () => {
     expect(screen.getByText("Retry")).toBeInTheDocument();
   });
 
-  it("renders error state on network failure", async () => {
+  it("renders global error state on network failure when both fetches fail", async () => {
+    // Both fetches fail with network error
     mockFetchDashboard.mockRejectedValue(
       new ApiError(
         "network_error",
         "We couldn't reach the dashboard service.",
       ),
+    );
+    mockFetchActivation.mockRejectedValue(
+      new ApiError("network_error", "Activation unreachable"),
     );
 
     render(<CustomerDashboardPage />);
@@ -180,5 +188,126 @@ describe("CustomerDashboardPage — active state", () => {
     expect(
       screen.queryByText(/your account is ready/i),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("CustomerDashboardPage — scoped error handling", () => {
+  it("renders first-trade section without global error when dashboard fails but activation succeeds", async () => {
+    // Dashboard fetch fails
+    mockFetchDashboard.mockRejectedValue(
+      new ApiError(
+        "upstream_5xx",
+        "We couldn't load your dashboard right now. Please try again in a moment.",
+      ),
+    );
+    // But activation succeeds
+    mockFetchActivation.mockResolvedValue({
+      onboarding_completed: false,
+      steps_completed: [],
+      first_receipt_id: null,
+    });
+
+    render(<CustomerDashboardPage />);
+
+    await waitFor(() => {
+      // First-trade section should render
+      expect(
+        screen.getByTestId("first-trade-section"),
+      ).toBeInTheDocument();
+    });
+
+    // Should NOT show global "service temporarily unavailable" error
+    expect(
+      screen.queryByText(/service temporarily unavailable/i),
+    ).not.toBeInTheDocument();
+
+    // Should show scoped error for data sections
+    expect(
+      screen.getByText(/plan and usage data unavailable/i),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByText(/your account is ready/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("first-trade card still renders when secondary data fetch fails", async () => {
+    // Dashboard fails
+    mockFetchDashboard.mockRejectedValue(
+      new ApiError("upstream_5xx", "Dashboard unavailable"),
+    );
+    // Activation succeeds with some progress
+    mockFetchActivation.mockResolvedValue({
+      onboarding_completed: false,
+      steps_completed: ["sample_generated"],
+      first_receipt_id: null,
+    });
+    // Receipts fail (non-fatal)
+    mockFetchReceipts.mockRejectedValue(new Error("Receipts unavailable"));
+
+    render(<CustomerDashboardPage />);
+
+    await waitFor(() => {
+      // First-trade section should render
+      expect(
+        screen.getByTestId("first-trade-section"),
+      ).toBeInTheDocument();
+    });
+
+    // Verify step indicators are present (both are rendered)
+    const stepLabels = screen.getAllByText(/^(Generate|Simulate|Execute|Receipt)$/);
+    expect(stepLabels.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("clears the scoped dashboard error after a successful retry", async () => {
+    mockFetchDashboard.mockRejectedValueOnce(
+      new ApiError("upstream_5xx", "We couldn't load your dashboard right now. Please try again in a moment."),
+    );
+    mockFetchActivation.mockResolvedValue({
+      onboarding_completed: false,
+      steps_completed: [],
+      first_receipt_id: null,
+    });
+
+    render(<CustomerDashboardPage />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/plan and usage data unavailable/i),
+      ).toBeInTheDocument();
+    });
+
+    mockFetchDashboard.mockResolvedValueOnce(ACTIVE_DASHBOARD);
+
+    const retryButton = screen.getByRole("button", { name: "Retry" });
+    await act(async () => {
+      fireEvent.click(retryButton);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/test@example\.com/i)).toBeInTheDocument();
+    });
+
+    expect(
+      screen.queryByText(/plan and usage data unavailable/i),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("redirects to login when the dashboard auth session is no longer valid", async () => {
+    mockFetchDashboard.mockRejectedValue(
+      new ApiError("unauthorized", "Your session has expired. Please sign in again."),
+    );
+    mockFetchActivation.mockRejectedValue(
+      new ApiError("unauthorized", "Your session has expired. Please sign in again."),
+    );
+
+    render(<CustomerDashboardPage />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith("/login");
+    });
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

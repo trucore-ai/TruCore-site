@@ -186,8 +186,13 @@ export default function CustomerDashboardPage() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
+  // Scoped error for dashboard data fetch (plan/usage/account info)
+  // When set, only affects data-dependent sections, not the whole page
+  const [dashboardDataError, setDashboardDataError] = useState("");
+
   // Activation / onboarding
   const [activationLoading, setActivationLoading] = useState(true);
+  const [activationBootstrapped, setActivationBootstrapped] = useState(false);
   const [activation, setActivation] = useState<ActivationState | null>(null);
   const [obStep, setObStep] = useState<0 | 1 | 2 | 3 | 4>(0);
   const [obLoading, setObLoading] = useState(false);
@@ -238,6 +243,37 @@ export default function CustomerDashboardPage() {
       return;
     }
 
+    // Track completion of both dashboard and activation fetches
+    let dashboardDone = false;
+    let activationDone = false;
+    let dashboardFailed = false;
+    let activationFailed = false;
+    let dashboardErrorMsg = "";
+
+    // Evaluate final load state once both fetches complete
+    const evaluateLoadState = () => {
+      if (!dashboardDone || !activationDone) return;
+
+      // If dashboard failed but activation succeeded, the first-trade flow
+      // can still work. Show scoped error for data sections, not global banner.
+      if (dashboardFailed && !activationFailed) {
+        // Activation works, so first-trade flow is available
+        setLoadState("ready_empty");
+        setActivationBootstrapped(true);
+        // dashboardDataError is already set in the catch block
+        return;
+      }
+
+      // If both failed, show global error (true service unavailable)
+      if (dashboardFailed && activationFailed) {
+        setLoadState("error");
+        setError(dashboardErrorMsg || "We couldn't load your dashboard right now. Please try again in a moment.");
+        return;
+      }
+
+      // Dashboard succeeded - loadState already set in success handler
+    };
+
     // Dashboard data
     fetchDashboard()
       .then((d) => {
@@ -254,6 +290,7 @@ export default function CustomerDashboardPage() {
         // If the dashboard already returns activation, use it
         if (dd.activation) {
           setActivation(dd.activation);
+          setActivationBootstrapped(true);
           mergeBackendOnboardingStep(dd.activation);
           setActivationLoading(false);
         }
@@ -261,14 +298,19 @@ export default function CustomerDashboardPage() {
       .catch((err) => {
         if (err instanceof ApiError && err.code === "unauthorized") {
           router.replace("/login");
-        } else {
-          setLoadState("error");
-          setError(
-            err instanceof ApiError
-              ? err.message
-              : "We couldn't load your dashboard right now. Please try again in a moment.",
-          );
+          return;
         }
+        // Set scoped error for dashboard data sections
+        dashboardFailed = true;
+        dashboardErrorMsg = err instanceof ApiError
+          ? err.message
+          : "We couldn't load your dashboard data right now.";
+        setDashboardDataError(dashboardErrorMsg);
+        // Do NOT set global error yet - wait for activation fetch result
+      })
+      .finally(() => {
+        dashboardDone = true;
+        evaluateLoadState();
       });
 
     // Activation state (dedicated call - covers case where /dashboard/me
@@ -277,12 +319,18 @@ export default function CustomerDashboardPage() {
       .then((act) => {
         const a = act as unknown as ActivationState;
         setActivation(a);
+        setActivationBootstrapped(true);
         mergeBackendOnboardingStep(a);
       })
       .catch(() => {
-        // Non-fatal - activation endpoint might not exist on older backend
+        // Track failure but don't error yet - check dashboard too
+        activationFailed = true;
       })
-      .finally(() => setActivationLoading(false));
+      .finally(() => {
+        activationDone = true;
+        setActivationLoading(false);
+        evaluateLoadState();
+      });
 
     // Recent receipts
     fetchReceipts({ limit: 1 })
@@ -448,6 +496,31 @@ export default function CustomerDashboardPage() {
   const handleRetry = useCallback(() => {
     setLoadState("loading");
     setError("");
+    setDashboardDataError("");
+
+    // Retry both dashboard and activation fetches
+    let dashboardDone = false;
+    let activationDone = false;
+    let dashboardFailed = false;
+    let activationFailed = false;
+    let dashboardErrorMsg = "";
+
+    const evaluateRetryState = () => {
+      if (!dashboardDone || !activationDone) return;
+
+      if (dashboardFailed && !activationFailed) {
+        setLoadState("ready_empty");
+        setActivationBootstrapped(true);
+        return;
+      }
+
+      if (dashboardFailed && activationFailed) {
+        setLoadState("error");
+        setError(dashboardErrorMsg || "We couldn't load your dashboard right now. Please try again in a moment.");
+        return;
+      }
+    };
+
     fetchDashboard()
       .then((d) => {
         const dd = d as unknown as DashboardData;
@@ -461,20 +534,39 @@ export default function CustomerDashboardPage() {
         setLoadState(hasActivity ? "ready" : "ready_empty");
         if (dd.activation) {
           setActivation(dd.activation);
+          setActivationBootstrapped(true);
           mergeBackendOnboardingStep(dd.activation);
         }
       })
       .catch((err) => {
         if (err instanceof ApiError && err.code === "unauthorized") {
           router.replace("/login");
-        } else {
-          setLoadState("error");
-          setError(
-            err instanceof ApiError
-              ? err.message
-              : "We couldn't load your dashboard right now. Please try again in a moment.",
-          );
+          return;
         }
+        dashboardFailed = true;
+        dashboardErrorMsg = err instanceof ApiError
+          ? err.message
+          : "We couldn't load your dashboard data right now.";
+        setDashboardDataError(dashboardErrorMsg);
+      })
+      .finally(() => {
+        dashboardDone = true;
+        evaluateRetryState();
+      });
+
+    fetchActivation()
+      .then((act) => {
+        const a = act as unknown as ActivationState;
+        setActivation(a);
+        setActivationBootstrapped(true);
+        mergeBackendOnboardingStep(a);
+      })
+      .catch(() => {
+        activationFailed = true;
+      })
+      .finally(() => {
+        activationDone = true;
+        evaluateRetryState();
       });
   }, [mergeBackendOnboardingStep, router]);
 
@@ -525,7 +617,7 @@ export default function CustomerDashboardPage() {
         )}
 
         {/* Ready-state welcome banner for new users */}
-        {loadState === "ready_empty" && !error && (
+        {loadState === "ready_empty" && !error && !dashboardDataError && (
           <div className="rounded-xl border border-primary-400/20 bg-primary-500/5 px-6 py-8 text-center space-y-2">
             <h2 className="text-xl font-semibold text-slate-100">
               Your account is ready
@@ -1012,6 +1104,27 @@ export default function CustomerDashboardPage() {
                 {copied ? "Copied!" : "Copy"}
               </button>
             </div>
+          </section>
+        )}
+
+        {/* Scoped error for dashboard data sections when activation still works */}
+        {!data && dashboardDataError && activationBootstrapped && (
+          <section className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-6 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-amber-400">&#9888;</span>
+              <h2 className="text-sm font-medium text-amber-300">
+                Plan and usage data unavailable
+              </h2>
+            </div>
+            <p className="text-xs text-amber-200">
+              {dashboardDataError}
+            </p>
+            <button
+              onClick={handleRetry}
+              className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-200 transition hover:bg-white/10"
+            >
+              Retry
+            </button>
           </section>
         )}
 

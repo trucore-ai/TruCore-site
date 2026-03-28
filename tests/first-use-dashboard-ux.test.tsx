@@ -416,7 +416,7 @@ describe("First-use UX — error mapping", () => {
 // ---------------------------------------------------------------------------
 
 describe("First-use UX — dashboard error + retry", () => {
-  it("shows classified error and Retry button on dashboard load failure", async () => {
+  it("shows a scoped retry card instead of a global alert when dashboard data fails but activation succeeds", async () => {
     mockFetchDashboard.mockRejectedValue(
       new ApiError(
         "upstream_5xx",
@@ -427,28 +427,31 @@ describe("First-use UX — dashboard error + retry", () => {
     render(<CustomerDashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole("alert")).toBeInTheDocument();
       expect(
-        screen.getByText(/service temporarily unavailable/i),
+        screen.getByText(/plan and usage data unavailable/i),
       ).toBeInTheDocument();
     });
 
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByText(/your account is ready/i)).not.toBeInTheDocument();
     expect(screen.getByText("Retry")).toBeInTheDocument();
   });
 
-  it("Retry reloads dashboard data without page reload", async () => {
-    // First call fails
-    mockFetchDashboard.mockRejectedValueOnce(
+  it("Retry reloads dashboard data without a page reload and clears the scoped error", async () => {
+    // Initial bootstrap fails until the user explicitly retries.
+    mockFetchDashboard.mockRejectedValue(
       new ApiError("upstream_5xx", "Service temporarily unavailable."),
     );
 
     render(<CustomerDashboardPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(
+        screen.getByText(/plan and usage data unavailable/i),
+      ).toBeInTheDocument();
     });
 
-    // Second call succeeds
+    // Retry call succeeds
     mockFetchDashboard.mockResolvedValueOnce(EMPTY_DASHBOARD);
 
     await act(async () => {
@@ -456,10 +459,14 @@ describe("First-use UX — dashboard error + retry", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/your account is ready/i)).toBeInTheDocument();
+      expect(screen.getByText(/your plan/i)).toBeInTheDocument();
+      expect(screen.getByText(/new@example\.com/i)).toBeInTheDocument();
     });
 
-    // Error alert should be gone
+    // Scoped dashboard error should be gone
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/plan and usage data unavailable/i),
+    ).not.toBeInTheDocument();
   });
 });
