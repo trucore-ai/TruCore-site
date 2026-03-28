@@ -4,6 +4,7 @@ import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
 import { StatusLiveChecks } from "@/components/status-live-checks";
 import { OpsRouteFailuresLoader } from "@/components/ops-route-failures-loader";
+import { OpsFirstTradeCheckLoader } from "@/components/ops-first-trade-check-loader";
 import { getReleaseMetadata } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -33,6 +34,8 @@ export default function StatusPage() {
           <StatusLiveChecks />
 
           <OpsRouteFailuresLoader />
+
+          <OpsFirstTradeCheckLoader />
 
           {/* Monitoring */}
           <Card>
