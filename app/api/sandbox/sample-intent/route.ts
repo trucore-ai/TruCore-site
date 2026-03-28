@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sha256 } from "@/lib/hash";
 import { consumeRateLimit } from "@/lib/rate-limit";
+import { logSecurityEvent } from "@/lib/security-log";
 
 const TIMEOUT_MS = 8_000;
 const RATE_LIMIT_MAX = 20; // per IP per minute
@@ -44,6 +45,18 @@ export async function GET(req: NextRequest) {
     const res = await fetch(upstream, { signal: controller.signal });
     clearTimeout(timer);
     const body = await res.text();
+    if (!res.ok) {
+      logSecurityEvent("customer_route_failure", {
+        ip,
+        meta: {
+          route: "sandbox/sample-intent",
+          upstream_target: "atf-api",
+          failure_class: res.status >= 500 ? "upstream_5xx" : "upstream_4xx",
+          status: res.status,
+          environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
+        },
+      });
+    }
     return new NextResponse(body, {
       status: res.status,
       headers: {
@@ -54,6 +67,15 @@ export async function GET(req: NextRequest) {
     });
   } catch {
     clearTimeout(timer);
+    logSecurityEvent("customer_route_failure", {
+      ip,
+      meta: {
+        route: "sandbox/sample-intent",
+        upstream_target: "atf-api",
+        failure_class: "network_error",
+        environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
+      },
+    });
     return NextResponse.json(
       {
         error: "upstream_unavailable",

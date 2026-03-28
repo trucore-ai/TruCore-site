@@ -180,6 +180,9 @@ function planBadgeClasses(tier: string) {
 export default function CustomerDashboardPage() {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [loadState, setLoadState] = useState<
+    "loading" | "ready" | "ready_empty" | "error"
+  >("loading");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -233,6 +236,12 @@ export default function CustomerDashboardPage() {
         setData(dd);
         if (dd.email_verified !== undefined) setEmailVerified(dd.email_verified);
         if (dd.receipt_count !== undefined) setReceiptCount(dd.receipt_count);
+        // Determine if this is a genuinely empty account or an active one
+        const hasActivity =
+          (dd.api_keys && dd.api_keys.length > 0) ||
+          (dd.receipt_count !== undefined && dd.receipt_count > 0) ||
+          dd.activation?.onboarding_completed;
+        setLoadState(hasActivity ? "ready" : "ready_empty");
         // If the dashboard already returns activation, use it
         if (dd.activation) {
           setActivation(dd.activation);
@@ -244,8 +253,11 @@ export default function CustomerDashboardPage() {
         if (err instanceof ApiError && err.code === "unauthorized") {
           router.replace("/login");
         } else {
+          setLoadState("error");
           setError(
-            "Dashboard data unavailable. Refresh to try again.",
+            err instanceof ApiError
+              ? err.message
+              : "We couldn't load your dashboard right now. Please try again in a moment.",
           );
         }
       });
@@ -331,7 +343,7 @@ export default function CustomerDashboardPage() {
       }
     } catch (e) {
       setObError(
-        e instanceof Error ? e.message : "Failed to generate sample",
+        e instanceof ApiError ? e.message : "Sample trade generation is temporarily unavailable.",
       );
     } finally {
       setObLoading(false);
@@ -362,7 +374,7 @@ export default function CustomerDashboardPage() {
         // Non-fatal
       }
     } catch (e) {
-      setObError(e instanceof Error ? e.message : "Simulation failed");
+      setObError(e instanceof ApiError ? e.message : "Protection simulation is temporarily unavailable.");
     } finally {
       setObLoading(false);
     }
@@ -392,7 +404,7 @@ export default function CustomerDashboardPage() {
         // Non-fatal
       }
     } catch (e) {
-      setObError(e instanceof Error ? e.message : "Execution failed");
+      setObError(e instanceof ApiError ? e.message : "Sample trade execution is temporarily unavailable.");
     } finally {
       setObLoading(false);
     }
@@ -430,9 +442,29 @@ export default function CustomerDashboardPage() {
           </button>
         </div>
 
-        {error && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-            {error}
+        {loadState === "error" && (
+          <div
+            role="alert"
+            className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300 space-y-2"
+          >
+            <p>{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-white/10"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {loadState === "ready_empty" && !error && (
+          <div className="rounded-lg border border-primary-400/20 bg-primary-500/5 px-4 py-6 text-center space-y-1">
+            <p className="text-sm text-slate-200">
+              Your dashboard is ready, but there&apos;s no activity yet.
+            </p>
+            <p className="text-xs text-slate-500">
+              Complete your first protected trade below to get started.
+            </p>
           </div>
         )}
 

@@ -34,7 +34,8 @@ export type SecurityEvent =
   | "admin_password_reset_revoke"
   | "admin_feature_policy_updated"
   | "admin_upgrade_approve"
-  | "admin_upgrade_reject";
+  | "admin_upgrade_reject"
+  | "customer_route_failure";
 
 export interface SecurityLogContext {
   /** Raw IP string — will be hashed before logging. */
@@ -140,6 +141,17 @@ export function logSecurityEvent(
       );
     }
   }
+
+  /* ── Track per-route customer route failure counts ── */
+  if (event === "customer_route_failure" && ctx.meta?.route) {
+    const route = String(ctx.meta.route);
+    if (KNOWN_CUSTOMER_ROUTES.has(route)) {
+      customerRouteFailureCounts.set(
+        route,
+        (customerRouteFailureCounts.get(route) ?? 0) + 1,
+      );
+    }
+  }
 }
 
 /* ---------- security event counters ---------- */
@@ -230,6 +242,20 @@ const KNOWN_PUBLIC_ROUTES = new Set([
  * keyed by route label. Only safe static labels from KNOWN_PUBLIC_ROUTES stored.
  */
 const publicRouteRateLimitedCounts = new Map<string, number>();
+
+/* ---------- per-route customer route failure counters ---------- */
+
+/** Allowed customer route labels — only these are tracked in breakdowns. */
+const KNOWN_CUSTOMER_ROUTES = new Set([
+  "sandbox/sample-intent",
+  "sandbox/protect",
+]);
+
+/**
+ * Process-local aggregate counters for customer_route_failure events,
+ * keyed by route label. Only safe static labels from KNOWN_CUSTOMER_ROUTES stored.
+ */
+const customerRouteFailureCounts = new Map<string, number>();
 
 /**
  * Process-local aggregate counters for admin_action_degraded events, keyed
@@ -333,6 +359,22 @@ export function getPublicRouteRateLimitedCounts(): Record<string, number> {
   }
 }
 
+/**
+ * Return a snapshot of per-route customer route failure counts.
+ * Keys are safe static route labels only. Never throws.
+ */
+export function getCustomerRouteFailureCounts(): Record<string, number> {
+  try {
+    const result: Record<string, number> = {};
+    for (const [key, val] of customerRouteFailureCounts) {
+      result[key] = val;
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
 /** Exposed for tests only — reset all counters. */
 export function _resetSecurityEventCounters(): void {
   securityEventCounters.clear();
@@ -341,4 +383,5 @@ export function _resetSecurityEventCounters(): void {
   adminApiDegradedCounts.clear();
   agentRouteRateLimitedCounts.clear();
   publicRouteRateLimitedCounts.clear();
+  customerRouteFailureCounts.clear();
 }

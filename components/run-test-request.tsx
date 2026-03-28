@@ -30,6 +30,7 @@ export default function RunTestRequest({ apiKey }: { apiKey?: string | null }) {
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<ProtectResult | null>(null);
   const [isFallback, setIsFallback] = useState(false);
+  const [errorDetail, setErrorDetail] = useState("");
   const [snippetCopied, setSnippetCopied] = useState(false);
 
   async function handleCopySnippet() {
@@ -46,6 +47,7 @@ export default function RunTestRequest({ apiKey }: { apiKey?: string | null }) {
     setStatus("loading");
     setResult(null);
     setIsFallback(false);
+    setErrorDetail("");
 
     try {
       const headers: Record<string, string> = {
@@ -55,19 +57,52 @@ export default function RunTestRequest({ apiKey }: { apiKey?: string | null }) {
         headers["X-API-Key"] = apiKey;
       }
 
-      const res = await fetch("/api/sandbox/protect", {
-        method: "POST",
-        headers,
-        body: JSON.stringify(SAMPLE_INTENT),
-      });
+      let res: Response;
+      try {
+        res = await fetch("/api/sandbox/protect", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(SAMPLE_INTENT),
+        });
+      } catch {
+        setErrorDetail("We couldn't reach the sandbox service.");
+        setResult(FALLBACK_RESULT);
+        setIsFallback(true);
+        setStatus("error");
+        return;
+      }
 
-      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      if (!res.ok) {
+        const statusCode = res.status;
+        if (statusCode === 429) {
+          setErrorDetail("Rate limit reached. Please wait a moment and try again.");
+        } else if (statusCode >= 500) {
+          setErrorDetail("The ATF sandbox is temporarily unavailable.");
+        } else {
+          setErrorDetail(`Request failed (${statusCode}).`);
+        }
+        setResult(FALLBACK_RESULT);
+        setIsFallback(true);
+        setStatus("error");
+        return;
+      }
 
-      const data: ProtectResult = await res.json();
+      let data: ProtectResult;
+      try {
+        data = await res.json();
+      } catch {
+        setErrorDetail("Received an invalid response from the sandbox.");
+        setResult(FALLBACK_RESULT);
+        setIsFallback(true);
+        setStatus("error");
+        return;
+      }
+
       setResult(data);
       setIsFallback(false);
       setStatus("success");
     } catch {
+      setErrorDetail("Something unexpected went wrong.");
       setResult(FALLBACK_RESULT);
       setIsFallback(true);
       setStatus("error");
@@ -110,7 +145,7 @@ export default function RunTestRequest({ apiKey }: { apiKey?: string | null }) {
           {/* Fallback notice */}
           {isFallback && (
             <p className="text-[10px] text-amber-400">
-              Sandbox unavailable — showing a verified example response.
+              {errorDetail || "Sandbox unavailable"} — showing a verified example response.
             </p>
           )}
 

@@ -136,18 +136,29 @@ export async function login(
 
 export async function fetchDashboard(): Promise<Record<string, unknown>> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
 
-  const res = await fetch(`${ATF_API_BASE}/dashboard/me`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${ATF_API_BASE}/dashboard/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the dashboard service.");
+  }
 
   if (res.status === 401) {
     clearAuth();
-    throw new ApiError("unauthorized", "Session expired");
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
   }
 
-  if (!res.ok) throw new Error("Failed to fetch dashboard");
+  if (res.status >= 500) {
+    throw new ApiError("upstream_5xx", "We couldn't load your dashboard right now. Please try again in a moment.");
+  }
+
+  if (!res.ok) {
+    throw new ApiError("api_error", "We couldn't load your dashboard right now. Please try again in a moment.");
+  }
 
   return res.json();
 }
@@ -158,22 +169,33 @@ export async function fetchDashboard(): Promise<Record<string, unknown>> {
 
 export async function fetchSampleIntent(): Promise<Record<string, unknown>> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
 
-  const res = await fetch(`${ATF_API_BASE}/onboarding/sample-intent`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${ATF_API_BASE}/onboarding/sample-intent`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the sample trade service.");
+  }
 
   if (res.status === 401) {
     clearAuth();
-    throw new ApiError("unauthorized", "Session expired");
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
   }
 
   if (res.status === 429) {
     await throwApiError(res, "Rate limit reached. Please try again later.");
   }
 
-  if (!res.ok) throw new Error("Failed to fetch sample intent");
+  if (res.status >= 500) {
+    throw new ApiError("upstream_5xx", "Sample trade generation is temporarily unavailable.");
+  }
+
+  if (!res.ok) {
+    throw new ApiError("api_error", "Sample trade generation is temporarily unavailable.");
+  }
 
   return res.json();
 }
@@ -182,27 +204,38 @@ export async function simulateProtection(
   intent: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
 
-  const res = await fetch(`${ATF_API_BASE}/onboarding/protect-dry-run`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(intent),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${ATF_API_BASE}/onboarding/protect-dry-run`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(intent),
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the protection service.");
+  }
 
   if (res.status === 401) {
     clearAuth();
-    throw new ApiError("unauthorized", "Session expired");
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
   }
 
   if (res.status === 429) {
     await throwApiError(res, "Rate limit reached. Please try again later.");
   }
 
-  if (!res.ok) throw new Error("Protection simulation failed");
+  if (res.status >= 500) {
+    throw new ApiError("upstream_5xx", "Protection simulation is temporarily unavailable.");
+  }
+
+  if (!res.ok) {
+    throw new ApiError("api_error", "Protection simulation is temporarily unavailable.");
+  }
 
   return res.json();
 }
@@ -211,27 +244,38 @@ export async function executeSample(
   intent: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
 
-  const res = await fetch(`${ATF_API_BASE}/onboarding/execute-sample`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(intent),
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${ATF_API_BASE}/onboarding/execute-sample`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(intent),
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the execution service.");
+  }
 
   if (res.status === 401) {
     clearAuth();
-    throw new ApiError("unauthorized", "Session expired");
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
   }
 
   if (res.status === 429) {
     await throwApiError(res, "Rate limit reached. Please try again later.");
   }
 
-  if (!res.ok) throw new Error("Sample execution failed");
+  if (res.status >= 500) {
+    throw new ApiError("upstream_5xx", "Sample trade execution is temporarily unavailable.");
+  }
+
+  if (!res.ok) {
+    throw new ApiError("api_error", "Sample trade execution is temporarily unavailable.");
+  }
 
   return res.json();
 }
@@ -242,18 +286,23 @@ export async function executeSample(
 
 export async function fetchActivation(): Promise<Record<string, unknown>> {
   const token = getToken();
-  if (!token) throw new Error("Not authenticated");
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
 
-  const res = await fetch(`${ATF_API_BASE}/dashboard/activation`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${ATF_API_BASE}/dashboard/activation`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    throw new ApiError("network_error", "Could not reach activation service.");
+  }
 
   if (res.status === 401) {
     clearAuth();
-    throw new ApiError("unauthorized", "Session expired");
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
   }
 
-  if (!res.ok) throw new Error("Failed to fetch activation state");
+  if (!res.ok) throw new ApiError("api_error", "Failed to fetch activation state");
 
   return res.json();
 }
