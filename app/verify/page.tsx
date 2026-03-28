@@ -22,8 +22,8 @@ function parseHash(raw: string | string[] | undefined): string {
   return raw;
 }
 
-function parseFrom(raw: string | string[] | undefined): "verify" | "receipts" | "portal" {
-  if (raw === "receipts" || raw === "portal") {
+function parseFrom(raw: string | string[] | undefined): "verify" | "receipts" | "portal" | "share" {
+  if (raw === "receipts" || raw === "portal" || raw === "share") {
     return raw;
   }
 
@@ -39,11 +39,27 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
   const initialHash = parseHash(params.hash);
   const initialFrom = parseFrom(params.from);
   const shouldAutofetchSignature = parseAutofetchSig(params.autofetchSig);
+  const isFromShare = initialFrom === "share";
 
   return (
     <Container>
       <Section className="fade-in-up">
         <div className="max-w-3xl space-y-5">
+          {/* Shared receipt banner - shown when arriving from share link */}
+          {isFromShare && initialHash && (
+            <div className="rounded-lg border border-primary-400/30 bg-primary-500/10 p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">&#x1F517;</span>
+                <p className="text-sm font-medium text-primary-200">
+                  Someone shared a protected trade receipt with you
+                </p>
+              </div>
+              <p className="text-xs text-slate-400">
+                Verify this trade was protected by TruCore ATF. The hash below is pre-filled from the shared link.
+              </p>
+            </div>
+          )}
+
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Verification Utility</p>
           <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">Verify Receipt Hash</h1>
           <p className="text-xl leading-[1.5] text-slate-300">
@@ -112,6 +128,39 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
           shouldAutofetchSignature={shouldAutofetchSignature}
         />
       </Section>
+
+      {/* ── Try TruCore CTA for shared link visitors ── */}
+      {isFromShare && (
+        <Section className="pt-0 fade-in-up fade-delay-1">
+          <div className="max-w-3xl">
+            <div className="rounded-xl border border-accent-400/30 bg-gradient-to-br from-accent-500/10 to-transparent p-6">
+              <h2 className="text-xl font-bold text-accent-200">Protect your trades too</h2>
+              <p className="mt-2 text-sm text-slate-300">
+                TruCore ATF protects every transaction your agent makes. Get verifiable receipts,
+                enforce risk policies, and share proof of protected execution.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <TrackedLink
+                  href="/signup"
+                  eventName="verify_share_signup_click"
+                  eventProps={{ location: "verify_page_share_banner" }}
+                  className="rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-accent-400"
+                >
+                  Get started free
+                </TrackedLink>
+                <TrackedLink
+                  href="/docs/first-protected-trade"
+                  eventName="verify_share_learn_click"
+                  eventProps={{ location: "verify_page_share_banner" }}
+                  className="rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/10"
+                >
+                  Learn how it works
+                </TrackedLink>
+              </div>
+            </div>
+          </div>
+        </Section>
+      )}
 
       {/* ── Next steps ── */}
       <Section divider className="fade-in-up fade-delay-2">

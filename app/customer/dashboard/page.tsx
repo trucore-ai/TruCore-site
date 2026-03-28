@@ -25,6 +25,12 @@ import {
   trackQuickTradeCompleted,
   trackQuickTradeFailed,
 } from "@/lib/client/quick-trade-telemetry";
+import {
+  copyShareText,
+  shareToTwitter,
+  shareToTelegram,
+  truncateId,
+} from "@/lib/client/share-receipt";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -187,6 +193,8 @@ export default function CustomerDashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Activation / onboarding
   const [activationLoading, setActivationLoading] = useState(true);
@@ -1166,6 +1174,69 @@ export default function CustomerDashboardPage() {
                       ? "Executed on-chain"
                       : "Simulated execution"}
                   </span>
+                  {/* Share proof dropdown */}
+                  <div className="relative">
+                    <button
+                      data-testid="share-proof-btn"
+                      onClick={() => setShareOpen(!shareOpen)}
+                      className="rounded-md border border-primary-400/30 bg-primary-500/10 px-3 py-1 text-xs font-medium text-primary-200 transition hover:bg-primary-500/20"
+                    >
+                      {shareCopied ? "Copied!" : "Share proof"}
+                    </button>
+                    {shareOpen && (
+                      <div
+                        data-testid="share-dropdown"
+                        className="absolute right-0 top-full mt-1 z-10 w-40 rounded-lg border border-white/10 bg-neutral-900 p-1 shadow-xl"
+                      >
+                        <button
+                          onClick={async () => {
+                            const receiptData = {
+                              receipt_id: ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.receipt_id as string | undefined,
+                              content_hash: ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.content_hash as string | undefined,
+                              decision: (obReceipt as Record<string, unknown>).decision as string | undefined,
+                            };
+                            const ok = await copyShareText(receiptData);
+                            if (ok) {
+                              setShareCopied(true);
+                              setTimeout(() => setShareCopied(false), 2000);
+                            }
+                            setShareOpen(false);
+                          }}
+                          className="w-full rounded-md px-3 py-2 text-left text-xs text-slate-200 transition hover:bg-white/5"
+                        >
+                          Copy share text
+                        </button>
+                        <button
+                          onClick={() => {
+                            const receiptData = {
+                              receipt_id: ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.receipt_id as string | undefined,
+                              content_hash: ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.content_hash as string | undefined,
+                              decision: (obReceipt as Record<string, unknown>).decision as string | undefined,
+                            };
+                            shareToTwitter(receiptData);
+                            setShareOpen(false);
+                          }}
+                          className="w-full rounded-md px-3 py-2 text-left text-xs text-slate-200 transition hover:bg-white/5"
+                        >
+                          Share on X
+                        </button>
+                        <button
+                          onClick={() => {
+                            const receiptData = {
+                              receipt_id: ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.receipt_id as string | undefined,
+                              content_hash: ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>)?.content_hash as string | undefined,
+                              decision: (obReceipt as Record<string, unknown>).decision as string | undefined,
+                            };
+                            shareToTelegram(receiptData);
+                            setShareOpen(false);
+                          }}
+                          className="w-full rounded-md px-3 py-2 text-left text-xs text-slate-200 transition hover:bg-white/5"
+                        >
+                          Share on Telegram
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <button
                     onClick={handleCopyReceipt}
                     className="rounded-md border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10"
@@ -1205,6 +1276,72 @@ export default function CustomerDashboardPage() {
                   </p>
                 </div>
               )}
+              {/* Receipt Preview Card */}
+              {(() => {
+                const receipt = (obReceipt as Record<string, unknown>).receipt as Record<string, unknown> | undefined;
+                const receiptId = receipt?.receipt_id as string | undefined;
+                const contentHash = receipt?.content_hash as string | undefined;
+                const decision = (obReceipt as Record<string, unknown>).decision as string;
+                const createdAt = receipt?.created_at as number | undefined;
+
+                return (
+                  <div
+                    data-testid="receipt-preview-card"
+                    className="rounded-lg border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-transparent p-4"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-2 flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">&#x2705;</span>
+                          <span className="text-sm font-medium text-emerald-200">Protected Trade</span>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                              decision === "ALLOW"
+                                ? "bg-emerald-500/20 text-emerald-300"
+                                : "bg-red-500/20 text-red-300"
+                            }`}
+                          >
+                            {decision}
+                          </span>
+                        </div>
+                        {receiptId && (
+                          <p className="text-xs font-mono text-slate-400 truncate">
+                            ID: {truncateId(receiptId)}
+                          </p>
+                        )}
+                        {createdAt && (
+                          <p className="text-[10px] text-slate-500">
+                            {new Date(createdAt * 1000).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-1">
+                          <svg
+                            className="h-3.5 w-3.5 text-emerald-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <span className="text-[10px] text-emerald-400 font-medium">Verified</span>
+                        </div>
+                        {contentHash && (
+                          <p className="text-[9px] font-mono text-slate-500 truncate max-w-[120px]">
+                            {truncateId(contentHash, 6, 4)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
               <pre className="overflow-x-auto rounded-lg bg-neutral-900 p-3 text-xs text-slate-200 font-mono">
                 {JSON.stringify(obReceipt, null, 2)}
               </pre>
