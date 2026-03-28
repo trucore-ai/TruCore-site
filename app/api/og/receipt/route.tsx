@@ -13,10 +13,33 @@ const SIZE = {
  * NO sensitive data: no wallet addresses, no amounts, no policy details.
  */
 type ReceiptPreviewData = {
-  decision: "ALLOW" | "DENY";
+  decision: "ALLOW" | "DENY" | "UNKNOWN";
   hashPreview: string;
   timestamp: string;
+  verified: boolean; // true if fetched from backend, false if deterministic fallback
 };
+
+/**
+ * Backend verification response.
+ * ONLY these fields are allowed through.
+ */
+type VerificationResponse = {
+  valid: boolean;
+  decision?: "ALLOW" | "DENY";
+};
+
+/** Backend verification timeout in milliseconds */
+const VERIFICATION_TIMEOUT_MS = 500;
+
+/** Check if real verification is enabled via env */
+function isRealVerificationEnabled(): boolean {
+  return process.env.OG_REAL_VERIFICATION_ENABLED === "true";
+}
+
+/** Get ATF API URL from env */
+function getAtfApiUrl(): string | undefined {
+  return process.env.ATF_API_URL;
+}
 
 /**
  * Sanitize and validate a receipt hash parameter.
@@ -41,13 +64,12 @@ function formatHashPreview(hash: string): string {
 }
 
 /**
- * Derive preview data from hash.
- * In production, this could fetch from a cache or database.
- * For now, we derive a deterministic decision from the hash.
+ * Derive preview data from hash using deterministic logic.
+ * This is the fallback when backend verification is disabled or unavailable.
  */
 function derivePreviewData(hash: string): ReceiptPreviewData {
   // Use first byte of hash to deterministically derive decision (for consistency)
-  // This is a placeholder - in production, you'd fetch actual receipt status
+  // This is a fallback - when real verification is enabled, we fetch from backend
   const firstByte = parseInt(hash.slice(0, 2), 16);
   const decision: "ALLOW" | "DENY" = firstByte % 5 === 0 ? "DENY" : "ALLOW";
 
@@ -59,7 +81,157 @@ function derivePreviewData(hash: string): ReceiptPreviewData {
     decision,
     hashPreview: formatHashPreview(hash),
     timestamp,
+    verified: false, // Deterministic fallback, not verified from backend
   };
+}
+
+/**
+ * Sanitize backend verification response.
+ * ONLY allow safe fields through, nothing else.
+ */
+function sanitizeVerificationResponse(data: unknown): VerificationResponse | null {
+  if (!data || typeof data !== "object") return null;
+
+  const obj = data as Record<string, unknown>;
+
+  // Only extract valid and decision fields
+  const valid = typeof obj.valid === "boolean" ? obj.valid : false;
+  const decision =
+    obj.decision === "ALLOW" || obj.decision === "DENY" ? obj.decision : undefined;
+
+  return { valid, decision };
+}
+
+/**
+ * Fetch receipt verification from ATF backend.
+ * Returns null on any failure (timeout, error, invalid response).
+ */
+async function fetchVerification(
+  hash: string,
+  apiUrl: string,
+): Promise<VerificationResponse | null> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), VERIFICATION_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      `${apiUrl}/v1/receipts/verify?hash=${encodeURIComponent(hash)}`,
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+        signal: controller.signal,
+      },
+    );
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return sanitizeVerificationResponse(data);
+  } catch {
+    // Timeout, network error, or any other failure
+    clearTimeout(timeoutId);
+    return null;
+  }
+}
+
+/**
+ * Get preview data with optional real backend verification.
+ */
+async function getPreviewData(hash: string): Promise<ReceiptPreviewData> {
+  // Generate a reasonable timestamp
+  const now = new Date();
+  const timestamp = now.toISOString().split("T")[0]; // YYYY-MM-DD
+
+  // Check if real verification is enabled
+  if (!isRealVerificationEnabled()) {
+    return derivePreviewData(hash);
+  }
+
+  const apiUrl = getAtfApiUrl();
+  if (!apiUrl) {
+    // No API URL configured, use deterministic fallback
+    return derivePreviewData(hash);
+  }
+
+  // Attempt real verification
+  const verification = await fetchVerification(hash, apiUrl);
+
+  if (verification && verification.valid && verification.decision) {
+    // Real verification succeeded
+    return {
+      decision: verification.decision,
+      hashPreview: formatHashPreview(hash),
+      timestamp,
+      verified: true,
+    };
+  }
+
+  if (verification && verification.valid === false) {
+    // Backend says receipt is not valid/found
+    return {
+      decision: "UNKNOWN",
+      hashPreview: formatHashPreview(hash),
+      timestamp,
+      verified: true, // We got a response from backend, even if unknown
+    };
+  }
+
+  // Fallback to deterministic logic on any failure
+  return derivePreviewData(hash);
+}
+
+/**
+ * Get status badge styling based on decision.
+ */
+function getStatusStyles(decision: "ALLOW" | "DENY" | "UNKNOWN") {
+  switch (decision) {
+    case "ALLOW":
+      return {
+        background: "rgba(34, 197, 94, 0.15)",
+        border: "rgba(34, 197, 94, 0.4)",
+        dot: "#22c55e",
+        text: "#86efac",
+        label: "ALLOWED",
+      };
+    case "DENY":
+      return {
+        background: "rgba(239, 68, 68, 0.15)",
+        border: "rgba(239, 68, 68, 0.4)",
+        dot: "#ef4444",
+        text: "#fca5a5",
+        label: "DENIED",
+      };
+    case "UNKNOWN":
+    default:
+      return {
+        background: "rgba(148, 163, 184, 0.15)",
+        border: "rgba(148, 163, 184, 0.4)",
+        dot: "#94a3b8",
+        text: "#cbd5e1",
+        label: "UNKNOWN",
+      };
+  }
+}
+
+/**
+ * Get headline text based on decision.
+ */
+function getHeadline(decision: "ALLOW" | "DENY" | "UNKNOWN") {
+  switch (decision) {
+    case "ALLOW":
+      return "Protected Trade Verified";
+    case "DENY":
+      return "Transaction Blocked by Policy";
+    case "UNKNOWN":
+    default:
+      return "Receipt Status Unavailable";
+  }
 }
 
 /**
@@ -68,7 +240,7 @@ function derivePreviewData(hash: string): ReceiptPreviewData {
 function ReceiptOgCard({ data }: { data: ReceiptPreviewData | null }) {
   const isValid = data !== null;
   const decision = data?.decision ?? "ALLOW";
-  const isAllowed = decision === "ALLOW";
+  const statusStyles = getStatusStyles(decision);
 
   return (
     <div
@@ -133,8 +305,8 @@ function ReceiptOgCard({ data }: { data: ReceiptPreviewData | null }) {
               gap: "8px",
               padding: "8px 16px",
               borderRadius: "24px",
-              background: isAllowed ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)",
-              border: `1px solid ${isAllowed ? "rgba(34, 197, 94, 0.4)" : "rgba(239, 68, 68, 0.4)"}`,
+              background: statusStyles.background,
+              border: `1px solid ${statusStyles.border}`,
             }}
           >
             <div
@@ -142,17 +314,17 @@ function ReceiptOgCard({ data }: { data: ReceiptPreviewData | null }) {
                 width: "10px",
                 height: "10px",
                 borderRadius: "50%",
-                background: isAllowed ? "#22c55e" : "#ef4444",
+                background: statusStyles.dot,
               }}
             />
             <span
               style={{
                 fontSize: 16,
                 fontWeight: 600,
-                color: isAllowed ? "#86efac" : "#fca5a5",
+                color: statusStyles.text,
               }}
             >
-              {isAllowed ? "ALLOWED" : "DENIED"}
+              {statusStyles.label}
             </span>
           </div>
         </div>
@@ -166,7 +338,7 @@ function ReceiptOgCard({ data }: { data: ReceiptPreviewData | null }) {
             color: "#f0f9ff",
           }}
         >
-          {isValid ? "Protected Trade Verified" : "Protected Trade Receipt"}
+          {isValid ? getHeadline(decision) : "Protected Trade Receipt"}
         </div>
 
         {/* Receipt info */}
@@ -429,29 +601,46 @@ function FallbackOgCard() {
   );
 }
 
+/**
+ * Get cache headers based on verification status.
+ * Verified data is cached longer than fallback data.
+ */
+function getCacheHeaders(verified: boolean): Record<string, string> {
+  if (verified) {
+    // Verified from backend: cache for 1 hour
+    return {
+      "Cache-Control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
+    };
+  }
+  // Fallback (not verified): shorter cache (5 minutes)
+  return {
+    "Cache-Control": "public, max-age=300, s-maxage=300, stale-while-revalidate=3600",
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const rawHash = searchParams.get("hash");
     const sanitizedHash = sanitizeHash(rawHash);
 
-    // If hash is valid, show receipt-specific card; otherwise show fallback
-    const previewData = sanitizedHash ? derivePreviewData(sanitizedHash) : null;
+    // If hash is valid, get preview data (may involve backend verification)
+    const previewData = sanitizedHash ? await getPreviewData(sanitizedHash) : null;
     const card = previewData ? <ReceiptOgCard data={previewData} /> : <FallbackOgCard />;
+
+    // Use appropriate cache headers based on verification status
+    const cacheHeaders = getCacheHeaders(previewData?.verified ?? false);
 
     return new ImageResponse(card, {
       ...SIZE,
-      headers: {
-        // Cache for 1 hour, stale-while-revalidate for 1 day
-        "Cache-Control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
-      },
+      headers: cacheHeaders,
     });
   } catch {
-    // If anything fails, return fallback
+    // If anything fails, return fallback with short cache
     return new ImageResponse(<FallbackOgCard />, {
       ...SIZE,
       headers: {
-        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "Cache-Control": "public, max-age=300, s-maxage=300",
       },
     });
   }
