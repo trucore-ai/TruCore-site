@@ -580,23 +580,104 @@ export default function CustomerDashboardPage() {
                 <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20">
                   <span className="text-xl">&#x2705;</span>
                 </div>
-                <h2 className="text-xl font-semibold text-emerald-300">
+                <h2 data-testid="trust-headline" className="text-xl font-semibold text-emerald-300">
                   Protected trade completed successfully
                 </h2>
-                <p className="text-sm text-slate-400">
-                  Your first protected trade is done. You can run another or
-                  view your receipts.
+                <p data-testid="trust-subline" className="text-sm text-slate-400">
+                  ATF evaluated, enforced, and recorded this transaction.
                 </p>
-                {(obReceipt || activation?.first_receipt_id || receiptCount > 0) && (
-                  <p>
-                    <Link
-                      href="/customer/receipts"
-                      className="text-xs text-emerald-300 underline hover:text-emerald-200"
-                    >
-                      View receipt history &rarr;
-                    </Link>
-                  </p>
-                )}
+
+                {/* Trust Card: Receipt metadata row */}
+                {(() => {
+                  const receiptId = (obReceipt as Record<string, unknown>)?.receipt
+                    ? ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).receipt_id as string
+                    : activation?.first_receipt_id ?? null;
+                  const decision = (obDryRun as Record<string, unknown>)?.decision as string ?? "ALLOW";
+                  const executionTime = obReceipt ? new Date().toLocaleString() : null;
+                  const hasReceipt = !!(receiptId || receiptCount > 0);
+
+                  return hasReceipt ? (
+                    <div data-testid="trust-metadata" className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 space-y-2">
+                      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs">
+                        {receiptId && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-500">Receipt:</span>
+                            <span className="font-mono text-emerald-200">{receiptId.length > 16 ? `${receiptId.slice(0, 8)}…${receiptId.slice(-6)}` : receiptId}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-500">Decision:</span>
+                          <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${decision === "ALLOW" ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300"}`}>
+                            {decision}
+                          </span>
+                        </div>
+                        {executionTime && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-500">Timestamp:</span>
+                            <span className="text-slate-300">{executionTime}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-slate-500">Verification:</span>
+                          <span className="text-emerald-300">Available</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div data-testid="trust-metadata-pending" className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+                      <p className="text-xs text-amber-300">
+                        Your receipt is being prepared. You can check receipt history shortly.
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* Verification explainer */}
+                <p data-testid="verification-explainer" className="mt-3 text-xs text-slate-500 italic">
+                  Receipts are tamper-evident records you can independently verify.
+                </p>
+
+                {/* Primary receipt actions */}
+                {(() => {
+                  const receiptId = (obReceipt as Record<string, unknown>)?.receipt
+                    ? ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).receipt_id as string
+                    : activation?.first_receipt_id ?? null;
+                  const hasReceipt = !!(receiptId || receiptCount > 0);
+
+                  return (
+                    <div data-testid="trust-actions" className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                      {/* Primary: View receipt / history */}
+                      <Link
+                        href="/customer/receipts"
+                        className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500"
+                      >
+                        View protected trade receipts
+                      </Link>
+                      {/* Secondary: Verify receipt */}
+                      {hasReceipt && receiptId && (
+                        <Link
+                          href={`/verify?hash=${encodeURIComponent(receiptId)}&from=receipts`}
+                          data-testid="verify-action"
+                          className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-5 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20"
+                        >
+                          Verify receipt
+                        </Link>
+                      )}
+                      {/* Tertiary: Run another trade */}
+                      <button
+                        onClick={() => {
+                          setObStep(0);
+                          setObIntent(null);
+                          setObDryRun(null);
+                          setObReceipt(null);
+                        }}
+                        className="rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-slate-300 transition hover:bg-white/10"
+                      >
+                        Run another trade
+                      </button>
+                    </div>
+                  );
+                })()}
               </>
             ) : (
               <>
@@ -897,30 +978,7 @@ export default function CustomerDashboardPage() {
               </div>
             )}
 
-          {/* Completed-state CTAs */}
-          {onboardingComplete && !obReceipt && (
-            <div className="flex items-center justify-center gap-4">
-              <Link
-                href="/customer/receipts"
-                className="rounded-lg bg-primary-500 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-primary-400"
-              >
-                View receipts
-              </Link>
-              <button
-                onClick={() => {
-                  setObStep(0);
-                  setObIntent(null);
-                  setObDryRun(null);
-                  setObReceipt(null);
-                }}
-                className="rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-slate-300 transition hover:bg-white/10"
-              >
-                Run another trade
-              </button>
-            </div>
-          )}
-
-          {/* Quickstart link + trust signal */}
+          {/* Quickstart link */}
           <div className="text-center space-y-2">
             <p className="text-xs text-slate-500">
               All transactions are policy-protected and verifiable.
@@ -1178,13 +1236,13 @@ export default function CustomerDashboardPage() {
           <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-medium text-slate-300">
-                Receipts
+                Protected Trade Receipts
               </h2>
               <Link
                 href="/customer/receipts"
                 className="text-xs text-primary-400 hover:text-primary-300 transition"
               >
-                View all &rarr;
+                View protected trade receipts &rarr;
               </Link>
             </div>
             <div className="flex items-center gap-6">

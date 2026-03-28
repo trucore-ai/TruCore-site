@@ -207,10 +207,10 @@ export default function CustomerReceiptsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-slate-100">
-              Receipts
+              Protected Trade Receipts
             </h1>
             <p className="mt-1 text-sm text-slate-400">
-              View and verify all ATF protection receipts.
+              View and verify your ATF protection receipts. Each receipt is a tamper-evident record.
             </p>
           </div>
           <Link

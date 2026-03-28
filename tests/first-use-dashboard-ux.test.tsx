@@ -286,7 +286,7 @@ describe("First-use UX — success state", () => {
     });
 
     expect(
-      screen.getByRole("link", { name: /view receipt history/i }),
+      screen.getByRole("link", { name: /view protected trade receipts/i }),
     ).toBeInTheDocument();
   });
 });
