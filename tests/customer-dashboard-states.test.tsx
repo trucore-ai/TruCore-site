@@ -113,7 +113,7 @@ describe("CustomerDashboardPage — empty state", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          /your dashboard is ready, but there's no activity yet/i,
+          /your account is ready/i,
         ),
       ).toBeInTheDocument();
     });
@@ -136,8 +136,9 @@ describe("CustomerDashboardPage — error state", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
+      // Error is classified to a user-friendly message
       expect(
-        screen.getByText(/couldn't load your dashboard/i),
+        screen.getByText(/service temporarily unavailable/i),
       ).toBeInTheDocument();
     });
 
@@ -157,8 +158,9 @@ describe("CustomerDashboardPage — error state", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toBeInTheDocument();
+      // Error is classified to a user-friendly message
       expect(
-        screen.getByText(/couldn't reach the dashboard service/i),
+        screen.getByText(/network issue detected/i),
       ).toBeInTheDocument();
     });
   });
@@ -176,7 +178,7 @@ describe("CustomerDashboardPage — active state", () => {
 
     // Should NOT show the empty-state banner
     expect(
-      screen.queryByText(/no activity yet/i),
+      screen.queryByText(/your account is ready/i),
     ).not.toBeInTheDocument();
   });
 });

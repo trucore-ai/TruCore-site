@@ -23,6 +23,11 @@ const ATF_API_BASE =
 // to the same origin as the browser.
 const AUTH_PROXY_BASE = "/api/customer/auth";
 
+// Same-origin proxy bases for first-use authenticated calls.
+// These avoid CORS/origin drift and keep credentials controlled server-side.
+const DASHBOARD_PROXY_BASE = "/api/dashboard";
+const ONBOARDING_PROXY_BASE = "/api/onboarding";
+
 const TOKEN_KEY = "atf_customer_token";
 const TENANT_KEY = "atf_customer_tenant";
 const API_KEY_KEY = "atf_customer_api_key";
@@ -140,7 +145,7 @@ export async function fetchDashboard(): Promise<Record<string, unknown>> {
 
   let res: Response;
   try {
-    res = await fetch(`${ATF_API_BASE}/dashboard/me`, {
+    res = await fetch(`${DASHBOARD_PROXY_BASE}/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   } catch {
@@ -157,7 +162,11 @@ export async function fetchDashboard(): Promise<Record<string, unknown>> {
   }
 
   if (!res.ok) {
-    throw new ApiError("api_error", "We couldn't load your dashboard right now. Please try again in a moment.");
+    // Parse structured error from proxy route
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "We couldn't load your dashboard right now. Please try again in a moment.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
   }
 
   return res.json();
@@ -173,7 +182,7 @@ export async function fetchSampleIntent(): Promise<Record<string, unknown>> {
 
   let res: Response;
   try {
-    res = await fetch(`${ATF_API_BASE}/onboarding/sample-intent`, {
+    res = await fetch(`${ONBOARDING_PROXY_BASE}/sample-intent`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   } catch {
@@ -194,7 +203,10 @@ export async function fetchSampleIntent(): Promise<Record<string, unknown>> {
   }
 
   if (!res.ok) {
-    throw new ApiError("api_error", "Sample trade generation is temporarily unavailable.");
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "Sample trade generation is temporarily unavailable.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
   }
 
   return res.json();
@@ -208,7 +220,7 @@ export async function simulateProtection(
 
   let res: Response;
   try {
-    res = await fetch(`${ATF_API_BASE}/onboarding/protect-dry-run`, {
+    res = await fetch(`${ONBOARDING_PROXY_BASE}/protect-dry-run`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -234,7 +246,10 @@ export async function simulateProtection(
   }
 
   if (!res.ok) {
-    throw new ApiError("api_error", "Protection simulation is temporarily unavailable.");
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "Protection simulation is temporarily unavailable.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
   }
 
   return res.json();
@@ -248,7 +263,7 @@ export async function executeSample(
 
   let res: Response;
   try {
-    res = await fetch(`${ATF_API_BASE}/onboarding/execute-sample`, {
+    res = await fetch(`${ONBOARDING_PROXY_BASE}/execute-sample`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -274,7 +289,10 @@ export async function executeSample(
   }
 
   if (!res.ok) {
-    throw new ApiError("api_error", "Sample trade execution is temporarily unavailable.");
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "Sample trade execution is temporarily unavailable.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
   }
 
   return res.json();
@@ -290,7 +308,7 @@ export async function fetchActivation(): Promise<Record<string, unknown>> {
 
   let res: Response;
   try {
-    res = await fetch(`${ATF_API_BASE}/dashboard/activation`, {
+    res = await fetch(`${DASHBOARD_PROXY_BASE}/activation`, {
       headers: { Authorization: `Bearer ${token}` },
     });
   } catch {
@@ -317,7 +335,7 @@ export async function markActivationStep(
   const body: Record<string, unknown> = { step };
   if (receiptId) body.receipt_id = receiptId;
 
-  const res = await fetch(`${ATF_API_BASE}/dashboard/activation`, {
+  const res = await fetch(`${DASHBOARD_PROXY_BASE}/activation`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

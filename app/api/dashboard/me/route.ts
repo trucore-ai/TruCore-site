@@ -1,30 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sha256 } from "@/lib/hash";
 import { consumeRateLimit } from "@/lib/rate-limit";
-import { getAtfApiBaseUrl, joinUpstreamUrl, getRequestIp } from "@/lib/server/upstream";
+import { getAtfApiBaseUrl, joinUpstreamUrl, getRequestIp, classifyUpstreamStatus } from "@/lib/server/upstream";
+import { logSecurityEvent } from "@/lib/security-log";
 
 const TIMEOUT_MS = 8_000;
-const RATE_LIMIT_MAX = 5; // per IP per minute
+const RATE_LIMIT_MAX = 30; // per IP per minute
 const NO_STORE = { "Cache-Control": "no-store" };
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   const ip = getRequestIp(req);
-  const rl = consumeRateLimit(`customer:auth:verify-email:request:${sha256(ip)}`, {
+  const rl = consumeRateLimit(`dashboard:me:${sha256(ip)}`, {
     max: RATE_LIMIT_MAX,
     windowMs: 60_000,
   });
 
   if (rl.exceeded) {
     return NextResponse.json(
-      {
-        error: "rate_limited",
-        message: "Too many verification requests. Please wait a moment and try again.",
-      },
+      { error: "rate_limited", message: "Rate limit reached. Please wait a moment and try again." },
       { status: 429, headers: NO_STORE },
     );
   }
 
-  // This endpoint requires an Authorization header (must be logged in to request re-send)
   const authHeader = req.headers.get("authorization") ?? "";
   if (!authHeader.toLowerCase().startsWith("bearer ")) {
     return NextResponse.json(
@@ -33,29 +30,36 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  let bodyText: string;
-  try {
-    bodyText = await req.text();
-  } catch {
-    bodyText = "{}";
-  }
-
-  const upstream = joinUpstreamUrl(getAtfApiBaseUrl(), "/auth/verify-email/request");
+  const upstream = joinUpstreamUrl(getAtfApiBaseUrl(), "/dashboard/me");
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
     const res = await fetch(upstream, {
-      method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: authHeader,
+        Accept: "application/json",
       },
-      body: bodyText,
       signal: controller.signal,
     });
     clearTimeout(timer);
+
     const body = await res.text();
+
+    if (!res.ok) {
+      const failureClass = classifyUpstreamStatus(res.status);
+      logSecurityEvent("customer_route_failure", {
+        ip,
+        meta: {
+          route: "dashboard/me",
+          upstream_target: "atf-api",
+          failure_class: failureClass,
+          status: res.status,
+          environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
+        },
+      });
+    }
+
     return new NextResponse(body, {
       status: res.status,
       headers: {
@@ -65,8 +69,17 @@ export async function POST(req: NextRequest) {
     });
   } catch {
     clearTimeout(timer);
+    logSecurityEvent("customer_route_failure", {
+      ip,
+      meta: {
+        route: "dashboard/me",
+        upstream_target: "atf-api",
+        failure_class: "network_error",
+        environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
+      },
+    });
     return NextResponse.json(
-      { error: "upstream_unavailable", message: "Email verification service is temporarily unavailable." },
+      { error: "upstream_unavailable", message: "Dashboard service is temporarily unavailable." },
       { status: 502, headers: NO_STORE },
     );
   }

@@ -3,24 +3,12 @@ import { sha256 } from "@/lib/hash";
 import { consumeRateLimit } from "@/lib/rate-limit";
 import { logSecurityEvent, shouldTriggerRouteFailureAlert, getCustomerRouteFailureCounts } from "@/lib/security-log";
 import { sendRouteFailureAlert } from "@/lib/ops-alerts";
+import { getSandboxApiBaseUrl, joinUpstreamUrl, getRequestIp, classifyUpstreamStatus } from "@/lib/server/upstream";
 
 const TIMEOUT_MS = 8_000;
 const RATE_LIMIT_MAX = 20; // per IP per minute
 const MAX_BODY_BYTES = 32 * 1024;
 const NO_STORE = { "Cache-Control": "no-store" };
-
-function getAtfApiBase(): string {
-  return (
-    process.env.FIREWALL_API_BASE_URL?.replace(/\/+$/, "") ??
-    process.env.NEXT_PUBLIC_ATF_API_URL?.replace(/\/+$/, "") ??
-    "https://api.trucore.xyz"
-  );
-}
-
-function getRequestIp(req: NextRequest): string {
-  const fwd = req.headers.get("x-forwarded-for");
-  return fwd?.split(",")[0]?.trim() ?? req.headers.get("x-real-ip") ?? "unknown";
-}
 
 export async function POST(req: NextRequest) {
   const ip = getRequestIp(req);
@@ -79,7 +67,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const upstream = `${getAtfApiBase()}/sandbox/protect`;
+  const upstream = joinUpstreamUrl(getSandboxApiBaseUrl(), "/sandbox/protect");
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -93,7 +81,7 @@ export async function POST(req: NextRequest) {
     clearTimeout(timer);
     const body = await res.text();
     if (!res.ok) {
-      const failureClass = res.status >= 500 ? "upstream_5xx" : "upstream_4xx";
+      const failureClass = classifyUpstreamStatus(res.status);
       logSecurityEvent("customer_route_failure", {
         ip,
         meta: {

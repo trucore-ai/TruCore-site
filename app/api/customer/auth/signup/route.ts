@@ -1,23 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sha256 } from "@/lib/hash";
 import { consumeRateLimit } from "@/lib/rate-limit";
+import { getAtfApiBaseUrl, joinUpstreamUrl, getRequestIp } from "@/lib/server/upstream";
 
 const TIMEOUT_MS = 8_000;
 const RATE_LIMIT_MAX = 5; // per IP per minute - signup is lower volume
 const MAX_BODY_BYTES = 4 * 1024;
 const NO_STORE = { "Cache-Control": "no-store" };
-
-function getAtfApiBase(): string {
-  return (
-    process.env.NEXT_PUBLIC_ATF_API_URL?.replace(/\/+$/, "") ??
-    "https://api.trucore.xyz"
-  );
-}
-
-function getRequestIp(req: NextRequest): string {
-  const fwd = req.headers.get("x-forwarded-for");
-  return fwd?.split(",")[0]?.trim() ?? req.headers.get("x-real-ip") ?? "unknown";
-}
 
 export async function POST(req: NextRequest) {
   const ip = getRequestIp(req);
@@ -70,7 +59,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const upstream = `${getAtfApiBase()}/auth/signup`;
+  const upstream = joinUpstreamUrl(getAtfApiBaseUrl(), "/auth/signup");
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 

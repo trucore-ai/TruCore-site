@@ -249,6 +249,11 @@ const publicRouteRateLimitedCounts = new Map<string, number>();
 const KNOWN_CUSTOMER_ROUTES = new Set([
   "sandbox/sample-intent",
   "sandbox/protect",
+  "dashboard/me",
+  "dashboard/activation",
+  "onboarding/sample-intent",
+  "onboarding/protect-dry-run",
+  "onboarding/execute-sample",
 ]);
 
 /**

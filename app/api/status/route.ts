@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { consumeRateLimit } from "@/lib/rate-limit";
 import { sha256 } from "@/lib/hash";
 import { logSecurityEvent } from "@/lib/security-log";
+import { getFirewallApiBaseUrl, getRequestIp as getIp } from "@/lib/server/upstream";
 
 const FIREWALL_HEALTH_TIMEOUT_MS = 2_000;
 
@@ -10,17 +11,7 @@ const RATE_LIMIT_MAX = 60;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 
 function getRequestIp(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() ?? request.headers.get("x-real-ip") ?? "unknown";
-}
-
-function getFirewallApiBaseUrl(): string | null {
-  const baseUrl = process.env.FIREWALL_API_BASE_URL?.trim();
-  if (!baseUrl) {
-    return null;
-  }
-
-  return baseUrl.replace(/\/+$/, "");
+  return getIp(request);
 }
 
 async function checkFirewallReachability(baseUrl: string | null): Promise<boolean> {

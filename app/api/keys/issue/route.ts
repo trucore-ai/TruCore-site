@@ -1,22 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sha256 } from "@/lib/hash";
 import { consumeRateLimit } from "@/lib/rate-limit";
+import { getSandboxApiBaseUrl, joinUpstreamUrl, getRequestIp } from "@/lib/server/upstream";
 
 const TIMEOUT_MS = 8_000;
 const RATE_LIMIT_MAX = 10; // per IP per minute — tighter than sandbox since keys persist
 const NO_STORE = { "Cache-Control": "no-store" };
-
-function getAtfApiBase(): string {
-  return (
-    process.env.FIREWALL_API_BASE_URL?.replace(/\/+$/, "") ??
-    "https://api.trucore.xyz"
-  );
-}
-
-function getRequestIp(req: NextRequest): string {
-  const fwd = req.headers.get("x-forwarded-for");
-  return fwd?.split(",")[0]?.trim() ?? req.headers.get("x-real-ip") ?? "unknown";
-}
 
 /**
  * POST /api/keys/issue
@@ -41,8 +30,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const atfBase = getAtfApiBase();
-  const upstreamUrl = `${atfBase}/auth/api-keys/create`;
+  const atfBase = getSandboxApiBaseUrl();
+  const upstreamUrl = joinUpstreamUrl(atfBase, "/auth/api-keys/create");
 
   let label = "trucore-site";
   try {

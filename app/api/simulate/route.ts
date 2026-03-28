@@ -9,6 +9,8 @@ import {
 import { recordUsage } from "@/lib/usage-meter";
 import { isSimRequest, normalizeSimRequest, simulatePolicy, type SimRequest } from "@/lib/simulator";
 
+import { getFirewallApiBaseUrl } from "@/lib/server/upstream";
+
 const MAX_BODY_BYTES = 32 * 1024;
 const FIREWALL_TIMEOUT_MS = 8_000;
 
@@ -69,15 +71,6 @@ function getKeyedRateLimit(apiKeyId: string): RateLimitResult {
     max: KEYED_SIM_RATE_LIMIT_MAX,
     windowMs: 60_000,
   });
-}
-
-function getFirewallApiBaseUrl(): string | null {
-  const baseUrl = process.env.FIREWALL_API_BASE_URL?.trim();
-  if (!baseUrl) {
-    return null;
-  }
-
-  return baseUrl.replace(/\/+$/, "");
 }
 
 function mapDecisionToStatus(decision: string | undefined): "allowed" | "denied" {
