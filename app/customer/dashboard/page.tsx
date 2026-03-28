@@ -19,6 +19,7 @@ import {
   ApiError,
   type UpgradeRequestData,
 } from "@/lib/customer-auth";
+import { buildVerifyUrl } from "@/lib/share-utils";
 import RunTestRequest from "@/components/run-test-request";
 
 // ---------------------------------------------------------------------------
@@ -207,6 +208,7 @@ export default function CustomerDashboardPage() {
   );
   const [obError, setObError] = useState("");
   const [receiptCopied, setReceiptCopied] = useState(false);
+  const [shareLinkCopied, setShareLinkCopied] = useState(false);
 
   // Receipt awareness
   const [receiptCount, setReceiptCount] = useState(0);
@@ -370,6 +372,16 @@ export default function CustomerDashboardPage() {
   function handleLogout() {
     clearAuth();
     router.push("/login");
+  }
+
+  async function handleCopyShareLink(hash: string) {
+    try {
+      await navigator.clipboard.writeText(buildVerifyUrl(hash));
+      setShareLinkCopied(true);
+      setTimeout(() => setShareLinkCopied(false), 1800);
+    } catch {
+      setShareLinkCopied(false);
+    }
   }
 
   function handleCopyReceipt() {
@@ -617,7 +629,7 @@ export default function CustomerDashboardPage() {
         )}
 
         {/* Ready-state welcome banner for new users */}
-        {loadState === "ready_empty" && !error && !dashboardDataError && (
+        {loadState === "ready_empty" && !error && (
           <div className="rounded-xl border border-primary-400/20 bg-primary-500/5 px-6 py-8 text-center space-y-2">
             <h2 className="text-xl font-semibold text-slate-100">
               Your account is ready
@@ -735,6 +747,8 @@ export default function CustomerDashboardPage() {
                     ? ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).receipt_id as string
                     : activation?.first_receipt_id ?? null;
                   const hasReceipt = !!(receiptId || receiptCount > 0);
+                  const verifyUrl = receiptId ? `/verify?hash=${encodeURIComponent(receiptId)}&from=share` : null;
+                  const ogPreviewUrl = receiptId ? `/api/og/receipt?hash=${encodeURIComponent(receiptId)}` : null;
 
                   return (
                     <div data-testid="trust-actions" className="mt-4 flex flex-wrap items-center justify-center gap-3">
@@ -748,12 +762,33 @@ export default function CustomerDashboardPage() {
                       {/* Secondary: Verify receipt */}
                       {hasReceipt && receiptId && (
                         <Link
-                          href={`/verify?hash=${encodeURIComponent(receiptId)}&from=receipts`}
+                          href={verifyUrl!}
                           data-testid="verify-action"
                           className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-5 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20"
                         >
-                          Verify receipt
+                          View Receipt
                         </Link>
+                      )}
+                      {hasReceipt && receiptId && (
+                        <button
+                          type="button"
+                          data-testid="share-receipt-action"
+                          onClick={() => void handleCopyShareLink(receiptId)}
+                          className="rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-slate-300 transition hover:bg-white/10"
+                        >
+                          {shareLinkCopied ? "Link Copied" : "Share Receipt"}
+                        </button>
+                      )}
+                      {hasReceipt && receiptId && ogPreviewUrl && (
+                        <a
+                          data-testid="preview-share-card-action"
+                          href={ogPreviewUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-slate-300 transition hover:bg-white/10"
+                        >
+                          Preview Share Card
+                        </a>
                       )}
                       {/* Tertiary: Run another trade */}
                       <button
