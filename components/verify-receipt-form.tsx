@@ -43,7 +43,7 @@ type VerifyReceiptResult =
 
 type VerifyReceiptFormProps = {
   initialHash: string;
-  initialFrom?: "verify" | "receipts" | "portal";
+  initialFrom?: "verify" | "receipts" | "portal" | "share";
   shouldAutofetchSignature?: boolean;
 };
 

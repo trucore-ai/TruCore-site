@@ -4,6 +4,7 @@ import { VerifyReceiptForm } from "@/components/verify-receipt-form";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { TrackedLink } from "@/components/tracked-link";
+import { VerifyPageCta } from "@/components/verify-page-cta";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -22,8 +23,8 @@ function parseHash(raw: string | string[] | undefined): string {
   return raw;
 }
 
-function parseFrom(raw: string | string[] | undefined): "verify" | "receipts" | "portal" {
-  if (raw === "receipts" || raw === "portal") {
+function parseFrom(raw: string | string[] | undefined): "verify" | "receipts" | "portal" | "share" {
+  if (raw === "receipts" || raw === "portal" || raw === "share") {
     return raw;
   }
 
@@ -39,17 +40,42 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
   const initialHash = parseHash(params.hash);
   const initialFrom = parseFrom(params.from);
   const shouldAutofetchSignature = parseAutofetchSig(params.autofetchSig);
+  const isFromShare = initialFrom === "share";
 
   return (
     <Container>
-      <Section className="fade-in-up">
+      {/* ── Share traffic hero ── */}
+      {isFromShare ? (
+        <Section className="fade-in-up pb-0">
+          <div className="max-w-3xl space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5">
+              <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-xs font-semibold text-emerald-300">Protected Trade Receipt</span>
+            </div>
+            <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
+              This trade was protected by TruCore
+            </h1>
+            <p className="text-xl leading-[1.6] text-slate-300">
+              AI transactions evaluated, enforced, and recorded with verifiable receipts.
+            </p>
+          </div>
+        </Section>
+      ) : null}
+
+      <Section className={isFromShare ? "fade-in-up pt-8" : "fade-in-up"}>
         <div className="max-w-3xl space-y-5">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Verification Utility</p>
-          <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">Verify Receipt Hash</h1>
-          <p className="text-xl leading-[1.5] text-slate-300">
-            Validate receipt integrity with hash checks, signature verification, and deterministic demo recompute.
-          </p>
-          <p className="text-sm text-slate-500">Developer utility for independent, copy-paste verification workflows.</p>
+          {!isFromShare ? (
+            <>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Verification Utility</p>
+              <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl">Verify Receipt Hash</h1>
+              <p className="text-xl leading-[1.5] text-slate-300">
+                Validate receipt integrity with hash checks, signature verification, and deterministic demo recompute.
+              </p>
+              <p className="text-sm text-slate-500">Developer utility for independent, copy-paste verification workflows.</p>
+            </>
+          ) : null}
 
           {/* ── Proof-first explainer ── */}
           <div className="rounded-lg border border-accent-500/20 bg-accent-500/[0.04] p-4 space-y-2">
@@ -62,6 +88,33 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
             </p>
           </div>
 
+          {/* ── Trust breakdown (emphasized for share traffic) ── */}
+          {isFromShare ? (
+            <div className="rounded-xl border border-primary-500/20 bg-primary-500/[0.04] p-5 space-y-3">
+              <p className="text-sm font-bold text-primary-200">What happened here</p>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2">
+                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm text-slate-300">Transaction evaluated before execution</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm text-slate-300">Risk rules enforced in real time</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm text-slate-300">Outcome recorded as tamper-evident receipt</span>
+                </li>
+              </ul>
+            </div>
+          ) : null}
+
           {/* ── What verification is useful for ── */}
           <div className="space-y-1.5">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">What verification is useful for</p>
@@ -73,23 +126,25 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
           </div>
 
           {/* ── Cold-traffic nudge ── */}
-          <p className="text-sm text-slate-400">
-            Don&apos;t have a receipt yet?{" "}
-            <Link
-              href="/docs/first-protected-trade"
-              className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-            >
-              Run your first protected trade
-            </Link>{" "}
-            to generate one, or explore the{" "}
-            <Link
-              href="/builders"
-              className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-            >
-              builder resources
-            </Link>
-            .
-          </p>
+          {!isFromShare ? (
+            <p className="text-sm text-slate-400">
+              Don&apos;t have a receipt yet?{" "}
+              <Link
+                href="/docs/first-protected-trade"
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                Run your first protected trade
+              </Link>{" "}
+              to generate one, or explore the{" "}
+              <Link
+                href="/builders"
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                builder resources
+              </Link>
+              .
+            </p>
+          ) : null}
 
           <div className="gradient-divider" aria-hidden="true" />
           <p className="text-sm text-slate-400">
@@ -113,18 +168,44 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
         />
       </Section>
 
+      {/* ── Primary CTA for shared traffic ── */}
+      {isFromShare ? (
+        <Section className="fade-in-up fade-delay-2">
+          <div className="max-w-3xl">
+            <div className="rounded-xl border border-primary-500/30 bg-gradient-to-br from-primary-500/10 via-transparent to-transparent p-6 space-y-4">
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold tracking-tight text-accent-200">
+                  Run your first protected trade
+                </h2>
+                <p className="text-sm text-slate-400">
+                  Get the same protection for your autonomous trading agents and bot operations.
+                </p>
+              </div>
+              <VerifyPageCta from="share" />
+              <p className="text-xs text-slate-500">
+                Used by autonomous trading agents and developers
+              </p>
+            </div>
+          </div>
+        </Section>
+      ) : null}
+
       {/* ── Next steps ── */}
       <Section divider className="fade-in-up fade-delay-2">
         <div className="max-w-3xl">
-          <h2 className="text-2xl font-bold tracking-tight text-accent-300">What to do next</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-accent-300">
+            {isFromShare ? "Explore further" : "What to do next"}
+          </h2>
           <p className="mt-2 text-sm text-slate-400">
-            Haven&apos;t protected a trade yet? Start with the golden path. Already verified? Explore deeper integration.
+            {isFromShare
+              ? "See how TruCore works and explore deeper integration options."
+              : "Haven't protected a trade yet? Start with the golden path. Already verified? Explore deeper integration."}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             <TrackedLink
               href="/docs/first-protected-trade"
               eventName="verify_next_golden_path_click"
-              eventProps={{ location: "verify_page" }}
+              eventProps={{ location: "verify_page", from: initialFrom }}
               className="block rounded-lg border border-accent-500/20 bg-accent-500/[0.04] p-4 transition-colors hover:border-primary-300/30"
             >
               <span className="font-semibold text-accent-300">First protected trade</span>
@@ -133,7 +214,7 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
             <TrackedLink
               href="/portal"
               eventName="verify_next_portal_click"
-              eventProps={{ location: "verify_page" }}
+              eventProps={{ location: "verify_page", from: initialFrom }}
               className="block rounded-lg border border-white/10 bg-neutral-900/50 p-4 transition-colors hover:border-primary-300/30"
             >
               <span className="font-semibold text-accent-300">Your portal</span>
@@ -142,7 +223,7 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
             <TrackedLink
               href="/docs/receipt-specification-v1"
               eventName="verify_next_receipt_spec_click"
-              eventProps={{ location: "verify_page" }}
+              eventProps={{ location: "verify_page", from: initialFrom }}
               className="block rounded-lg border border-white/10 bg-neutral-900/50 p-4 transition-colors hover:border-primary-300/30"
             >
               <span className="font-semibold text-accent-300">Receipt specification</span>
@@ -151,7 +232,7 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
             <TrackedLink
               href="/builders"
               eventName="verify_next_builders_click"
-              eventProps={{ location: "verify_page" }}
+              eventProps={{ location: "verify_page", from: initialFrom }}
               className="block rounded-lg border border-white/10 bg-neutral-900/50 p-4 transition-colors hover:border-primary-300/30"
             >
               <span className="font-semibold text-accent-300">For bot builders</span>
