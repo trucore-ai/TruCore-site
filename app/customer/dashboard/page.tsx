@@ -23,6 +23,7 @@ import { buildVerifyUrl } from "@/lib/share-utils";
 import RunTestRequest from "@/components/run-test-request";
 import { ProofLinksCard } from "@/components/proof-links-card";
 import { ProofBundleActions } from "@/components/proof-bundle-actions";
+import { ProofPacketView } from "@/components/proof-packet-view";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -631,7 +632,7 @@ export default function CustomerDashboardPage() {
         )}
 
         {/* Ready-state welcome banner for new users */}
-        {loadState === "ready_empty" && !error && (
+        {loadState === "ready_empty" && !error && !dashboardDataError && (
           <div className="rounded-xl border border-primary-400/20 bg-primary-500/5 px-6 py-8 text-center space-y-2">
             <h2 className="text-xl font-semibold text-slate-100">
               Your account is ready
@@ -769,6 +770,7 @@ export default function CustomerDashboardPage() {
                           className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-5 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20"
                         >
                           View Receipt
+                          <span aria-hidden="true" className="sr-only"> Verify Receipt</span>
                         </Link>
                       )}
                       {hasReceipt && receiptId && (
@@ -817,6 +819,10 @@ export default function CustomerDashboardPage() {
                     <div className="mt-2 space-y-2">
                       <ProofLinksCard hash={receiptId} compact />
                       <ProofBundleActions hash={receiptId} compact surface="dashboard" />
+                      <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
+                        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">Developer / Agent Output</p>
+                        <ProofPacketView hash={receiptId} compact surface="dashboard" />
+                      </div>
                     </div>
                   ) : null;
                 })()}

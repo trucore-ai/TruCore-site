@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   isLoggedIn,
-  clearAuth,
   fetchReceipts,
   fetchReceiptDetail,
   verifyReceipt,
@@ -13,6 +12,7 @@ import {
 } from "@/lib/customer-auth";
 import { ProofLinksCard } from "@/components/proof-links-card";
 import { ProofBundleActions } from "@/components/proof-bundle-actions";
+import { ProofPacketView } from "@/components/proof-packet-view";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -441,14 +441,12 @@ export default function CustomerReceiptsPage() {
                 {/* Full JSON */}
                 <div className="rounded-lg border border-white/10 bg-neutral-900 p-4">
                   <h3 className="text-xs font-medium text-slate-400 mb-2">
-                    Full Receipt JSON
+                    Developer / Agent Output
                   </h3>
-                  <pre className="overflow-x-auto text-xs text-slate-200 font-mono max-h-80 overflow-y-auto">
-                    {JSON.stringify(detail, null, 2)}
-                  </pre>
+                  <ProofPacketView hash={selectedId} compact surface="receipts" />
                 </div>
 
-                {/* Proof links — compact, for direct hash sharing */}
+                {/* Existing proof links/bundle actions */}
                 {(detail as Record<string, unknown>).content_hash != null && (
                   <>
                     <ProofLinksCard
@@ -462,6 +460,16 @@ export default function CustomerReceiptsPage() {
                     />
                   </>
                 )}
+
+                {/* Full JSON */}
+                <div className="rounded-lg border border-white/10 bg-neutral-900 p-4">
+                  <h3 className="text-xs font-medium text-slate-400 mb-2">
+                    Full Receipt JSON
+                  </h3>
+                  <pre className="overflow-x-auto text-xs text-slate-200 font-mono max-h-80 overflow-y-auto">
+                    {JSON.stringify(detail, null, 2)}
+                  </pre>
+                </div>
               </div>
             )}
           </section>
