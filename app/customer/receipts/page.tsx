@@ -13,6 +13,7 @@ import {
 import { ProofLinksCard } from "@/components/proof-links-card";
 import { ProofBundleActions } from "@/components/proof-bundle-actions";
 import { ProofPacketView } from "@/components/proof-packet-view";
+import { DistributionActions } from "@/components/distribution-actions";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -454,6 +455,11 @@ export default function CustomerReceiptsPage() {
                       compact
                     />
                     <ProofBundleActions
+                      hash={String((detail as Record<string, unknown>).content_hash)}
+                      compact
+                      surface="receipts"
+                    />
+                    <DistributionActions
                       hash={String((detail as Record<string, unknown>).content_hash)}
                       compact
                       surface="receipts"

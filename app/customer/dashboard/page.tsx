@@ -24,6 +24,7 @@ import RunTestRequest from "@/components/run-test-request";
 import { ProofLinksCard } from "@/components/proof-links-card";
 import { ProofBundleActions } from "@/components/proof-bundle-actions";
 import { ProofPacketView } from "@/components/proof-packet-view";
+import { DistributionActions } from "@/components/distribution-actions";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -823,6 +824,7 @@ export default function CustomerDashboardPage() {
                         <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">Developer / Agent Output</p>
                         <ProofPacketView hash={receiptId} compact surface="dashboard" />
                       </div>
+                      <DistributionActions hash={receiptId} compact surface="dashboard" />
                     </div>
                   ) : null;
                 })()}

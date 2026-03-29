@@ -6,8 +6,10 @@ import { Section } from "@/components/ui/section";
 import { TrackedLink } from "@/components/tracked-link";
 import { VerifyPageCta } from "@/components/verify-page-cta";
 import { ReceiptShareActions } from "@/components/receipt-share-actions";
+import { ProofPacketView } from "@/components/proof-packet-view";
 import { ProofLinksCard } from "@/components/proof-links-card";
 import { ProofBundleActions } from "@/components/proof-bundle-actions";
+import { DistributionActions } from "@/components/distribution-actions";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -224,6 +226,8 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
             <ReceiptShareActions hash={initialHash} />
             <ProofLinksCard hash={initialHash} />
             <ProofBundleActions hash={initialHash} surface="verify" />
+            <ProofPacketView hash={initialHash} surface="verify" />
+            <DistributionActions hash={initialHash} surface="verify" />
           </div>
         </Section>
       ) : null}

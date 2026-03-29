@@ -293,3 +293,63 @@ describe("dashboard success surface includes proof links", () => {
     });
   });
 });
+
+// ────────────────────────────────────────────────────────────────
+// Distribution Actions Integration Tests
+// ────────────────────────────────────────────────────────────────
+
+describe("verify page distribution actions", () => {
+  it("renders DistributionActions when hash is present", async () => {
+    const page = await VerifyReceiptPage({ searchParams: Promise.resolve({ hash: "abc123" }) });
+    render(page);
+
+    expect(screen.getByTestId("distribution-actions")).toBeInTheDocument();
+  });
+
+  it("renders Copy Share Text button", async () => {
+    const page = await VerifyReceiptPage({ searchParams: Promise.resolve({ hash: "abc123" }) });
+    render(page);
+
+    expect(screen.getByTestId("copy-share-text-btn")).toBeInTheDocument();
+  });
+
+  it("renders Copy Bot Line button", async () => {
+    const page = await VerifyReceiptPage({ searchParams: Promise.resolve({ hash: "abc123" }) });
+    render(page);
+
+    expect(screen.getByTestId("copy-bot-line-btn")).toBeInTheDocument();
+  });
+
+  it("does not render DistributionActions when hash is absent", async () => {
+    const page = await VerifyReceiptPage({ searchParams: Promise.resolve({}) });
+    render(page);
+
+    expect(screen.queryByTestId("distribution-actions")).not.toBeInTheDocument();
+  });
+});
+
+describe("dashboard distribution actions", () => {
+  it("renders DistributionActions in success state when receipt id is available", async () => {
+    render(<CustomerDashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("distribution-actions")).toBeInTheDocument();
+    });
+  });
+
+  it("renders Copy Share Text button in dashboard", async () => {
+    render(<CustomerDashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("copy-share-text-btn")).toBeInTheDocument();
+    });
+  });
+
+  it("renders Copy Bot Line button in dashboard", async () => {
+    render(<CustomerDashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("copy-bot-line-btn")).toBeInTheDocument();
+    });
+  });
+});
