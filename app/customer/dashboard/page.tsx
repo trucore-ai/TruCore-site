@@ -21,6 +21,7 @@ import {
 } from "@/lib/customer-auth";
 import { buildVerifyUrl } from "@/lib/share-utils";
 import RunTestRequest from "@/components/run-test-request";
+import { ProofLinksCard } from "@/components/proof-links-card";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -804,6 +805,18 @@ export default function CustomerDashboardPage() {
                       </button>
                     </div>
                   );
+                })()}
+
+                {/* Compact proof links — raw URLs for power users / developers */}
+                {(() => {
+                  const receiptId = (obReceipt as Record<string, unknown>)?.receipt
+                    ? ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).receipt_id as string
+                    : activation?.first_receipt_id ?? null;
+                  return receiptId ? (
+                    <div className="mt-2">
+                      <ProofLinksCard hash={receiptId} compact />
+                    </div>
+                  ) : null;
                 })()}
               </>
             ) : (

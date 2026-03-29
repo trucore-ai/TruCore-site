@@ -6,6 +6,7 @@ import { Section } from "@/components/ui/section";
 import { TrackedLink } from "@/components/tracked-link";
 import { VerifyPageCta } from "@/components/verify-page-cta";
 import { ReceiptShareActions } from "@/components/receipt-share-actions";
+import { ProofLinksCard } from "@/components/proof-links-card";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -218,8 +219,9 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
 
       {initialHash ? (
         <Section className="pt-0 fade-in-up fade-delay-1">
-          <div className="max-w-3xl">
+          <div className="max-w-3xl space-y-4">
             <ReceiptShareActions hash={initialHash} />
+            <ProofLinksCard hash={initialHash} />
           </div>
         </Section>
       ) : null}

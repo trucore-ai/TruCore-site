@@ -39,6 +39,10 @@ vi.mock("@/components/verify-page-cta", () => ({
   VerifyPageCta: () => <div data-testid="verify-page-cta" />,
 }));
 
+vi.mock("@/lib/track", () => ({
+  trackEvent: vi.fn(),
+}));
+
 const mockFetchDashboard = vi.fn();
 const mockFetchActivation = vi.fn();
 const mockFetchReceipts = vi.fn();
@@ -231,6 +235,59 @@ describe("dashboard success state share actions", () => {
 
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+        "https://trucore.xyz/verify?hash=hash_abc123&from=share",
+      );
+    });
+  });
+});
+
+describe("verify success surface includes proof links", () => {
+  it("renders ProofLinksCard when hash is present", async () => {
+    const page = await VerifyReceiptPage({ searchParams: Promise.resolve({ hash: "abc123" }) });
+    render(page);
+
+    expect(screen.getByTestId("proof-links-card")).toBeInTheDocument();
+  });
+
+  it("verify URL in ProofLinksCard is canonical", async () => {
+    const page = await VerifyReceiptPage({ searchParams: Promise.resolve({ hash: "abc123" }) });
+    render(page);
+
+    const verifyUrlEl = screen.getByTestId("proof-verify-url");
+    expect(verifyUrlEl.textContent).toBe("https://trucore.xyz/verify?hash=abc123&from=share");
+  });
+
+  it("OG preview URL in ProofLinksCard is canonical", async () => {
+    const page = await VerifyReceiptPage({ searchParams: Promise.resolve({ hash: "abc123" }) });
+    render(page);
+
+    const ogUrlEl = screen.getByTestId("proof-og-url");
+    expect(ogUrlEl.textContent).toBe("https://trucore.xyz/api/og/receipt?hash=abc123");
+  });
+
+  it("does not render ProofLinksCard when hash is absent", async () => {
+    const page = await VerifyReceiptPage({ searchParams: Promise.resolve({}) });
+    render(page);
+
+    expect(screen.queryByTestId("proof-links-card")).not.toBeInTheDocument();
+  });
+});
+
+describe("dashboard success surface includes proof links", () => {
+  it("renders ProofLinksCard in success state when receipt id is available", async () => {
+    render(<CustomerDashboardPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("proof-links-card")).toBeInTheDocument();
+    });
+  });
+
+  it("proof links card verify URL uses receipt id from activation", async () => {
+    render(<CustomerDashboardPage />);
+
+    await waitFor(() => {
+      const verifyUrlEl = screen.getByTestId("proof-verify-url");
+      expect(verifyUrlEl.textContent).toBe(
         "https://trucore.xyz/verify?hash=hash_abc123&from=share",
       );
     });
