@@ -22,6 +22,7 @@ import {
 import { buildVerifyUrl } from "@/lib/share-utils";
 import RunTestRequest from "@/components/run-test-request";
 import { ProofLinksCard } from "@/components/proof-links-card";
+import { ProofBundleActions } from "@/components/proof-bundle-actions";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -813,8 +814,9 @@ export default function CustomerDashboardPage() {
                     ? ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).receipt_id as string
                     : activation?.first_receipt_id ?? null;
                   return receiptId ? (
-                    <div className="mt-2">
+                    <div className="mt-2 space-y-2">
                       <ProofLinksCard hash={receiptId} compact />
+                      <ProofBundleActions hash={receiptId} compact surface="dashboard" />
                     </div>
                   ) : null;
                 })()}

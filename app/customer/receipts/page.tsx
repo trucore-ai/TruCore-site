@@ -12,6 +12,7 @@ import {
   ApiError,
 } from "@/lib/customer-auth";
 import { ProofLinksCard } from "@/components/proof-links-card";
+import { ProofBundleActions } from "@/components/proof-bundle-actions";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -449,10 +450,17 @@ export default function CustomerReceiptsPage() {
 
                 {/* Proof links — compact, for direct hash sharing */}
                 {(detail as Record<string, unknown>).content_hash != null && (
-                  <ProofLinksCard
-                    hash={String((detail as Record<string, unknown>).content_hash)}
-                    compact
-                  />
+                  <>
+                    <ProofLinksCard
+                      hash={String((detail as Record<string, unknown>).content_hash)}
+                      compact
+                    />
+                    <ProofBundleActions
+                      hash={String((detail as Record<string, unknown>).content_hash)}
+                      compact
+                      surface="receipts"
+                    />
+                  </>
                 )}
               </div>
             )}

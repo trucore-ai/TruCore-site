@@ -27,6 +27,9 @@ const ALLOWED_EVENTS = new Set([
   "view_api_key_section",
   "copy_api_key",
   "copy_request",
+  // Proof bundle export
+  "proof_bundle_exported",
+  "proof_share_card_opened",
 ]);
 
 type TrackPayload = {

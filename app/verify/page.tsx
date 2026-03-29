@@ -7,6 +7,7 @@ import { TrackedLink } from "@/components/tracked-link";
 import { VerifyPageCta } from "@/components/verify-page-cta";
 import { ReceiptShareActions } from "@/components/receipt-share-actions";
 import { ProofLinksCard } from "@/components/proof-links-card";
+import { ProofBundleActions } from "@/components/proof-bundle-actions";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -222,6 +223,7 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
           <div className="max-w-3xl space-y-4">
             <ReceiptShareActions hash={initialHash} />
             <ProofLinksCard hash={initialHash} />
+            <ProofBundleActions hash={initialHash} surface="verify" />
           </div>
         </Section>
       ) : null}
