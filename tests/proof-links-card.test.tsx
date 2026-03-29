@@ -29,33 +29,33 @@ beforeEach(() => {
 describe("share-utils canonical URLs", () => {
   it("buildVerifyUrl returns canonical verify URL", () => {
     expect(buildVerifyUrl("abc123")).toBe(
-      "https://trucore.xyz/verify?hash=abc123&from=share",
+      "https://www.trucore.xyz/verify?hash=abc123&from=share",
     );
   });
 
   it("buildOgPreviewUrl returns canonical OG preview URL", () => {
     expect(buildOgPreviewUrl("abc123")).toBe(
-      "https://trucore.xyz/api/og/receipt?hash=abc123",
+      "https://www.trucore.xyz/api/og/receipt?hash=abc123",
     );
   });
 
   it("buildVerifyUrl encodes special characters in hash", () => {
     const url = buildVerifyUrl("abc/def?123");
     expect(url).toBe(
-      "https://trucore.xyz/verify?hash=abc%2Fdef%3F123&from=share",
+      "https://www.trucore.xyz/verify?hash=abc%2Fdef%3F123&from=share",
     );
   });
 
   it("buildOgPreviewUrl encodes special characters in hash", () => {
     const url = buildOgPreviewUrl("abc/def?123");
     expect(url).toBe(
-      "https://trucore.xyz/api/og/receipt?hash=abc%2Fdef%3F123",
+      "https://www.trucore.xyz/api/og/receipt?hash=abc%2Fdef%3F123",
     );
   });
 
   it("buildVerifyUrl trims whitespace from hash", () => {
     expect(buildVerifyUrl("  abc123  ")).toBe(
-      "https://trucore.xyz/verify?hash=abc123&from=share",
+      "https://www.trucore.xyz/verify?hash=abc123&from=share",
     );
   });
 });

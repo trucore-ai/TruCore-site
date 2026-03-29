@@ -105,7 +105,7 @@ export function generateShareText(input: ShareTextInput): string {
  * Generate machine-readable single-line output for LLMs and bots.
  *
  * Format:
- *   ATF_PROOF hash=XYZ status=verified verify_url=https://trucore.xyz/verify?hash=XYZ
+ *   ATF_PROOF hash=XYZ status=verified verify_url=https://www.trucore.xyz/verify?hash=XYZ&from=share
  *
  * Rules:
  * - One line only

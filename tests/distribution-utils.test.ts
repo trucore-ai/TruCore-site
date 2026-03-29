@@ -22,7 +22,7 @@ import {
 // ── Mock Environment ─────────────────────────────────────────────
 
 beforeEach(() => {
-  vi.stubEnv("NEXT_PUBLIC_BASE_URL", "https://trucore.xyz");
+  vi.stubEnv("NEXT_PUBLIC_BASE_URL", "https://www.trucore.xyz");
 });
 
 // ── Sample Data ──────────────────────────────────────────────────
@@ -197,7 +197,7 @@ describe("generateBotLine", () => {
 
     it("includes verify_url field", () => {
       const line = generateBotLine({ hash: SAMPLE_HASH });
-      expect(line).toContain("verify_url=https://trucore.xyz/verify");
+      expect(line).toContain("verify_url=https://www.trucore.xyz/verify");
     });
 
     it("defaults status to verified", () => {
