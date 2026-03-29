@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { expect, test } from "@playwright/test";
 
 test("homepage loads", async ({ page }) => {
@@ -21,3 +22,13 @@ test("homepage honors reduced motion media preference", async ({ page }) => {
 
   await expect(page.locator("html")).toHaveAttribute("data-reduce-motion", "true");
 });
+=======
+import { expect, test } from "@playwright/test";
+
+test("homepage loads", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page).toHaveTitle(/TruCore/i);
+  await expect(page.getByText("Operational Controls", { exact: true })).toBeVisible();
+});
+>>>>>>> Stashed changes

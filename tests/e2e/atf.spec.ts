@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { expect, test } from "@playwright/test";
 
 test("atf page loads", async ({ page }) => {
@@ -154,3 +155,15 @@ test("whitepaper verify cta expands browser verifier", async ({ page }) => {
   await expect(fileInput).toBeVisible();
   await expect(fileInput).toBeEnabled();
 });
+=======
+import { expect, test } from "@playwright/test";
+
+test("atf page loads", async ({ page }) => {
+  await page.goto("/atf");
+
+  await expect(
+    page.getByRole("heading", { name: "Agent Transaction Firewall", level: 1 }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Apply as Design Partner" }).first()).toBeVisible();
+});
+>>>>>>> Stashed changes

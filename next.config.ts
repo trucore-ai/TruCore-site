@@ -51,6 +51,11 @@ const nextConfig: NextConfig = {
       process.env.NEXT_PUBLIC_BUILD_DATE ?? new Date().toISOString().slice(0, 10),
   },
   pageExtensions: ["ts", "tsx", "mdx"],
+  env: {
+    NEXT_PUBLIC_BUILD_DATE:
+      process.env.NEXT_PUBLIC_BUILD_DATE ??
+      new Date().toISOString().split("T")[0],
+  },
   turbopack: {
     root: process.cwd(),
   },

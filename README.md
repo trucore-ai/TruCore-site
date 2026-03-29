@@ -279,6 +279,7 @@ Signature details:
   - `x-content-type-options`
   - `referrer-policy`
 
+<<<<<<< Updated upstream
 ## Signed Receipts and Public Verification (Stage 80)
 
 Stage 80 adds cryptographic integrity for deterministic receipt hashes using Ed25519 signatures.
@@ -327,10 +328,53 @@ Stage 80 adds cryptographic integrity for deterministic receipt hashes using Ed2
 ```
 
 - Successful response:
+=======
+## Public API Preview and Read-Only Firewall Simulator (Stage 54)
+
+Stage 54 introduces a public, read-only simulator that demonstrates deterministic ATF policy behavior without any wallet or chain connectivity.
+
+### New Public Simulator Route
+
+- `/atf/simulator` includes:
+  - JSON input editor with a pre-filled swap example
+  - Result panel showing status, reason, invariant checks, and deterministic receipt hash
+  - Copyable request and response JSON examples (allowed and denied)
+
+Tracked simulator events:
+
+- `simulator_view_click` from `/atf` hero CTA
+- `simulator_run_click` from `/atf/simulator`
+
+### Public Simulation API
+
+- Endpoint: `/api/simulate` (POST only)
+- Behavior:
+  - Validates request shape
+  - Applies safe mock policy checks
+  - Returns deterministic result payload
+  - Sets `Cache-Control: no-store`
+  - Rate-limits by IP hash at `30 req/min`
+
+Request shape:
+
+```json
+{
+  "action": "swap",
+  "token_in": "SOL",
+  "token_out": "USDC",
+  "amount": 10,
+  "max_slippage_bps": 100,
+  "ttl_seconds": 60
+}
+```
+
+Result shape:
+>>>>>>> Stashed changes
 
 ```json
 {
   "ok": true,
+<<<<<<< Updated upstream
   "receipt_hash": "...",
   "signature": "...",
   "public_key": "...",
@@ -373,6 +417,33 @@ Stage 86 adds a public technical roadmap page for phased receipt verification an
 - Scope is documentation and positioning only, with explicit separation between live, preview, planned, and future phases.
 - Includes a static social preview image route at `/docs/anchoring-roadmap/opengraph-image`.
 - No runtime anchoring logic changed in this stage.
+=======
+  "input": {
+    "action": "swap",
+    "token_in": "SOL",
+    "token_out": "USDC",
+    "amount": 10,
+    "max_slippage_bps": 100,
+    "ttl_seconds": 60
+  },
+  "result": {
+    "status": "allowed",
+    "reason": "Request satisfies demo policy limits.",
+    "invariant_checks": [
+      "amount <= 1000: pass",
+      "max_slippage_bps <= 300: pass",
+      "ttl_seconds <= 300: pass"
+    ],
+    "receipt_hash": "sha256(JSON.stringify(input))"
+  }
+}
+```
+
+### Simulator Tests
+
+- Added unit test: `tests/simulator.test.ts`
+- Covers deny conditions, allow path, and deterministic receipt hash behavior
+>>>>>>> Stashed changes
 
 ## CI and Branch Protection (Stage 42)
 

@@ -76,6 +76,7 @@ export default function DocsQuickstartPage() {
           constraints pass.
         </p>
         <p className="text-slate-300">
+<<<<<<< Updated upstream
           For a full enforcement breakdown, read{" "}
           <Link
             href="/docs/atf-architecture"
@@ -134,6 +135,17 @@ export default function DocsQuickstartPage() {
             <code className="ml-1 font-mono text-slate-200">X-RateLimit-Reset</code>.
           </li>
         </ul>
+=======
+          Want a hands-on preview before integration? Try the read-only ATF Policy Simulator at{" "}
+          <a
+            href="/atf/simulator"
+            className="font-semibold text-primary-200 underline decoration-primary-300/70 underline-offset-4 hover:text-primary-100"
+          >
+            /atf/simulator
+          </a>
+          .
+        </p>
+>>>>>>> Stashed changes
       </section>
 
       <section className="space-y-6">
