@@ -6,7 +6,15 @@ import {
   downloadProofPacket,
   getProofPacketFilename,
 } from "@/lib/proof-packet";
+import { getCanonicalSiteOrigin } from "@/lib/share-utils";
 import { trackEvent } from "@/lib/track";
+
+/**
+ * Build the public API endpoint URL for this hash.
+ */
+function buildApiEndpointUrl(hash: string): string {
+  return `${getCanonicalSiteOrigin()}/api/proof/packet?hash=${encodeURIComponent(hash.trim())}`;
+}
 
 export interface ProofPacketViewProps {
   /** Receipt hash. Component renders nothing when empty. */
@@ -125,6 +133,19 @@ export function ProofPacketView({
             >
               Download .json
             </button>
+            <a
+              href={buildApiEndpointUrl(trimmed)}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="proof-packet-api-link"
+              onClick={() =>
+                trackEvent("proof_packet_api_link_clicked", { surface })
+              }
+              className="text-[9px] font-mono text-slate-500 transition hover:text-slate-300"
+              title="Open public API endpoint"
+            >
+              API ↗
+            </a>
           </div>
         )}
       </div>
