@@ -254,6 +254,20 @@ const KNOWN_CUSTOMER_ROUTES = new Set([
   "onboarding/sample-intent",
   "onboarding/protect-dry-run",
   "onboarding/execute-sample",
+  // Customer surface proxy routes (PROMPT 506)
+  "receipts",
+  "receipts/detail",
+  "receipts/verify",
+  "customer/keys",
+  "customer/keys/revoke",
+  "customer/keys/rotate",
+  "customer/auth/verify-email/status",
+  "customer/auth/password-reset/request",
+  "customer/auth/password-reset/confirm",
+  "customer/auth/password-reset/validate",
+  "customer/upgrades",
+  "customer/upgrades/request",
+  "customer/upgrades/cancel",
 ]);
 
 /**
