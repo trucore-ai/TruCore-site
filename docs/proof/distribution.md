@@ -91,6 +91,10 @@ og_url = parts[3]
 timestamp = parts[4]
 ```
 
+### Format Note
+
+ATF_PROOF format is deprecated. TRUCORE_RECEIPT is the canonical format going forward.
+
 ---
 
 ## Distribution Bundle

@@ -160,6 +160,8 @@ const data = await res.json();
 TRUCORE_RECEIPT|<hash>|<verify_url>|<og_url>|<timestamp>
 ```
 
+> Note: The previous ATF_PROOF format has been deprecated. Use TRUCORE_RECEIPT for all new integrations.
+
 ---
 
 ## Security Notes
