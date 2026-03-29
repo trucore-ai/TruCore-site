@@ -35,6 +35,10 @@ export async function GET(req: NextRequest) {
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[proxy] dashboard/me → upstream:", upstream);
+        console.log("[proxy] dashboard/me → auth header present:", !!authHeader);
+      }
     const res = await fetch(upstream, {
       headers: {
         Authorization: authHeader,
