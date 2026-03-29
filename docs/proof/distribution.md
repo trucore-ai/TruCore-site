@@ -56,33 +56,39 @@ Verify: https://www.trucore.xyz/verify?hash=abc123...&from=share
 Machine-readable single-line output designed for LLM and bot parsing.
 
 **Format:**
+```text
+TRUCORE_RECEIPT|<hash>|<verify_url>|<og_url>|<timestamp>
 ```
-ATF_PROOF hash=abc123def456... status=verified verify_url=https://www.trucore.xyz/verify?hash=abc123...&from=share
+
+**Example:**
+```text
+TRUCORE_RECEIPT|abc123def456...|https://www.trucore.xyz/verify?hash=abc123...&from=share|https://www.trucore.xyz/api/og/receipt?hash=abc123...|2026-03-29T12:00:00Z
 ```
 
 **Structure:**
 | Part | Description |
 |------|-------------|
-| `ATF_PROOF` | Fixed prefix for identification |
-| `hash=` | Receipt hash value |
-| `status=` | Verification status (typically `verified`) |
-| `verify_url=` | Full canonical verification URL |
+| `TRUCORE_RECEIPT` | Fixed prefix for identification |
+| `hash` | Receipt hash value |
+| `verify_url` | Full canonical verification URL |
+| `og_url` | OG preview image URL |
+| `timestamp` | ISO 8601 timestamp |
 
 **Parsing rules:**
 - Single line only
-- Space-separated key=value pairs
-- No JSON (designed for simple regex/split parsing)
-- Deterministic field order: hash, status, verify_url
+- Pipe-delimited (`|`) fields
+- No JSON (designed for simple split parsing)
+- Deterministic field order: prefix, hash, verify_url, og_url, timestamp
 
 **Bot integration example:**
 ```python
-line = "ATF_PROOF hash=abc123... status=verified verify_url=https://..."
+line = "TRUCORE_RECEIPT|abc123...|https://...|https://...|2026-03-29T12:00:00Z"
 
-if line.startswith("ATF_PROOF"):
-    parts = dict(p.split("=", 1) for p in line.split()[1:])
-    hash = parts["hash"]
-    status = parts["status"]
-    verify_url = parts["verify_url"]
+parts = line.split("|")
+hash = parts[1]
+verify_url = parts[2]
+og_url = parts[3]
+timestamp = parts[4]
 ```
 
 ---
@@ -112,19 +118,33 @@ console.log(bundle.botLine);    // Machine-readable
 
 ---
 
-## Why This Exists
+## Why Distribution Exists
+
+TruCore proofs are designed to move across systems:
+
+- **Humans** → share links
+- **Bots** → ingest proof lines
+- **Apps** → fetch proof packets
+
+Distribution turns every proof into:
+
+- A verification surface
+- A growth vector
+- A machine-readable signal
 
 ### Growth
 Proof that spreads is proof that matters. Share text turns every verification into potential reach.
 
 ### Agent Integration
 Bots need structured, predictable output. The bot line format is designed for:
+
 - Simple string parsing (no JSON required)
 - LLM context window efficiency (single line)
 - Deterministic extraction patterns
 
 ### Composability
 Distribution bundles let developers access all formats in one call, enabling:
+
 - Multi-platform posting
 - Automated social workflows
 - Integration testing
@@ -136,10 +156,9 @@ Distribution bundles let developers access all formats in one call, enabling:
 **For share text:** Use as-is. It's already formatted for human consumption.
 
 **For bot line:**
-1. Check for `ATF_PROOF` prefix
-2. Split on spaces
-3. Parse key=value pairs
-4. Extract `hash`, `status`, `verify_url`
+1. Check for `TRUCORE_RECEIPT` prefix
+2. Split on pipe (`|`)
+3. Extract fields by position: hash (1), verify_url (2), og_url (3), timestamp (4)
 
 **For verification:**
 1. Extract `hash` from bot line

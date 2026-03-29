@@ -6,6 +6,18 @@ Every protected transaction produces a deterministic, cryptographically verifiab
 
 ---
 
+## What TruCore Provides
+
+TruCore is proof infrastructure for AI transactions.
+
+Every transaction produces:
+
+- A deterministic receipt
+- A verifiable proof
+- A portable artifact usable across systems
+
+---
+
 ## What is a Proof?
 
 When TruCore ATF evaluates a transaction:
@@ -83,6 +95,20 @@ Receipts are:
 
 ---
 
+## How It Fits Together
+
+```
+Receipt → Proof → Surfaces → Distribution → External Systems
+```
+
+- **Receipt**: Raw execution result
+- **Proof**: Canonical hash + verification
+- **Surfaces**: Links, bundle, packet
+- **Distribution**: Share text + bot line
+- **External systems**: Bots, dashboards, social
+
+---
+
 ## Documentation Index
 
 | Document | Description |
@@ -108,7 +134,30 @@ curl "https://www.trucore.xyz/api/proof/packet?hash=<your-hash>"
 ### For bots
 Copy the **Bot Line** and embed it in output:
 ```
-ATF_PROOF hash=abc123... status=verified verify_url=https://www.trucore.xyz/verify?hash=abc123...&from=share
+TRUCORE_RECEIPT|<hash>|<verify_url>|<og_url>|<timestamp>
+```
+
+---
+
+## Quick Integration (30 seconds)
+
+### Fetch a proof packet
+
+```bash
+curl "https://www.trucore.xyz/api/proof/packet?hash=<hash>"
+```
+
+### TypeScript example
+
+```ts
+const res = await fetch(`/api/proof/packet?hash=${hash}`);
+const data = await res.json();
+```
+
+### Bot ingestion (single line)
+
+```text
+TRUCORE_RECEIPT|<hash>|<verify_url>|<og_url>|<timestamp>
 ```
 
 ---

@@ -97,9 +97,9 @@ describe("Proof Documentation", () => {
     const requiredPhrases = [
       "Share Text",
       "Bot Line",
-      "ATF_PROOF",
-      "hash=",
-      "verify_url=",
+      "TRUCORE_RECEIPT",
+      "Pipe-delimited",
+      "parts[1]",
     ];
 
     it.each(requiredPhrases)("contains phrase: %s", (phrase) => {
