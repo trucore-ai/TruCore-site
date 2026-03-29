@@ -238,6 +238,16 @@ export default async function VerifyReceiptPage({ searchParams }: PageProps) {
             <ProofBundleActions hash={initialHash} surface="verify" />
             <ProofPacketView hash={initialHash} surface="verify" />
             <DistributionActions hash={initialHash} surface="verify" />
+            {/* Developer docs link */}
+            <p className="text-xs text-slate-500">
+              Building an integration?{" "}
+              <Link
+                href="/docs/proof"
+                className="text-primary-300 hover:text-primary-200 transition-colors"
+              >
+                View developer docs
+              </Link>
+            </p>
           </div>
         </Section>
       ) : null}

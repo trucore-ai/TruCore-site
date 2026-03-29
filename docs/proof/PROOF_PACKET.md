@@ -2,6 +2,36 @@
 
 A **proof packet** is a machine-readable, versioned JSON artifact representing a TruCore transaction verification outcome. Designed for agents, integrations, and developer tooling.
 
+---
+
+## Designed for Autonomous Agents
+
+The proof packet API is the primary integration surface for bots, LLMs, and autonomous agents:
+
+- **No authentication required** — public read-only access
+- **Deterministic** — same hash always returns the same packet structure
+- **Status-wrapped** — clear success/error differentiation for parsing
+- **Versioned** — schema version included for forward compatibility
+- **Cached** — responses cached for 60 seconds to reduce load
+
+**Agent usage pattern:**
+```python
+# Fetch proof packet
+response = requests.get(f"https://www.trucore.xyz/api/proof/packet?hash={hash}")
+data = response.json()
+
+if data["status"] == "ok":
+    proof = data["data"]["proof"]
+    decision = proof["decision"]  # "ALLOW" or "DENY"
+    verified = proof["verified"]  # boolean
+    verify_url = data["data"]["links"]["verify_url"]
+else:
+    error = data["error"]
+    # Handle missing_hash or invalid_hash
+```
+
+---
+
 ## Endpoint
 
 ```
@@ -109,3 +139,28 @@ This endpoint is intentionally **read-only** and **public**.
 
 Successful responses are cached (`Cache-Control: public, max-age=60`).
 Error responses are not cached (`Cache-Control: no-store`).
+
+---
+
+## Deterministic Guarantees
+
+Proof packets are deterministic:
+
+1. **Same hash → same packet structure** — field layout is stable
+2. **Timestamps vary** — `exported_at` reflects request time, `created_at` is fixed
+3. **Version stability** — version `1` schema is frozen; breaking changes require version bump
+4. **Idempotent** — multiple requests return equivalent data
+
+This enables:
+- Reliable caching
+- Consistent bot parsing
+- Predictable integration behavior
+
+---
+
+## Related Documentation
+
+- [Proof System Overview](./README.md)
+- [Proof Links](./proof-links.md) — URLs for human verification
+- [Proof Bundle](./proof-bundle.md) — Downloadable JSON export
+- [Distribution](./distribution.md) — Share text and bot line output

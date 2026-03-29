@@ -825,6 +825,11 @@ export default function CustomerDashboardPage() {
                         <ProofPacketView hash={receiptId} compact surface="dashboard" />
                       </div>
                       <DistributionActions hash={receiptId} compact surface="dashboard" />
+                      <p className="text-center text-[10px] text-slate-600">
+                        <Link href="/docs/proof" className="hover:text-slate-400 transition-colors">
+                          What is this proof?
+                        </Link>
+                      </p>
                     </div>
                   ) : null;
                 })()}
