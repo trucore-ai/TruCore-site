@@ -21,6 +21,11 @@ import {
 } from "@/lib/customer-auth";
 import { buildVerifyUrl } from "@/lib/share-utils";
 import RunTestRequest from "@/components/run-test-request";
+import {
+  trackQuickTradeStarted,
+  trackQuickTradeCompleted,
+  trackQuickTradeFailed,
+} from "@/lib/client/quick-trade-telemetry";
 import { ProofLinksCard } from "@/components/proof-links-card";
 import { ProofBundleActions } from "@/components/proof-bundle-actions";
 import { ProofPacketView } from "@/components/proof-packet-view";
@@ -213,6 +218,12 @@ export default function CustomerDashboardPage() {
   const [obError, setObError] = useState("");
   const [receiptCopied, setReceiptCopied] = useState(false);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
+
+  // Quick trade (one-click fast path) state
+  const [quickTradeActive, setQuickTradeActive] = useState(false);
+  const [quickTradeStep, setQuickTradeStep] = useState<0 | 1 | 2 | 3>(0);
+  const [quickTradeError, setQuickTradeError] = useState("");
+  const [quickTradeFailedStep, setQuickTradeFailedStep] = useState<string | null>(null);
 
   // Receipt awareness
   const [receiptCount, setReceiptCount] = useState(0);
@@ -482,6 +493,110 @@ export default function CustomerDashboardPage() {
       setObLoading(false);
     }
   }, [obIntent]);
+
+  // -----------------------------------------------------------------------
+  // Quick Trade Flow - One-click orchestrator
+  // -----------------------------------------------------------------------
+
+  const runQuickTradeFlow = useCallback(async () => {
+    const startTime = Date.now();
+    setQuickTradeActive(true);
+    setQuickTradeStep(0);
+    setQuickTradeError("");
+    setQuickTradeFailedStep(null);
+    setObError("");
+
+    trackQuickTradeStarted();
+
+    try {
+      // Step 1: Generate sample intent
+      setQuickTradeStep(1);
+      const sampleRes = await fetchSampleIntent();
+      const intent = sampleRes.intent as Record<string, unknown>;
+      setObIntent(intent);
+
+      try {
+        const act = (await markActivationStep("sample_generated")) as unknown as ActivationState;
+        setActivation(act);
+      } catch {
+        // Continue anyway
+      }
+
+      // Step 2: Protect (dry run)
+      setQuickTradeStep(2);
+      const protectRes = await simulateProtection(intent);
+      setObDryRun(protectRes);
+
+      try {
+        const receiptId = (protectRes as Record<string, unknown>).receipt
+          ? ((protectRes as Record<string, unknown>).receipt as Record<string, unknown>).receipt_id as string
+          : undefined;
+        const act = (await markActivationStep("dry_run_completed", receiptId)) as unknown as ActivationState;
+        setActivation(act);
+        setReceiptCount((c) => c + 1);
+      } catch {
+        // Non-fatal
+      }
+
+      // Check if protection was denied
+      const decision = (protectRes as Record<string, unknown>).decision as string;
+      if (decision !== "ALLOW") {
+        setQuickTradeError("Trade was blocked by protection policies. Execution skipped.");
+        setQuickTradeFailedStep("protect");
+        trackQuickTradeFailed("protect");
+        setQuickTradeActive(false);
+        setObStep(2);
+        return;
+      }
+
+      // Step 3: Execute sample
+      setQuickTradeStep(3);
+      const executeRes = await executeSample(intent);
+      setObReceipt(executeRes);
+      setObStep(3);
+
+      try {
+        const receiptId = (executeRes as Record<string, unknown>).receipt
+          ? ((executeRes as Record<string, unknown>).receipt as Record<string, unknown>).receipt_id as string
+          : undefined;
+        const act = (await markActivationStep("execution_completed", receiptId)) as unknown as ActivationState;
+        setActivation(act);
+        setReceiptCount((c) => c + 1);
+      } catch {
+        // Non-fatal
+      }
+
+      const durationMs = Date.now() - startTime;
+      trackQuickTradeCompleted(durationMs);
+    } catch (e) {
+      const failedStep =
+        quickTradeStep === 1 ? "generate" :
+        quickTradeStep === 2 ? "protect" : "execute";
+      setQuickTradeError(
+        e instanceof ApiError ? e.message : `Trade stopped during ${failedStep} step. Please try again.`
+      );
+      setQuickTradeFailedStep(failedStep);
+      trackQuickTradeFailed(failedStep);
+    } finally {
+      setQuickTradeActive(false);
+    }
+  }, [quickTradeStep]);
+
+  // -----------------------------------------------------------------------
+  // Quick Trade Reset - allows retry or switching to step-by-step
+  // -----------------------------------------------------------------------
+
+  const resetQuickTrade = useCallback(() => {
+    setQuickTradeActive(false);
+    setQuickTradeStep(0);
+    setQuickTradeError("");
+    setQuickTradeFailedStep(null);
+    setObIntent(null);
+    setObDryRun(null);
+    setObReceipt(null);
+    setObError("");
+    setObStep(0);
+  }, []);
 
   // Derived state
   const onboardingComplete =
@@ -913,25 +1028,93 @@ export default function CustomerDashboardPage() {
             </div>
           )}
 
-          {/* Step 1: Generate */}
-          {!activationLoading && obStep === 0 && !obError && (
-            <div className="text-center">
+          {/* Step 1: Generate -- or Quick Trade one-click */}
+          {!activationLoading && obStep === 0 && !obError && !quickTradeActive && !quickTradeError && (
+            <div className="text-center space-y-4">
               <button
-                data-testid="generate-btn"
-                onClick={handleGenerateSample}
+                data-testid="quick-trade-btn"
+                onClick={runQuickTradeFlow}
                 disabled={obLoading}
-                className="rounded-lg bg-accent-500 px-8 py-3 text-sm font-semibold text-white transition hover:bg-accent-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-lg bg-emerald-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-500 hover:shadow-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {obLoading ? (
-                  <span className="inline-flex items-center gap-2">
-                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Generating sample trade&hellip;
-                  </span>
-                ) : "Generate Sample Trade"}
+                Run Your First Protected Trade
               </button>
+              <p className="text-xs text-slate-500">
+                One click - we&apos;ll handle the rest
+              </p>
+              <div className="pt-2 border-t border-white/5">
+                <button
+                  data-testid="generate-btn"
+                  onClick={handleGenerateSample}
+                  disabled={obLoading}
+                  className="text-xs text-slate-400 hover:text-slate-300 transition underline"
+                >
+                  Or try step-by-step
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Trade Progress UI */}
+          {quickTradeActive && (
+            <div data-testid="quick-trade-progress" className="space-y-4">
+              <div className="flex items-center justify-center gap-4">
+                {[
+                  { step: 1, label: "Preparing" },
+                  { step: 2, label: "Protecting" },
+                  { step: 3, label: "Executing" },
+                ].map(({ step, label }) => {
+                  const isActive = quickTradeStep === step;
+                  const isComplete = quickTradeStep > step;
+                  return (
+                    <div key={step} className="flex items-center gap-2">
+                      <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-all ${
+                          isComplete
+                            ? "bg-emerald-500/20 text-emerald-300"
+                            : isActive
+                              ? "bg-accent-500/30 text-accent-200 ring-2 ring-accent-400/40 animate-pulse"
+                              : "bg-white/5 text-slate-500"
+                        }`}
+                      >
+                        {isComplete ? "\u2713" : step}
+                      </div>
+                      <span className={`text-sm ${isActive ? "text-slate-200" : isComplete ? "text-emerald-300" : "text-slate-500"}`}>
+                        {label}
+                      </span>
+                      {step < 3 && <span className="text-slate-600">{"\u2192"}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-center text-sm text-slate-400">
+                {quickTradeStep === 1 && "Generating sample trade..."}
+                {quickTradeStep === 2 && "Running protection check..."}
+                {quickTradeStep === 3 && "Executing protected trade..."}
+              </p>
+            </div>
+          )}
+
+          {/* Quick Trade Error State */}
+          {quickTradeError && !quickTradeActive && (
+            <div data-testid="quick-trade-error" className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-4 space-y-3">
+              <p className="text-sm text-red-300">
+                {quickTradeError}
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={runQuickTradeFlow}
+                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-200 transition hover:bg-white/10"
+                >
+                  Retry
+                </button>
+                <button
+                  onClick={resetQuickTrade}
+                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-200 transition hover:bg-white/10"
+                >
+                  Try step-by-step
+                </button>
+              </div>
             </div>
           )}
 
