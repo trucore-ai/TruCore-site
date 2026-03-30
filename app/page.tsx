@@ -21,13 +21,13 @@ import { getAtfCliVersion } from "@/lib/version";
 import truCoreBanner from "@/images/TruCore-banner-new.png";
 
 export const metadata: Metadata = {
-  title: "TruCore | Intelligent Control for AI Transactions",
+  title: "TruCore | Policy-Enforced Protection for AI Agents",
   description:
-    "Protect every transaction, learn from execution history, and improve how capital is deployed with deterministic intelligence and operator-gated control.",
+    "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
   openGraph: {
-    title: "TruCore | Intelligent Control for AI Transactions",
+    title: "TruCore | Policy-Enforced Protection for AI Agents",
     description:
-      "Protect every transaction, learn from execution history, and improve how capital is deployed with deterministic intelligence and operator-gated control.",
+      "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
     images: [
       {
         url: "/opengraph-image",
@@ -39,9 +39,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TruCore | Intelligent Control for AI Transactions",
+    title: "TruCore | Policy-Enforced Protection for AI Agents",
     description:
-      "Protect every transaction, learn from execution history, and improve how capital is deployed with deterministic intelligence and operator-gated control.",
+      "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
     images: ["/opengraph-image"],
   },
 };
@@ -69,25 +69,19 @@ export default function Home() {
           />
           <div className="relative z-10 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
-              Solana-native enforcement, multi-chain expanding
+              For Solana AI agents and trading bots
             </p>
             <h1 className="mt-4 text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
-              Intelligent Control for AI Transactions
+              Protect Every Transaction
             </h1>
             <p className="mt-6 text-2xl font-semibold text-amber-200/90">
-              Don&apos;t let your bot blow up your wallet.
+              Policy enforced before execution. Verified receipt after decision.
             </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
-              A new primitive for AI capital: protect every transaction, prove it
-              with cryptographic receipts, and continuously improve capital
-              deployment with deterministic intelligence, all under
-              operator-gated control.
+              TruCore adds a tamper-evident layer to AI agent transactions on Solana. Set policy rules, verify decisions with cryptographic receipts, and prove what your bot did.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-slate-300/80">
-              A new category of AI transaction systems: policy-enforced execution with built-in intelligence.
-            </p>
-            <p className="mt-2 text-base text-slate-400">
-              Built for trading bot developers, AI agent builders, and DeFi protocol integrators on Solana.
+              No signup required. No wallet access. Built for traders, protocol teams, and agent builders.
             </p>
 
             {/* CTAs */}
@@ -98,7 +92,7 @@ export default function Home() {
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl px-8 py-4 text-xl font-semibold shadow-glow-accent transition-all bg-accent-500 text-neutral-950 hover:bg-accent-400 hover:shadow-lg"
               >
-                Start Protected Trade
+                Start Your First Protected Trade
               </TrackedLink>
               <TrackedLink
                 href="/verify-demo"
@@ -106,13 +100,24 @@ export default function Home() {
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
               >
-                View Verified Receipt
+                Verify a Receipt
               </TrackedLink>
             </div>
 
             <p className="mt-6 text-base text-slate-300/80">
-              No signup required. No wallet access. Every decision produces a tamper-evident receipt.
+              No signup or wallet required. See a real protected trade and cryptographic receipt.
             </p>
+            <div className="mt-4 max-w-2xl rounded-lg border border-primary-300/20 bg-primary-500/[0.06] p-4">
+              <p className="text-sm font-semibold text-primary-100">What happens next:</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-300">
+                <li>You submit a transaction</li>
+                <li>ATF evaluates policy</li>
+                <li>You receive a decision and receipt</li>
+              </ul>
+              <p className="mt-3 text-sm text-slate-300">
+                You stay in control. You can start in safe mode with no real execution.
+              </p>
+            </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
               <TrackedLink
@@ -165,12 +170,21 @@ export default function Home() {
         </div>
       </Section>
 
+
+      {/* ?? Proof Anchor: Why This Works ?? */}
+      <div className="my-8 rounded-xl border border-primary-300/30 bg-primary-500/[0.06] px-6 py-8">
+        <p className="text-center text-lg text-slate-200">
+          <span className="font-semibold text-primary-100">Every decision is enforced before execution.</span>
+          {" "}Every result produces a cryptographic receipt.{" "}
+          <span className="font-semibold  text-primary-100">You can verify it independently.</span>
+        </p>
+      </div>
       {/* ── Trust Signals & Live Status ── */}
       <div className="space-y-3 pb-8 sm:pb-10">
         <SecurityIntegrityStrip />
         <LiveStatusStrip />
         <p className="mt-2 text-center text-[13px] leading-relaxed text-slate-400/70">
-          Solana-native enforcement infrastructure with live API, tamper-evident receipts, and deployable control-plane services.
+          Live API enforcement on Solana. Every policy decision creates a verifiable receipt. Status reflects real system state.
         </p>
         <p className="pt-1 text-right text-xs text-slate-500/60">
           Last updated: {lastUpdated}
@@ -249,6 +263,74 @@ export default function Home() {
         </div>
       </Section>
 
+      {/* ── First Trade Activation ── */}
+      <Section divider className="fade-in-up fade-delay-1">
+        <div className="mb-8 max-w-3xl">
+          <p className="section-label mb-3">Activation</p>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
+            Make Your First Protected Trade
+          </h2>
+          <p className="mt-4 text-lg leading-[1.5] text-slate-200">
+            You can test ATF safely before using real funds.
+          </p>
+          <p className="mt-2 text-sm text-slate-300">
+            No setup required for demo. No risk to try.
+          </p>
+        </div>
+        <div className="space-y-3 rounded-xl border border-white/[0.08] bg-neutral-900/40 p-6">
+          <p className="text-sm text-slate-200"><span className="font-semibold text-primary-100">Step 1:</span> Run a sample transaction using demo or dry-run.</p>
+          <p className="text-sm text-slate-200"><span className="font-semibold text-primary-100">Step 2:</span> Review the decision and receipt to understand policy and output.</p>
+          <p className="text-sm text-slate-200"><span className="font-semibold text-primary-100">Step 3:</span> Run your own protected trade with real or controlled input.</p>
+          <p className="pt-2 text-sm text-slate-300">
+            You stay in control. You can start in safe mode with no real execution.
+          </p>
+        </div>
+        <div className="mt-6">
+          <TrackedLink
+            href="/try"
+            eventName="home_first_trade_activation_click"
+            eventProps={{ location: "home_activation_section" }}
+            className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-6 py-3 text-base font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
+          >
+            Start Your First Protected Trade
+          </TrackedLink>
+        </div>
+      </Section>
+
+
+      {/* ?? First Protected Trade: Step by Step ?? */}
+      <Section divider className="fade-in-up fade-delay-1">
+        <div className="mb-8 max-w-2xl">
+          <p className="section-label mb-3">How It Works</p>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
+            First Protected Trade, Step by Step
+          </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            Every trade follows the same enforced path: policy evaluated, decision made, receipt generated, result verified.
+          </p>
+        </div>
+        <div className="space-y-3">
+          {[
+            { num: "1", title: "Submit", desc: "You submit a transaction. ATF receives it with your policy rules." },
+            { num: "2", title: "Evaluate", desc: "Every policy rule is checked: spend caps, protocols, slippage, TTL." },
+            { num: "3", title: "Decide", desc: "Policy decision is made deterministically. ALLOW or DENY." },
+            { num: "4", title: "Enforce", desc: "If ALLOW: transaction is executed. If DENY: blocked automatically." },
+            { num: "5", title: "Verify", desc: "Cryptographic receipt proves what happened. Anyone can verify it." },
+          ].map((item) => (
+            <div key={item.num} className="flex gap-4">
+              <div className="flex-shrink-0">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-accent-400 bg-accent-500/20">
+                  <span className="font-bold text-accent-300">{item.num}</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-primary-100">{item.title}</h3>
+                <p className="mt-1 text-slate-300">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
       {/* ── Policy Intelligence Layer ── */}
       <Section divider className="fade-in-up fade-delay-1">
         <div className="mb-8 max-w-3xl">
@@ -431,7 +513,7 @@ export default function Home() {
               eventProps={{ location: "home_start_strip" }}
               className="inline-flex items-center rounded-xl bg-accent-500/15 px-6 py-3 text-base font-semibold text-accent-300 transition-colors hover:bg-accent-500/25"
             >
-              Try ATF
+              Start Your First Protected Trade
             </TrackedLink>
             <TrackedLink
               href="/docs/getting-started"
