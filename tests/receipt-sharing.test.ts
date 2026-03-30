@@ -104,11 +104,15 @@ describe("generateShareText", () => {
   });
 
   it("handles missing content_hash gracefully", () => {
+    // When no content_hash is available, we get a generic verify URL
+    // We no longer fall back to receipt_id as that creates invalid verify URLs
     const text = generateShareText(minimalReceipt);
 
     expect(text).toContain("@TruCoreAI");
     expect(text).toContain("Verify it yourself:");
-    expect(text).toContain(`receipt_id=${encodeURIComponent(minimalReceipt.receipt_id)}`);
+    // No receipt_id in URL - only content_hash is valid for verify URLs
+    expect(text).not.toContain("receipt_id=");
+    expect(text).toContain("/verify");
   });
 });
 
@@ -122,10 +126,15 @@ describe("getVerifyUrl", () => {
     expect(url).not.toContain("receipt_id=");
   });
 
-  it("falls back to receipt_id when no hash", () => {
+  it("returns generic verify URL when no content_hash (no fallback to receipt_id)", () => {
+    // We no longer fall back to receipt_id as UUID format fails verify page validation
+    // receipt_id is a UUID like "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+    // verify page expects content_hash which is 64-char hex
     const url = getVerifyUrl(minimalReceipt);
 
-    expect(url).toContain(`receipt_id=${encodeURIComponent(minimalReceipt.receipt_id)}`);
+    expect(url).toBe("https://trucore.xyz/verify");
+    expect(url).not.toContain("receipt_id=");
+    expect(url).not.toContain("hash=");
   });
 
   it("uses hash only when only hash is provided", () => {
@@ -329,7 +338,7 @@ describe("security - no sensitive data leakage", () => {
     expect(text).not.toContain("950");
   });
 
-  it("verify URL only exposes hash or receipt_id", () => {
+  it("verify URL only exposes content_hash (never sensitive data)", () => {
     const sensitiveReceipt = {
       receipt_id: "rcpt-123",
       content_hash: "0xhash",
@@ -338,9 +347,13 @@ describe("security - no sensitive data leakage", () => {
 
     const url = getVerifyUrl(sensitiveReceipt);
 
+    // Should expose content_hash via hash param
     expect(url).toContain("hash=");
+    // Should never expose sensitive fields
     expect(url).not.toContain("secret");
     expect(url).not.toContain("api_key");
+    // Should not use receipt_id (UUID format fails verify validation)
+    expect(url).not.toContain("receipt_id=");
   });
 });
 

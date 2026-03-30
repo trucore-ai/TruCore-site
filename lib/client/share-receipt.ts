@@ -88,25 +88,24 @@ ${verifyUrl}`;
 
 /**
  * Generate the verification URL for a receipt.
- * Uses content_hash for direct verification if available.
+ * Uses content_hash for direct verification - this is the canonical identifier.
  * Adds from=share for telemetry tracking.
+ *
+ * IMPORTANT: Only content_hash (64-char hex) is valid for verify URLs.
+ * Never use receipt_id (UUID) - it will fail verification.
  */
 export function getVerifyUrl(receipt: ReceiptData): string {
   const baseUrl = typeof window !== "undefined"
     ? window.location.origin
     : "https://trucore.xyz";
 
-  // Prefer content_hash for direct verification
+  // Only content_hash is valid for verification
   if (receipt.content_hash) {
     return `${baseUrl}/verify?hash=${encodeURIComponent(receipt.content_hash)}&from=share`;
   }
 
-  // Fall back to receipt_id if no hash
-  if (receipt.receipt_id) {
-    return `${baseUrl}/verify?receipt_id=${encodeURIComponent(receipt.receipt_id)}&from=share`;
-  }
-
-  // Generic verify page
+  // No content_hash available - return generic verify page
+  // Do NOT use receipt_id here - verify page expects 64-char hex content_hash
   return `${baseUrl}/verify`;
 }
 

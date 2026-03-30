@@ -419,3 +419,96 @@ describe("Anti-Drift Regression", () => {
     });
   });
 });
+
+// ────────────────────────────────────────────────────────────────
+// Receipt ID vs Content Hash Contract
+// ────────────────────────────────────────────────────────────────
+
+describe("Receipt ID vs Content Hash Contract", () => {
+  // UUID format (receipt_id) - should NOT be used in verify URLs
+  const SAMPLE_RECEIPT_ID = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
+  // 64-char hex format (content_hash) - should be used in verify URLs
+  const SAMPLE_CONTENT_HASH = "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2";
+
+  describe("content hash format is valid for verify URLs", () => {
+    it("accepts 64-char hex content_hash", () => {
+      const url = buildVerifyUrl(SAMPLE_CONTENT_HASH);
+      expect(url).toContain(SAMPLE_CONTENT_HASH);
+      expect(url).toContain("/verify?hash=");
+    });
+
+    it("64-char hex produces canonical verify URL structure", () => {
+      const url = buildVerifyUrl(SAMPLE_CONTENT_HASH);
+      expect(url).toMatch(/\/verify\?hash=[a-f0-9]{64}&from=share/);
+    });
+  });
+
+  describe("receipt_id format recognition", () => {
+    // These tests document the expected behavior - receipt_id should NOT be put in verify URLs
+    // The fix ensures code calling buildVerifyUrl passes content_hash, not receipt_id
+    
+    it("UUID format differs from 64-char hex format", () => {
+      // Receipt IDs are UUIDs (36 chars with hyphens)
+      expect(SAMPLE_RECEIPT_ID).toHaveLength(36);
+      expect(SAMPLE_RECEIPT_ID).toMatch(/^[a-f0-9-]{36}$/);
+      
+      // Content hashes are 64-char hex
+      expect(SAMPLE_CONTENT_HASH).toHaveLength(64);
+      expect(SAMPLE_CONTENT_HASH).toMatch(/^[a-f0-9]{64}$/);
+    });
+
+    it("UUID format is distinguishable by hyphen pattern", () => {
+      expect(SAMPLE_RECEIPT_ID).toContain("-");
+      expect(SAMPLE_CONTENT_HASH).not.toContain("-");
+    });
+  });
+
+  describe("verify URL never uses receipt_id= parameter", () => {
+    it("buildVerifyUrl never outputs receipt_id in query string", () => {
+      const urlWithHash = buildVerifyUrl(SAMPLE_CONTENT_HASH);
+      const urlWithUuid = buildVerifyUrl(SAMPLE_RECEIPT_ID);
+      
+      expect(urlWithHash).not.toContain("receipt_id=");
+      expect(urlWithUuid).not.toContain("receipt_id=");
+    });
+
+    it("OG preview URL never uses receipt_id parameter", () => {
+      const url = buildOgPreviewUrl(SAMPLE_CONTENT_HASH);
+      expect(url).not.toContain("receipt_id=");
+    });
+  });
+
+  describe("distribution utilities use content_hash format", () => {
+    it("generateShareText includes content_hash in verify URL", () => {
+      const text = generateShareText({ hash: SAMPLE_CONTENT_HASH });
+      expect(text).toContain(SAMPLE_CONTENT_HASH);
+      expect(text).toContain("/verify?hash=");
+    });
+
+    it("generateBotLine includes content_hash in verify URL", () => {
+      const line = generateBotLine({ hash: SAMPLE_CONTENT_HASH });
+      expect(line).toContain(SAMPLE_CONTENT_HASH);
+      expect(line).toContain("hash=");
+    });
+
+    it("generateDistributionBundle uses content_hash throughout", () => {
+      const bundle = generateDistributionBundle(SAMPLE_CONTENT_HASH);
+      expect(bundle.verifyUrl).toContain(SAMPLE_CONTENT_HASH);
+      expect(bundle.ogPreviewUrl).toContain(SAMPLE_CONTENT_HASH);
+      expect(bundle.shareText).toContain(SAMPLE_CONTENT_HASH);
+      expect(bundle.botLine).toContain(SAMPLE_CONTENT_HASH);
+    });
+  });
+
+  describe("proof packet uses content_hash", () => {
+    it("buildProofPacket includes content_hash in proof.hash field", () => {
+      const packet = buildProofPacket(SAMPLE_CONTENT_HASH);
+      expect(packet.proof.hash).toBe(SAMPLE_CONTENT_HASH);
+    });
+
+    it("buildProofPacket links.verify_url contains content_hash", () => {
+      const packet = buildProofPacket(SAMPLE_CONTENT_HASH);
+      expect(packet.links.verify_url).toContain(SAMPLE_CONTENT_HASH);
+    });
+  });
+});

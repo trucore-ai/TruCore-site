@@ -747,12 +747,12 @@ export default function CustomerDashboardPage() {
 
                 {/* Primary receipt actions */}
                 {(() => {
-                  const receiptId = (obReceipt as Record<string, unknown>)?.receipt
-                    ? ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).receipt_id as string
-                    : activation?.first_receipt_id ?? null;
+                  const receiptObj = (obReceipt as Record<string, unknown>)?.receipt as Record<string, unknown> | undefined;
+                  const receiptId = receiptObj?.receipt_id as string ?? activation?.first_receipt_id ?? null;
+                  const contentHash = receiptObj?.content_hash as string ?? null;
                   const hasReceipt = !!(receiptId || receiptCount > 0);
-                  const verifyUrl = receiptId ? `/verify?hash=${encodeURIComponent(receiptId)}&from=share` : null;
-                  const ogPreviewUrl = receiptId ? `/api/og/receipt?hash=${encodeURIComponent(receiptId)}` : null;
+                  const verifyUrl = contentHash ? `/verify?hash=${encodeURIComponent(contentHash)}&from=share` : null;
+                  const ogPreviewUrl = contentHash ? `/api/og/receipt?hash=${encodeURIComponent(contentHash)}` : null;
 
                   return (
                     <div data-testid="trust-actions" className="mt-4 flex flex-wrap items-center justify-center gap-3">
@@ -764,9 +764,9 @@ export default function CustomerDashboardPage() {
                         View protected trade receipts
                       </Link>
                       {/* Secondary: Verify receipt */}
-                      {hasReceipt && receiptId && (
+                      {hasReceipt && contentHash && verifyUrl && (
                         <Link
-                          href={verifyUrl!}
+                          href={verifyUrl}
                           data-testid="verify-action"
                           className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-5 py-2.5 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20"
                         >
@@ -774,17 +774,17 @@ export default function CustomerDashboardPage() {
                           <span aria-hidden="true" className="sr-only"> Verify Receipt</span>
                         </Link>
                       )}
-                      {hasReceipt && receiptId && (
+                      {hasReceipt && contentHash && (
                         <button
                           type="button"
                           data-testid="share-receipt-action"
-                          onClick={() => void handleCopyShareLink(receiptId)}
+                          onClick={() => void handleCopyShareLink(contentHash)}
                           className="rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-slate-300 transition hover:bg-white/10"
                         >
                           {shareLinkCopied ? "Link Copied" : "Share Receipt"}
                         </button>
                       )}
-                      {hasReceipt && receiptId && ogPreviewUrl && (
+                      {hasReceipt && contentHash && ogPreviewUrl && (
                         <a
                           data-testid="preview-share-card-action"
                           href={ogPreviewUrl}
@@ -813,18 +813,17 @@ export default function CustomerDashboardPage() {
 
                 {/* Compact proof links — raw URLs for power users / developers */}
                 {(() => {
-                  const receiptId = (obReceipt as Record<string, unknown>)?.receipt
-                    ? ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).receipt_id as string
-                    : activation?.first_receipt_id ?? null;
-                  return receiptId ? (
+                  const receiptObj = (obReceipt as Record<string, unknown>)?.receipt as Record<string, unknown> | undefined;
+                  const contentHash = receiptObj?.content_hash as string ?? null;
+                  return contentHash ? (
                     <div className="mt-2 space-y-2">
-                      <ProofLinksCard hash={receiptId} compact />
-                      <ProofBundleActions hash={receiptId} compact surface="dashboard" />
+                      <ProofLinksCard hash={contentHash} compact />
+                      <ProofBundleActions hash={contentHash} compact surface="dashboard" />
                       <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3">
                         <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">Developer / Agent Output</p>
-                        <ProofPacketView hash={receiptId} compact surface="dashboard" />
+                        <ProofPacketView hash={contentHash} compact surface="dashboard" />
                       </div>
-                      <DistributionActions hash={receiptId} compact surface="dashboard" />
+                      <DistributionActions hash={contentHash} compact surface="dashboard" />
                       <p className="text-center text-[10px] text-slate-600">
                         <Link href="/docs/proof" className="hover:text-slate-400 transition-colors">
                           What is this proof?

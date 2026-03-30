@@ -444,7 +444,9 @@ export default function CustomerReceiptsPage() {
                   <h3 className="text-xs font-medium text-slate-400 mb-2">
                     Developer / Agent Output
                   </h3>
-                  <ProofPacketView hash={selectedId} compact surface="receipts" />
+                  {(detail as Record<string, unknown>).content_hash != null && (
+                    <ProofPacketView hash={String((detail as Record<string, unknown>).content_hash)} compact surface="receipts" />
+                  )}
                 </div>
 
                 {/* Existing proof links/bundle actions */}
