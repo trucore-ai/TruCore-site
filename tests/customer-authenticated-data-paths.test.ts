@@ -115,7 +115,7 @@ describe("fetchReceipts client helper", () => {
     expect(data.count).toBe(1);
   });
 
-  it("throws upstream_5xx ApiError only on genuine upstream server failure (5xx)", async () => {
+  it("throws ApiError with upstream error code on genuine upstream server failure (5xx)", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
       new Response(JSON.stringify({ error: "internal_error" }), {
         status: 500,
@@ -125,7 +125,7 @@ describe("fetchReceipts client helper", () => {
 
     const { fetchReceipts } = await import("@/lib/customer-auth");
     await expect(fetchReceipts({ limit: 20 })).rejects.toMatchObject({
-      code: "upstream_5xx",
+      code: "internal_error",
     });
   });
 
