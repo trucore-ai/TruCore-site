@@ -18,4 +18,3 @@ export function trackEvent(
     // Never break the UI for analytics.
   }
 }
-

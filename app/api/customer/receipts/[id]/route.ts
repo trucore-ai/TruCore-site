@@ -4,7 +4,10 @@ import { consumeRateLimit } from "@/lib/rate-limit";
 import { getAtfApiBaseUrl, joinUpstreamUrl, getRequestIp, classifyUpstreamStatus } from "@/lib/server/upstream";
 import { logSecurityEvent } from "@/lib/security-log";
 
-const TIMEOUT_MS = 8_000;
+// IMPORTANT:
+// Must remain below Vercel serverless maxDuration (~10s on Hobby)
+// to ensure AbortController triggers before platform termination
+const TIMEOUT_MS = 7_500;
 const RATE_LIMIT_MAX = 30; // per IP per minute
 const NO_STORE = { "Cache-Control": "no-store" };
 
@@ -72,19 +75,25 @@ export async function GET(
         ...NO_STORE,
       },
     });
-  } catch {
+  } catch (err: unknown) {
     clearTimeout(timer);
+    const isTimeout = err instanceof Error && err.name === "AbortError";
     logSecurityEvent("customer_route_failure", {
       ip,
       meta: {
         route: "customer/receipt-detail",
         upstream_target: "atf-api",
-        failure_class: "network_error",
+        failure_class: isTimeout ? "timeout" : "network_error",
         environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
       },
     });
     return NextResponse.json(
-      { error: "upstream_unavailable", message: "Receipts service is temporarily unavailable." },
+      {
+        error: isTimeout ? "upstream_timeout" : "upstream_unavailable",
+        message: isTimeout
+          ? "The upstream receipts service did not respond in time."
+          : "Receipts service is temporarily unavailable.",
+      },
       { status: 502, headers: NO_STORE },
     );
   }

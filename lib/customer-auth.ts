@@ -395,7 +395,10 @@ export async function fetchReceipts(
   }
 
   if (res.status >= 500) {
-    throw new ApiError("upstream_5xx", "Receipts service is temporarily unavailable.");
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "Receipts service is temporarily unavailable.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "upstream_5xx", msg);
   }
 
   if (!res.ok) {
@@ -434,7 +437,10 @@ export async function fetchReceiptDetail(
   }
 
   if (res.status >= 500) {
-    throw new ApiError("upstream_5xx", "Receipts service is temporarily unavailable.");
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "Receipts service is temporarily unavailable.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "upstream_5xx", msg);
   }
 
   if (!res.ok) {

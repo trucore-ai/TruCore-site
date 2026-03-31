@@ -21,11 +21,12 @@ export default function StatusPage() {
       <Section className="fade-in-up">
         <div className="mx-auto max-w-3xl">
           <h1 className="text-4xl font-bold tracking-tight text-accent-200 sm:text-5xl">
-            System Status
+            Live System Status
           </h1>
           <p className="mt-4 text-2xl leading-[1.5] text-slate-200">
-            Current operational status of TruCore services.
+            Real-time health of TruCore API and enforcement services.
           </p>
+          <p className="mt-3 text-base text-slate-400">All checks reflect actual system state right now.</p>
         </div>
       </Section>
 
@@ -41,33 +42,31 @@ export default function StatusPage() {
           <Card>
             <h2 className="text-3xl font-bold text-accent-300">Monitoring</h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
-              We monitor{" "}
+              Continuous health checks monitor the 
               <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-base text-primary-200">
                 /api/health
               </code>{" "}
-              and key workflows continuously. External uptime checks run against
-              the health endpoint to verify system availability.
+              endpoint and core enforcement workflows. These checks run live.
             </p>
             <p className="mt-3 text-sm text-slate-400">
-              These checks run in your browser, no personal data is sent.
+              Privacy-respecting: no personal data is collected. Status reflects real-time system state.
             </p>
           </Card>
 
           {/* Incident Reporting */}
           <Card>
             <h2 className="text-3xl font-bold text-accent-300">
-              Incident Reporting
+              Report an Issue
             </h2>
             <p className="mt-3 text-xl leading-[1.6] text-slate-200">
-              If you believe there is an outage or service disruption, please
-              email{" "}
+              Suspect a service disruption? Email 
               <a
                 href="mailto:info@trucore.xyz"
                 className="font-semibold text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
               >
-                info@trucore.xyz
+                {" "}info@trucore.xyz
               </a>{" "}
-              and we will investigate promptly.
+              with details. We investigate immediately.
             </p>
           </Card>
 

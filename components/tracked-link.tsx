@@ -1,12 +1,15 @@
 "use client";
 
 import { trackEvent } from "@/lib/analytics";
+import { trackEvent as trackInternal } from "@/lib/track";
 import type { MouseEvent, ReactNode } from "react";
 
 type TrackedLinkProps = {
   href: string;
   children: ReactNode;
   eventName: string;
+  /** Optional event name to also fire against the internal /api/track endpoint. */
+  trackName?: string;
   eventProps?: Record<string, string | number | boolean>;
   className?: string;
   target?: string;
@@ -19,6 +22,7 @@ export function TrackedLink({
   href,
   children,
   eventName,
+  trackName,
   eventProps,
   className,
   target,
@@ -34,6 +38,9 @@ export function TrackedLink({
       return;
     }
     trackEvent(eventName, eventProps);
+    if (trackName) {
+      trackInternal(trackName, eventProps);
+    }
   };
 
   return (

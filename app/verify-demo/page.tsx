@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Badge } from "@/components/ui/badge";
+import { trackEvent } from "@/lib/track";
 import {
   FALLBACK_RESULT,
   type ProtectResult,
@@ -48,6 +49,9 @@ function VerifyDemoContent() {
   useEffect(() => {
     let cancelled = false;
 
+    trackEvent("entered_verify_demo");
+    trackEvent("page_view", { page: "verify-demo" });
+
     async function run() {
       try {
         const intentRes = await fetch("/api/sandbox/sample-intent");
@@ -74,11 +78,15 @@ function VerifyDemoContent() {
           );
         }
         const data: ProtectResult = await protectRes.json();
-        if (!cancelled) setResult(data);
+        if (!cancelled) {
+          setResult(data);
+          trackEvent("completed_verify_demo", { fallback: false });
+        }
       } catch {
         if (!cancelled) {
           setResult(FALLBACK_RESULT);
           setIsFallback(true);
+          trackEvent("completed_verify_demo", { fallback: true });
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -110,14 +118,14 @@ function VerifyDemoContent() {
                 <div className="flex items-center justify-center gap-2">
                   <span className="inline-block h-3 w-3 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,.5)]" />
                   <span className="text-sm font-semibold uppercase tracking-wider text-green-300">
-                    Verified by ATF
+                    ATF Verified
                   </span>
                 </div>
 
                 {/* Decision */}
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-wider text-primary-200">
-                    Decision
+                    Policy Decision
                   </p>
                   <p
                     className={`mt-2 text-5xl font-bold ${
@@ -161,7 +169,7 @@ function VerifyDemoContent() {
                                   : "bg-red-400"
                               }`}
                             />
-                            {(rule as Record<string, string>).policy ?? "—"}
+                            {(rule as Record<string, string>).policy ?? "-"}
                           </li>
                         ))}
                       </ul>
@@ -186,11 +194,13 @@ function VerifyDemoContent() {
         <div className="max-w-3xl">
           <Badge className="mb-4">{isFallback ? "Example" : "Live Demo"}</Badge>
           <h1 className="text-4xl font-bold tracking-tight text-accent-300 sm:text-5xl">
-            Instant Verified Receipt
+            Live Protected Trade Receipt
           </h1>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            A real ATF policy decision and cryptographic receipt, generated in
-            real time - no signup, no wallet required.
+            A real policy-enforced decision from ATF, generated live with a cryptographic receipt proving what happened. No signup. No wallet required.
+          </p>
+          <p className="mt-3 text-base text-slate-400">
+            This is a real transaction evaluated in real time. Every decision is deterministic: the same input always produces the same decision and receipt.
           </p>
         </div>
 
@@ -208,8 +218,7 @@ function VerifyDemoContent() {
             {/* Fallback notice */}
             {isFallback && (
               <div className="rounded-lg border border-amber-500/20 bg-amber-950/10 px-4 py-3 text-sm text-amber-200/90">
-                Live demo temporarily unavailable. Showing a verified example
-                receipt.
+                Live demo temporarily unavailable. Showing a verified example receipt from recent execution.
               </div>
             )}
 
@@ -271,9 +280,17 @@ function VerifyDemoContent() {
                 </p>
               )}
               <p className="mt-2 text-sm text-slate-400">
-                Deterministic result - the same input always produces the same
-                decision and receipt hash.
+                This hash is deterministic: the same policy-protected transaction always produces the same receipt and hash.
               </p>
+              <div className="mt-4 space-y-2 rounded-lg border border-primary-300/20 bg-primary-500/[0.06] p-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">What This Receipt Proves</p>
+                <ul className="mt-2 space-y-1 text-xs text-slate-300">
+                  <li>? The exact policy rules that were applied</li>
+                  <li>? The deterministic decision made (ALLOW or DENY)</li>
+                  <li>? The precise transaction inputs used</li>
+                </ul>
+                <p className="mt-2 text-xs text-slate-400">Anyone with this receipt can independently verify the decision was made correctly.</p>
+              </div>
               <button
                 type="button"
                 onClick={handleCopyShareLink}
@@ -325,12 +342,19 @@ function VerifyDemoContent() {
               Ready to run your own?
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-base text-slate-300">
-              Use the live sandbox to protect a sample trade, or jump straight
-              to your first real request with the test API key.
+              Use the live sandbox to protect a sample trade, or continue to your first real request with the test API key.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button href="/try" variant="primary" size="default">
-                Protect a Sample Trade
+              <Button
+                href="/try"
+                variant="primary"
+                size="default"
+                onClick={() => {
+                  trackEvent("clicked_start_trade");
+                  trackEvent("cta_verify_to_trade");
+                }}
+              >
+                Start Your First Protected Trade
               </Button>
               <Button href="/try#api-key" variant="secondary" size="default">
                 Get Test API Key
