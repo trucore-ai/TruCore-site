@@ -138,7 +138,7 @@ describe("First-use UX — empty state", () => {
 // ---------------------------------------------------------------------------
 
 describe("First-use UX — first trade button", () => {
-  it('shows "Generate Sample Trade" button for new users', async () => {
+  it('shows "Or try step-by-step" button for new users', async () => {
     render(<CustomerDashboardPage />);
 
     await waitFor(() => {
@@ -148,7 +148,7 @@ describe("First-use UX — first trade button", () => {
     });
 
     expect(screen.getByTestId("generate-btn")).toHaveTextContent(
-      "Generate Sample Trade",
+      "Or try step-by-step",
     );
   });
 
@@ -221,7 +221,7 @@ describe("First-use UX — loading state", () => {
     await waitFor(() => {
       const btn = screen.getByTestId("generate-btn");
       expect(btn).toBeDisabled();
-      expect(btn).toHaveTextContent(/generating sample trade/i);
+      expect(btn).toHaveTextContent(/or try step-by-step/i);
     });
   });
 });
