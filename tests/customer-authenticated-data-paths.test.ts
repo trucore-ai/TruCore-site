@@ -428,3 +428,122 @@ describe("/api/dashboard/me proxy auth forwarding", () => {
     expect(response.status).toBe(200);
   });
 });
+
+// ---------------------------------------------------------------------------
+// 14-15: Receipts verify proxy — timeout vs network-error classification
+// ---------------------------------------------------------------------------
+
+function makePostRequest(
+  url: string,
+  headers: Record<string, string>,
+  body: string,
+): NextRequest {
+  return new NextRequest(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...headers },
+    body,
+  });
+}
+
+describe("/api/customer/receipts/verify proxy catch-path classification", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  it("classifies AbortError as upstream_timeout with failure_class timeout", async () => {
+    vi.resetModules();
+    vi.mock("@/lib/rate-limit", () => ({
+      consumeRateLimit: vi.fn(() => ({ exceeded: false })),
+    }));
+    vi.mock("@/lib/hash", () => ({
+      sha256: vi.fn((s: string) => s),
+    }));
+    vi.mock("@/lib/security-log", () => ({
+      logSecurityEvent: vi.fn(),
+    }));
+    vi.mock("@/lib/server/upstream", () => ({
+      getAtfApiBaseUrl: vi.fn(() => ATF_API_BASE),
+      joinUpstreamUrl: vi.fn((base: string, path: string) => `${base}${path}`),
+      getRequestIp: vi.fn(() => "127.0.0.1"),
+      classifyUpstreamStatus: vi.fn(() => "upstream_5xx"),
+    }));
+
+    const abortError = new Error("The operation was aborted");
+    abortError.name = "AbortError";
+    vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(abortError);
+
+    const { POST } = await import("@/app/api/customer/receipts/verify/route");
+    const { logSecurityEvent } = await import("@/lib/security-log");
+
+    const req = makePostRequest(
+      "http://localhost/api/customer/receipts/verify",
+      { authorization: "Bearer tok_verify_timeout" },
+      JSON.stringify({ receipt_id: "r_test" }),
+    );
+    const response = await POST(req);
+    const body = await response.json();
+
+    expect(response.status).toBe(502);
+    expect(body.error).toBe("upstream_timeout");
+    expect(body.message).toMatch(/did not respond in time/i);
+
+    expect(logSecurityEvent).toHaveBeenCalledWith(
+      "customer_route_failure",
+      expect.objectContaining({
+        meta: expect.objectContaining({
+          route: "customer/receipt-verify",
+          failure_class: "timeout",
+        }),
+      }),
+    );
+  });
+
+  it("classifies generic network Error as upstream_unavailable with failure_class network_error", async () => {
+    vi.resetModules();
+    vi.mock("@/lib/rate-limit", () => ({
+      consumeRateLimit: vi.fn(() => ({ exceeded: false })),
+    }));
+    vi.mock("@/lib/hash", () => ({
+      sha256: vi.fn((s: string) => s),
+    }));
+    vi.mock("@/lib/security-log", () => ({
+      logSecurityEvent: vi.fn(),
+    }));
+    vi.mock("@/lib/server/upstream", () => ({
+      getAtfApiBaseUrl: vi.fn(() => ATF_API_BASE),
+      joinUpstreamUrl: vi.fn((base: string, path: string) => `${base}${path}`),
+      getRequestIp: vi.fn(() => "127.0.0.1"),
+      classifyUpstreamStatus: vi.fn(() => "upstream_5xx"),
+    }));
+
+    vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(
+      new Error("fetch failed"),
+    );
+
+    const { POST } = await import("@/app/api/customer/receipts/verify/route");
+    const { logSecurityEvent } = await import("@/lib/security-log");
+
+    const req = makePostRequest(
+      "http://localhost/api/customer/receipts/verify",
+      { authorization: "Bearer tok_verify_network" },
+      JSON.stringify({ receipt_id: "r_test" }),
+    );
+    const response = await POST(req);
+    const body = await response.json();
+
+    expect(response.status).toBe(502);
+    expect(body.error).toBe("upstream_unavailable");
+    expect(body.message).toMatch(/temporarily unavailable/i);
+
+    expect(logSecurityEvent).toHaveBeenCalledWith(
+      "customer_route_failure",
+      expect.objectContaining({
+        meta: expect.objectContaining({
+          route: "customer/receipt-verify",
+          failure_class: "network_error",
+        }),
+      }),
+    );
+  });
+});
