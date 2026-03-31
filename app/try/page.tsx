@@ -4,6 +4,7 @@ import { Section } from "@/components/ui/section";
 import { TryAtfFlow } from "@/components/try-atf-flow";
 import { ApiKeySection } from "@/components/api-key-section";
 import { TrackedLink } from "@/components/tracked-link";
+import { PageViewTracker } from "@/components/page-view-tracker";
 
 export const metadata: Metadata = {
   title: "Try ATF",
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 export default function TryPage() {
   return (
     <Container>
+      <PageViewTracker page="try" />
       <Section className="fade-in-up">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
@@ -36,6 +38,7 @@ export default function TryPage() {
             <TrackedLink
               href="#first-trade-flow"
               eventName="try_start_first_trade_click"
+              trackName="cta_try_primary"
               eventProps={{ location: "try_header" }}
               className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-6 py-3 text-base font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
             >
@@ -44,6 +47,7 @@ export default function TryPage() {
             <TrackedLink
               href="/verify-demo"
               eventName="try_verify_demo_click"
+              trackName="cta_try_verify_demo"
               eventProps={{ location: "try_header" }}
               className="inline-flex items-center justify-center rounded-xl border border-primary-300/30 px-6 py-3 text-base font-semibold text-primary-200 transition-colors hover:bg-primary-500/10"
             >

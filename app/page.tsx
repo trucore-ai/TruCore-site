@@ -16,6 +16,7 @@ import { MoatSignalStrip } from "@/components/moat-signal-strip";
 import { ProductionReadinessStrip } from "@/components/production-readiness-strip";
 import { LiveStatusStrip } from "@/components/home/live-status-strip";
 import { TrackedLink } from "@/components/tracked-link";
+import { PageViewTracker } from "@/components/page-view-tracker";
 import { Tilt } from "@/components/ui/tilt";
 import { getAtfCliVersion } from "@/lib/version";
 import truCoreBanner from "@/images/TruCore-banner-new.png";
@@ -51,6 +52,7 @@ const lastUpdated = process.env.NEXT_PUBLIC_BUILD_DATE ?? "unknown";
 export default function Home() {
   return (
     <Container>
+      <PageViewTracker page="home" />
       {/* ── Hero ── */}
       <Section id="hero" className="fade-in-up pb-8 sm:pb-10">
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-neutral-950/40 p-8 shadow-elevated sm:p-12 lg:p-14">
@@ -89,6 +91,7 @@ export default function Home() {
               <TrackedLink
                 href="/try"
                 eventName="hero_try_atf_click"
+                trackName="cta_home_primary"
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl px-8 py-4 text-xl font-semibold shadow-glow-accent transition-all bg-accent-500 text-neutral-950 hover:bg-accent-400 hover:shadow-lg"
               >
@@ -97,6 +100,7 @@ export default function Home() {
               <TrackedLink
                 href="/verify-demo"
                 eventName="hero_receipts_click"
+                trackName="cta_home_secondary"
                 eventProps={{ location: "atf_hero" }}
                 className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
               >
