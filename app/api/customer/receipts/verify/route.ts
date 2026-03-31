@@ -114,19 +114,25 @@ export async function POST(req: NextRequest) {
         ...NO_STORE,
       },
     });
-  } catch {
+  } catch (err: unknown) {
     clearTimeout(timer);
+    const isTimeout = err instanceof Error && err.name === "AbortError";
     logSecurityEvent("customer_route_failure", {
       ip,
       meta: {
         route: "customer/receipt-verify",
         upstream_target: "atf-api",
-        failure_class: "network_error",
+        failure_class: isTimeout ? "timeout" : "network_error",
         environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
       },
     });
     return NextResponse.json(
-      { error: "upstream_unavailable", message: "Receipts service is temporarily unavailable." },
+      {
+        error: isTimeout ? "upstream_timeout" : "upstream_unavailable",
+        message: isTimeout
+          ? "The upstream receipts service did not respond in time."
+          : "Receipts service is temporarily unavailable.",
+      },
       { status: 502, headers: NO_STORE },
     );
   }
