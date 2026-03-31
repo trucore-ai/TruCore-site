@@ -4,7 +4,7 @@ import { consumeRateLimit } from "@/lib/rate-limit";
 import { getAtfApiBaseUrl, joinUpstreamUrl, getRequestIp, classifyUpstreamStatus } from "@/lib/server/upstream";
 import { logSecurityEvent } from "@/lib/security-log";
 
-const TIMEOUT_MS = 8_000;
+const TIMEOUT_MS = 12_000;
 const RATE_LIMIT_MAX = 30; // per IP per minute
 const NO_STORE = { "Cache-Control": "no-store" };
 
