@@ -4,7 +4,10 @@ import { consumeRateLimit } from "@/lib/rate-limit";
 import { getAtfApiBaseUrl, joinUpstreamUrl, getRequestIp, classifyUpstreamStatus } from "@/lib/server/upstream";
 import { logSecurityEvent } from "@/lib/security-log";
 
-const TIMEOUT_MS = 12_000;
+// IMPORTANT:
+// Must remain below Vercel serverless maxDuration (~10s on Hobby)
+// to ensure AbortController triggers before platform termination
+const TIMEOUT_MS = 7_500;
 const RATE_LIMIT_MAX = 30; // per IP per minute
 const MAX_BODY_BYTES = 32 * 1024;
 const NO_STORE = { "Cache-Control": "no-store" };
