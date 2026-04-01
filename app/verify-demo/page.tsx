@@ -284,10 +284,10 @@ function VerifyDemoContent() {
               </p>
               <div className="mt-4 space-y-2 rounded-lg border border-primary-300/20 bg-primary-500/[0.06] p-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">What This Receipt Proves</p>
-                <ul className="mt-2 space-y-1 text-xs text-slate-300">
-                  <li>? The exact policy rules that were applied</li>
-                  <li>? The deterministic decision made (ALLOW or DENY)</li>
-                  <li>? The precise transaction inputs used</li>
+                <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-slate-300">
+                  <li>The exact policy rules that were applied</li>
+                  <li>The deterministic decision made (ALLOW or DENY)</li>
+                  <li>The precise transaction inputs used</li>
                 </ul>
                 <p className="mt-2 text-xs text-slate-400">Anyone with this receipt can independently verify the decision was made correctly.</p>
               </div>
