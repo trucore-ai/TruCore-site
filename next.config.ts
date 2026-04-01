@@ -49,6 +49,10 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_BUILD_DATE:
       process.env.NEXT_PUBLIC_BUILD_DATE ?? new Date().toISOString().slice(0, 10),
+    NEXT_PUBLIC_GIT_COMMIT:
+      process.env.NEXT_PUBLIC_GIT_COMMIT ?? process.env.VERCEL_GIT_COMMIT_SHA ?? "",
+    NEXT_PUBLIC_BUILD_TIME:
+      process.env.NEXT_PUBLIC_BUILD_TIME ?? new Date().toISOString(),
   },
   pageExtensions: ["ts", "tsx", "mdx"],
   turbopack: {
