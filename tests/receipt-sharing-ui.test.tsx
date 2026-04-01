@@ -85,6 +85,7 @@ vi.mock("@/components/run-test-request", () => ({
 import VerifyReceiptPage from "@/app/verify/page";
 import CustomerDashboardPage from "@/app/customer/dashboard/page";
 import { buildTelegramUrl, buildTwitterUrl, buildVerifyUrl } from "@/lib/share-utils";
+import { fetchSampleIntent, simulateProtection, executeSample, markActivationStep } from "@/lib/customer-auth";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -119,6 +120,74 @@ beforeEach(() => {
   mockFetchReceipts.mockResolvedValue({ receipts: [], count: 1 });
   mockFetchUpgradeRequests.mockResolvedValue({ requests: [] });
 });
+
+/**
+ * Set up mocks so the dashboard starts at onboarding step 0 and the
+ * generate → simulate → execute flow completes when "Run Your First
+ * Protected Trade" is clicked.  After calling this, render the page
+ * and click the quick-trade button to populate obReceipt.
+ */
+function setupExecutionFlowMocks() {
+  const SAMPLE_INTENT = { action: "swap", from_token: "SOL", to_token: "USDC", amount: 1 };
+
+  mockFetchDashboard.mockResolvedValue({
+    user_id: "u_1",
+    email: "user@example.com",
+    email_verified: true,
+    tenant_id: "t_1",
+    tenant: { plan_tier: "free", status: "active" },
+    api_keys: [],
+    receipt_count: 0,
+    activation: {
+      onboarding_completed: false,
+      steps_completed: [],
+      first_receipt_id: null,
+    },
+  });
+
+  mockFetchActivation.mockResolvedValue({
+    onboarding_completed: false,
+    steps_completed: [],
+    first_receipt_id: null,
+  });
+
+  (fetchSampleIntent as ReturnType<typeof vi.fn>).mockResolvedValue({
+    intent: SAMPLE_INTENT,
+  });
+
+  (simulateProtection as ReturnType<typeof vi.fn>).mockResolvedValue({
+    decision: "ALLOW",
+    receipt: { receipt_id: "hash_abc123" },
+  });
+
+  (executeSample as ReturnType<typeof vi.fn>).mockResolvedValue({
+    receipt: { receipt_id: "hash_abc123", content_hash: "hash_abc123" },
+  });
+
+  (markActivationStep as ReturnType<typeof vi.fn>).mockResolvedValue({
+    onboarding_completed: true,
+    steps_completed: ["sample_generated", "dry_run_completed", "execution_completed"],
+    first_receipt_id: "hash_abc123",
+  });
+}
+
+/**
+ * Render the dashboard, trigger the quick-trade flow, and wait for the
+ * post-execution proof surface to appear (trust-actions with proof links).
+ */
+async function renderDashboardWithExecutionFlow() {
+  setupExecutionFlowMocks();
+  render(<CustomerDashboardPage />);
+
+  // Wait for the quick-trade button to appear (dashboard loaded, step 0)
+  const quickTradeBtn = await screen.findByTestId("quick-trade-btn");
+  fireEvent.click(quickTradeBtn);
+
+  // Wait for the execution flow to complete and proof elements to render
+  await waitFor(() => {
+    expect(screen.getByTestId("trust-actions")).toBeInTheDocument();
+  });
+}
 
 describe("share-utils", () => {
   it("buildVerifyUrl generates canonical share verify URL", () => {
@@ -199,11 +268,7 @@ describe("verify page sharing section", () => {
 
 describe("dashboard success state share actions", () => {
   it("shows view/share/preview actions after successful trade", async () => {
-    render(<CustomerDashboardPage />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("trust-actions")).toBeInTheDocument();
-    });
+    await renderDashboardWithExecutionFlow();
 
     expect(screen.getByRole("link", { name: "View Receipt" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Share Receipt" })).toBeInTheDocument();
@@ -211,11 +276,7 @@ describe("dashboard success state share actions", () => {
   });
 
   it("dashboard actions use correct verify + OG preview links", async () => {
-    render(<CustomerDashboardPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole("link", { name: "View Receipt" })).toBeInTheDocument();
-    });
+    await renderDashboardWithExecutionFlow();
 
     const viewReceipt = screen.getByRole("link", { name: "View Receipt" });
     const previewOg = screen.getByRole("link", { name: "Preview Share Card" });
@@ -225,17 +286,13 @@ describe("dashboard success state share actions", () => {
   });
 
   it("share receipt button copies canonical verify link", async () => {
-    render(<CustomerDashboardPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Share Receipt" })).toBeInTheDocument();
-    });
+    await renderDashboardWithExecutionFlow();
 
     fireEvent.click(screen.getByRole("button", { name: "Share Receipt" }));
 
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-        "https://trucore.xyz/verify?hash=hash_abc123&from=share",
+        "https://www.trucore.xyz/verify?hash=hash_abc123&from=share",
       );
     });
   });
@@ -275,22 +332,18 @@ describe("verify success surface includes proof links", () => {
 
 describe("dashboard success surface includes proof links", () => {
   it("renders ProofLinksCard in success state when receipt id is available", async () => {
-    render(<CustomerDashboardPage />);
+    await renderDashboardWithExecutionFlow();
 
-    await waitFor(() => {
-      expect(screen.getByTestId("proof-links-card")).toBeInTheDocument();
-    });
+    expect(screen.getByTestId("proof-links-card")).toBeInTheDocument();
   });
 
   it("proof links card verify URL uses receipt id from activation", async () => {
-    render(<CustomerDashboardPage />);
+    await renderDashboardWithExecutionFlow();
 
-    await waitFor(() => {
-      const verifyUrlEl = screen.getByTestId("proof-verify-url");
-      expect(verifyUrlEl.textContent).toBe(
-        "https://trucore.xyz/verify?hash=hash_abc123&from=share",
-      );
-    });
+    const verifyUrlEl = screen.getByTestId("proof-verify-url");
+    expect(verifyUrlEl.textContent).toBe(
+      "https://www.trucore.xyz/verify?hash=hash_abc123&from=share",
+    );
   });
 });
 
@@ -330,26 +383,20 @@ describe("verify page distribution actions", () => {
 
 describe("dashboard distribution actions", () => {
   it("renders DistributionActions in success state when receipt id is available", async () => {
-    render(<CustomerDashboardPage />);
+    await renderDashboardWithExecutionFlow();
 
-    await waitFor(() => {
-      expect(screen.getByTestId("distribution-actions")).toBeInTheDocument();
-    });
+    expect(screen.getByTestId("distribution-actions")).toBeInTheDocument();
   });
 
   it("renders Copy Share Text button in dashboard", async () => {
-    render(<CustomerDashboardPage />);
+    await renderDashboardWithExecutionFlow();
 
-    await waitFor(() => {
-      expect(screen.getByTestId("copy-share-text-btn")).toBeInTheDocument();
-    });
+    expect(screen.getByTestId("copy-share-text-btn")).toBeInTheDocument();
   });
 
   it("renders Copy Bot Line button in dashboard", async () => {
-    render(<CustomerDashboardPage />);
+    await renderDashboardWithExecutionFlow();
 
-    await waitFor(() => {
-      expect(screen.getByTestId("copy-bot-line-btn")).toBeInTheDocument();
-    });
+    expect(screen.getByTestId("copy-bot-line-btn")).toBeInTheDocument();
   });
 });
