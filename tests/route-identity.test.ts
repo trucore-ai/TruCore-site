@@ -24,7 +24,7 @@ describe("route identity", () => {
   });
 
   it("/ metadata title references TruCore (not ATF Developer Platform)", () => {
-    expect(homeSrc).toContain("TruCore | Developer Security Infrastructure");
+    expect(homeSrc).toContain("TruCore | Policy-Enforced Protection for AI Agents");
     expect(homeSrc).not.toContain('"ATF Developer Platform');
   });
 
@@ -33,7 +33,7 @@ describe("route identity", () => {
   });
 
   it("/ page contains the marketing hero headline", () => {
-    expect(homeSrc).toContain("Guardrails for automated finance");
+    expect(homeSrc).toContain("Protect Every Transaction");
     expect(homeSrc).toContain('id="why-trucore"');
   });
 

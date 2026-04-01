@@ -122,7 +122,7 @@ beforeEach(() => {
 
 describe("share-utils", () => {
   it("buildVerifyUrl generates canonical share verify URL", () => {
-    expect(buildVerifyUrl("abc123")).toBe("https://trucore.xyz/verify?hash=abc123&from=share");
+    expect(buildVerifyUrl("abc123")).toBe("https://www.trucore.xyz/verify?hash=abc123&from=share");
   });
 
   it("buildTwitterUrl contains encoded verify URL", () => {
@@ -162,7 +162,7 @@ describe("verify page sharing section", () => {
 
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-        "https://trucore.xyz/verify?hash=abc123&from=share",
+        "https://www.trucore.xyz/verify?hash=abc123&from=share",
       );
     });
   });
@@ -254,7 +254,7 @@ describe("verify success surface includes proof links", () => {
     render(page);
 
     const verifyUrlEl = screen.getByTestId("proof-verify-url");
-    expect(verifyUrlEl.textContent).toBe("https://trucore.xyz/verify?hash=abc123&from=share");
+    expect(verifyUrlEl.textContent).toBe("https://www.trucore.xyz/verify?hash=abc123&from=share");
   });
 
   it("OG preview URL in ProofLinksCard is canonical", async () => {
@@ -262,7 +262,7 @@ describe("verify success surface includes proof links", () => {
     render(page);
 
     const ogUrlEl = screen.getByTestId("proof-og-url");
-    expect(ogUrlEl.textContent).toBe("https://trucore.xyz/api/og/receipt?hash=abc123");
+    expect(ogUrlEl.textContent).toBe("https://www.trucore.xyz/api/og/receipt?hash=abc123");
   });
 
   it("does not render ProofLinksCard when hash is absent", async () => {

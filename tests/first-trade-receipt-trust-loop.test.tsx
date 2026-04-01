@@ -78,7 +78,7 @@ const COMPLETED_ACTIVATION = {
 };
 
 const MOCK_RECEIPT = {
-  receipt: { receipt_id: "r_live_123abc" },
+  receipt: { receipt_id: "r_live_123abc", content_hash: "abc123" },
   execution_mode: "simulated",
 };
 
