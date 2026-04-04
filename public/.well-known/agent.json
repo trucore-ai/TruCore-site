@@ -7,6 +7,58 @@
   "builders_url": "https://trucore.xyz/builders",
   "status_url": "https://trucore.xyz/status",
   "api_base_url": "https://api.trucore.xyz",
+  "mcp": {
+    "endpoint": "https://api.trucore.xyz/mcp",
+    "status": "live",
+    "tools": [
+      {
+        "name": "probe_transaction",
+        "purpose": "Lightweight policy pre-check on a candidate intent",
+        "advisory": true,
+        "authoritative": false
+      },
+      {
+        "name": "simulate_transaction",
+        "purpose": "Full simulation against active policies and conditions",
+        "advisory": true,
+        "authoritative": false
+      },
+      {
+        "name": "protect_transaction",
+        "purpose": "Binding policy enforcement decision (approve or deny)",
+        "advisory": false,
+        "authoritative": true
+      },
+      {
+        "name": "verify_receipt",
+        "purpose": "Verify execution receipt hash integrity",
+        "advisory": false,
+        "authoritative": false
+      },
+      {
+        "name": "explain_decision",
+        "purpose": "Human-readable explanation of a decision with reason codes",
+        "advisory": true,
+        "authoritative": false
+      }
+    ],
+    "canonical_flow": [
+      "discover tools",
+      "probe_transaction",
+      "simulate_transaction",
+      "protect_transaction",
+      "verify_receipt",
+      "explain_decision",
+      "stop before signing/submission"
+    ],
+    "entitlement": "tier-based, tenant-backed",
+    "boundaries": {
+      "signs_transactions": false,
+      "submits_transactions": false,
+      "protect_is_authoritative": true,
+      "advisory_tools_are_policy_aware": true
+    }
+  },
   "discovery_keywords": [
     "agent",
     "bot",
@@ -15,7 +67,14 @@
     "quota planning",
     "execute-best",
     "self-upgrade",
-    "monetization"
+    "monetization",
+    "MCP",
+    "Model Context Protocol",
+    "probe_transaction",
+    "simulate_transaction",
+    "protect_transaction",
+    "verify_receipt",
+    "explain_decision"
   ],
   "bot_flow": [
     {

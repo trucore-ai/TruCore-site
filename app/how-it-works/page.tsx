@@ -36,7 +36,8 @@ export default function HowItWorksPage() {
             The Agent Transaction Firewall sits between an autonomous agent and
             the network. Every transaction intent is evaluated against
             configurable policies before execution, and every outcome produces a
-            verifiable receipt.
+            verifiable receipt. Agents can integrate via the hosted MCP endpoint,
+            REST API, CLI, or OpenClaw plugin.
           </p>
         </div>
       </Section>
@@ -177,6 +178,17 @@ export default function HowItWorksPage() {
               >
                 Bot Integration Guide &rarr;
               </Link>
+            </li>
+            <li>
+              <Link
+                href="/agent"
+                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+              >
+                Hosted MCP Flow &rarr;
+              </Link>
+              <span className="text-base text-slate-400">
+                {" "} - probe, simulate, protect, verify, explain via MCP
+              </span>
             </li>
             <li>
               <Link

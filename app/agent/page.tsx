@@ -7,13 +7,91 @@ import { Section } from "@/components/ui/section";
 export const metadata: Metadata = {
   title: "Agent Integration Guide",
   description:
-    "Canonical agent integration guide for TruCore ATF. Simulate, compare, plan, execute, and self-upgrade AI-driven transactions.",
+    "Canonical agent integration guide for TruCore ATF. Hosted MCP flow, advisory tools, protect enforcement, and receipt verification for AI agent runtimes.",
   openGraph: {
     title: "Agent Integration Guide - TruCore ATF",
     description:
-      "Canonical agent integration guide for TruCore ATF. Simulate, compare, plan, execute, and self-upgrade AI-driven transactions.",
+      "Canonical agent integration guide for TruCore ATF. Hosted MCP flow, advisory tools, protect enforcement, and receipt verification for AI agent runtimes.",
   },
 };
+
+const mcpFlow = [
+  {
+    step: 1,
+    title: "Discover tools",
+    desc: "Connect to the hosted MCP endpoint and enumerate available tools.",
+    tool: "MCP tool discovery",
+  },
+  {
+    step: 2,
+    title: "Probe a candidate intent",
+    desc: "Submit one candidate intent for lightweight policy evaluation before committing resources.",
+    tool: "probe_transaction",
+  },
+  {
+    step: 3,
+    title: "Simulate the candidate",
+    desc: "Run a full simulation of the candidate intent against active policies and market conditions.",
+    tool: "simulate_transaction",
+  },
+  {
+    step: 4,
+    title: "Request protection",
+    desc: "Submit the intent for binding policy enforcement. This is the authoritative gate. Only approved intents should proceed to signing.",
+    tool: "protect_transaction",
+  },
+  {
+    step: 5,
+    title: "Verify the receipt",
+    desc: "Confirm the execution receipt hash integrity after on-chain settlement.",
+    tool: "verify_receipt",
+  },
+  {
+    step: 6,
+    title: "Explain the result",
+    desc: "Request a human-readable explanation of the decision, including reason codes and policy triggers.",
+    tool: "explain_decision",
+  },
+  {
+    step: 7,
+    title: "Stop before signing",
+    desc: "MCP does not sign or submit transactions. The agent retains full signing authority. Stop the MCP flow here and proceed to your own signer.",
+    tool: "Agent-side",
+  },
+];
+
+const mcpTools = [
+  {
+    name: "probe_transaction",
+    purpose: "Lightweight policy pre-check on a candidate intent",
+    advisory: true,
+    authoritative: false,
+  },
+  {
+    name: "simulate_transaction",
+    purpose: "Full simulation against active policies and conditions",
+    advisory: true,
+    authoritative: false,
+  },
+  {
+    name: "protect_transaction",
+    purpose: "Binding policy enforcement decision (approve or deny)",
+    advisory: false,
+    authoritative: true,
+  },
+  {
+    name: "verify_receipt",
+    purpose: "Verify execution receipt hash integrity",
+    advisory: false,
+    authoritative: false,
+  },
+  {
+    name: "explain_decision",
+    purpose: "Human-readable explanation of a decision with reason codes",
+    advisory: true,
+    authoritative: false,
+  },
+];
 
 const canonicalFlow = [
   {
@@ -119,13 +197,14 @@ export default function AgentPage() {
             Agent Integration Guide
           </h1>
           <p className="mt-6 text-2xl leading-[1.5] text-slate-200">
-            Use TruCore ATF to simulate, compare, protect, and upgrade AI-driven
-            transactions.
+            Use TruCore ATF to probe, simulate, protect, verify, and explain
+            AI-driven transactions through a hosted MCP endpoint or direct API.
           </p>
           <p className="mt-4 text-lg text-slate-300">
-            This page provides the canonical bot-facing flow for integrating
-            with the Agent Transaction Firewall. Machine-readable discovery is
-            available at{" "}
+            ATF is a policy-enforced transaction firewall for AI agents. MCP is
+            a hosted integration surface for agent runtimes. Advisory tools help
+            plan safely. Protect provides the binding enforcement decision.
+            Machine-readable discovery is available at{" "}
             <Link
               href="/.well-known/agent.json"
               className="font-semibold text-primary-300 underline underline-offset-2 transition-colors hover:text-primary-200"
@@ -137,14 +216,133 @@ export default function AgentPage() {
         </div>
       </Section>
 
-      {/* Canonical Flow */}
+      {/* MCP Hosted Flow */}
       <Section divider className="fade-in-up fade-delay-1">
         <div className="mb-8 max-w-2xl">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
-            Canonical Bot Flow
+            Hosted MCP Flow
           </h2>
           <p className="mt-3 text-xl text-slate-300">
-            The recommended sequence for AI agents using ATF.
+            The recommended integration path for agent runtimes using the Model
+            Context Protocol. ATF exposes a hosted MCP endpoint with five tools
+            covering the full advisory-to-enforcement loop.
+          </p>
+          <p className="mt-2 text-base text-slate-400">
+            MCP does not sign or submit transactions. The agent retains full
+            signing authority. Protect is the only authoritative gate.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {mcpFlow.map((item) => (
+            <Card key={item.step} className="flex flex-col">
+              <div className="flex items-start gap-3">
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-accent-400/40 text-sm font-bold text-accent-300">
+                  {item.step}
+                </span>
+                <div>
+                  <h3 className="text-lg font-bold text-accent-300">
+                    {item.title}
+                  </h3>
+                  <p className="mt-1 text-base leading-[1.5] text-slate-200">
+                    {item.desc}
+                  </p>
+                  <code className="mt-2 inline-block rounded bg-neutral-800 px-2 py-0.5 text-sm text-primary-200">
+                    {item.tool}
+                  </code>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </Section>
+
+      {/* MCP Tool Inventory */}
+      <Section divider className="fade-in-up fade-delay-2">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+            MCP Tool Inventory
+          </h2>
+          <p className="mt-3 text-xl text-slate-300">
+            Five tools available through the hosted MCP endpoint. Advisory tools
+            are policy-aware but not authoritative. Only{" "}
+            <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-base text-primary-200">
+              protect_transaction
+            </code>{" "}
+            produces a binding enforcement decision.
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-white/10">
+                <th className="pb-3 pr-4 text-sm font-semibold text-slate-400">
+                  Tool
+                </th>
+                <th className="pb-3 pr-4 text-sm font-semibold text-slate-400">
+                  Purpose
+                </th>
+                <th className="pb-3 pr-4 text-sm font-semibold text-slate-400">
+                  Advisory
+                </th>
+                <th className="pb-3 text-sm font-semibold text-slate-400">
+                  Authoritative
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {mcpTools.map((tool) => (
+                <tr
+                  key={tool.name}
+                  className="border-b border-white/5 last:border-0"
+                >
+                  <td className="py-3 pr-4">
+                    <code className="text-sm font-semibold text-accent-300">
+                      {tool.name}
+                    </code>
+                  </td>
+                  <td className="py-3 pr-4 text-sm text-slate-200">
+                    {tool.purpose}
+                  </td>
+                  <td className="py-3 pr-4 text-sm">
+                    {tool.advisory ? (
+                      <span className="text-blue-400">Yes</span>
+                    ) : (
+                      <span className="text-slate-500">No</span>
+                    )}
+                  </td>
+                  <td className="py-3 text-sm">
+                    {tool.authoritative ? (
+                      <span className="text-emerald-400">Yes</span>
+                    ) : (
+                      <span className="text-slate-500">No</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-6 rounded-lg border border-amber-500/20 bg-amber-500/[0.04] p-4">
+          <p className="text-sm font-semibold text-amber-300">
+            MCP boundaries
+          </p>
+          <ul className="mt-2 space-y-1 text-sm text-slate-300">
+            <li>MCP does not sign transactions</li>
+            <li>MCP does not submit transactions to the chain</li>
+            <li>Entitlement is tier-based and tenant-backed</li>
+            <li>Advisory tools inform; protect enforces</li>
+          </ul>
+        </div>
+      </Section>
+
+      {/* Canonical Bot Flow (REST API) */}
+      <Section divider className="fade-in-up fade-delay-1">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+            REST API Bot Flow
+          </h2>
+          <p className="mt-3 text-xl text-slate-300">
+            The direct REST API flow for bots that integrate without MCP.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

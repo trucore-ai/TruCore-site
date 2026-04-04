@@ -220,7 +220,17 @@ export default function AgentDiscoveryPage() {
           <pre className="overflow-x-auto text-sm text-slate-200 leading-relaxed">{`# 1. Fetch the agent manifest
 GET https://trucore.xyz/.well-known/atf.json
 
-# 2. Install the OpenClaw Plugin
+# 2. Hosted MCP integration (recommended for agent runtimes)
+# Connect to the hosted MCP endpoint and use these tools:
+#   probe_transaction    - lightweight policy pre-check (advisory)
+#   simulate_transaction - full simulation against policies (advisory)
+#   protect_transaction  - binding enforcement decision (authoritative)
+#   verify_receipt       - verify receipt hash integrity
+#   explain_decision     - human-readable explanation with reason codes
+# MCP does not sign or submit transactions.
+# Entitlement is tier-based and tenant-backed.
+
+# 3. Install the OpenClaw Plugin (alternative path)
 openclaw plugins install @trucore/trucore-atf
 openclaw gateway restart
 
@@ -324,6 +334,11 @@ POST https://trucore.xyz/api/bot-feedback
           </p>
           <ul className="divide-y divide-white/8 rounded-lg border border-white/10 bg-neutral-950/40 text-sm">
             {[
+              [
+                "hosted-mcp-integration",
+                "Hosted MCP integration",
+                "Five MCP tools for agent runtimes: probe, simulate, protect, verify, explain. Advisory tools are policy-aware. Protect is authoritative. MCP does not sign or submit transactions.",
+              ],
               [
                 "swap-guardrails",
                 "Swap guardrails",

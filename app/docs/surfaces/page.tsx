@@ -4,9 +4,9 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { CopyBlock } from "@/components/copy-block";
 
 export const metadata: Metadata = {
-  title: "Integration Surfaces - API, CLI & Plugin",
+  title: "Integration Surfaces - API, CLI, Plugin & MCP",
   description:
-    "How to integrate with ATF: REST API, CLI tool, and OpenClaw plugin. Current capabilities, maturity, and roadmap.",
+    "How to integrate with ATF: REST API, CLI tool, OpenClaw plugin, and hosted MCP endpoint. Current capabilities, maturity, and tool inventory.",
 };
 
 const API_EXAMPLE = `curl -sS https://api.trucore.xyz/v1/bot/protect \\
@@ -88,6 +88,14 @@ const pluginTools: SurfaceEntry[] = [
   { name: "atf_billing_upgrade", status: "coming-soon", description: "Trigger plan upgrade flow" },
 ];
 
+const mcpTools: SurfaceEntry[] = [
+  { name: "probe_transaction", status: "available", description: "Lightweight policy pre-check on a candidate intent (advisory)" },
+  { name: "simulate_transaction", status: "available", description: "Full simulation against active policies and conditions (advisory)" },
+  { name: "protect_transaction", status: "available", description: "Binding policy enforcement decision - approve or deny (authoritative)" },
+  { name: "verify_receipt", status: "available", description: "Verify execution receipt hash integrity" },
+  { name: "explain_decision", status: "available", description: "Human-readable explanation of a decision with reason codes (advisory)" },
+];
+
 function StatusBadge({ status }: { status: SurfaceEntry["status"] }) {
   const styles = {
     available: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
@@ -117,16 +125,25 @@ export default function SurfacesPage() {
           Integration Surfaces
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          ATF provides three integration surfaces: a REST API for direct integration,
-          a CLI for local development and CI pipelines, and an OpenClaw plugin for
-          autonomous agent frameworks.
+          ATF provides four integration surfaces: a hosted MCP endpoint for agent
+          runtimes, a REST API for direct integration, a CLI for local development
+          and CI pipelines, and an OpenClaw plugin for autonomous agent frameworks.
         </p>
       </header>
 
       {/* ── Surface Overview ── */}
       <section className="space-y-4">
         <HeadingAnchor id="overview">Surface Overview</HeadingAnchor>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-5 space-y-2">
+            <h3 className="text-lg font-bold text-emerald-300">Hosted MCP</h3>
+            <StatusBadge status="available" />
+            <p className="text-sm text-slate-300">
+              Model Context Protocol endpoint for agent runtimes. Five tools covering
+              advisory probing, simulation, protect enforcement, verification, and
+              explanation.
+            </p>
+          </div>
           <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-5 space-y-2">
             <h3 className="text-lg font-bold text-emerald-300">REST API</h3>
             <StatusBadge status="available" />
@@ -151,6 +168,71 @@ export default function SurfacesPage() {
               Runs inside the OpenClaw agent framework.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* ── MCP ── */}
+      <section className="space-y-4">
+        <HeadingAnchor id="mcp">Hosted MCP Endpoint</HeadingAnchor>
+        <p className="text-slate-300">
+          ATF exposes a hosted Model Context Protocol (MCP) endpoint for agent runtimes.
+          Five tools cover the full advisory-to-enforcement loop. Advisory tools
+          (<code className="font-mono text-slate-200">probe_transaction</code>,{" "}
+          <code className="font-mono text-slate-200">simulate_transaction</code>,{" "}
+          <code className="font-mono text-slate-200">explain_decision</code>) are
+          policy-aware but not authoritative.{" "}
+          <code className="font-mono text-slate-200">protect_transaction</code> is the
+          binding enforcement gate. MCP does not sign or submit transactions.
+        </p>
+        <p className="text-slate-300">
+          Entitlement is tier-based and tenant-backed. Each tenant&apos;s MCP access
+          is scoped to their entitlement tier.
+        </p>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/10 text-left">
+                <th className="pb-2 pr-4 font-semibold text-slate-300">Tool</th>
+                <th className="pb-2 pr-4 font-semibold text-slate-300">Status</th>
+                <th className="pb-2 font-semibold text-slate-300">Description</th>
+              </tr>
+            </thead>
+            <tbody className="text-slate-400">
+              {mcpTools.map((tool) => (
+                <tr key={tool.name} className="border-b border-white/5">
+                  <td className="py-2 pr-4 font-mono text-xs text-slate-200">{tool.name}</td>
+                  <td className="py-2 pr-4"><StatusBadge status={tool.status} /></td>
+                  <td className="py-2">{tool.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="rounded-lg border border-amber-400/20 bg-amber-900/10 p-4 space-y-2">
+          <p className="text-sm font-semibold text-amber-300">MCP Boundaries</p>
+          <ul className="ml-4 list-disc space-y-1 text-sm text-slate-300">
+            <li>MCP does not sign transactions</li>
+            <li>MCP does not submit transactions to the chain</li>
+            <li>Advisory tools inform; protect enforces</li>
+            <li>Entitlement is tier-based and tenant-backed</li>
+          </ul>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
+            Canonical MCP flow
+          </p>
+          <ol className="ml-5 list-decimal space-y-1 text-sm text-slate-300">
+            <li>Discover tools via MCP endpoint</li>
+            <li>Probe a candidate intent</li>
+            <li>Simulate the candidate</li>
+            <li>Request protection (binding enforcement)</li>
+            <li>Verify the execution receipt</li>
+            <li>Explain the result if needed</li>
+            <li>Stop before signing/submission</li>
+          </ol>
         </div>
       </section>
 
@@ -280,7 +362,15 @@ export default function SurfacesPage() {
       {/* ── Choosing a Surface ── */}
       <section className="space-y-4">
         <HeadingAnchor id="choosing">When to Use Which Surface</HeadingAnchor>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg border border-white/10 p-5 space-y-2">
+            <h3 className="font-bold text-accent-300">Use MCP when…</h3>
+            <ul className="space-y-1 text-sm text-slate-400">
+              <li>Your agent runtime supports MCP natively</li>
+              <li>You want the advisory-to-enforcement loop in one surface</li>
+              <li>Building with hosted agent frameworks</li>
+            </ul>
+          </div>
           <div className="rounded-lg border border-white/10 p-5 space-y-2">
             <h3 className="font-bold text-accent-300">Use the API when…</h3>
             <ul className="space-y-1 text-sm text-slate-400">
