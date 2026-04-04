@@ -7,7 +7,7 @@ import { Section } from "@/components/ui/section";
 export const metadata: Metadata = {
   title: "Bot Integration Guide | TruCore",
   description:
-    "Learn how trading bots and agent frameworks integrate with the Agent Transaction Firewall (ATF) for policy-enforced, receipt-backed execution.",
+    "Learn how trading bots and agent frameworks integrate with the Agent Transaction Firewall (ATF) via hosted MCP, REST API, or OpenClaw plugin for policy-enforced, receipt-backed execution.",
 };
 
 export default function BotIntegrationGuidePage() {
@@ -68,6 +68,56 @@ Verification`}
             ATF never holds keys. It validates the intent, returns an approval
             or rejection, and the bot retains full signing authority.
           </p>
+        </div>
+      </Section>
+
+      {/* ── MCP Integration Path ── */}
+      <Section divider className="fade-in-up fade-delay-2">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+            Hosted MCP Integration
+          </h2>
+          <p className="mt-4 text-lg text-slate-300">
+            Agent runtimes that support the Model Context Protocol can integrate
+            via the hosted MCP endpoint. ATF provides five MCP tools covering
+            the full advisory-to-enforcement loop:
+          </p>
+
+          <Card className="mt-6">
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <code className="shrink-0 rounded bg-neutral-800 px-2 py-0.5 text-sm text-primary-200">probe_transaction</code>
+                <p className="text-sm text-slate-300">Lightweight policy pre-check (advisory)</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <code className="shrink-0 rounded bg-neutral-800 px-2 py-0.5 text-sm text-primary-200">simulate_transaction</code>
+                <p className="text-sm text-slate-300">Full simulation against active policies (advisory)</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <code className="shrink-0 rounded bg-neutral-800 px-2 py-0.5 text-sm text-emerald-200">protect_transaction</code>
+                <p className="text-sm text-slate-300">Binding enforcement decision (authoritative)</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <code className="shrink-0 rounded bg-neutral-800 px-2 py-0.5 text-sm text-primary-200">verify_receipt</code>
+                <p className="text-sm text-slate-300">Verify receipt hash integrity</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <code className="shrink-0 rounded bg-neutral-800 px-2 py-0.5 text-sm text-primary-200">explain_decision</code>
+                <p className="text-sm text-slate-300">Human-readable explanation with reason codes (advisory)</p>
+              </div>
+            </div>
+          </Card>
+
+          <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/[0.04] p-4">
+            <p className="text-sm font-semibold text-amber-300">
+              MCP does not sign or submit transactions.
+            </p>
+            <p className="mt-1 text-sm text-slate-400">
+              The hosted MCP endpoint covers discovery through verification.
+              Signing and chain submission remain on your side. Entitlement is
+              tier-based and tenant-backed.
+            </p>
+          </div>
         </div>
       </Section>
 
