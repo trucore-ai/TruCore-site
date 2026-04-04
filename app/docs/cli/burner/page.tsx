@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { WindowsCliNote } from "@/components/windows-cli-note";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default function BurnerPage() {
 
       <section className="space-y-4">
         <HeadingAnchor id="quickstart">Quickstart</HeadingAnchor>
+        <WindowsCliNote />
         <AtfCopyCommand
           label="Start burner"
           command={`npx @trucore/atf@${cliVersion} burner --network devnet`}

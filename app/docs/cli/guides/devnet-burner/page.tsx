@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { WindowsCliNote } from "@/components/windows-cli-note";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -41,6 +42,7 @@ export default function DevnetBurnerGuidePage() {
       {/* ── Steps ── */}
       <section className="space-y-6">
         <HeadingAnchor id="steps">Step-by-Step</HeadingAnchor>
+        <WindowsCliNote />
 
         <div className="space-y-6">
           {/* Step 1 */}

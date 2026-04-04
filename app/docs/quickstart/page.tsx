@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components/safe-to-try-banner";
+import { WindowsCliNote } from "@/components/windows-cli-note";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -32,9 +33,10 @@ export default function DocsQuickstartPage() {
           command={`npm install -g @trucore/atf@${cliVersion}`}
         />
         <p className="text-sm text-slate-400">
-          Or run without installing:{" "}
+          Or run without installing (macOS/Linux only):{" "}
           <code className="font-mono text-slate-300">{`npx @trucore/atf@${cliVersion} trade`}</code>
         </p>
+        <WindowsCliNote />
       </section>
 
       {/* ── First command ── */}

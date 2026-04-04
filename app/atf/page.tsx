@@ -8,6 +8,7 @@ import { WaitlistForm } from "@/components/waitlist-form";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { SimulateVerifyExecuteFlow } from "@/components/simulate-verify-execute-flow";
 import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components/safe-to-try-banner";
+import { WindowsCliNote } from "@/components/windows-cli-note";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -219,7 +220,7 @@ export default function ATFPage() {
           <p className="mt-2 text-sm text-slate-400">
             Install globally with{" "}
             <code className="font-mono text-slate-300">npm install -g @trucore/atf@{cliVersion}</code>,{" "}
-            or run without installing with{" "}
+            or on macOS/Linux run without installing with{" "}
             <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion}</code>.{" "}
             <TrackedLink
               href="/docs/cli/commands#install"
@@ -301,12 +302,12 @@ export default function ATFPage() {
             Run This First
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            One command tells you everything about your environment. No
-            installation required.
+            One command tells you everything about your environment.
           </p>
         </div>
 
         <div className="max-w-3xl">
+          <WindowsCliNote />
           <AtfCopyCommand
             label="Doctor"
             command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
@@ -381,6 +382,7 @@ export default function ATFPage() {
         </div>
 
         <div className="max-w-3xl space-y-4">
+          <WindowsCliNote />
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
               1. Create a devnet profile
@@ -450,6 +452,7 @@ export default function ATFPage() {
         </div>
 
         <div className="max-w-3xl space-y-4">
+          <WindowsCliNote />
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
               1. Create a production profile
@@ -709,6 +712,7 @@ export default function ATFPage() {
         </div>
 
         <div className="mx-auto mt-6 max-w-xl">
+          <WindowsCliNote />
           <AtfCopyCommand
             label="Try a protected trade"
             command={`npx @trucore/atf@${cliVersion} trade`}
@@ -760,8 +764,9 @@ export default function ATFPage() {
           </h2>
 
           <p className="text-sm text-white/70 mt-2 max-w-lg">
-            Try <code className="text-white/90">npx @trucore/atf@{cliVersion} trade</code> to see the full
+            Try <code className="text-white/90">atf trade</code> to see the full
             product loop: protect, receipt, verify. Demo mode works instantly.
+            On macOS/Linux you can also use <code className="text-white/90">npx @trucore/atf@{cliVersion} trade</code>.
           </p>
 
           <div className="mt-4 flex gap-4">

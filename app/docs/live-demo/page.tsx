@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { TrackedLink } from "@/components/tracked-link";
+import { WindowsCliNote } from "@/components/windows-cli-note";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -33,9 +34,10 @@ export default function DocsLiveDemoPage() {
       <div className="rounded-lg border border-primary-300/20 bg-primary-500/5 px-4 py-3 text-sm text-slate-300">
         <span className="font-semibold text-primary-200">CLI install:</span>{" "}
         <code className="font-mono text-slate-200">npm install -g @trucore/atf@{cliVersion}</code>{" "}
-        (or use <code className="font-mono text-slate-200">npx @trucore/atf@{cliVersion}</code>).{" "}
+        (or on macOS/Linux: <code className="font-mono text-slate-200">npx @trucore/atf@{cliVersion}</code>).{" "}
         The bare <code className="font-mono text-slate-200">atf</code> commands below assume a global install.
       </div>
+      <WindowsCliNote />
 
       {/* ── 1) Protect an intent ── */}
       <section className="space-y-4">
