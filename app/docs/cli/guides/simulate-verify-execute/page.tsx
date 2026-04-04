@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
-import { WindowsCliNote } from "@/components/windows-cli-note";
+import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -35,10 +35,22 @@ export default function SimulateVerifyExecuteGuidePage() {
         <HeadingAnchor id="prerequisites">Prerequisites</HeadingAnchor>
 
         <div className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-5 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Recommended: install globally</p>
-          <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="sve-install-global" />
-          <p className="mt-1 text-sm text-slate-400">Or run without installing (macOS/Linux only): <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion} &lt;command&gt;</code></p>
-          <WindowsCliNote />
+          <PlatformRunbook
+            ariaLabel="Simulate verify execute install platform"
+            macLinux={
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Run directly with npx. No install needed.</p>
+                <p className="mt-1 text-sm text-slate-400">All commands below use <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion}</code>.</p>
+              </div>
+            }
+            windows={
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Install globally</p>
+                <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="sve-install-global" />
+                <p className="mt-1 text-sm text-slate-400">Then run commands directly with <code className="font-mono text-slate-300">atf</code>.</p>
+              </div>
+            }
+          />
         </div>
 
         <ul className="list-disc space-y-1 pl-6 text-sm text-slate-300">

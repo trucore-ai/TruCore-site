@@ -14,6 +14,7 @@ import { PortalCreateKeyGuide } from "@/components/portal-create-key-guide";
 import { PortalVerifyPanel } from "@/components/portal-verify-panel";
 import { PortalPremiumSection } from "@/components/portal-premium-section";
 import { resolvePortalPremium } from "@/lib/premium-analytics";
+import { CopyBlock } from "@/components/copy-block";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -194,8 +195,9 @@ export default async function PartnerPortalPage() {
           <p className="text-sm text-slate-300">
             Replace YOUR_API_KEY with your active key value. Keep x-api-key in the request header.
           </p>
-          <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-xs text-slate-200">
-{`curl -sS https://trucore.xyz/api/simulate \\
+          <CopyBlock
+            label="bash"
+            value={`curl -sS https://trucore.xyz/api/simulate \\
   -H "content-type: application/json" \\
   -H "x-api-key: YOUR_API_KEY" \\
   -d '{
@@ -206,13 +208,13 @@ export default async function PartnerPortalPage() {
     "max_slippage_bps": 100,
     "ttl_seconds": 60
   }'`}
-          </pre>
+            copyButtonLabel="Copy"
+          />
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <p className="mb-2 text-sm font-semibold text-emerald-300">Sample allowed payload</p>
-              <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-xs text-slate-200">
-{`{
+            <CopyBlock
+              label="Sample allowed payload"
+              value={`{
   "action": "swap",
   "token_in": "SOL",
   "token_out": "USDC",
@@ -220,12 +222,11 @@ export default async function PartnerPortalPage() {
   "max_slippage_bps": 100,
   "ttl_seconds": 60
 }`}
-              </pre>
-            </div>
-            <div>
-              <p className="mb-2 text-sm font-semibold text-amber-300">Sample denied payload</p>
-              <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-xs text-slate-200">
-{`{
+              copyButtonLabel="Copy"
+            />
+            <CopyBlock
+              label="Sample denied payload"
+              value={`{
   "action": "swap",
   "token_in": "SOL",
   "token_out": "USDC",
@@ -233,8 +234,8 @@ export default async function PartnerPortalPage() {
   "max_slippage_bps": 500,
   "ttl_seconds": 360
 }`}
-              </pre>
-            </div>
+              copyButtonLabel="Copy"
+            />
           </div>
         </section>
 

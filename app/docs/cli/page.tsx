@@ -4,7 +4,7 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { TrackedLink } from "@/components/tracked-link";
 import { SafeToTryBanner, WhatHappensBlock } from "@/components/safe-to-try-banner";
-import { WindowsCliNote } from "@/components/windows-cli-note";
+import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -132,16 +132,22 @@ export default function DocsCliPage() {
         <HeadingAnchor id="install">Install the CLI</HeadingAnchor>
 
         <div className="space-y-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Recommended: install globally</p>
-            <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="cli-install-global" />
-            <p className="mt-1 text-sm text-slate-400">Then run commands directly with <code className="font-mono text-slate-300">atf</code>.</p>
-          </div>
-          <WindowsCliNote />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Alternative: run without installing (macOS/Linux only)</p>
-            <AtfCopyCommand command={`npx @trucore/atf@${cliVersion} trade`} testId="cli-install-npx" />
-          </div>
+          <PlatformRunbook
+            ariaLabel="CLI install platform"
+            macLinux={
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Run directly with npx. No install needed.</p>
+                <AtfCopyCommand command={`npx @trucore/atf@${cliVersion} trade`} testId="cli-install-npx" />
+              </div>
+            }
+            windows={
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Install globally</p>
+                <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="cli-install-global" />
+                <p className="mt-1 text-sm text-slate-400">Then run commands directly with <code className="font-mono text-slate-300">atf</code>.</p>
+              </div>
+            }
+          />
         </div>
       </section>
 

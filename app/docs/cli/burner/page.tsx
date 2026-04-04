@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
-import { WindowsCliNote } from "@/components/windows-cli-note";
+import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -31,10 +31,30 @@ export default function BurnerPage() {
 
       <section className="space-y-4">
         <HeadingAnchor id="quickstart">Quickstart</HeadingAnchor>
-        <WindowsCliNote />
-        <AtfCopyCommand
-          label="Start burner"
-          command={`npx @trucore/atf@${cliVersion} burner --network devnet`}
+        <PlatformRunbook
+          ariaLabel="Burner quickstart platform"
+          macLinux={
+            <div className="space-y-3">
+              <p className="text-sm text-slate-400">Run directly with npx.</p>
+              <AtfCopyCommand
+                label="Start burner"
+                command={`npx @trucore/atf@${cliVersion} burner --network devnet`}
+              />
+            </div>
+          }
+          windows={
+            <div className="space-y-3">
+              <p className="text-sm text-slate-400">Install ATF once, then run the command below.</p>
+              <AtfCopyCommand
+                label="Install"
+                command={`npm install -g @trucore/atf@${cliVersion}`}
+              />
+              <AtfCopyCommand
+                label="Start burner"
+                command="atf burner --network devnet"
+              />
+            </div>
+          }
         />
         <p className="text-sm text-slate-300">
           This generates a fresh keypair, requests an airdrop, and sets the burner
@@ -60,9 +80,20 @@ Run "atf simulate --preset swap_small --verify" to test.`}
         <p className="text-sm text-slate-300">
           A common testing workflow: create a burner, then immediately simulate a transaction.
         </p>
-        <AtfCopyCommand
-          label="Burner + simulate"
-          command={`npx @trucore/atf@${cliVersion} burner --network devnet && npx @trucore/atf@${cliVersion} simulate --preset swap_small --verify`}
+        <PlatformRunbook
+          ariaLabel="Burner then simulate platform"
+          macLinux={
+            <AtfCopyCommand
+              label="Burner + simulate"
+              command={`npx @trucore/atf@${cliVersion} burner --network devnet && npx @trucore/atf@${cliVersion} simulate --preset swap_small --verify`}
+            />
+          }
+          windows={
+            <AtfCopyCommand
+              label="Burner + simulate"
+              command="atf burner --network devnet && atf simulate --preset swap_small --verify"
+            />
+          }
         />
       </section>
 

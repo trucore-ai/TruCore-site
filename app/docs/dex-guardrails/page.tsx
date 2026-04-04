@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
-import { WindowsCliNote } from "@/components/windows-cli-note";
+import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliTag, getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -122,16 +122,32 @@ export default function DocsDexGuardrailsPage() {
       <section className="space-y-4">
         <HeadingAnchor id="cli-quickstart">CLI quickstart</HeadingAnchor>
         <div className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-5 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Install the CLI</p>
-          <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="dex-install-global" />
-          <p className="text-sm text-slate-400">Or run without installing (macOS/Linux only): <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion} &lt;command&gt;</code></p>
-          <WindowsCliNote />
+          <PlatformRunbook
+            ariaLabel="DEX guardrails CLI platform"
+            macLinux={
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Run directly with npx</p>
+                <AtfCopyCommand command={`npx @trucore/atf@${cliVersion} simulate --preset swap_small --verify`} testId="dex-simulate-mac" />
+              </div>
+            }
+            windows={
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Install ATF once</p>
+                <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="dex-install-global" />
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary-200 mt-3">Then run</p>
+                <AtfCopyCommand command="atf simulate --preset swap_small --verify" testId="dex-simulate-windows" />
+              </div>
+            }
+          />
         </div>
         <p className="text-slate-300">
           Run a swap simulation through the ATF CLI:
         </p>
-        <div className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4">
-          <pre className="text-sm text-slate-200 leading-relaxed">{`# Simulate a swap with slippage check
+        <PlatformRunbook
+          ariaLabel="Swap simulation examples platform"
+          macLinux={
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4">
+              <pre className="text-sm text-slate-200 leading-relaxed">{`# Simulate a swap with slippage check
 npx @trucore/atf@${cliTag} simulate --preset swap_small --verify
 
 # Simulate with custom JSON
@@ -143,7 +159,25 @@ npx @trucore/atf@${cliTag} simulate --json '{
   "max_slippage_bps": 100,
   "ttl_seconds": 60
 }'`}</pre>
-        </div>
+            </div>
+          }
+          windows={
+            <div className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4">
+              <pre className="text-sm text-slate-200 leading-relaxed">{`# Simulate a swap with slippage check
+atf simulate --preset swap_small --verify
+
+# Simulate with custom JSON
+atf simulate --json '{
+  "action": "swap",
+  "token_in": "SOL",
+  "token_out": "USDC",
+  "amount": 10,
+  "max_slippage_bps": 100,
+  "ttl_seconds": 60
+}'`}</pre>
+            </div>
+          }
+        />
         <p className="text-sm text-slate-400">
           Use <code className="text-slate-300">--verify</code> to confirm the receipt hash matches
           the expected output.

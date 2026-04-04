@@ -8,7 +8,7 @@ import { WaitlistForm } from "@/components/waitlist-form";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { SimulateVerifyExecuteFlow } from "@/components/simulate-verify-execute-flow";
 import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components/safe-to-try-banner";
-import { WindowsCliNote } from "@/components/windows-cli-note";
+import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -307,11 +307,33 @@ export default function ATFPage() {
         </div>
 
         <div className="max-w-3xl">
-          <WindowsCliNote />
-          <AtfCopyCommand
-            label="Doctor"
-            command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
-            testId="doctor-command-copy"
+          <PlatformRunbook
+            ariaLabel="Doctor command platform"
+            macLinux={
+              <div className="space-y-2">
+                <p className="text-sm text-slate-400">Run directly with npx.</p>
+                <AtfCopyCommand
+                  label="Doctor"
+                  command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
+                  testId="doctor-command-copy"
+                />
+              </div>
+            }
+            windows={
+              <div className="space-y-2">
+                <p className="text-sm text-slate-400">Install ATF once, then run the command below.</p>
+                <AtfCopyCommand
+                  label="Install"
+                  command={`npm install -g @trucore/atf@${cliVersion}`}
+                  testId="doctor-install-windows"
+                />
+                <AtfCopyCommand
+                  label="Doctor"
+                  command="atf doctor --pretty"
+                  testId="doctor-command-windows"
+                />
+              </div>
+            }
           />
         </div>
 
@@ -382,60 +404,111 @@ export default function ATFPage() {
         </div>
 
         <div className="max-w-3xl space-y-4">
-          <WindowsCliNote />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              1. Create a devnet profile
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} profile create devnet-burner --network devnet`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              2. Select the profile
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} profile select devnet-burner`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              3. Enable burner mode (ephemeral devnet wallet)
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} burner enable`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              4. Verify RPC connectivity
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} rpc ping`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              5. Sign and send a small transaction
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} tx sign --preset swap_small | npx @trucore/atf@${cliVersion} tx send`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              6. Verify the receipt
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} receipts verify --last`}
-            />
-          </div>
+          <PlatformRunbook
+            ariaLabel="Devnet burner platform"
+            macLinux={
+              <div className="space-y-4">
+                <p className="text-sm text-slate-400">Run directly with npx.</p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    1. Create a devnet profile
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} profile create devnet-burner --network devnet`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    2. Select the profile
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} profile select devnet-burner`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    3. Enable burner mode (ephemeral devnet wallet)
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} burner enable`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    4. Verify RPC connectivity
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} rpc ping`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    5. Sign and send a small transaction
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} tx sign --preset swap_small | npx @trucore/atf@${cliVersion} tx send`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    6. Verify the receipt
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} receipts verify --last`}
+                  />
+                </div>
+              </div>
+            }
+            windows={
+              <div className="space-y-4">
+                <p className="text-sm text-slate-400">Install ATF once, then run the commands below.</p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Install
+                  </p>
+                  <AtfCopyCommand
+                    command={`npm install -g @trucore/atf@${cliVersion}`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    1. Create a devnet profile
+                  </p>
+                  <AtfCopyCommand command="atf profile create devnet-burner --network devnet" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    2. Select the profile
+                  </p>
+                  <AtfCopyCommand command="atf profile select devnet-burner" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    3. Enable burner mode (ephemeral devnet wallet)
+                  </p>
+                  <AtfCopyCommand command="atf burner enable" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    4. Verify RPC connectivity
+                  </p>
+                  <AtfCopyCommand command="atf rpc ping" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    5. Sign and send a small transaction
+                  </p>
+                  <AtfCopyCommand command="atf tx sign --preset swap_small | atf tx send" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    6. Verify the receipt
+                  </p>
+                  <AtfCopyCommand command="atf receipts verify --last" />
+                </div>
+              </div>
+            }
+          />
         </div>
       </Section>
 
@@ -452,33 +525,69 @@ export default function ATFPage() {
         </div>
 
         <div className="max-w-3xl space-y-4">
-          <WindowsCliNote />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              1. Create a production profile
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} profile create prod --network mainnet-beta`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              2. Set your Helius RPC URL (stored securely, never printed)
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} profile config prod --rpc-url <YOUR_HELIUS_URL>`}
-            />
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              3. Sanity check: ping the RPC
-            </p>
-            <AtfCopyCommand
-              command={`npx @trucore/atf@${cliVersion} rpc ping --profile prod`}
-            />
-          </div>
+          <PlatformRunbook
+            ariaLabel="Helius setup platform"
+            macLinux={
+              <div className="space-y-4">
+                <p className="text-sm text-slate-400">Run directly with npx.</p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    1. Create a production profile
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} profile create prod --network mainnet-beta`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    2. Set your Helius RPC URL (stored securely, never printed)
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} profile config prod --rpc-url <YOUR_HELIUS_URL>`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    3. Sanity check: ping the RPC
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} rpc ping --profile prod`}
+                  />
+                </div>
+              </div>
+            }
+            windows={
+              <div className="space-y-4">
+                <p className="text-sm text-slate-400">Install ATF once, then run the commands below.</p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Install
+                  </p>
+                  <AtfCopyCommand
+                    command={`npm install -g @trucore/atf@${cliVersion}`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    1. Create a production profile
+                  </p>
+                  <AtfCopyCommand command="atf profile create prod --network mainnet-beta" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    2. Set your Helius RPC URL (stored securely, never printed)
+                  </p>
+                  <AtfCopyCommand command="atf profile config prod --rpc-url <YOUR_HELIUS_URL>" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    3. Sanity check: ping the RPC
+                  </p>
+                  <AtfCopyCommand command="atf rpc ping --profile prod" />
+                </div>
+              </div>
+            }
+          />
         </div>
 
         <p className="mt-6 max-w-3xl text-sm text-primary-200/80">
@@ -712,11 +821,30 @@ export default function ATFPage() {
         </div>
 
         <div className="mx-auto mt-6 max-w-xl">
-          <WindowsCliNote />
-          <AtfCopyCommand
-            label="Try a protected trade"
-            command={`npx @trucore/atf@${cliVersion} trade`}
-            testId="footer-cta-trade"
+          <PlatformRunbook
+            ariaLabel="Get started platform"
+            macLinux={
+              <AtfCopyCommand
+                label="Try a protected trade"
+                command={`npx @trucore/atf@${cliVersion} trade`}
+                testId="footer-cta-trade"
+              />
+            }
+            windows={
+              <div className="space-y-2">
+                <p className="text-sm text-slate-400">Install ATF once, then run the command below.</p>
+                <AtfCopyCommand
+                  label="Install"
+                  command={`npm install -g @trucore/atf@${cliVersion}`}
+                  testId="footer-cta-install-windows"
+                />
+                <AtfCopyCommand
+                  label="Try a protected trade"
+                  command="atf trade"
+                  testId="footer-cta-trade-windows"
+                />
+              </div>
+            }
           />
         </div>
 
