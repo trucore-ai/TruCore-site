@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { CopyBlock } from "@/components/copy-block";
 import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components/safe-to-try-banner";
 import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliVersion } from "@/lib/version";
@@ -122,8 +123,9 @@ export default function DocsQuickstartPage() {
           </Link>{" "}
           to view your keys and usage.
         </p>
-        <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-{`curl -sS https://trucore.xyz/api/simulate \\
+        <CopyBlock
+          label="API simulate request"
+          value={`curl -sS https://trucore.xyz/api/simulate \\
   -H "content-type: application/json" \\
   -H "x-api-key: YOUR_API_KEY" \\
   -d '{
@@ -134,7 +136,8 @@ export default function DocsQuickstartPage() {
     "max_slippage_bps": 100,
     "ttl_seconds": 60
   }'`}
-        </pre>
+          copyButtonLabel="Copy curl"
+        />
       </section>
 
       <section className="space-y-4">
