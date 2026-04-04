@@ -79,8 +79,11 @@ export default function Home() {
             <p className="mt-6 text-2xl font-semibold text-amber-200/90">
               Policy enforced before execution. Verified receipt after decision.
             </p>
+            <p className="mt-3 inline-flex items-center rounded-full border border-primary-300/30 bg-primary-500/[0.08] px-4 py-1.5 text-sm font-semibold tracking-wide text-primary-200">
+              Powered by PIL, the Policy Intelligence Layer
+            </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
-              TruCore adds a tamper-evident layer to AI agent transactions on Solana. Set policy rules, verify decisions with cryptographic receipts, and prove what your bot did.
+              TruCore adds a tamper-evident layer to AI agent transactions on Solana. Set policy rules, verify decisions with cryptographic receipts, and continuously improve capital deployment under deterministic, operator-gated control.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-slate-300/80">
               No signup required. No wallet access. Built for traders, protocol teams, and agent builders.
