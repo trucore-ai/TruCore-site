@@ -4,6 +4,7 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { TrackedLink } from "@/components/tracked-link";
 import { SafeToTryBanner, WhatHappensBlock } from "@/components/safe-to-try-banner";
+import { WindowsCliNote } from "@/components/windows-cli-note";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -136,8 +137,9 @@ export default function DocsCliPage() {
             <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="cli-install-global" />
             <p className="mt-1 text-sm text-slate-400">Then run commands directly with <code className="font-mono text-slate-300">atf</code>.</p>
           </div>
+          <WindowsCliNote />
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Alternative: run without installing</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Alternative: run without installing (macOS/Linux only)</p>
             <AtfCopyCommand command={`npx @trucore/atf@${cliVersion} trade`} testId="cli-install-npx" />
           </div>
         </div>

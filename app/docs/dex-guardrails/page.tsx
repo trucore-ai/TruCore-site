@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { WindowsCliNote } from "@/components/windows-cli-note";
 import { getAtfCliTag, getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -123,7 +124,8 @@ export default function DocsDexGuardrailsPage() {
         <div className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-5 space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Install the CLI</p>
           <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="dex-install-global" />
-          <p className="text-sm text-slate-400">Or run without installing: <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion} &lt;command&gt;</code></p>
+          <p className="text-sm text-slate-400">Or run without installing (macOS/Linux only): <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion} &lt;command&gt;</code></p>
+          <WindowsCliNote />
         </div>
         <p className="text-slate-300">
           Run a swap simulation through the ATF CLI:

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
+import { WindowsCliNote } from "@/components/windows-cli-note";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -36,7 +37,8 @@ export default function SimulateVerifyExecuteGuidePage() {
         <div className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-5 space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Recommended: install globally</p>
           <AtfCopyCommand command={`npm install -g @trucore/atf@${cliVersion}`} testId="sve-install-global" />
-          <p className="mt-1 text-sm text-slate-400">Or run without installing: <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion} &lt;command&gt;</code></p>
+          <p className="mt-1 text-sm text-slate-400">Or run without installing (macOS/Linux only): <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion} &lt;command&gt;</code></p>
+          <WindowsCliNote />
         </div>
 
         <ul className="list-disc space-y-1 pl-6 text-sm text-slate-300">
