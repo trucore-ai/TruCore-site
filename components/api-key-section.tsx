@@ -124,7 +124,14 @@ export function ApiKeySection() {
               )}
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <code className="flex-1 rounded-lg border border-white/[0.08] bg-neutral-950/70 px-4 py-3 font-mono text-sm text-primary-200 break-all">
+              <code
+                role="button"
+                tabIndex={0}
+                onClick={handleCopyKey}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleCopyKey(); } }}
+                className="flex-1 rounded-lg border border-white/[0.08] bg-neutral-950/70 px-4 py-3 font-mono text-sm text-primary-200 break-all cursor-pointer transition-colors hover:border-primary-300/30 hover:bg-primary-500/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                title="Click to copy"
+              >
                 {displayKey}
               </code>
               <button
@@ -132,7 +139,17 @@ export function ApiKeySection() {
                 onClick={handleCopyKey}
                 className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-primary-300/20 bg-primary-500/10 px-4 py-3 text-sm font-medium text-primary-200 transition-colors hover:bg-primary-500/20 sm:w-auto"
               >
-                {copiedKey ? "Copied" : "Copy Key"}
+                {copiedKey ? (
+                  <>
+                    <svg className="h-4 w-4 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+                    Copy Key
+                  </>
+                )}
               </button>
             </div>
             {keyState.status === "real" ? (
