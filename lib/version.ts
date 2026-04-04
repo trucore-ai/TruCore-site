@@ -24,7 +24,7 @@ export function getAtfCliVersion(): string {
       raw.trim().toLowerCase() === "latest"
     ) {
       throw new Error(
-        "NEXT_PUBLIC_ATF_CLI_VERSION must be set (e.g., 1.4.0) in Vercel env vars for PRODUCTION. " +
+        "NEXT_PUBLIC_ATF_CLI_VERSION must be set (e.g., 1.5.0) in Vercel env vars for PRODUCTION. " +
           "Never use @latest. Pin an explicit version. See docs/DEPLOY_VERCEL.md."
       );
     }
@@ -33,7 +33,7 @@ export function getAtfCliVersion(): string {
     if (raw?.trim().toLowerCase() === "latest") {
       throw new Error(
         "NEXT_PUBLIC_ATF_CLI_VERSION cannot be 'latest'. " +
-          "Pin an explicit version (e.g., 1.4.0). See docs/DEPLOY_VERCEL.md."
+          "Pin an explicit version (e.g., 1.5.0). See docs/DEPLOY_VERCEL.md."
       );
     }
   }

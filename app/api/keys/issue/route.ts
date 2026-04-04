@@ -46,6 +46,13 @@ export async function POST(req: NextRequest) {
     // Fall through with default label — non-fatal.
   }
 
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const serverKey = process.env.ATF_API_KEY?.trim();
+  if (serverKey) {
+    headers["Authorization"] = `Bearer ${serverKey}`;
+    headers["x-api-key"] = serverKey;
+  }
+
   let upstream: Response;
   try {
     const controller = new AbortController();
@@ -53,7 +60,7 @@ export async function POST(req: NextRequest) {
     try {
       upstream = await fetch(upstreamUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ label }),
         signal: controller.signal,
       });
