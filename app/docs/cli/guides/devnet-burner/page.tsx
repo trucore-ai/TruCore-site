@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
-import { WindowsCliNote } from "@/components/windows-cli-note";
+import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -42,7 +42,21 @@ export default function DevnetBurnerGuidePage() {
       {/* ── Steps ── */}
       <section className="space-y-6">
         <HeadingAnchor id="steps">Step-by-Step</HeadingAnchor>
-        <WindowsCliNote />
+        <PlatformRunbook
+          ariaLabel="Devnet burner guide platform"
+          macLinux={
+            <p className="text-sm text-slate-400">Run each step directly with npx. No install needed.</p>
+          }
+          windows={
+            <div className="space-y-2">
+              <p className="text-sm text-slate-400">Install ATF once, then use <code className="font-mono text-slate-300">atf</code> instead of <code className="font-mono text-slate-300">npx @trucore/atf@{cliVersion}</code> in each step below.</p>
+              <AtfCopyCommand
+                label="Install"
+                command={`npm install -g @trucore/atf@${cliVersion}`}
+              />
+            </div>
+          }
+        />
 
         <div className="space-y-6">
           {/* Step 1 */}

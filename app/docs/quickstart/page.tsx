@@ -3,7 +3,7 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components/safe-to-try-banner";
-import { WindowsCliNote } from "@/components/windows-cli-note";
+import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
@@ -28,15 +28,31 @@ export default function DocsQuickstartPage() {
       {/* ── Install ── */}
       <section className="rounded-xl border border-primary-300/20 bg-primary-500/5 p-5 space-y-3">
         <HeadingAnchor id="install">Install the CLI</HeadingAnchor>
-        <AtfCopyCommand
-          label="Install globally (recommended)"
-          command={`npm install -g @trucore/atf@${cliVersion}`}
+        <PlatformRunbook
+          ariaLabel="Install platform"
+          macLinux={
+            <div className="space-y-2">
+              <p className="text-sm text-slate-400">Run directly with npx. No install needed.</p>
+              <AtfCopyCommand
+                label="Run a protected trade"
+                command={`npx @trucore/atf@${cliVersion} trade`}
+              />
+            </div>
+          }
+          windows={
+            <div className="space-y-2">
+              <p className="text-sm text-slate-400">Install ATF once, then run the command below.</p>
+              <AtfCopyCommand
+                label="Install globally"
+                command={`npm install -g @trucore/atf@${cliVersion}`}
+              />
+              <AtfCopyCommand
+                label="Run a protected trade"
+                command="atf trade"
+              />
+            </div>
+          }
         />
-        <p className="text-sm text-slate-400">
-          Or run without installing (macOS/Linux only):{" "}
-          <code className="font-mono text-slate-300">{`npx @trucore/atf@${cliVersion} trade`}</code>
-        </p>
-        <WindowsCliNote />
       </section>
 
       {/* ── First command ── */}
