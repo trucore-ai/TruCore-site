@@ -218,6 +218,7 @@ export default function CustomerDashboardPage() {
   const [obError, setObError] = useState("");
   const [receiptCopied, setReceiptCopied] = useState(false);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
+  const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
 
   // Quick trade (one-click fast path) state
   const [quickTradeActive, setQuickTradeActive] = useState(false);
@@ -404,6 +405,12 @@ export default function CustomerDashboardPage() {
     navigator.clipboard.writeText(JSON.stringify(obReceipt, null, 2));
     setReceiptCopied(true);
     setTimeout(() => setReceiptCopied(false), 2000);
+  }
+
+  function handleCopyKeyId(keyId: string) {
+    navigator.clipboard.writeText(keyId);
+    setCopiedKeyId(keyId);
+    setTimeout(() => setCopiedKeyId(null), 2000);
   }
 
   // -----------------------------------------------------------------------
@@ -1552,7 +1559,8 @@ export default function CustomerDashboardPage() {
                     <th className="pb-2 pr-4 font-medium">Key ID</th>
                     <th className="pb-2 pr-4 font-medium">Label</th>
                     <th className="pb-2 pr-4 font-medium">Status</th>
-                    <th className="pb-2 font-medium">Created</th>
+                    <th className="pb-2 pr-4 font-medium">Created</th>
+                    <th className="pb-2 font-medium"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1578,8 +1586,31 @@ export default function CustomerDashboardPage() {
                           {k.status}
                         </span>
                       </td>
-                      <td className="py-2.5 text-slate-400">
+                      <td className="py-2.5 pr-4 text-slate-400">
                         {new Date(k.created_at * 1000).toLocaleDateString()}
+                      </td>
+                      <td className="py-2.5 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleCopyKeyId(k.key_id)}
+                          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-400 transition-colors hover:bg-white/10 hover:text-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-400"
+                        >
+                          {copiedKeyId === k.key_id ? (
+                            <>
+                              <svg className="h-3.5 w-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                              <span className="text-emerald-400">Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                              Copy Key ID
+                            </>
+                          )}
+                        </button>
                       </td>
                     </tr>
                   ))}
