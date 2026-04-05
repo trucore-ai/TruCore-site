@@ -34,30 +34,87 @@ export default function BurnerPage() {
         <PlatformRunbook
           ariaLabel="Burner quickstart platform"
           macLinux={
-            <div className="space-y-3">
-              <p className="text-sm text-slate-400">Run directly with npx.</p>
+            <div className="space-y-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-accent-200">First time</p>
+              <p className="text-sm text-slate-400">Run directly with npx. No install needed.</p>
               <AtfCopyCommand
-                label="Start burner"
-                command={`npx @trucore/atf@${cliVersion} burner --network devnet`}
+                label="1. Create a devnet burner profile"
+                command={`npx @trucore/atf@${cliVersion} profile create devnet-burner --network devnet`}
+              />
+              <AtfCopyCommand
+                label="2. Select the profile"
+                command={`npx @trucore/atf@${cliVersion} profile select devnet-burner`}
+              />
+              <AtfCopyCommand
+                label="3. Enable burner mode"
+                command={`npx @trucore/atf@${cliVersion} burner enable`}
+              />
+              <AtfCopyCommand
+                label="4. Verify setup"
+                command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
+              />
+
+              <hr className="border-white/10" />
+              <p className="text-xs font-bold uppercase tracking-wider text-accent-200">Use again later</p>
+              <AtfCopyCommand
+                label="1. Select the profile"
+                command={`npx @trucore/atf@${cliVersion} profile select devnet-burner`}
+              />
+              <AtfCopyCommand
+                label="2. Enable burner mode"
+                command={`npx @trucore/atf@${cliVersion} burner enable`}
               />
             </div>
           }
           windows={
-            <div className="space-y-3">
-              <p className="text-sm text-slate-400">Install ATF once, then run the command below.</p>
+            <div className="space-y-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-accent-200">First time</p>
               <AtfCopyCommand
-                label="Install"
+                label="1. Install ATF"
                 command={`npm install -g @trucore/atf@${cliVersion}`}
               />
               <AtfCopyCommand
-                label="Start burner"
-                command="atf burner --network devnet"
+                label="2. Create a devnet burner profile"
+                command="atf profile create devnet-burner --network devnet"
+              />
+              <AtfCopyCommand
+                label="3. Select the profile"
+                command="atf profile select devnet-burner"
+              />
+              <AtfCopyCommand
+                label="4. Enable burner mode"
+                command="atf burner enable"
+              />
+              <AtfCopyCommand
+                label="5. Verify setup"
+                command="atf doctor --pretty"
+              />
+
+              <hr className="border-white/10" />
+              <p className="text-xs font-bold uppercase tracking-wider text-accent-200">Use again later</p>
+              <AtfCopyCommand
+                label="1. Select the profile"
+                command="atf profile select devnet-burner"
+              />
+              <AtfCopyCommand
+                label="2. Enable burner mode"
+                command="atf burner enable"
               />
             </div>
           }
         />
+        <div className="rounded-xl border border-primary-400/20 bg-primary-900/10 p-5">
+          <h3 className="font-semibold text-primary-200">Already created this profile?</h3>
+          <p className="mt-2 text-sm text-slate-300">
+            If you see{" "}
+            <code className="font-mono text-slate-200">
+              Profile &quot;devnet-burner&quot; already exists.
+            </code>
+            , skip profile creation and jump to <em>Use again later</em> above.
+          </p>
+        </div>
         <p className="text-sm text-slate-300">
-          This switches the active profile to devnet so you can test safely.
+          Once burner mode is active, you can test safely on devnet.
           Run <code className="font-mono text-slate-200">simulate</code> next to try a transaction.
         </p>
       </section>

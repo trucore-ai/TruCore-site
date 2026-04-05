@@ -398,20 +398,21 @@ export default function ATFPage() {
             Devnet Burner Quickstart
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
-            Go from zero to a verified devnet transaction in six commands. Burner
+            Go from zero to a verified devnet setup in five commands. Burner
             mode switches your active profile to devnet so you never risk real keys.
           </p>
         </div>
 
-        <div className="max-w-3xl space-y-4">
+        <div className="max-w-3xl space-y-6">
           <PlatformRunbook
             ariaLabel="Devnet burner platform"
             macLinux={
               <div className="space-y-4">
-                <p className="text-sm text-slate-400">Run directly with npx.</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-accent-200">First time</p>
+                <p className="text-sm text-slate-400">Run directly with npx. No install needed.</p>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    1. Create a devnet profile
+                    1. Create a devnet burner profile
                   </p>
                   <AtfCopyCommand
                     command={`npx @trucore/atf@${cliVersion} profile create devnet-burner --network devnet`}
@@ -427,7 +428,7 @@ export default function ATFPage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    3. Enable burner mode (devnet testing)
+                    3. Enable burner mode
                   </p>
                   <AtfCopyCommand
                     command={`npx @trucore/atf@${cliVersion} burner enable`}
@@ -435,15 +436,126 @@ export default function ATFPage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    4. Verify RPC connectivity
+                    4. Verify setup
                   </p>
                   <AtfCopyCommand
-                    command={`npx @trucore/atf@${cliVersion} rpc ping`}
+                    command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
+                  />
+                </div>
+
+                <hr className="border-white/10" />
+                <p className="text-xs font-bold uppercase tracking-wider text-accent-200">Use again later</p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    1. Select the profile
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} profile select devnet-burner`}
                   />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    5. Sign and send a small transaction
+                    2. Enable burner mode
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} burner enable`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    3. Verify if needed
+                  </p>
+                  <AtfCopyCommand
+                    command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
+                  />
+                </div>
+              </div>
+            }
+            windows={
+              <div className="space-y-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-accent-200">First time</p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    1. Install ATF
+                  </p>
+                  <AtfCopyCommand
+                    command={`npm install -g @trucore/atf@${cliVersion}`}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    2. Create a devnet burner profile
+                  </p>
+                  <AtfCopyCommand command="atf profile create devnet-burner --network devnet" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    3. Select the profile
+                  </p>
+                  <AtfCopyCommand command="atf profile select devnet-burner" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    4. Enable burner mode
+                  </p>
+                  <AtfCopyCommand command="atf burner enable" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    5. Verify setup
+                  </p>
+                  <AtfCopyCommand command="atf doctor --pretty" />
+                </div>
+
+                <hr className="border-white/10" />
+                <p className="text-xs font-bold uppercase tracking-wider text-accent-200">Use again later</p>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    1. Select the profile
+                  </p>
+                  <AtfCopyCommand command="atf profile select devnet-burner" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    2. Enable burner mode
+                  </p>
+                  <AtfCopyCommand command="atf burner enable" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    3. Verify if needed
+                  </p>
+                  <AtfCopyCommand command="atf doctor --pretty" />
+                </div>
+              </div>
+            }
+          />
+
+          <div className="rounded-xl border border-primary-400/20 bg-primary-900/10 p-5">
+            <h3 className="font-semibold text-primary-200">Already created this profile?</h3>
+            <p className="mt-2 text-sm text-slate-300">
+              If you see{" "}
+              <code className="font-mono text-slate-200">
+                Profile &quot;devnet-burner&quot; already exists.
+              </code>
+              , skip profile creation and jump to <em>Use again later</em> above.
+            </p>
+          </div>
+        </div>
+
+        {/* ── Next: try a transaction ── */}
+        <div className="mt-10 max-w-3xl space-y-4">
+          <h3 className="text-xl font-semibold text-slate-100">Next: try a transaction</h3>
+          <p className="text-sm text-slate-400">
+            Once burner mode is active, simulate and send a devnet transaction.
+          </p>
+          <PlatformRunbook
+            ariaLabel="Devnet transaction steps"
+            macLinux={
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    1. Sign and send a small transaction
                   </p>
                   <AtfCopyCommand
                     command={`npx @trucore/atf@${cliVersion} tx sign --preset swap_small | npx @trucore/atf@${cliVersion} tx send`}
@@ -451,7 +563,7 @@ export default function ATFPage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    6. Verify the receipt
+                    2. Verify the receipt
                   </p>
                   <AtfCopyCommand
                     command={`npx @trucore/atf@${cliVersion} receipts verify --last`}
@@ -461,48 +573,15 @@ export default function ATFPage() {
             }
             windows={
               <div className="space-y-4">
-                <p className="text-sm text-slate-400">Install ATF once, then run the commands below.</p>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Install
-                  </p>
-                  <AtfCopyCommand
-                    command={`npm install -g @trucore/atf@${cliVersion}`}
-                  />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    1. Create a devnet profile
-                  </p>
-                  <AtfCopyCommand command="atf profile create devnet-burner --network devnet" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    2. Select the profile
-                  </p>
-                  <AtfCopyCommand command="atf profile select devnet-burner" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    3. Enable burner mode (devnet testing)
-                  </p>
-                  <AtfCopyCommand command="atf burner enable" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    4. Verify RPC connectivity
-                  </p>
-                  <AtfCopyCommand command="atf rpc ping" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    5. Sign and send a small transaction
+                    1. Sign and send a small transaction
                   </p>
                   <AtfCopyCommand command="atf tx sign --preset swap_small | atf tx send" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    6. Verify the receipt
+                    2. Verify the receipt
                   </p>
                   <AtfCopyCommand command="atf receipts verify --last" />
                 </div>
