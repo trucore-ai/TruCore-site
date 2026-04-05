@@ -189,7 +189,7 @@ export default function DocsCliPage() {
           <div className="rounded-xl border border-white/10 bg-neutral-950/50 p-5 space-y-3">
             <h3 className="text-lg font-semibold text-slate-100">Devnet Burner</h3>
             <p className="text-sm text-slate-300">
-              Spin up a throwaway devnet wallet, airdrop SOL, and run test transactions in seconds.
+              Switch your active profile to devnet and run test transactions safely.
             </p>
             <AtfCopyCommand
               label="Start burner"

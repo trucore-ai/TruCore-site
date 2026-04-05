@@ -71,7 +71,7 @@ const toolboxGroups = [
     title: "Network",
     commands: [
       { name: "rpc ping", desc: "Verify RPC connectivity and latency" },
-      { name: "burner enable", desc: "Create an ephemeral devnet wallet" },
+      { name: "burner enable", desc: "Switch active profile to devnet" },
     ],
   },
   {
@@ -399,7 +399,7 @@ export default function ATFPage() {
           </h2>
           <p className="mt-4 text-xl leading-[1.5] text-slate-200">
             Go from zero to a verified devnet transaction in six commands. Burner
-            mode creates an ephemeral wallet so you never risk real keys.
+            mode switches your active profile to devnet so you never risk real keys.
           </p>
         </div>
 
@@ -427,7 +427,7 @@ export default function ATFPage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    3. Enable burner mode (ephemeral devnet wallet)
+                    3. Enable burner mode (devnet testing)
                   </p>
                   <AtfCopyCommand
                     command={`npx @trucore/atf@${cliVersion} burner enable`}
@@ -484,7 +484,7 @@ export default function ATFPage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    3. Enable burner mode (ephemeral devnet wallet)
+                    3. Enable burner mode (devnet testing)
                   </p>
                   <AtfCopyCommand command="atf burner enable" />
                 </div>

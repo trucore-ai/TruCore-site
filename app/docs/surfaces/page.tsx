@@ -70,7 +70,7 @@ const cliCommands: SurfaceEntry[] = [
   { name: "atf receipts list", status: "available", description: "List receipts for current profile" },
   { name: "atf profile", status: "available", description: "Manage named profiles for different environments" },
   { name: "atf rpc ping", status: "available", description: "Test RPC endpoint latency" },
-  { name: "atf burner", status: "available", description: "Create throwaway devnet wallets" },
+  { name: "atf burner", status: "available", description: "Switch active profile to devnet for testing" },
   { name: "atf whoami", status: "available", description: "Show current identity and profile" },
 ];
 
