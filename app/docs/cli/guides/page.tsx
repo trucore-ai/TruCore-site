@@ -31,7 +31,7 @@ const GUIDES = [
     href: "/docs/cli/guides/devnet-burner",
     title: "Devnet Burner Quickstart",
     description:
-      "Spin up a throwaway devnet wallet, simulate, verify, and send in minutes.",
+      "Switch to devnet, simulate, verify, and send in minutes.",
   },
   {
     href: "/docs/cli/guides/production-bot-basics",

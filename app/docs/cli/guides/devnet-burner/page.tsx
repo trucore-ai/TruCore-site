@@ -8,7 +8,7 @@ import { getAtfCliVersion } from "@/lib/version";
 export const metadata: Metadata = {
   title: "ATF CLI Guide: Devnet Burner Quickstart",
   description:
-    "Spin up a throwaway devnet wallet, simulate a swap, verify the receipt, and send the transaction in minutes.",
+    "Switch to devnet, simulate a swap, verify the receipt, and send the transaction in minutes.",
 };
 
 const cliVersion = getAtfCliVersion();
@@ -24,7 +24,7 @@ export default function DevnetBurnerGuidePage() {
           Devnet Burner Quickstart
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          The fastest way to try the ATF CLI. Spin up a disposable devnet wallet,
+          The fastest way to try the ATF CLI. Switch to devnet,
           run a simulation, verify the receipt, and send a transaction. All on devnet, fully safe.
         </p>
       </header>
@@ -76,18 +76,17 @@ export default function DevnetBurnerGuidePage() {
           <div className="space-y-2">
             <h3 className="text-base font-semibold text-slate-100">2. Enable burner mode on devnet</h3>
             <p className="text-sm text-slate-300">
-              The burner command generates a throwaway keypair and configures the profile for devnet.
-              This wallet is disposable. Do not send real funds to it.
+              The burner command switches the active profile to devnet for safe testing.
+              Do not send real funds to devnet addresses.
             </p>
             <AtfCopyCommand
               label="Start burner"
               command={`npx @trucore/atf@${cliVersion} burner --network devnet`}
             />
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-{`Burner wallet created.
-Address: 7nQp...kR4w
-Network: devnet
-Balance: 0.00 SOL (airdrop available)`}
+{`Burner mode enabled.
+Profile: burner-test
+Network: devnet`}
             </pre>
           </div>
 
@@ -218,7 +217,7 @@ Block time: 2026-02-27T19:15:33Z`}
               <tr>
                 <td className="px-4 py-2.5">Send fails with insufficient balance</td>
                 <td className="px-4 py-2.5">Burner wallet has no SOL.</td>
-                <td className="px-4 py-2.5">Request a devnet airdrop or fund the wallet manually.</td>
+                <td className="px-4 py-2.5">Fund the wallet via devnet faucet or manual transfer.</td>
               </tr>
             </tbody>
           </table>

@@ -8,7 +8,7 @@ import { getAtfCliVersion } from "@/lib/version";
 export const metadata: Metadata = {
   title: "ATF CLI: Devnet Burner",
   description:
-    "Spin up a throwaway devnet wallet, airdrop SOL, and run test transactions in seconds with the ATF CLI burner command.",
+    "Switch to devnet for safe testing with the ATF CLI burner command.",
 };
 
 const cliVersion = getAtfCliVersion();
@@ -24,8 +24,8 @@ export default function BurnerPage() {
           Devnet Burner
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
-          The fastest way to test ATF. Generates a throwaway devnet wallet, airdrops SOL, and
-          gives you a ready-to-use environment in one command.
+          The fastest way to test ATF on devnet. Switches your active profile to devnet so you can
+          simulate and verify transactions safely before using real keys.
         </p>
       </header>
 
@@ -57,21 +57,15 @@ export default function BurnerPage() {
           }
         />
         <p className="text-sm text-slate-300">
-          This generates a fresh keypair, requests an airdrop, and sets the burner
-          as your active signer for the session.
+          This switches the active profile to devnet so you can test safely.
+          Run <code className="font-mono text-slate-200">simulate</code> next to try a transaction.
         </p>
       </section>
 
       <section className="space-y-4">
         <HeadingAnchor id="example-output">Example Output</HeadingAnchor>
         <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-{`🔥 Burner wallet created
-   Pubkey:  BrnR...4kXz
-   Network: devnet
-   Balance: 1.0 SOL (airdropped)
-
-Burner is now the active signer.
-Run "atf simulate --preset swap_small --verify" to test.`}
+{`{\n  "ok": true,\n  "burner_enabled": true,\n  "profile": "default",\n  "solana_cluster": "devnet",\n  "message": "Burner mode enabled on profile \\"default\\" (cluster: devnet)."\n}`}
         </pre>
       </section>
 
@@ -102,10 +96,9 @@ Run "atf simulate --preset swap_small --verify" to test.`}
         <div className="rounded-xl border border-amber-400/20 bg-amber-900/10 p-5">
           <h3 className="font-semibold text-amber-200">Devnet only</h3>
           <ul className="mt-2 space-y-2 text-sm text-slate-300">
-            <li>Burner wallets are devnet-only. They cannot be used on mainnet.</li>
-            <li>The private key is stored in a temporary session file and is discarded when the session ends.</li>
-            <li>Do not send real funds to a burner address. Devnet SOL has no monetary value.</li>
-            <li>Airdrop availability depends on the devnet faucet. If the faucet is rate-limited, retry after a few minutes.</li>
+            <li>Burner mode is devnet-only. It cannot be used on mainnet.</li>
+            <li>Burner mode sets the profile cluster to devnet. Ephemeral keypair generation and airdrop are planned follow-up features.</li>
+            <li>Do not send real funds to devnet addresses.</li>
           </ul>
         </div>
       </section>
@@ -124,10 +117,6 @@ Run "atf simulate --preset swap_small --verify" to test.`}
               <tr className="border-b border-white/5">
                 <td className="px-4 py-2.5 font-mono text-primary-200">--network devnet</td>
                 <td className="px-4 py-2.5">Target network (only devnet is supported for burner).</td>
-              </tr>
-              <tr className="border-b border-white/5">
-                <td className="px-4 py-2.5 font-mono text-primary-200">--amount &lt;sol&gt;</td>
-                <td className="px-4 py-2.5">SOL to airdrop (default: 1.0, subject to faucet limits).</td>
               </tr>
               <tr>
                 <td className="px-4 py-2.5 font-mono text-primary-200">--json</td>
