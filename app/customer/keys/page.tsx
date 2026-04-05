@@ -63,6 +63,9 @@ export default function CustomerKeysPage() {
   const [rotatedSecret, setRotatedSecret] = useState<string | null>(null);
   const [rotatedCopied, setRotatedCopied] = useState(false);
 
+  // Copy key ID state
+  const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
+
   // ------------------------------------------------------------------
   // Load keys
   // ------------------------------------------------------------------
@@ -193,6 +196,12 @@ export default function CustomerKeysPage() {
       setRotatedCopied(true);
       setTimeout(() => setRotatedCopied(false), 2000);
     }
+  }
+
+  function handleCopyKeyId(keyId: string) {
+    navigator.clipboard.writeText(keyId);
+    setCopiedKeyId(keyId);
+    setTimeout(() => setCopiedKeyId(null), 2000);
   }
 
   // ------------------------------------------------------------------
@@ -407,8 +416,46 @@ export default function CustomerKeysPage() {
                       {k.last_used_at ? formatDate(k.last_used_at) : "Never"}
                     </td>
                     <td className="py-2.5">
-                      {k.status === "active" && (
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2">
+                        {/* Copy Key ID */}
+                        <button
+                          onClick={() => handleCopyKeyId(k.key_id)}
+                          className="inline-flex items-center gap-1 rounded border border-white/10 px-2 py-1 text-xs text-slate-400 transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-400"
+                        >
+                          {copiedKeyId === k.key_id ? (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-3 w-3 text-emerald-400"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              <span className="text-emerald-400">Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-3 w-3"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                              </svg>
+                              Copy Key ID
+                            </>
+                          )}
+                        </button>
+
+                        {k.status === "active" && (
+                          <>
                           {/* Revoke */}
                           {confirmRevokeId === k.key_id ? (
                             <div className="flex items-center gap-1">
@@ -467,8 +514,9 @@ export default function CustomerKeysPage() {
                               Rotate
                             </button>
                           )}
-                        </div>
-                      )}
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
