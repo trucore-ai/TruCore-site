@@ -68,9 +68,20 @@ export default function DevnetBurnerGuidePage() {
               Use a separate profile for burner testing so your
               production config stays clean.
             </p>
-            <AtfCopyCommand
-              label="Create burner profile"
-              command={`npx @trucore/atf@${cliVersion} profile create devnet-burner --network devnet`}
+            <PlatformRunbook
+              ariaLabel="Create profile platform"
+              macLinux={
+                <AtfCopyCommand
+                  label="Create burner profile"
+                  command={`npx @trucore/atf@${cliVersion} profile create devnet-burner --network devnet`}
+                />
+              }
+              windows={
+                <AtfCopyCommand
+                  label="Create burner profile"
+                  command="atf profile create devnet-burner --network devnet"
+                />
+              }
             />
           </div>
 
@@ -80,9 +91,20 @@ export default function DevnetBurnerGuidePage() {
             <p className="text-sm text-slate-300">
               Switch to the burner profile before enabling burner mode.
             </p>
-            <AtfCopyCommand
-              label="Select profile"
-              command={`npx @trucore/atf@${cliVersion} profile select devnet-burner`}
+            <PlatformRunbook
+              ariaLabel="Select profile platform"
+              macLinux={
+                <AtfCopyCommand
+                  label="Select profile"
+                  command={`npx @trucore/atf@${cliVersion} profile select devnet-burner`}
+                />
+              }
+              windows={
+                <AtfCopyCommand
+                  label="Select profile"
+                  command="atf profile select devnet-burner"
+                />
+              }
             />
           </div>
 
@@ -93,9 +115,20 @@ export default function DevnetBurnerGuidePage() {
               The burner command switches the active profile to devnet for safe testing.
               Do not send real funds to devnet addresses.
             </p>
-            <AtfCopyCommand
-              label="Enable burner"
-              command={`npx @trucore/atf@${cliVersion} burner enable`}
+            <PlatformRunbook
+              ariaLabel="Enable burner platform"
+              macLinux={
+                <AtfCopyCommand
+                  label="Enable burner"
+                  command={`npx @trucore/atf@${cliVersion} burner enable`}
+                />
+              }
+              windows={
+                <AtfCopyCommand
+                  label="Enable burner"
+                  command="atf burner enable"
+                />
+              }
             />
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
 {`{\n  "ok": true,\n  "burner_enabled": true,\n  "profile": "devnet-burner",\n  "solana_cluster": "devnet",\n  "message": "Burner mode enabled on profile \\"devnet-burner\\" (cluster: devnet)."\n}`}
@@ -108,9 +141,20 @@ export default function DevnetBurnerGuidePage() {
             <p className="text-sm text-slate-300">
               Run doctor to confirm the profile, network, and RPC are configured correctly.
             </p>
-            <AtfCopyCommand
-              label="Verify"
-              command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
+            <PlatformRunbook
+              ariaLabel="Verify setup platform"
+              macLinux={
+                <AtfCopyCommand
+                  label="Verify"
+                  command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
+                />
+              }
+              windows={
+                <AtfCopyCommand
+                  label="Verify"
+                  command="atf doctor --pretty"
+                />
+              }
             />
           </div>
 
