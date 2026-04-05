@@ -117,9 +117,20 @@ export default function DevnetBurnerGuidePage() {
           {/* Step 5 */}
           <div className="space-y-2">
             <h3 className="text-base font-semibold text-slate-100">5. Ping the RPC to confirm connectivity</h3>
-            <AtfCopyCommand
-              label="Ping RPC"
-              command={`npx @trucore/atf@${cliVersion} rpc ping`}
+            <PlatformRunbook
+              ariaLabel="Ping RPC platform"
+              macLinux={
+                <AtfCopyCommand
+                  label="Ping RPC"
+                  command={`npx @trucore/atf@${cliVersion} rpc ping`}
+                />
+              }
+              windows={
+                <AtfCopyCommand
+                  label="Ping RPC"
+                  command="atf rpc ping"
+                />
+              }
             />
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
 {`Endpoint: https://api.devnet.solana.com
@@ -137,9 +148,20 @@ Network: devnet`}
               a quick simulation. Include <code className="font-mono text-slate-200">--verify</code> to
               enable local receipt verification.
             </p>
-            <AtfCopyCommand
-              label="Simulate"
-              command={`npx @trucore/atf@${cliVersion} simulate --preset swap_small --verify`}
+            <PlatformRunbook
+              ariaLabel="Simulate platform"
+              macLinux={
+                <AtfCopyCommand
+                  label="Simulate"
+                  command={`npx @trucore/atf@${cliVersion} simulate --preset swap_small --verify`}
+                />
+              }
+              windows={
+                <AtfCopyCommand
+                  label="Simulate"
+                  command="atf simulate --preset swap_small --verify"
+                />
+              }
             />
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
 {`Decision: ALLOWED
@@ -156,9 +178,20 @@ Status: Integrity verified`}
             <p className="text-sm text-slate-300">
               If you want to double-check, verify the receipt as a standalone step.
             </p>
-            <AtfCopyCommand
-              label="Verify receipt"
-              command={`npx @trucore/atf@${cliVersion} receipts verify --receipt last`}
+            <PlatformRunbook
+              ariaLabel="Verify receipt platform"
+              macLinux={
+                <AtfCopyCommand
+                  label="Verify receipt"
+                  command={`npx @trucore/atf@${cliVersion} receipts verify --receipt last`}
+                />
+              }
+              windows={
+                <AtfCopyCommand
+                  label="Verify receipt"
+                  command="atf receipts verify --receipt last"
+                />
+              }
             />
           </div>
 
@@ -169,9 +202,20 @@ Status: Integrity verified`}
               On devnet, you can safely sign and send. The burner wallet is disposable, so there is
               no risk.
             </p>
-            <AtfCopyCommand
-              label="Send transaction"
-              command={`npx @trucore/atf@${cliVersion} tx send --receipt last`}
+            <PlatformRunbook
+              ariaLabel="Send transaction platform"
+              macLinux={
+                <AtfCopyCommand
+                  label="Send transaction"
+                  command={`npx @trucore/atf@${cliVersion} tx send --receipt last`}
+                />
+              }
+              windows={
+                <AtfCopyCommand
+                  label="Send transaction"
+                  command="atf tx send --receipt last"
+                />
+              }
             />
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
 {`Transaction submitted.
@@ -183,9 +227,20 @@ Network: devnet`}
           {/* Step 9 */}
           <div className="space-y-2">
             <h3 className="text-base font-semibold text-slate-100">9. Check the transaction status</h3>
-            <AtfCopyCommand
-              label="Check status"
-              command={`npx @trucore/atf@${cliVersion} tx status --sig 3mVx...pQ8r`}
+            <PlatformRunbook
+              ariaLabel="Check status platform"
+              macLinux={
+                <AtfCopyCommand
+                  label="Check status"
+                  command={`npx @trucore/atf@${cliVersion} tx status --sig 3mVx...pQ8r`}
+                />
+              }
+              windows={
+                <AtfCopyCommand
+                  label="Check status"
+                  command="atf tx status --sig 3mVx...pQ8r"
+                />
+              }
             />
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
 {`Transaction: 3mVx...pQ8r
