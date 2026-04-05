@@ -34,6 +34,12 @@ export const sections: DocsNavSection[] = [
           "API, CLI, and OpenClaw plugin: capabilities, maturity, and when to use each surface.",
       },
       {
+        title: "MCP Integration",
+        href: "/docs/mcp",
+        description:
+          "Model Context Protocol: how agents call TruCore policy enforcement and receipt verification as standard MCP tools.",
+      },
+      {
         title: "Plans & Feature Tiers",
         href: "/docs/plans",
         description:

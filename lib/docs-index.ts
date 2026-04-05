@@ -46,4 +46,15 @@ export const docsIndex: DocsIndexEntry[] = [
     ],
     tags: ["permit", "ttl", "nonce", "replay", "authorization", "scope"],
   },
+  {
+    href: "/docs/mcp",
+    title: "MCP Integration",
+    contentSnippets: [
+      "Model Context Protocol gives AI agents a standard way to call tools.",
+      "TruCore exposes policy enforcement and receipt verification as MCP tools.",
+      "Hosted MCP endpoint with five tools: probe, simulate, protect, verify, explain.",
+      "Agents call TruCore through MCP instead of bespoke integration code.",
+    ],
+    tags: ["mcp", "model context protocol", "agent tools", "policy enforcement", "receipts", "verification", "operator control"],
+  },
 ];
