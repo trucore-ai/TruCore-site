@@ -1542,9 +1542,14 @@ export default function CustomerDashboardPage() {
         {data && data.api_keys && data.api_keys.length > 0 && (
           <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-medium text-slate-300">
-                API Keys
-              </h2>
+              <div>
+                <h2 className="text-sm font-medium text-slate-300">
+                  API Keys
+                </h2>
+                <p className="mt-1 text-xs text-slate-500">
+                  These rows show key IDs. Secret API keys are only shown once when created or rotated.
+                </p>
+              </div>
               <Link
                 href="/customer/keys"
                 className="text-xs text-primary-400 hover:text-primary-300 transition"

@@ -264,11 +264,10 @@ export default function CustomerKeysPage() {
       {newSecret && (
         <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5">
           <p className="mb-2 text-sm font-semibold text-emerald-300">
-            New API Key Created
+            New Secret API Key Created
           </p>
           <p className="mb-3 text-xs text-amber-300">
-            This key will only be shown once. Copy it now and store it
-            securely.
+            This is your secret API key. It will only be shown once. Copy it now and store it securely.
           </p>
           <div className="flex items-center gap-2">
             <code className="flex-1 break-all rounded-lg border border-white/10 bg-neutral-900 px-4 py-2.5 font-mono text-sm text-slate-100">
@@ -294,10 +293,10 @@ export default function CustomerKeysPage() {
       {rotatedSecret && (
         <div className="mb-6 rounded-xl border border-blue-500/30 bg-blue-500/10 p-5">
           <p className="mb-2 text-sm font-semibold text-blue-300">
-            Key Rotated - New Key
+            Key Rotated - New Secret API Key
           </p>
           <p className="mb-3 text-xs text-amber-300">
-            This key will only be shown once. The old key has been revoked
+            This is your new secret API key. It will only be shown once. The old key has been revoked
             and will no longer work.
           </p>
           <div className="flex items-center gap-2">
@@ -367,7 +366,10 @@ export default function CustomerKeysPage() {
 
       {/* Keys table */}
       <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
-        <h2 className="mb-4 text-lg font-semibold text-white">Your Keys</h2>
+        <h2 className="mb-1 text-lg font-semibold text-white">Your Keys</h2>
+        <p className="mb-4 text-xs text-slate-500">
+          Copy Key ID copies the internal key identifier, not the secret API key. Secret keys are only shown once when created or rotated.
+        </p>
 
         {loading ? (
           <p className="text-sm text-slate-400">Loading…</p>
@@ -378,7 +380,7 @@ export default function CustomerKeysPage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-xs text-slate-500">
-                  <th className="pb-2 pr-4 font-medium">Preview</th>
+                  <th className="pb-2 pr-4 font-medium">Secret Preview</th>
                   <th className="pb-2 pr-4 font-medium">Label</th>
                   <th className="pb-2 pr-4 font-medium">Status</th>
                   <th className="pb-2 pr-4 font-medium">Created</th>
