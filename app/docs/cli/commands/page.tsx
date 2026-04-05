@@ -90,7 +90,7 @@ const ADVANCED_GROUPS: AdvancedGroup[] = [
   },
   {
     title: "Network & RPC",
-    description: "Endpoint configuration, latency testing, and devnet burner wallets.",
+    description: "Endpoint configuration, latency testing, and devnet burner mode.",
     commands: ["rpc set", "rpc ping", "burner"],
     page: "/docs/cli/rpc",
   },

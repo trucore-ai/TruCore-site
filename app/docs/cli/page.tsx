@@ -51,7 +51,7 @@ const COMMAND_REFERENCE: CommandCategory[] = [
     commands: [
       { command: "rpc ping", description: "Test RPC endpoint latency and reachability.", page: "/docs/cli/rpc" },
       { command: "rpc set", description: "Configure a custom or Helius RPC endpoint.", page: "/docs/cli/rpc" },
-      { command: "burner", description: "Spin up a devnet burner wallet for quick testing.", page: "/docs/cli/burner" },
+      { command: "burner", description: "Switch active profile to devnet for safe testing.", page: "/docs/cli/burner" },
     ],
   },
   {
@@ -267,7 +267,7 @@ export default function DocsCliPage() {
             { href: "/docs/cli/guides/swap-permits", title: "Swap Permit Parameters", desc: "Parameter glossary, safe defaults, override precedence" },
             { href: "/docs/cli/guides/simulate-verify-execute", title: "Simulate, Verify, Execute", desc: "The canonical ATF transaction workflow" },
             { href: "/docs/cli/guides/helius-setup", title: "Helius RPC Setup", desc: "Profiles, secrets separation, connectivity" },
-            { href: "/docs/cli/guides/devnet-burner", title: "Devnet Burner Quickstart", desc: "Disposable wallets for fast testing" },
+            { href: "/docs/cli/guides/devnet-burner", title: "Devnet Burner Quickstart", desc: "Switch to devnet for safe testing" },
             { href: "/docs/cli/guides/production-bot-basics", title: "Production Bot Basics", desc: "Profile separation, receipts retention, monitoring" },
           ].map((guide) => (
             <Link
@@ -345,7 +345,7 @@ export default function DocsCliPage() {
             { href: "/docs/cli/doctor", title: "Doctor", desc: "Environment health checks" },
             { href: "/docs/cli/profiles", title: "Profiles & Config", desc: "Named profiles, secrets, config" },
             { href: "/docs/cli/rpc", title: "RPC & Network", desc: "Helius setup, ping, endpoints" },
-            { href: "/docs/cli/burner", title: "Devnet Burner", desc: "Throwaway wallets for testing" },
+            { href: "/docs/cli/burner", title: "Devnet Burner", desc: "Switch to devnet for safe testing" },
             { href: "/docs/cli/transactions", title: "Transactions", desc: "Simulate, sign, send, status" },
             { href: "/docs/cli/receipts", title: "Receipts", desc: "Verify, list, deterministic hashing" },
             { href: "/docs/cli/completion", title: "Shell Completion", desc: "Bash, zsh, fish scripts" },

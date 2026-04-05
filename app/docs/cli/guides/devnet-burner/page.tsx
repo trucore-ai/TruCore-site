@@ -59,40 +59,64 @@ export default function DevnetBurnerGuidePage() {
         />
 
         <div className="space-y-6">
+          <p className="text-xs font-bold uppercase tracking-wider text-accent-200">First time setup</p>
+
           {/* Step 1 */}
           <div className="space-y-2">
-            <h3 className="text-base font-semibold text-slate-100">1. Create or select a burner profile</h3>
+            <h3 className="text-base font-semibold text-slate-100">1. Create a devnet burner profile</h3>
             <p className="text-sm text-slate-300">
-              It is good practice to use a separate profile for burner testing so your
+              Use a separate profile for burner testing so your
               production config stays clean.
             </p>
             <AtfCopyCommand
               label="Create burner profile"
-              command={`npx @trucore/atf@${cliVersion} profile create --name burner-test`}
+              command={`npx @trucore/atf@${cliVersion} profile create devnet-burner --network devnet`}
             />
           </div>
 
           {/* Step 2 */}
           <div className="space-y-2">
-            <h3 className="text-base font-semibold text-slate-100">2. Enable burner mode on devnet</h3>
+            <h3 className="text-base font-semibold text-slate-100">2. Select the profile</h3>
+            <p className="text-sm text-slate-300">
+              Switch to the burner profile before enabling burner mode.
+            </p>
+            <AtfCopyCommand
+              label="Select profile"
+              command={`npx @trucore/atf@${cliVersion} profile select devnet-burner`}
+            />
+          </div>
+
+          {/* Step 3 */}
+          <div className="space-y-2">
+            <h3 className="text-base font-semibold text-slate-100">3. Enable burner mode</h3>
             <p className="text-sm text-slate-300">
               The burner command switches the active profile to devnet for safe testing.
               Do not send real funds to devnet addresses.
             </p>
             <AtfCopyCommand
-              label="Start burner"
-              command={`npx @trucore/atf@${cliVersion} burner --network devnet`}
+              label="Enable burner"
+              command={`npx @trucore/atf@${cliVersion} burner enable`}
             />
             <pre className="overflow-x-auto rounded-lg border border-white/10 bg-neutral-950/70 p-4 text-sm text-slate-200">
-{`Burner mode enabled.
-Profile: burner-test
-Network: devnet`}
+{`{\n  "ok": true,\n  "burner_enabled": true,\n  "profile": "devnet-burner",\n  "solana_cluster": "devnet",\n  "message": "Burner mode enabled on profile \\"devnet-burner\\" (cluster: devnet)."\n}`}
             </pre>
           </div>
 
-          {/* Step 3 */}
+          {/* Step 4 */}
           <div className="space-y-2">
-            <h3 className="text-base font-semibold text-slate-100">3. Ping the RPC to confirm connectivity</h3>
+            <h3 className="text-base font-semibold text-slate-100">4. Verify setup</h3>
+            <p className="text-sm text-slate-300">
+              Run doctor to confirm the profile, network, and RPC are configured correctly.
+            </p>
+            <AtfCopyCommand
+              label="Verify"
+              command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
+            />
+          </div>
+
+          {/* Step 5 */}
+          <div className="space-y-2">
+            <h3 className="text-base font-semibold text-slate-100">5. Ping the RPC to confirm connectivity</h3>
             <AtfCopyCommand
               label="Ping RPC"
               command={`npx @trucore/atf@${cliVersion} rpc ping`}
@@ -105,9 +129,9 @@ Network: devnet`}
             </pre>
           </div>
 
-          {/* Step 4 */}
+          {/* Step 6 */}
           <div className="space-y-2">
-            <h3 className="text-base font-semibold text-slate-100">4. Simulate a small swap</h3>
+            <h3 className="text-base font-semibold text-slate-100">6. Simulate a small swap</h3>
             <p className="text-sm text-slate-300">
               Use the <code className="font-mono text-slate-200">swap_small</code> preset to run
               a quick simulation. Include <code className="font-mono text-slate-200">--verify</code> to
@@ -126,9 +150,9 @@ Status: Integrity verified`}
             </pre>
           </div>
 
-          {/* Step 5 */}
+          {/* Step 7 */}
           <div className="space-y-2">
-            <h3 className="text-base font-semibold text-slate-100">5. Verify the receipt separately (optional)</h3>
+            <h3 className="text-base font-semibold text-slate-100">7. Verify the receipt separately (optional)</h3>
             <p className="text-sm text-slate-300">
               If you want to double-check, verify the receipt as a standalone step.
             </p>
@@ -138,9 +162,9 @@ Status: Integrity verified`}
             />
           </div>
 
-          {/* Step 6 */}
+          {/* Step 8 */}
           <div className="space-y-2">
-            <h3 className="text-base font-semibold text-slate-100">6. Sign and send the transaction</h3>
+            <h3 className="text-base font-semibold text-slate-100">8. Sign and send the transaction</h3>
             <p className="text-sm text-slate-300">
               On devnet, you can safely sign and send. The burner wallet is disposable, so there is
               no risk.
@@ -156,9 +180,9 @@ Network: devnet`}
             </pre>
           </div>
 
-          {/* Step 7 */}
+          {/* Step 9 */}
           <div className="space-y-2">
-            <h3 className="text-base font-semibold text-slate-100">7. Check the transaction status</h3>
+            <h3 className="text-base font-semibold text-slate-100">9. Check the transaction status</h3>
             <AtfCopyCommand
               label="Check status"
               command={`npx @trucore/atf@${cliVersion} tx status --sig 3mVx...pQ8r`}
@@ -171,6 +195,60 @@ Slot: 284,291,088
 Block time: 2026-02-27T19:15:33Z`}
             </pre>
           </div>
+        </div>
+      </section>
+
+      {/* ── Use Again Later ── */}
+      <section className="space-y-4">
+        <HeadingAnchor id="use-again">Use Again Later</HeadingAnchor>
+        <p className="text-sm text-slate-300">
+          If you have already created the devnet-burner profile, skip straight to these commands
+          on repeat runs.
+        </p>
+        <PlatformRunbook
+          ariaLabel="Burner repeat run platform"
+          macLinux={
+            <div className="space-y-3">
+              <AtfCopyCommand
+                label="1. Select the profile"
+                command={`npx @trucore/atf@${cliVersion} profile select devnet-burner`}
+              />
+              <AtfCopyCommand
+                label="2. Enable burner mode"
+                command={`npx @trucore/atf@${cliVersion} burner enable`}
+              />
+              <AtfCopyCommand
+                label="3. Verify if needed"
+                command={`npx @trucore/atf@${cliVersion} doctor --pretty`}
+              />
+            </div>
+          }
+          windows={
+            <div className="space-y-3">
+              <AtfCopyCommand
+                label="1. Select the profile"
+                command="atf profile select devnet-burner"
+              />
+              <AtfCopyCommand
+                label="2. Enable burner mode"
+                command="atf burner enable"
+              />
+              <AtfCopyCommand
+                label="3. Verify if needed"
+                command="atf doctor --pretty"
+              />
+            </div>
+          }
+        />
+        <div className="rounded-xl border border-primary-400/20 bg-primary-900/10 p-5">
+          <h3 className="font-semibold text-primary-200">Already created this profile?</h3>
+          <p className="mt-2 text-sm text-slate-300">
+            If you see{" "}
+            <code className="font-mono text-slate-200">
+              Profile &quot;devnet-burner&quot; already exists.
+            </code>
+            , skip profile creation and use the commands above.
+          </p>
         </div>
       </section>
 
@@ -204,6 +282,11 @@ Block time: 2026-02-27T19:15:33Z`}
               </tr>
             </thead>
             <tbody className="text-slate-300">
+              <tr className="border-b border-white/5">
+                <td className="px-4 py-2.5">Profile &quot;devnet-burner&quot; already exists.</td>
+                <td className="px-4 py-2.5">The profile was created on a previous run.</td>
+                <td className="px-4 py-2.5">Skip <code className="font-mono text-slate-200">profile create</code> and run <code className="font-mono text-slate-200">profile select devnet-burner</code> instead.</td>
+              </tr>
               <tr className="border-b border-white/5">
                 <td className="px-4 py-2.5">Burner command fails</td>
                 <td className="px-4 py-2.5">Profile issues or network flag missing.</td>
