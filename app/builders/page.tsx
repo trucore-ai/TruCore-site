@@ -247,6 +247,19 @@ export default function BuildersPage() {
             Start now &rarr;
           </span>
         </Link>
+        <Link
+          href="/docs/mcp"
+          className="mb-4 block rounded-lg border border-primary-300/25 bg-primary-500/10 p-5 transition-colors hover:border-primary-300/40"
+        >
+          <h3 className="text-lg font-bold text-accent-300">MCP Integration</h3>
+          <p className="mt-1 text-base leading-[1.5] text-slate-200">
+            Building with an MCP-compatible agent runtime? TruCore exposes policy enforcement
+            and receipt verification as standard MCP tools your agents can call directly.
+          </p>
+          <span className="mt-2 inline-block text-sm font-semibold text-primary-200">
+            View MCP docs &rarr;
+          </span>
+        </Link>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {quickLinks.map((link) => (
             <TrackedLink
