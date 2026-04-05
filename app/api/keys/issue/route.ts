@@ -47,10 +47,9 @@ export async function POST(req: NextRequest) {
   }
 
   const headers: Record<string, string> = { "Content-Type": "application/json" };
-  const serverKey = process.env.ATF_API_KEY?.trim();
+  const serverKey = process.env.FIREWALL_API_API_KEY?.trim();
   if (serverKey) {
     headers["Authorization"] = `Bearer ${serverKey}`;
-    headers["x-api-key"] = serverKey;
   }
 
   let upstream: Response;
