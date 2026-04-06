@@ -68,14 +68,12 @@ export default function DocsHubPage() {
           {" "}for what each plan includes.{" "}
           <strong className="text-slate-200">Prefer code?</strong>{" "}
           See the{" "}
-          <a
-            href="https://github.com/trucore-ai/agent-transaction-firewall/tree/main/examples/hello-world-bot"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/docs/hello-world-bot"
             className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
           >
-            hello-world bot tutorial &#x2197;
-          </a>
+            hello-world bot tutorial
+          </Link>
           {" "}for a minimal Python bot, unprotected then ATF-protected, in under 30 lines.
         </p>
         <div className="gradient-divider mt-2" aria-hidden="true" />
