@@ -244,6 +244,28 @@ export default function FirstProtectedTradePage() {
         <HeadingAnchor id="protect-intent">Step 2: Protect the Intent</HeadingAnchor>
         <p className="text-slate-300">Pick your preferred integration path. All produce the same response contract.</p>
 
+        {/* ── Optional: MCP integration path ── */}
+        <div className="rounded-lg border border-primary-300/20 bg-primary-950/10 p-4 space-y-2">
+          <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+            Building through MCP?
+          </p>
+          <p className="text-sm text-slate-300">
+            If your agent runtime supports MCP, the hosted endpoint covers the
+            full advisory-to-enforcement loop with five tools
+            including <code className="font-mono text-slate-200">protect_transaction</code> and{" "}
+            <code className="font-mono text-slate-200">verify_receipt</code>.
+            See{" "}
+            <Link
+              href="/docs/mcp"
+              className="font-semibold text-primary-100 underline underline-offset-2 transition-colors hover:text-primary-200"
+            >
+              MCP Integration
+            </Link>{" "}
+            for setup and the complete tool inventory.
+            If you are not using MCP, continue with the HTTP or CLI paths below.
+          </p>
+        </div>
+
         <div className="space-y-4">
           <h3 className="text-xl font-bold text-accent-300">HTTP (curl)</h3>
           <CopyBlock label="bash" value={CURL_PROTECT} />
@@ -442,6 +464,7 @@ export default function FirstProtectedTradePage() {
           {[
             { title: "Verification Deep Dive", href: "/docs/verify", desc: "What content_hash means and production verification patterns" },
             { title: "Integration Pattern", href: "/docs/integration-pattern", desc: "How agents call ATF before execution" },
+            { title: "MCP Integration", href: "/docs/mcp", desc: "Hosted MCP endpoint with five tools for agent runtimes" },
             { title: "Policy Model", href: "/docs/policy-model", desc: "Allowlists, limits, slippage bounds, cooldowns" },
             { title: "CLI Reference", href: "/docs/cli", desc: "Full CLI for profiles, transactions, receipts, and more" },
             { title: "API Reference", href: "/docs/api", desc: "Public endpoints for simulation and receipt generation" },
