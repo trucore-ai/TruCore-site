@@ -1,12 +1,11 @@
 import type { MetadataRoute } from "next";
 import { getAllPostsMeta } from "@/lib/mdx";
+import { sections } from "@/lib/docs-nav";
 
 const siteUrl = "https://trucore.xyz";
 
-const corePages: Array<{
-  path: string;
-  priority: number;
-}> = [
+/** Non-docs pages (manually maintained). */
+const corePages: Array<{ path: string; priority: number }> = [
   { path: "/", priority: 1.0 },
   { path: "/atf", priority: 1.0 },
   { path: "/atf/how-it-works", priority: 0.8 },
@@ -22,23 +21,8 @@ const corePages: Array<{
   { path: "/process", priority: 0.8 },
   { path: "/demo", priority: 0.8 },
   { path: "/enterprise", priority: 0.8 },
-  { path: "/docs", priority: 0.8 },
-  { path: "/docs/agent-discovery", priority: 0.5 },
   { path: "/docs/live-demo", priority: 0.7 },
-  { path: "/docs/quickstart", priority: 0.8 },
-  { path: "/docs/5-minute-quickstart", priority: 0.8 },
-  { path: "/docs/cli", priority: 0.7 },
-  { path: "/docs/permits", priority: 0.7 },
-  { path: "/docs/permit-schema-v1", priority: 0.7 },
-  { path: "/docs/receipt-specification-v1", priority: 0.7 },
-  { path: "/docs/verify", priority: 0.7 },
-  { path: "/docs/atf-architecture", priority: 0.7 },
-  { path: "/docs/integration-pattern", priority: 0.7 },
-  { path: "/docs/policy-model", priority: 0.7 },
-  { path: "/docs/anchoring-roadmap", priority: 0.7 },
   { path: "/docs/policy-examples", priority: 0.7 },
-  { path: "/docs/openclaw-plugin", priority: 0.7 },
-  { path: "/docs/changelog", priority: 0.7 },
   { path: "/blog", priority: 0.7 },
   { path: "/security", priority: 0.6 },
   { path: "/security/compliance", priority: 0.6 },
@@ -49,10 +33,24 @@ const corePages: Array<{
   { path: "/contact", priority: 0.6 },
 ];
 
+/**
+ * Docs pages derived from docs-nav.ts (the navigation source of truth).
+ * New pages added to docs-nav.ts are included in the sitemap automatically.
+ */
+const docsPages: Array<{ path: string; priority: number }> = sections.flatMap(
+  (section) =>
+    section.items.map((item) => ({
+      path: item.href,
+      priority: item.href === "/docs" ? 0.8 : 0.7,
+    }))
+);
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getAllPostsMeta();
 
-  const pageEntries: MetadataRoute.Sitemap = corePages.map((page) => ({
+  const allPages = [...corePages, ...docsPages];
+
+  const pageEntries: MetadataRoute.Sitemap = allPages.map((page) => ({
     url: `${siteUrl}${page.path}`,
     lastModified: new Date(),
     changeFrequency: "weekly",

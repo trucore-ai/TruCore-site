@@ -964,6 +964,12 @@ Content-Type: application/json
           </p>
           <div className="flex flex-wrap gap-4 text-sm">
             <Link
+              href="/docs/mcp"
+              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+            >
+              MCP Integration
+            </Link>
+            <Link
               href="/docs/integration-pattern"
               className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
             >
