@@ -33,7 +33,7 @@ describe("route identity", () => {
   });
 
   it("/ page contains the marketing hero headline", () => {
-    expect(homeSrc).toContain("Protect Every Transaction");
+    expect(homeSrc).toContain("Agent Transaction Control");
     expect(homeSrc).toContain('id="why-trucore"');
   });
 
