@@ -193,20 +193,6 @@ Status: Integrity verified`}
         </p>
       </section>
 
-      {/* ── MCP note ── */}
-      <section className="rounded-lg border border-primary-300/20 bg-primary-950/10 p-4 space-y-1">
-        <p className="text-sm text-slate-300">
-          Using an MCP-compatible agent runtime? TruCore also exposes ATF as a{" "}
-          <Link
-            href="/docs/mcp"
-            className="font-semibold text-primary-100 underline underline-offset-2 transition-colors hover:text-primary-200"
-          >
-            hosted MCP endpoint
-          </Link>{" "}
-          with five standard tools for policy evaluation and receipt verification.
-        </p>
-      </section>
-
       <nav className="pt-4 text-sm text-slate-400">
         <Link href="/docs/cli/guides" className="font-semibold text-primary-100 transition-colors hover:text-primary-200">
           &larr; Back to Guides

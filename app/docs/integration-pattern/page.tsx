@@ -163,28 +163,6 @@ export default function DocsIntegrationPatternPage() {
         </p>
       </section>
 
-      {/* ── MCP (standard agent protocol) ── */}
-      <section className="space-y-3 border-t border-white/10 pt-8">
-        <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
-          MCP Integration
-        </p>
-        <p className="text-sm text-slate-300">
-          For MCP-compatible agent runtimes, ATF is also available as a hosted
-          MCP endpoint with five tools covering the full advisory-to-enforcement
-          loop. MCP does not sign or submit transactions.
-        </p>
-        <p className="text-sm text-slate-400">
-          See{" "}
-          <Link
-            href="/docs/mcp"
-            className="font-semibold text-primary-100 underline underline-offset-2 transition-colors hover:text-primary-200"
-          >
-            MCP Integration docs
-          </Link>{" "}
-          for the tool inventory, canonical flow, and connection details.
-        </p>
-      </section>
-
       {/* ── OpenClaw Plugin (minimal human-facing note) ── */}
       <section className="space-y-3 border-t border-white/10 pt-8">
         <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
