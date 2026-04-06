@@ -159,15 +159,31 @@ describe("/api/og/receipt - real verification", () => {
   });
 
   describe("backend verification - error paths", () => {
-    it("falls back to deterministic on backend timeout", async () => {
+    // Elevated timeout: this test waits for the route's real 500ms AbortController
+    // timer to fire, plus ImageResponse rendering. Under CI load the combined
+    // wall-clock time can exceed the default 5000ms vitest timeout.
+    it("falls back to deterministic on backend timeout", { timeout: 15_000 }, async () => {
       vi.stubEnv("OG_REAL_VERIFICATION_ENABLED", "true");
       vi.stubEnv("ATF_API_URL", "https://api.example.com");
 
-      // Simulate timeout by making fetch hang
+      // Simulate a hanging backend that is terminated by the route's AbortController.
+      // The mock listens to the signal so it rejects as soon as the route's 500ms
+      // timeout fires, matching real fetch + AbortController semantics and avoiding
+      // a fixed delay that can push total test time past the default 5000ms limit
+      // when combined with ImageResponse WASM rendering overhead.
       vi.spyOn(globalThis, "fetch").mockImplementationOnce(
-        () =>
-          new Promise((_, reject) => {
-            setTimeout(() => reject(new Error("The operation was aborted")), 600);
+        (_url: string | URL | Request, init?: RequestInit) =>
+          new Promise<Response>((_, reject) => {
+            const signal = init?.signal;
+            if (signal) {
+              const onAbort = () =>
+                reject(new Error("The operation was aborted"));
+              if (signal.aborted) {
+                onAbort();
+                return;
+              }
+              signal.addEventListener("abort", onAbort, { once: true });
+            }
           }),
       );
 
