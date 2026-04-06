@@ -457,6 +457,26 @@ export default function FirstProtectedTradePage() {
         </ol>
       </section>
 
+      {/* ── Hello-World Bot Tutorial callout ── */}
+      <section className="rounded-lg border border-primary-300/20 bg-primary-300/5 p-5">
+        <p className="text-sm font-semibold text-primary-200">
+          Want the smallest possible before-and-after example?
+        </p>
+        <p className="mt-1 text-sm text-slate-300">
+          The{" "}
+          <a
+            href="https://github.com/trucore-ai/agent-transaction-firewall/tree/main/examples/hello-world-bot"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            hello-world bot tutorial &#x2197;
+          </a>
+          {" "}shows a minimal Python bot first without ATF, then with ATF protection.
+          Simulated execution, educational, and under 30 lines per script.
+        </p>
+      </section>
+
       {/* ── Next Steps ── */}
       <section className="space-y-4">
         <HeadingAnchor id="next-steps">Next Steps</HeadingAnchor>
