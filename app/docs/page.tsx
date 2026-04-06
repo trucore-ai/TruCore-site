@@ -49,7 +49,16 @@ export default function DocsHubPage() {
           >
             Integration Surfaces
           </Link>
-          {" "}for API/CLI/Plugin coverage, or{" "}
+          {" "}for API/CLI/Plugin coverage.{" "}
+          <strong className="text-slate-200">Agent runtime?</strong>{" "}
+          See{" "}
+          <Link
+            href="/docs/mcp"
+            className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            MCP Integration
+          </Link>
+          {" "}for tool-based policy enforcement via hosted endpoint, or{" "}
           <Link
             href="/docs/plans"
             className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
