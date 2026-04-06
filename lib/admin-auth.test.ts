@@ -375,11 +375,10 @@ describe("admin-auth", () => {
     });
 
     it("rejects self-verifying token past absolute expiry", () => {
-      const token = createSessionToken();
+      createSessionToken();
       _getSessionStore().clear();
 
       // Backdate: create a token with old issuedAt
-      const parts = token.split(".");
       const oldIat = Date.now() - (ADMIN_COOKIE_MAX_AGE + 1) * 1000;
       // We can't recompute the HMAC externally, so use createSessionToken and modify store
       const token2 = createSessionToken();

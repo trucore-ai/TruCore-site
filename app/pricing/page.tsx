@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { getPublicFeatures, groupFeaturesByPlan } from "@/lib/feature-flags";
-import type { PublicFeatureEntry } from "@/lib/dashboard-client";
 
 export const metadata: Metadata = {
   title: "Pricing",

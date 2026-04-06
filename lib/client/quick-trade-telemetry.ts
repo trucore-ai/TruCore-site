@@ -34,7 +34,6 @@ export function trackQuickTradeEvent(
   };
 
   // Console log for log drain / observability
-  // eslint-disable-next-line no-console
   console.log("[quick-trade-telemetry]", JSON.stringify(event));
 
   // Fire-and-forget POST (optional - if telemetry endpoint exists)
