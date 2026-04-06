@@ -224,7 +224,7 @@ export default function CustomerDashboardPage() {
   const [quickTradeActive, setQuickTradeActive] = useState(false);
   const [quickTradeStep, setQuickTradeStep] = useState<0 | 1 | 2 | 3>(0);
   const [quickTradeError, setQuickTradeError] = useState("");
-  const [quickTradeFailedStep, setQuickTradeFailedStep] = useState<string | null>(null);
+  const [, setQuickTradeFailedStep] = useState<string | null>(null);
 
   // Receipt awareness
   const [receiptCount, setReceiptCount] = useState(0);

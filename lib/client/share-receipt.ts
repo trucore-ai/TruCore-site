@@ -32,7 +32,6 @@ export function trackShareEvent(
   };
 
   // Console log for log drain / observability
-  // eslint-disable-next-line no-console
   console.log("[share-receipt-telemetry]", JSON.stringify(event));
 
   // Fire-and-forget POST

@@ -36,7 +36,6 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // Log for observability (picked up by log drain)
-    // eslint-disable-next-line no-console
     console.log(
       "[telemetry:quick-trade]",
       JSON.stringify({
