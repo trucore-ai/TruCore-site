@@ -69,6 +69,12 @@ export const sections: DocsNavSection[] = [
         description:
           "Mock vs real execution, when Free is enough, when Pro helps, and which bots benefit first.",
       },
+      {
+        title: "Hello-World Bot",
+        href: "/docs/hello-world-bot",
+        description:
+          "Minimal Python bot, unprotected then ATF-protected. See exactly what changes when you add a policy gate.",
+      },
     ],
   },
   {
