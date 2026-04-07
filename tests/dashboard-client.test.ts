@@ -9,6 +9,7 @@ import {
   LiveKpiItemSchema,
   LiveEnforcementSchema,
   LiveTrendSchema,
+  MonetizationSettingsSchema,
 } from "@/lib/dashboard-client";
 
 /* ────────────────────────────────────────────────────────────────
@@ -384,5 +385,56 @@ describe("LiveTrendSchema", () => {
       some_future_field: "hello",
     });
     expect(result.success).toBe(true);
+  });
+});
+
+// ── MonetizationSettingsSchema ───────────────────────────────
+
+describe("MonetizationSettingsSchema", () => {
+  const validSettings = {
+    monetization_enabled: false,
+    pricing_page_enabled: true,
+    upgrade_cta_enabled: true,
+    quota_enforcement_mode: "off",
+    paid_feature_gates_enabled: false,
+    real_execution_paid_gate_enabled: false,
+    pro_self_serve_enabled: false,
+    enterprise_contact_only: true,
+  };
+
+  it("accepts a complete settings payload", () => {
+    const result = MonetizationSettingsSchema.safeParse(validSettings);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts all quota enforcement modes", () => {
+    for (const mode of ["off", "soft", "hard"]) {
+      const result = MonetizationSettingsSchema.safeParse({
+        ...validSettings,
+        quota_enforcement_mode: mode,
+      });
+      expect(result.success).toBe(true);
+    }
+  });
+
+  it("rejects invalid quota enforcement mode", () => {
+    const result = MonetizationSettingsSchema.safeParse({
+      ...validSettings,
+      quota_enforcement_mode: "unknown",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing fields", () => {
+    const result = MonetizationSettingsSchema.safeParse({});
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects non-boolean toggle values", () => {
+    const result = MonetizationSettingsSchema.safeParse({
+      ...validSettings,
+      monetization_enabled: "yes",
+    });
+    expect(result.success).toBe(false);
   });
 });

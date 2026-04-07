@@ -859,3 +859,113 @@ export async function adminUpgradeAction(
     };
   }
 }
+
+// ── Monetization settings ────────────────────────────────────
+
+export const MonetizationSettingsSchema = z.object({
+  monetization_enabled: z.boolean(),
+  pricing_page_enabled: z.boolean(),
+  upgrade_cta_enabled: z.boolean(),
+  quota_enforcement_mode: z.enum(["off", "soft", "hard"]),
+  paid_feature_gates_enabled: z.boolean(),
+  real_execution_paid_gate_enabled: z.boolean(),
+  pro_self_serve_enabled: z.boolean(),
+  enterprise_contact_only: z.boolean(),
+});
+
+export type MonetizationSettings = z.infer<typeof MonetizationSettingsSchema>;
+
+export async function fetchMonetizationSettings(): Promise<
+  DashboardResult<MonetizationSettings>
+> {
+  try {
+    const base = getBaseUrl();
+    const headers: Record<string, string> = { Accept: "application/json" };
+    const apiKey = process.env.ATF_API_KEY;
+    if (apiKey) headers["x-api-key"] = apiKey;
+    const res = await fetch(`${base}/admin/monetization`, {
+      headers,
+      cache: "no-store",
+    });
+    if (!res.ok)
+      return { ok: false, error: `HTTP ${res.status}: ${res.statusText}` };
+    const json = await res.json();
+    const parsed = MonetizationSettingsSchema.safeParse(json.settings);
+    if (!parsed.success)
+      return { ok: false, error: `Schema validation failed: ${parsed.error.message}` };
+    return { ok: true, data: parsed.data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown fetch error",
+    };
+  }
+}
+
+export async function updateMonetizationSettings(
+  patch: Partial<MonetizationSettings>,
+): Promise<{ ok: boolean; data?: MonetizationSettings; error?: string }> {
+  try {
+    const base = getBaseUrl();
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+    const apiKey = process.env.ATF_API_KEY;
+    if (apiKey) headers["x-api-key"] = apiKey;
+    const res = await fetch(`${base}/admin/monetization`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(patch),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { ok: false, error: `HTTP ${res.status}: ${text}` };
+    }
+    const json = await res.json();
+    if (json.error) return { ok: false, error: json.error.message };
+    const parsed = MonetizationSettingsSchema.safeParse(json.settings);
+    if (!parsed.success) return { ok: false, error: "Invalid response shape" };
+    return { ok: true, data: parsed.data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+export async function resetMonetizationSettings(): Promise<{
+  ok: boolean;
+  data?: MonetizationSettings;
+  error?: string;
+}> {
+  try {
+    const base = getBaseUrl();
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+    const apiKey = process.env.ATF_API_KEY;
+    if (apiKey) headers["x-api-key"] = apiKey;
+    const res = await fetch(`${base}/admin/monetization/reset`, {
+      method: "POST",
+      headers,
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      return { ok: false, error: `HTTP ${res.status}: ${text}` };
+    }
+    const json = await res.json();
+    const parsed = MonetizationSettingsSchema.safeParse(json.settings);
+    if (!parsed.success) return { ok: false, error: "Invalid response shape" };
+    return { ok: true, data: parsed.data };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
