@@ -1,0 +1,80 @@
+# .github/workflows/deploy-prod.yml
+#
+# Fail-closed production deploy pipeline for the TruCore system.
+# Triggered on push to main. Runs deploy_trucore_prod.sh which:
+#   1. Captures provenance from both repos
+#   2. Deploys site (Vercel) + backend (VPS via SSH)
+#   3. Runs verify_trucore_prod.sh as post-deploy gate
+#   4. Exits non-zero if verification fails
+#
+# This is the CI enforcement of the canonical deploy rule:
+#   "Every deploy must be verifiable and fail-closed."
+#
+# Required secrets:
+#   VPS_HOST         — VPS IP or hostname
+#   VPS_USER         — SSH user (typically "atf")
+#   VPS_SSH_KEY      — private SSH key (no passphrase)
+#   VERCEL_TOKEN     — Vercel deploy token
+#   VERCEL_ORG_ID    — Vercel organization ID
+#   VERCEL_PROJECT_ID — Vercel project ID
+
+name: Deploy TruCore Production (Fail-Closed)
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ── Checkout repos ────────────────────────────────────────────────
+      - name: Checkout site repo
+        uses: actions/checkout@v4
+
+      - name: Checkout backend repo
+        uses: actions/checkout@v4
+        with:
+          repository: trucore-ai/agent-transaction-firewall
+          path: agent-transaction-firewall
+
+      # ── Tooling ───────────────────────────────────────────────────────
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      # ── SSH access to VPS ─────────────────────────────────────────────
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      # ── Deploy (fail-closed) ──────────────────────────────────────────
+      - name: Deploy TruCore (fail-closed)
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          BACKEND_REPO: ${{ github.workspace }}/agent-transaction-firewall
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERIFY_WAIT: "30"
+        run: |
+          chmod +x scripts/deploy_trucore_prod.sh
+          ./scripts/deploy_trucore_prod.sh --all
