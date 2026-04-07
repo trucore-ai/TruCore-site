@@ -111,10 +111,12 @@ function UsageMeter({
   label,
   used,
   limit,
+  pricingEnabled = true,
 }: {
   label: string;
   used: number;
   limit: number;
+  pricingEnabled?: boolean;
 }) {
   const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
   const isWarning = pct >= 80 && pct < 100;
@@ -148,24 +150,32 @@ function UsageMeter({
       </div>
       {isExceeded && (
         <p className="text-[10px] text-red-400">
-          Limit reached -{" "}
-          <Link
-            href="/pricing"
-            className="underline hover:text-red-300"
-          >
-            upgrade your plan
-          </Link>
+          Limit reached{pricingEnabled && (
+            <>
+              {" "}-{" "}
+              <Link
+                href="/pricing"
+                className="underline hover:text-red-300"
+              >
+                upgrade your plan
+              </Link>
+            </>
+          )}
         </p>
       )}
       {isWarning && !isExceeded && (
         <p className="text-[10px] text-amber-400">
-          Approaching limit -{" "}
-          <Link
-            href="/pricing"
-            className="underline hover:text-amber-300"
-          >
-            view plans
-          </Link>
+          Approaching limit{pricingEnabled && (
+            <>
+              {" "}-{" "}
+              <Link
+                href="/pricing"
+                className="underline hover:text-amber-300"
+              >
+                view plans
+              </Link>
+            </>
+          )}
         </p>
       )}
     </div>
@@ -234,6 +244,12 @@ export default function CustomerDashboardPage() {
 
   // Upgrade requests
   const [pendingUpgrade, setPendingUpgrade] = useState<UpgradeRequestData | null>(null);
+
+  // Feature flags
+  const [featureFlags, setFeatureFlags] = useState({
+    pricing_page_enabled: true,
+    upgrade_cta_enabled: true,
+  });
 
   // Verification
   const [emailVerified, setEmailVerified] = useState(true);
@@ -372,6 +388,27 @@ export default function CustomerDashboardPage() {
       .catch(() => {
         // Non-fatal
       });
+
+    // Feature flags (public endpoint, no auth required)
+    const flagsBase = process.env.NEXT_PUBLIC_ATF_DASHBOARD_URL;
+    if (flagsBase) {
+      fetch(`${flagsBase.replace(/\/+$/, "")}/admin/monetization`, {
+        headers: { Accept: "application/json" },
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((json) => {
+          const s = json?.settings ?? json?.result?.settings ?? json;
+          if (s) {
+            setFeatureFlags({
+              pricing_page_enabled: Boolean(s.pricing_page_enabled ?? true),
+              upgrade_cta_enabled: Boolean(s.upgrade_cta_enabled ?? true),
+            });
+          }
+        })
+        .catch(() => {
+          // Non-fatal - keep defaults (visible)
+        });
+    }
   }, [mergeBackendOnboardingStep, router]);
 
   // -----------------------------------------------------------------------
@@ -1415,7 +1452,7 @@ export default function CustomerDashboardPage() {
                     )}
                   </div>
                 </div>
-                {tier === "free" && (
+                {tier === "free" && featureFlags.upgrade_cta_enabled && (
                   <Link
                     href="/upgrade?plan=pro"
                     className="rounded-lg bg-accent-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-accent-400"
@@ -1423,7 +1460,7 @@ export default function CustomerDashboardPage() {
                     Upgrade to Pro
                   </Link>
                 )}
-                {tier !== "free" && (
+                {tier !== "free" && featureFlags.pricing_page_enabled && (
                   <Link
                     href="/pricing"
                     className="text-xs text-primary-400 hover:text-primary-300 transition"
@@ -1439,16 +1476,19 @@ export default function CustomerDashboardPage() {
                     label="Protect calls (daily)"
                     used={plan.usage.protect_calls.used}
                     limit={plan.usage.protect_calls.limit}
+                    pricingEnabled={featureFlags.pricing_page_enabled}
                   />
                   <UsageMeter
                     label="Execution calls (daily)"
                     used={plan.usage.execution_calls.used}
                     limit={plan.usage.execution_calls.limit}
+                    pricingEnabled={featureFlags.pricing_page_enabled}
                   />
                   <UsageMeter
                     label="Receipts stored"
                     used={plan.usage.receipts_created.used}
                     limit={plan.usage.receipts_created.limit}
+                    pricingEnabled={featureFlags.pricing_page_enabled}
                   />
                 </div>
               )}
@@ -1460,7 +1500,7 @@ export default function CustomerDashboardPage() {
                 </p>
               )}
 
-              {tier === "free" && (
+              {tier === "free" && featureFlags.upgrade_cta_enabled && (
                 <p className="text-xs text-slate-500">
                   You&apos;re on the <span className="text-slate-300 font-medium">Free plan</span>.{" "}
                   <Link
