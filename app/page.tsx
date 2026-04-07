@@ -352,7 +352,7 @@ export default function Home() {
             determinism or control.
           </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             {
               title: "Execution History",
@@ -365,6 +365,10 @@ export default function Home() {
             {
               title: "Controlled Improvement",
               desc: "Operators review and approve every policy change. The system suggests, humans decide. Deterministic and auditable at every step.",
+            },
+            {
+              title: "Move transaction control out of the model loop.",
+              desc: "ATF enforces policy, applies execution guardrails, and verifies outcomes outside the bot's token budget. That means less wasted compute on repetitive control logic, fewer invalid transaction loops, and more model capacity for higher-value intelligence.",
             },
           ].map((item) => (
             <Tilt key={item.title} maxTilt={6}>
