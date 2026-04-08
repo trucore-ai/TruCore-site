@@ -19,6 +19,17 @@ import type {
 } from "@/lib/customer-auth";
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const PURPOSE_OPTIONS = [
+  { value: "", label: "General" },
+  { value: "api", label: "REST API" },
+  { value: "bot", label: "Bot / Agent" },
+  { value: "mcp", label: "MCP Integration" },
+] as const;
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -49,9 +60,16 @@ export default function CustomerKeysPage() {
   // Create flow state
   const [showCreate, setShowCreate] = useState(false);
   const [createLabel, setCreateLabel] = useState("");
+  const [createScopes, setCreateScopes] = useState<string[]>([]);
+  const [createPurpose, setCreatePurpose] = useState("");
   const [creating, setCreating] = useState(false);
   const [newSecret, setNewSecret] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Plan metadata from list response
+  const [planTier, setPlanTier] = useState<string>("free");
+  const [allowedScopes, setAllowedScopes] = useState<string[]>([]);
+  const [mcpEndpoint, setMcpEndpoint] = useState<string | null>(null);
 
   // Revoke flow state
   const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null);
@@ -75,6 +93,9 @@ export default function CustomerKeysPage() {
       setLoading(true);
       const data = await fetchCustomerKeys();
       setKeys(data.keys);
+      if (data.plan_tier) setPlanTier(data.plan_tier);
+      if (data.allowed_scopes) setAllowedScopes(data.allowed_scopes);
+      if (data.mcp_endpoint) setMcpEndpoint(data.mcp_endpoint);
       setError("");
     } catch (err) {
       if (err instanceof ApiError && err.code === "unauthorized") {
@@ -105,9 +126,11 @@ export default function CustomerKeysPage() {
       setError("");
       setVerifyRequired(false);
       const result: CustomerKeyCreateResponse =
-        await createCustomerKey(createLabel);
+        await createCustomerKey(createLabel, createScopes, createPurpose);
       setNewSecret(result.raw_secret);
       setCreateLabel("");
+      setCreateScopes([]);
+      setCreatePurpose("");
       await loadKeys();
     } catch (err) {
       if (err instanceof ApiError && err.code === "unauthorized") {
@@ -329,7 +352,7 @@ export default function CustomerKeysPage() {
             Create API Key
           </button>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <label className="block text-sm text-slate-300">
               Label{" "}
               <span className="text-slate-500">(optional)</span>
@@ -342,6 +365,73 @@ export default function CustomerKeysPage() {
               maxLength={64}
               className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-primary-400 focus:ring-2 focus:ring-primary-400/30"
             />
+
+            {/* Purpose selector */}
+            <div>
+              <label className="mb-1.5 block text-sm text-slate-300">Purpose</label>
+              <div className="flex flex-wrap gap-2">
+                {PURPOSE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setCreatePurpose(opt.value)}
+                    className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
+                      createPurpose === opt.value
+                        ? "border-primary-400 bg-primary-500/20 text-primary-300"
+                        : "border-white/10 text-slate-400 hover:bg-white/5"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Scope checkboxes */}
+            {allowedScopes.length > 0 && (
+              <div>
+                <label className="mb-1.5 block text-sm text-slate-300">
+                  Scopes{" "}
+                  <span className="text-slate-500">
+                    (leave empty for all {planTier} tier scopes)
+                  </span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {allowedScopes.map((scope) => {
+                    const checked = createScopes.includes(scope);
+                    return (
+                      <button
+                        key={scope}
+                        type="button"
+                        onClick={() =>
+                          setCreateScopes((prev) =>
+                            checked
+                              ? prev.filter((s) => s !== scope)
+                              : [...prev, scope],
+                          )
+                        }
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-mono transition ${
+                          checked
+                            ? "border-emerald-400/50 bg-emerald-500/20 text-emerald-300"
+                            : "border-white/10 text-slate-500 hover:bg-white/5"
+                        }`}
+                      >
+                        {scope}
+                      </button>
+                    );
+                  })}
+                </div>
+                {createPurpose === "mcp" &&
+                  createScopes.length > 0 &&
+                  !createScopes.includes("atf:mcp") && (
+                    <p className="mt-1 text-xs text-amber-400">
+                      MCP keys require the <code className="font-mono">atf:mcp</code> scope.
+                      It will be added automatically.
+                    </p>
+                  )}
+              </div>
+            )}
+
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCreate}
@@ -354,6 +444,8 @@ export default function CustomerKeysPage() {
                 onClick={() => {
                   setShowCreate(false);
                   setCreateLabel("");
+                  setCreateScopes([]);
+                  setCreatePurpose("");
                 }}
                 className="rounded-lg border border-white/10 px-4 py-2.5 text-sm text-slate-400 transition hover:bg-white/5"
               >
@@ -382,6 +474,8 @@ export default function CustomerKeysPage() {
                 <tr className="border-b border-white/10 text-xs text-slate-500">
                   <th className="pb-2 pr-4 font-medium">Secret Preview</th>
                   <th className="pb-2 pr-4 font-medium">Label</th>
+                  <th className="pb-2 pr-4 font-medium">Purpose</th>
+                  <th className="pb-2 pr-4 font-medium">Scopes</th>
                   <th className="pb-2 pr-4 font-medium">Status</th>
                   <th className="pb-2 pr-4 font-medium">Created</th>
                   <th className="pb-2 pr-4 font-medium">Last Used</th>
@@ -399,6 +493,25 @@ export default function CustomerKeysPage() {
                     </td>
                     <td className="py-2.5 pr-4 text-slate-300">
                       {k.label || "-"}
+                    </td>
+                    <td className="py-2.5 pr-4 text-slate-400 text-xs">
+                      {k.purpose || "-"}
+                    </td>
+                    <td className="py-2.5 pr-4">
+                      {k.scopes && k.scopes.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {k.scopes.map((s) => (
+                            <span
+                              key={s}
+                              className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-slate-400"
+                            >
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-500">all</span>
+                      )}
                     </td>
                     <td className="py-2.5 pr-4">
                       <span
@@ -527,6 +640,66 @@ export default function CustomerKeysPage() {
           </div>
         )}
       </div>
+
+      {/* MCP setup section */}
+      {mcpEndpoint && (
+        <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.02] p-5">
+          <h2 className="mb-1 text-lg font-semibold text-white">
+            MCP Integration
+          </h2>
+          <p className="mb-3 text-sm text-slate-400">
+            Connect your AI agent to ATF via the Model Context Protocol. Create
+            a key with <code className="font-mono text-xs text-primary-300">atf:mcp</code> scope,
+            then configure your agent with the endpoint below.
+          </p>
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-slate-500">
+              MCP Endpoint
+            </label>
+            <code className="block break-all rounded-lg border border-white/10 bg-neutral-900 px-4 py-2.5 font-mono text-sm text-slate-100">
+              {mcpEndpoint}
+            </code>
+          </div>
+          <div className="mt-4 rounded-lg border border-white/5 bg-white/[0.01] px-4 py-3">
+            <p className="text-xs text-slate-500">
+              <strong className="text-slate-400">Protocol:</strong> JSON-RPC 2.0 over HTTPS.{" "}
+              <strong className="text-slate-400">Auth:</strong>{" "}
+              <code className="font-mono text-[10px]">X-API-Key</code> header with
+              your secret key. Your key&apos;s scopes determine which MCP tools are
+              available.{" "}
+              <Link
+                href="/agent"
+                className="text-primary-400 underline hover:text-primary-300"
+              >
+                View full integration guide
+              </Link>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Plan tier info */}
+      {planTier && (
+        <div className="mt-6 rounded-lg border border-white/5 bg-white/[0.01] px-4 py-3">
+          <p className="text-xs text-slate-500">
+            <strong className="text-slate-400">Plan:</strong>{" "}
+            <span className="capitalize">{planTier}</span>.{" "}
+            {allowedScopes.length > 0 && (
+              <>
+                <strong className="text-slate-400">Available scopes:</strong>{" "}
+                {allowedScopes.map((s) => (
+                  <code
+                    key={s}
+                    className="mr-1 font-mono text-[10px] text-slate-400"
+                  >
+                    {s}
+                  </code>
+                ))}
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Warning / info footer */}
       <div className="mt-6 rounded-lg border border-white/5 bg-white/[0.01] px-4 py-3">

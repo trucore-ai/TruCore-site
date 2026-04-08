@@ -508,11 +508,17 @@ export interface CustomerKey {
   created_at: number;
   last_used_at?: number | null;
   preview: string;
+  scopes?: string[];
+  purpose?: string;
+  revoked_at?: number | null;
 }
 
 export interface CustomerKeyListResponse {
   keys: CustomerKey[];
   count: number;
+  plan_tier?: string;
+  allowed_scopes?: string[];
+  mcp_endpoint?: string;
 }
 
 export interface CustomerKeyCreateResponse extends CustomerKey {
@@ -558,9 +564,15 @@ export async function fetchCustomerKeys(): Promise<CustomerKeyListResponse> {
 
 export async function createCustomerKey(
   label: string = "",
+  scopes?: string[],
+  purpose?: string,
 ): Promise<CustomerKeyCreateResponse> {
   const token = getToken();
   if (!token) throw new ApiError("unauthorized", "Not authenticated");
+
+  const payload: Record<string, unknown> = { label };
+  if (scopes && scopes.length > 0) payload.scopes = scopes;
+  if (purpose) payload.purpose = purpose;
 
   let res: Response;
   try {
@@ -570,7 +582,7 @@ export async function createCustomerKey(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ label }),
+      body: JSON.stringify(payload),
     });
   } catch {
     throw new ApiError("network_error", "We couldn't reach the API keys service.");
