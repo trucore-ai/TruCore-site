@@ -523,6 +523,11 @@ export default function CustomerKeysPage() {
                       >
                         {k.status}
                       </span>
+                      {k.status === "revoked" && k.revoked_at && (
+                        <span className="mt-0.5 block text-[10px] text-slate-500">
+                          {formatDate(k.revoked_at)}
+                        </span>
+                      )}
                     </td>
                     <td className="py-2.5 pr-4 text-slate-400">
                       {formatDate(k.created_at)}

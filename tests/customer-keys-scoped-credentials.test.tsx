@@ -229,4 +229,75 @@ describe("CustomerKeysPage – scoped credentials", () => {
       expect(screen.getByText("Scopes")).toBeTruthy();
     });
   });
+
+  // -----------------------------------------------------------------------
+  // revoked_at visibility
+  // -----------------------------------------------------------------------
+
+  it("shows revoked_at timestamp for revoked keys", async () => {
+    mockFetchCustomerKeys.mockResolvedValue({
+      keys: [
+        {
+          key_id: "atf_key_revoked",
+          label: "old-key",
+          status: "revoked",
+          created_at: 1710000000,
+          last_used_at: 1710003600,
+          preview: "atf_sk_****zzzz",
+          scopes: ["atf:probe"],
+          purpose: "api",
+          revoked_at: 1710100000,
+        },
+      ],
+      count: 1,
+      plan_tier: "pro",
+      allowed_scopes: ["atf:probe"],
+    });
+
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByText("revoked")).toBeTruthy();
+      // revoked_at timestamp should render (Mar 11, 2024)
+      expect(screen.getByText(/Mar 1[01], 2024/)).toBeTruthy();
+    });
+  });
+
+  it("does not show revoked_at text for active keys", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getAllByText("active").length).toBeGreaterThanOrEqual(1);
+    });
+    // The default fixture has only active keys — no revoked_at timestamp
+    // should appear anywhere (no "revoked" badge text)
+    expect(screen.queryByText("revoked")).toBeNull();
+  });
+
+  it("shows revoked badge without timestamp when revoked_at is absent", async () => {
+    mockFetchCustomerKeys.mockResolvedValue({
+      keys: [
+        {
+          key_id: "atf_key_revoked_no_ts",
+          label: "legacy-key",
+          status: "revoked",
+          created_at: 1710000000,
+          preview: "atf_sk_****yyyy",
+          scopes: [],
+          purpose: "",
+        },
+      ],
+      count: 1,
+      plan_tier: "free",
+      allowed_scopes: [],
+    });
+
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      // The revoked badge should exist but its parent status cell should
+      // contain only "revoked" with no additional timestamp text.
+      const badge = screen.getByText("revoked");
+      const statusCell = badge.closest("td");
+      expect(statusCell).toBeTruthy();
+      expect(statusCell!.textContent?.trim()).toBe("revoked");
+    });
+  });
 });
