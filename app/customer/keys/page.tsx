@@ -29,6 +29,12 @@ const PURPOSE_OPTIONS = [
   { value: "mcp", label: "MCP Integration" },
 ] as const;
 
+const TEST_KEY_SCOPES = ["atf:probe", "atf:simulate", "atf:verify", "atf:explain"];
+
+const ATF_BASE_URL = "https://api.trucore.xyz";
+const ATF_MCP_ENDPOINT = `${ATF_BASE_URL}/mcp/v1`;
+const ATF_AUTH_HEADER = "X-API-Key";
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -44,6 +50,43 @@ function formatDate(epoch: number): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+// ---------------------------------------------------------------------------
+// SnippetBlock — inline copy-ready code block
+// ---------------------------------------------------------------------------
+
+function SnippetBlock({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 1800);
+    return () => clearTimeout(t);
+  }, [copied]);
+
+  return (
+    <div className="rounded-lg border border-white/[0.06] bg-neutral-950/70 p-3">
+      <div className="mb-1.5 flex items-center justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">{label}</p>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(value);
+              setCopied(true);
+            } catch { /* non-blocking */ }
+          }}
+          className="inline-flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-[11px] font-semibold text-slate-400 transition-all hover:border-primary-300/30 hover:bg-primary-500/10 hover:text-primary-200"
+        >
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <pre className="overflow-x-auto rounded-lg border border-white/[0.06] bg-neutral-950/80 px-3 py-2 font-mono text-xs leading-relaxed text-slate-200 whitespace-pre-wrap break-words">
+        <code>{value}</code>
+      </pre>
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -345,12 +388,26 @@ export default function CustomerKeysPage() {
       {/* Create key section */}
       <div className="mb-6 rounded-xl border border-white/10 bg-white/[0.02] p-5">
         {!showCreate ? (
-          <button
-            onClick={() => setShowCreate(true)}
-            className="rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-primary-400"
-          >
-            Create API Key
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowCreate(true)}
+              className="rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-primary-400"
+            >
+              Create API Key
+            </button>
+            <button
+              onClick={() => {
+                setShowCreate(true);
+                setCreateLabel("test-bot");
+                setCreateScopes([...TEST_KEY_SCOPES]);
+                setCreatePurpose("bot");
+              }}
+              data-testid="create-test-key-preset"
+              className="rounded-lg border border-primary-400/30 bg-primary-500/10 px-4 py-2.5 text-sm font-medium text-primary-300 transition hover:bg-primary-500/20"
+            >
+              Create test key
+            </button>
+          </div>
         ) : (
           <div className="space-y-4">
             <label className="block text-sm text-slate-300">
@@ -682,6 +739,89 @@ export default function CustomerKeysPage() {
           </div>
         </div>
       )}
+
+      {/* How to use this key - quickstart panel */}
+      <div data-testid="quickstart-panel" className="mt-6 rounded-xl border border-white/10 bg-white/[0.02] p-5">
+        <h2 className="mb-1 text-lg font-semibold text-white">How to use this key</h2>
+        <p className="mb-4 text-sm text-slate-400">
+          Copy the secret immediately into a local secret store or environment variable.
+          The secret is shown once only. Keep scopes tight and use devnet for execution tests.
+        </p>
+
+        {/* Connection info */}
+        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1">API Base URL</p>
+            <code className="block break-all rounded-lg border border-white/10 bg-neutral-900 px-3 py-2 font-mono text-xs text-slate-100">
+              {ATF_BASE_URL}
+            </code>
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1">MCP Endpoint</p>
+            <code className="block break-all rounded-lg border border-white/10 bg-neutral-900 px-3 py-2 font-mono text-xs text-slate-100">
+              {ATF_MCP_ENDPOINT}
+            </code>
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1">Auth Header</p>
+            <code className="block break-all rounded-lg border border-white/10 bg-neutral-900 px-3 py-2 font-mono text-xs text-slate-100">
+              {ATF_AUTH_HEADER}
+            </code>
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1">Secret handling</p>
+            <p className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-300">
+              Shown once only. Copy it now.
+            </p>
+          </div>
+        </div>
+
+        {/* Recommended scopes by use case */}
+        <div className="mb-4">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-2">
+            Recommended minimum scopes
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2">
+              <p className="text-xs font-semibold text-slate-300 mb-1">API / CLI test</p>
+              <div className="flex flex-wrap gap-1">
+                {TEST_KEY_SCOPES.map((s) => (
+                  <code key={s} className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-slate-400">{s}</code>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2">
+              <p className="text-xs font-semibold text-slate-300 mb-1">MCP test</p>
+              <div className="flex flex-wrap gap-1">
+                {[...TEST_KEY_SCOPES, "atf:mcp"].map((s) => (
+                  <code key={s} className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-slate-400">{s}</code>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Copy-ready snippets */}
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-2">
+            Copy-ready snippets
+          </p>
+          <div className="space-y-3">
+            <SnippetBlock
+              label="Environment variables"
+              value={`export ATF_API_KEY=<your-secret-key>\nexport ATF_BASE_URL=${ATF_BASE_URL}\nexport ATF_MCP_ENDPOINT=${ATF_MCP_ENDPOINT}`}
+            />
+            <SnippetBlock
+              label="curl - probe a swap intent"
+              value={`curl -sS ${ATF_BASE_URL}/v1/intents \\\n  -H "${ATF_AUTH_HEADER}: $ATF_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"intent_type":"swap","input_mint":"So111...","output_mint":"EPjFW...","amount":1000000,"slippage_bps":50}'`}
+            />
+            <SnippetBlock
+              label="MCP - JSON-RPC call"
+              value={`curl -sS ${ATF_MCP_ENDPOINT} \\\n  -H "${ATF_AUTH_HEADER}: $ATF_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"probe_transaction","arguments":{"intent_type":"swap","input_mint":"So111...","output_mint":"EPjFW...","amount":1000000,"slippage_bps":50}}}'`}
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Plan tier info */}
       {planTier && (

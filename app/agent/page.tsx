@@ -560,6 +560,68 @@ export default function AgentPage() {
         </div>
       </Section>
 
+      {/* Customer Self-Serve Credentials */}
+      <Section divider className="fade-in-up" data-testid="agent-credential-guidance">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+            Customer Self-Serve Credentials
+          </h2>
+          <p className="mt-3 text-xl text-slate-300">
+            Create scoped API keys for API, CLI, and MCP access from a single self-serve flow.
+          </p>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <h3 className="text-xl font-bold text-accent-300">
+              Recommended test scopes
+            </h3>
+            <p className="mt-3 text-base leading-[1.5] text-slate-200">
+              For API and CLI testing, use a minimum set of read-only scopes:
+            </p>
+            <ul className="mt-3 list-inside list-disc space-y-1 text-base text-slate-300">
+              <li><code className="text-primary-200">atf:probe</code></li>
+              <li><code className="text-primary-200">atf:simulate</code></li>
+              <li><code className="text-primary-200">atf:verify</code></li>
+              <li><code className="text-primary-200">atf:explain</code></li>
+            </ul>
+            <p className="mt-3 text-base leading-[1.5] text-slate-200">
+              For MCP access, add <code className="text-primary-200">atf:mcp</code>.
+            </p>
+          </Card>
+          <Card>
+            <h3 className="text-xl font-bold text-accent-300">
+              Using the same key for API, CLI, and MCP
+            </h3>
+            <p className="mt-3 text-base leading-[1.5] text-slate-200">
+              A single customer API key works across all surfaces. Pass it as the{" "}
+              <code className="rounded bg-neutral-800 px-1.5 py-0.5 text-base text-primary-200">
+                X-API-Key
+              </code>{" "}
+              header for REST calls and MCP JSON-RPC requests, or set the{" "}
+              <code className="text-primary-200">ATF_API_KEY</code> environment
+              variable for the CLI.
+            </p>
+            <p className="mt-3 text-base font-semibold text-amber-300">
+              If the key is exposed, rotate or revoke it immediately from{" "}
+              <Link
+                href="/customer/keys"
+                className="underline hover:text-amber-200"
+              >
+                /customer/keys
+              </Link>.
+            </p>
+          </Card>
+        </div>
+        <div className="mt-6 flex flex-wrap gap-4">
+          <Link
+            href="/customer/keys"
+            className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-6 py-3 text-lg font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
+          >
+            Create a key &rarr;
+          </Link>
+        </div>
+      </Section>
+
       {/* Get Started CTA */}
       <Section className="fade-in-up">
         <Card className="border-primary-300/25 bg-primary-500/10 p-6 text-center">

@@ -127,9 +127,10 @@ describe("CustomerKeysPage – scoped credentials", () => {
     render(<CustomerKeysPage />);
     await waitFor(() => {
       expect(screen.getByText("MCP Integration")).toBeTruthy();
+      // MCP endpoint now appears in both the MCP section and quickstart panel
       expect(
-        screen.getByText("https://api.trucore.xyz/mcp/v1"),
-      ).toBeTruthy();
+        screen.getAllByText("https://api.trucore.xyz/mcp/v1").length,
+      ).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -298,6 +299,134 @@ describe("CustomerKeysPage – scoped credentials", () => {
       const statusCell = badge.closest("td");
       expect(statusCell).toBeTruthy();
       expect(statusCell!.textContent?.trim()).toBe("revoked");
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Bot-friendly quickstart (Phase 89)
+// ---------------------------------------------------------------------------
+
+describe("CustomerKeysPage - bot credential quickstart", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockFetchCustomerKeys.mockResolvedValue(KEYS_LIST_RESPONSE);
+  });
+
+  it("renders 'Create test key' preset button", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId("create-test-key-preset")).toBeTruthy();
+    });
+  });
+
+  it("preset prefills label, scopes, and purpose on click", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId("create-test-key-preset")).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByTestId("create-test-key-preset"));
+
+    await waitFor(() => {
+      // Label input should be prefilled with "test-bot"
+      const labelInput = screen.getByPlaceholderText("e.g. production-bot") as HTMLInputElement;
+      expect(labelInput.value).toBe("test-bot");
+      // Bot / Agent purpose should be selected (highlighted)
+      const purposeButtons = screen.getAllByRole("button");
+      const botBtn = purposeButtons.find((b) => b.textContent === "Bot / Agent");
+      expect(botBtn).toBeTruthy();
+      expect(botBtn!.className).toContain("border-primary-400");
+    });
+  });
+
+  it("renders quickstart panel with connection info", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId("quickstart-panel")).toBeTruthy();
+      expect(screen.getByText("How to use this key")).toBeTruthy();
+    });
+  });
+
+  it("shows API base URL in quickstart panel", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByText("https://api.trucore.xyz")).toBeTruthy();
+    });
+  });
+
+  it("shows MCP endpoint URL in quickstart panel", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByText("https://api.trucore.xyz/mcp/v1")).toBeTruthy();
+    });
+  });
+
+  it("shows auth header name in quickstart panel", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByText("X-API-Key")).toBeTruthy();
+    });
+  });
+
+  it("shows secret shown-once warning in quickstart panel", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByText("Shown once only. Copy it now.")).toBeTruthy();
+    });
+  });
+
+  it("shows recommended scopes for API/CLI test", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByText("API / CLI test")).toBeTruthy();
+    });
+  });
+
+  it("shows recommended scopes for MCP test", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByText("MCP test")).toBeTruthy();
+    });
+  });
+
+  it("renders copy-ready snippet blocks", async () => {
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByText("Environment variables")).toBeTruthy();
+    });
+  });
+
+  it("secret shown-once warning still present on create", async () => {
+    mockCreateCustomerKey.mockResolvedValue({
+      key_id: "atf_key_new",
+      label: "test-bot",
+      status: "active",
+      created_at: 1710000000,
+      preview: "atf_sk_****wxyz",
+      raw_secret: "atf_sk_secret_value_quickstart",
+      scopes: ["atf:probe", "atf:simulate", "atf:verify", "atf:explain"],
+      purpose: "bot",
+    });
+
+    render(<CustomerKeysPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId("create-test-key-preset")).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByTestId("create-test-key-preset"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Create")).toBeTruthy();
+    });
+
+    fireEvent.click(screen.getByText("Create"));
+
+    await waitFor(() => {
+      expect(screen.getByText("New Secret API Key Created")).toBeTruthy();
+      expect(
+        screen.getByText(/It will only be shown once/),
+      ).toBeTruthy();
     });
   });
 });
