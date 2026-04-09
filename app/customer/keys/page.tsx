@@ -34,6 +34,9 @@ const TEST_KEY_SCOPES = ["atf:probe", "atf:simulate", "atf:verify", "atf:explain
 const ATF_BASE_URL = "https://api.trucore.xyz";
 const ATF_MCP_ENDPOINT = `${ATF_BASE_URL}/mcp/v1`;
 const ATF_AUTH_HEADER = "X-API-Key";
+const ATF_ENV_VAR = "ATF_API_KEY";
+const ATF_ENV_FILE_PATH = "~/.openclaw/secrets/atf.env";
+const ATF_SOURCE_COMMAND = "source ~/.openclaw/secrets/atf.env";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -769,9 +772,22 @@ export default function CustomerKeysPage() {
             </code>
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1">Secret handling</p>
-            <p className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-300">
-              Shown once only. Copy it now.
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-1">Env Var</p>
+            <code data-testid="env-var-name" className="block break-all rounded-lg border border-white/10 bg-neutral-900 px-3 py-2 font-mono text-xs text-slate-100">
+              {ATF_ENV_VAR}
+            </code>
+          </div>
+        </div>
+
+        {/* Canonical secret path */}
+        <div className="mb-4">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-2">
+            Canonical secret path
+          </p>
+          <div data-testid="env-file-path" className="rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2">
+            <code className="font-mono text-xs text-slate-300">{ATF_ENV_FILE_PATH}</code>
+            <p className="mt-1 text-[11px] text-slate-500">
+              Place your secret in this file and load with: <code className="font-mono text-primary-300">{ATF_SOURCE_COMMAND}</code>
             </p>
           </div>
         </div>
@@ -802,23 +818,50 @@ export default function CustomerKeysPage() {
         </div>
 
         {/* Copy-ready snippets */}
-        <div>
+        <div className="mb-4">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-2">
             Copy-ready snippets
           </p>
           <div className="space-y-3">
             <SnippetBlock
-              label="Environment variables"
-              value={`export ATF_API_KEY=<your-secret-key>\nexport ATF_BASE_URL=${ATF_BASE_URL}\nexport ATF_MCP_ENDPOINT=${ATF_MCP_ENDPOINT}`}
+              label="Env file (~/.openclaw/secrets/atf.env)"
+              value={`# ATF customer API key\nexport ${ATF_ENV_VAR}=<your-secret-key>\nexport ATF_BASE_URL=${ATF_BASE_URL}\nexport ATF_MCP_ENDPOINT=${ATF_MCP_ENDPOINT}`}
             />
             <SnippetBlock
               label="curl - probe a swap intent"
-              value={`curl -sS ${ATF_BASE_URL}/v1/intents \\\n  -H "${ATF_AUTH_HEADER}: $ATF_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"intent_type":"swap","input_mint":"So111...","output_mint":"EPjFW...","amount":1000000,"slippage_bps":50}'`}
+              value={`curl -sS ${ATF_BASE_URL}/v1/intents \\\n  -H "${ATF_AUTH_HEADER}: $${ATF_ENV_VAR}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"intent_type":"swap","input_mint":"So111...","output_mint":"EPjFW...","amount":1000000,"slippage_bps":50}'`}
             />
             <SnippetBlock
               label="MCP - JSON-RPC call"
-              value={`curl -sS ${ATF_MCP_ENDPOINT} \\\n  -H "${ATF_AUTH_HEADER}: $ATF_API_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"probe_transaction","arguments":{"intent_type":"swap","input_mint":"So111...","output_mint":"EPjFW...","amount":1000000,"slippage_bps":50}}}'`}
+              value={`curl -sS ${ATF_MCP_ENDPOINT} \\\n  -H "${ATF_AUTH_HEADER}: $${ATF_ENV_VAR}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"probe_transaction","arguments":{"intent_type":"swap","input_mint":"So111...","output_mint":"EPjFW...","amount":1000000,"slippage_bps":50}}}'`}
             />
+          </div>
+        </div>
+
+        {/* Self-verification steps */}
+        <div data-testid="verification-steps">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 mb-2">
+            Self-verification steps
+          </p>
+          <div className="space-y-2">
+            <div className="rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2">
+              <p className="text-xs font-semibold text-emerald-300 mb-1">1. API check</p>
+              <p className="text-[11px] text-slate-400">
+                POST /v1/receipts/verify with your key. HTTP 200 with <code className="font-mono text-primary-300">valid:false, reason:signature_invalid</code> means auth succeeded and reached protected logic.
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2">
+              <p className="text-xs font-semibold text-emerald-300 mb-1">2. MCP check</p>
+              <p className="text-[11px] text-slate-400">
+                POST to MCP endpoint with <code className="font-mono text-primary-300">tools/call</code> method, tool <code className="font-mono text-primary-300">explain_decision</code>, argument <code className="font-mono text-primary-300">decision_source: &quot;verify&quot;</code>. Response should contain <code className="font-mono text-primary-300">isError:false</code>.
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2">
+              <p className="text-xs font-semibold text-emerald-300 mb-1">3. CLI check</p>
+              <p className="text-[11px] text-slate-400">
+                Run <code className="font-mono text-primary-300">{ATF_SOURCE_COMMAND} &amp;&amp; atf --help</code>. If blocked by OpenClaw exec policy, that is environment friction, not an ATF failure.
+              </p>
+            </div>
           </div>
         </div>
       </div>

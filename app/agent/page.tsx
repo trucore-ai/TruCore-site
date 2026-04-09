@@ -622,6 +622,60 @@ export default function AgentPage() {
         </div>
       </Section>
 
+      {/* Bot Bootstrap Setup */}
+      <Section divider className="fade-in-up" data-testid="agent-bootstrap-guidance">
+        <div className="mb-8 max-w-2xl">
+          <h2 className="text-3xl font-bold tracking-tight text-accent-300">
+            Bot Bootstrap Setup
+          </h2>
+          <p className="mt-3 text-xl text-slate-300">
+            Canonical environment conventions and self-verification steps for
+            zero-human bot setup.
+          </p>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <h3 className="text-xl font-bold text-accent-300">
+              Canonical env conventions
+            </h3>
+            <ul className="mt-3 list-inside list-disc space-y-2 text-base text-slate-300">
+              <li>
+                Env var: <code className="text-primary-200">ATF_API_KEY</code>
+              </li>
+              <li>
+                Secret path: <code className="text-primary-200">~/.openclaw/secrets/atf.env</code>
+              </li>
+              <li>
+                Source command: <code className="text-primary-200">source ~/.openclaw/secrets/atf.env</code>
+              </li>
+            </ul>
+          </Card>
+          <Card>
+            <h3 className="text-xl font-bold text-accent-300">
+              Self-verification checklist
+            </h3>
+            <ol className="mt-3 list-inside list-decimal space-y-2 text-base text-slate-300">
+              <li>
+                <strong className="text-slate-200">API check:</strong> POST /v1/receipts/verify
+                — HTTP 200 with <code className="text-primary-200">valid:false</code> confirms auth
+              </li>
+              <li>
+                <strong className="text-slate-200">MCP check:</strong> tools/call explain_decision
+                — <code className="text-primary-200">isError:false</code> confirms MCP access
+              </li>
+              <li>
+                <strong className="text-slate-200">CLI check:</strong> source env and run{" "}
+                <code className="text-primary-200">atf --help</code>
+                — confirms CLI surface
+              </li>
+            </ol>
+            <p className="mt-3 text-sm text-slate-400">
+              If OpenClaw exec policy blocks a CLI command, that is environment friction, not an ATF failure.
+            </p>
+          </Card>
+        </div>
+      </Section>
+
       {/* Get Started CTA */}
       <Section className="fade-in-up">
         <Card className="border-primary-300/25 bg-primary-500/10 p-6 text-center">
