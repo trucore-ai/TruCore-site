@@ -240,7 +240,7 @@ of truth. These site pages derive from internal docs:
 | /docs/guide/troubleshooting | Troubleshooting | Phase C ✅ | Classified error states from dashboard |
 | /docs/guide/production-bot | Production Bot Configuration | Phase C ✅ | Expand /docs/cli/guides/production-bot-basics |
 | /docs/guide/support-deflection | Support Deflection | Phase C ✅ | Symptom routing, escalation criteria, pre-support checklist |
-| /docs/guide/reconcile | Reconcile & State Recovery | Phase D | New (depends on backend feature maturity) |
+| /docs/guide/reconcile | Reconcile & State Recovery | Phase D ✅ | Credential/session health reconciliation (Prompt 128) |
 
 **Linking pattern:**
 - Each authenticated guide links back to its public equivalent:
@@ -320,7 +320,7 @@ of truth. These site pages derive from internal docs:
 - [x] /docs/guide/support-deflection (symptom routing, escalation criteria, pre-support checklist) — done in Prompt 127
 
 **Phase D — Account-scoped operational references**
-- [ ] /docs/guide/reconcile (state reconciliation when available)
+- [x] /docs/guide/reconcile (state reconciliation when available) — done in Prompt 128
 - [ ] Account-scoped examples (live data references)
 - [ ] Extended history documentation (30d+ data windows)
 

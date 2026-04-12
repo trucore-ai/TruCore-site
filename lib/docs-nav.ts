@@ -348,6 +348,12 @@ export const sections: DocsNavSection[] = [
         description:
           "Decide when to self-serve, what to try first, and when to contact support.",
       },
+      {
+        title: "Reconcile & State Recovery",
+        href: "/docs/guide/reconcile",
+        description:
+          "Assess agent health, detect drift, plan repairs with dry-run, and respond to reconcile events.",
+      },
     ],
   },
 ];

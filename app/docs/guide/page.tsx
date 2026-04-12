@@ -77,6 +77,14 @@ const upcomingGuides = [
     publicRef: null,
     ready: true,
   },
+  {
+    title: "Reconcile & State Recovery",
+    href: "/docs/guide/reconcile",
+    description:
+      "Assess agent health, detect drift, plan repairs with dry-run, trigger token rotation, and respond to reconcile webhook events.",
+    publicRef: { label: "Readiness & Health Checks", href: "/docs/guide/readiness" },
+    ready: true,
+  },
 ] as const;
 
 /* ── Page ── */

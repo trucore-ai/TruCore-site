@@ -682,6 +682,15 @@ export default function TroubleshootingGuide() {
             </Link>{" "}
             &mdash; browse, verify, export, and troubleshoot receipts
           </li>
+          <li>
+            <Link
+              href="/docs/guide/reconcile"
+              className="font-semibold text-primary-200 hover:text-primary-100"
+            >
+              Reconcile &amp; State Recovery
+            </Link>{" "}
+            &mdash; detect drift, rotate tokens, and recover from credential failures
+          </li>
         </ul>
       </section>
     </article>

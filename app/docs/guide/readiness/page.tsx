@@ -931,10 +931,18 @@ export default function ReadinessGuide() {
           to rule out configuration issues before investigating state
           discrepancies.
         </p>
-        <div className="rounded-lg border border-slate-500/20 bg-slate-500/[0.06] px-4 py-3 text-sm text-slate-300">
-          A dedicated Reconcile &amp; State Recovery guide is planned for a
-          future phase. For now, use this guide&apos;s readiness checks as
-          your first diagnostic step when reconcile events indicate issues.
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-3 text-sm text-slate-300">
+          For full reconcile documentation — dry-run mode, drift detection,
+          token rotation, recovery patterns, and webhook event handling — see
+          the{" "}
+          <Link
+            href="/docs/guide/reconcile"
+            className="font-semibold text-primary-200 hover:text-primary-100"
+          >
+            Reconcile &amp; State Recovery
+          </Link>{" "}
+          guide. Use this guide&apos;s readiness checks as your first
+          diagnostic step when reconcile events indicate issues.
         </div>
       </section>
 
