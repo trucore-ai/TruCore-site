@@ -1351,6 +1351,13 @@ export default function CustomerDashboardPage() {
               >
                 Readiness &amp; health checks
               </Link>
+              <span className="text-slate-600">&middot;</span>
+              <Link
+                href="/docs/guide/production-bot"
+                className="text-xs text-slate-500 underline hover:text-slate-300"
+              >
+                Production bot setup
+              </Link>
             </div>
           </div>
         </section>

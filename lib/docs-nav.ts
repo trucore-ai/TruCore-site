@@ -336,6 +336,12 @@ export const sections: DocsNavSection[] = [
         description:
           "Diagnose and resolve common integration issues with symptom-driven recovery steps.",
       },
+      {
+        title: "Production Bot Configuration",
+        href: "/docs/guide/production-bot",
+        description:
+          "Environment setup, key strategy, readiness checks, rate-limit-aware operation, and safe rollout patterns.",
+      },
     ],
   },
 ];

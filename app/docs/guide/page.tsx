@@ -61,6 +61,14 @@ const upcomingGuides = [
     publicRef: null,
     ready: true,
   },
+  {
+    title: "Production Bot Configuration",
+    href: "/docs/guide/production-bot",
+    description:
+      "Move your bot from dev to production: environment setup, key strategy, readiness checks, rate-limit-aware operation, and safe rollout patterns.",
+    publicRef: { label: "Hello-World Bot", href: "/docs/hello-world-bot" },
+    ready: true,
+  },
 ] as const;
 
 /* ── Page ── */
