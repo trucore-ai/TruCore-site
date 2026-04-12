@@ -865,7 +865,7 @@ export default function CustomerKeysPage() {
             <div className="rounded-lg border border-white/5 bg-white/[0.01] px-3 py-2">
               <p className="text-xs font-semibold text-emerald-300 mb-1">3. CLI check</p>
               <p className="text-[11px] text-slate-400">
-                Run <code className="font-mono text-primary-300">{ATF_SOURCE_COMMAND} &amp;&amp; atf --help</code>. If blocked by OpenClaw exec policy, that is environment friction, not an ATF failure.
+                Run <code className="font-mono text-primary-300">{ATF_SOURCE_COMMAND} &amp;&amp; atf --help</code>. If prevented by an OS execution policy, that is environment friction, not an ATF failure.
               </p>
             </div>
           </div>

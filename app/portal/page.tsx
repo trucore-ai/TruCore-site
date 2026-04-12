@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { listPartnerKeysAndUsage } from "@/lib/db";
 import {
   PARTNER_PORTAL_COOKIE_NAME,
@@ -68,8 +69,8 @@ export default async function PartnerPortalPage() {
                 Your tenant-scoped view &mdash; everything shown here belongs to your account and your protected activity only. No other tenant&apos;s data is visible.
               </p>
               <p className="text-sm text-slate-300">Use your API key with x-api-key to access /api/simulate.</p>
-              <p className="text-sm text-slate-300">Your current tier: Partner Sandbox (120 req/min).</p>
-              <p className="text-sm text-slate-300">Rate-limit headers: X-RateLimit-Limit/Remaining/Reset.</p>
+              <p className="text-sm text-slate-300">Your current tier: Free (100 protect calls / day). <Link href="/docs/plans" className="text-primary-200 underline hover:text-primary-100">See all plans &rarr;</Link></p>
+              <p className="text-sm text-slate-300">Rate-limit headers are returned on every response. <Link href="/docs/guide/rate-limits" className="text-primary-200 underline hover:text-primary-100">Rate limits guide &rarr;</Link></p>
             </div>
 
             <form method="POST" action="/portal/logout">
@@ -133,7 +134,7 @@ export default async function PartnerPortalPage() {
                 ) : (
                   keyRows.map((row) => (
                     <tr key={row.id} className="border-b border-white/5 last:border-b-0">
-                      <td className="px-4 py-3">{row.label ?? "Partner Sandbox Key"}</td>
+                      <td className="px-4 py-3">{row.label ?? "API Key"}</td>
                       <td className="px-4 py-3 text-xs text-slate-400">{fmtDate(row.created_at)}</td>
                       <td className="px-4 py-3 text-xs">
                         {row.revoked_at ? (
@@ -144,7 +145,7 @@ export default async function PartnerPortalPage() {
                       </td>
                       <td className="px-4 py-3 text-xs text-slate-400">{fmtDate(row.revoked_at)}</td>
                       <td className="px-4 py-3 font-mono text-xs">••••{getLast4(row.key_last4, row.id)}</td>
-                      <td className="px-4 py-3 text-xs text-slate-300">Partner Sandbox</td>
+                      <td className="px-4 py-3 text-xs text-slate-300">Free</td>
                     </tr>
                   ))
                 )}
@@ -177,7 +178,7 @@ export default async function PartnerPortalPage() {
                 ) : (
                   keyRows.map((row) => (
                     <tr key={`usage-${row.id}`} className="border-b border-white/5 last:border-b-0">
-                      <td className="px-4 py-3">{row.label ?? "Partner Sandbox Key"}</td>
+                      <td className="px-4 py-3">{row.label ?? "API Key"}</td>
                       <td className="px-4 py-3 text-xs text-slate-400">{fmtDate(row.last_seen_at)}</td>
                       <td className="px-4 py-3">{row.total_requests}</td>
                       <td className="px-4 py-3">{row.last_24h}</td>

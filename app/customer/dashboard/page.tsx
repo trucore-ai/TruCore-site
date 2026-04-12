@@ -20,6 +20,7 @@ import {
   type UpgradeRequestData,
 } from "@/lib/customer-auth";
 import { buildVerifyUrl } from "@/lib/share-utils";
+import { normalizeDecision, isAllowedDecision } from "@/lib/normalize-decision";
 import RunTestRequest from "@/components/run-test-request";
 import {
   trackQuickTradeStarted,
@@ -547,7 +548,7 @@ export default function CustomerDashboardPage() {
 
       // Check if protection was denied
       const decision = (protectRes as Record<string, unknown>).decision as string;
-      if (decision !== "ALLOW") {
+      if (!isAllowedDecision(decision)) {
         setQuickTradeError("Trade was denied by protection policies. Execution skipped.");
         setQuickTradeFailedStep("protect");
         trackQuickTradeFailed("protect");
@@ -822,7 +823,8 @@ export default function CustomerDashboardPage() {
                   const receiptId = (obReceipt as Record<string, unknown>)?.receipt
                     ? ((obReceipt as Record<string, unknown>).receipt as Record<string, unknown>).receipt_id as string
                     : activation?.first_receipt_id ?? null;
-                  const decision = (obDryRun as Record<string, unknown>)?.decision as string ?? "ALLOW";
+                  const rawDecision = (obDryRun as Record<string, unknown>)?.decision as string | undefined;
+                  const decision = normalizeDecision(rawDecision);
                   const executionTime = obReceipt ? new Date().toLocaleString() : null;
                   const hasReceipt = !!(receiptId || receiptCount > 0);
 
@@ -837,7 +839,7 @@ export default function CustomerDashboardPage() {
                         )}
                         <div className="flex items-center gap-1.5">
                           <span className="text-slate-500">Decision:</span>
-                          <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${decision === "ALLOW" ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300"}`}>
+                          <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${decision === "ALLOWED" ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300"}`}>
                             {decision}
                           </span>
                         </div>
@@ -1168,12 +1170,12 @@ export default function CustomerDashboardPage() {
                 </h3>
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                    (obDryRun as Record<string, unknown>).decision === "ALLOW"
+                    isAllowedDecision((obDryRun as Record<string, unknown>).decision as string)
                       ? "bg-emerald-500/20 text-emerald-300"
                       : "bg-red-500/20 text-red-300"
                   }`}
                 >
-                  {(obDryRun as Record<string, unknown>).decision as string}
+                  {normalizeDecision((obDryRun as Record<string, unknown>).decision as string)}
                 </span>
               </div>
               <div className="space-y-1">
@@ -1669,13 +1671,12 @@ export default function CustomerDashboardPage() {
                     <span className="text-slate-400">Latest</span>
                     <span
                       className={`rounded-full px-2 py-0.5 font-medium ${
-                        recentReceipt.decision === "ALLOW" ||
-                        recentReceipt.decision === "approved"
+                        isAllowedDecision(recentReceipt.decision)
                           ? "bg-emerald-500/20 text-emerald-300"
                           : "bg-red-500/20 text-red-300"
                       }`}
                     >
-                      {recentReceipt.decision}
+                      {normalizeDecision(recentReceipt.decision)}
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-slate-300 truncate">

@@ -130,7 +130,7 @@ describe("verify-demo proof list rendering", () => {
       screen.getByText("The exact policy rules that were applied"),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("The deterministic decision made (ALLOW or DENY)"),
+      screen.getByText("The deterministic decision made (ALLOWED or DENIED)"),
     ).toBeInTheDocument();
     expect(
       screen.getByText("The precise transaction inputs used"),

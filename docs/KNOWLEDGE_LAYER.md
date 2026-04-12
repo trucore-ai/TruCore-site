@@ -311,7 +311,7 @@ of truth. These site pages derive from internal docs:
 - [x] /docs/guide/webhooks (setup, delivery verification, DLQ)
 - [x] /docs/guide/readiness (health checks, integration readiness)
 - [x] /docs/guide/receipts-ops (browse, verify, export operations) — done in Prompt 123
-- [ ] Fix C1–C4 terminology issues in customer-facing surfaces
+- [x] Fix C1–C4 terminology issues in customer-facing surfaces — done in Prompt 124
 
 **Phase C — Troubleshooting & advanced**
 - [ ] /docs/guide/troubleshooting (top error patterns, classified recovery)

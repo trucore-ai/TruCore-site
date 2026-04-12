@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const RESPONSE_FIELDS: { name: string; description: string }[] = [
   { name: "ok", description: "API success indicator. true when the request completed without errors." },
   { name: "verified", description: "CLI verification result. true when using --verify and receipt integrity is confirmed." },
-  { name: "decision", description: "ALLOWED or BLOCKED. The deterministic policy outcome." },
+  { name: "decision", description: "ALLOWED or DENIED. The deterministic policy outcome." },
   { name: "request_id", description: "Correlation handle for this simulation request." },
   { name: "content_hash", description: "Deterministic receipt fingerprint computed from the canonical response payload." },
   { name: "timestamp", description: "ISO-8601 UTC timestamp when the decision was issued." },
