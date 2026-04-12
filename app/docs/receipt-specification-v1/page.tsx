@@ -142,6 +142,32 @@ export default function ReceiptSpecificationV1Page() {
       <SpecSection id="related-links" title="10. Related Links">
         <ul className="space-y-2">
           <li>
+            <a
+              href="https://github.com/trucore-ai/atf-spec/blob/main/spec/receipt.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+            >
+              Normative Receipt Specification (atf-spec) &rarr;
+            </a>
+            <span className="ml-1 text-sm text-slate-400">
+              JCS + SHA-256 receipt format, required fields, content_hash computation
+            </span>
+          </li>
+          <li>
+            <a
+              href="https://github.com/trucore-ai/atf-spec/blob/main/spec/verification.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+            >
+              Normative Verification Procedure (atf-spec) &rarr;
+            </a>
+            <span className="ml-1 text-sm text-slate-400">
+              5-step deterministic verification, Mode A and Mode B
+            </span>
+          </li>
+          <li>
             <Link
               href="/docs/integration-pattern"
               className="font-semibold text-primary-100 transition-colors hover:text-primary-200"

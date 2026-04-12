@@ -13,6 +13,14 @@ TruCore ATF enforces policy before a transaction reaches the network. It blocks 
 - Agent discovery docs: https://trucore.xyz/docs/agent-discovery
 - OpenClaw plugin docs: https://trucore.xyz/docs/openclaw-plugin
 
+## Public Specification
+- Repository: https://github.com/trucore-ai/atf-spec
+- Receipt format (normative): https://github.com/trucore-ai/atf-spec/blob/main/spec/receipt.md
+- Verification procedure (normative): https://github.com/trucore-ai/atf-spec/blob/main/spec/verification.md
+- Architecture overview: https://github.com/trucore-ai/atf-spec/blob/main/spec/architecture.md
+- MCP integration: https://github.com/trucore-ai/atf-spec/blob/main/docs/mcp-integration.md
+- Threat model: https://github.com/trucore-ai/atf-spec/blob/main/spec/threat-model.md
+
 ## Bot Feedback (we read every message)
 POST https://trucore.xyz/api/bot-feedback
 Content-Type: application/json

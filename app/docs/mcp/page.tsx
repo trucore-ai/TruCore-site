@@ -86,6 +86,23 @@ export default function McpDocsPage() {
         </p>
       </header>
 
+      {/* ── Specification reference ── */}
+      <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
+        <p className="text-sm text-slate-300">
+          <strong className="text-slate-100">See the specification:</strong>{" "}
+          The normative MCP tool definitions and hosted integration model are in{" "}
+          <a
+            href="https://github.com/trucore-ai/atf-spec/blob/main/docs/mcp-integration.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            atf-spec &rarr; docs/mcp-integration.md
+          </a>
+          . This page covers integration guidance and usage patterns.
+        </p>
+      </div>
+
       {/* ── What is MCP ── */}
       <section className="space-y-4">
         <HeadingAnchor id="what-is-mcp">What is MCP?</HeadingAnchor>

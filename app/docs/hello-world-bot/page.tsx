@@ -25,6 +25,23 @@ export default function HelloWorldBotPage() {
         </p>
       </header>
 
+      {/* ── Specification reference ── */}
+      <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
+        <p className="text-sm text-slate-300">
+          <strong className="text-slate-100">See the specification:</strong>{" "}
+          The canonical before-and-after integration concept is defined in{" "}
+          <a
+            href="https://github.com/trucore-ai/atf-spec/blob/main/docs/hello-world-bot.md"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
+          >
+            atf-spec &rarr; docs/hello-world-bot.md
+          </a>
+          . This tutorial walks through the implementation.
+        </p>
+      </div>
+
       {/* ── What This Example Is ── */}
       <section className="space-y-4">
         <HeadingAnchor id="what-this-example-is">What This Example Is</HeadingAnchor>
