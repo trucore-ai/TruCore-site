@@ -51,7 +51,7 @@ const upcomingGuides = [
     description:
       "Browse, verify, and export your receipts. Understand content_hash, verification guarantees, and retention policies.",
     publicRef: { label: "Receipts & Trust", href: "/docs/receipts-and-trust" },
-    ready: false,
+    ready: true,
   },
 ] as const;
 

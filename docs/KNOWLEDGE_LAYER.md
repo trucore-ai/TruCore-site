@@ -236,7 +236,7 @@ of truth. These site pages derive from internal docs:
 | /docs/guide/rate-limits | Rate Limits & Recovery | Phase B ✅ | Portal rate-limit text + new content |
 | /docs/guide/webhooks | Webhook Setup & Debugging | Phase B ✅ | agent-transaction-firewall webhook module |
 | /docs/guide/readiness | Readiness & Health Checks | Phase B ✅ | CLI doctor + new operational content |
-| /docs/guide/receipts-ops | Receipt Operations | Phase B | Extract from /customer/receipts UI copy |
+| /docs/guide/receipts-ops | Receipt Operations | Phase B ✅ | Extract from /customer/receipts UI copy |
 | /docs/guide/troubleshooting | Troubleshooting | Phase C | Classified error states from dashboard |
 | /docs/guide/production-bot | Production Bot Configuration | Phase C | Expand /docs/cli/guides/production-bot-basics |
 | /docs/guide/reconcile | Reconcile & State Recovery | Phase D | New (depends on backend feature maturity) |
@@ -310,7 +310,7 @@ of truth. These site pages derive from internal docs:
 - [x] /docs/guide/rate-limits (rate-limit headers, backoff, recovery) — done in Prompt 120
 - [x] /docs/guide/webhooks (setup, delivery verification, DLQ)
 - [x] /docs/guide/readiness (health checks, integration readiness)
-- [ ] /docs/guide/receipts-ops (browse, verify, export operations)
+- [x] /docs/guide/receipts-ops (browse, verify, export operations) — done in Prompt 123
 - [ ] Fix C1–C4 terminology issues in customer-facing surfaces
 
 **Phase C — Troubleshooting & advanced**

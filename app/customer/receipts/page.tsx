@@ -213,6 +213,13 @@ export default function CustomerReceiptsPage() {
             </h1>
             <p className="mt-1 text-sm text-slate-400">
               View and verify your ATF protection receipts. Each receipt is a tamper-evident record.
+              {" "}
+              <Link
+                href="/docs/guide/receipts-ops"
+                className="font-semibold text-primary-200 hover:text-primary-100"
+              >
+                Receipt operations guide&nbsp;&rarr;
+              </Link>
             </p>
           </div>
           <Link
