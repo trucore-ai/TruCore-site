@@ -27,7 +27,7 @@ const upcomingGuides = [
     description:
       "Read rate-limit headers, implement exponential backoff, and recover gracefully when limits are hit.",
     publicRef: { label: "Plans & Feature Tiers", href: "/docs/plans" },
-    ready: false,
+    ready: true,
   },
   {
     title: "Webhook Setup & Debugging",

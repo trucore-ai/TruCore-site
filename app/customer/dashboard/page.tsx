@@ -1450,6 +1450,14 @@ export default function CustomerDashboardPage() {
                     used={plan.usage.receipts_created.used}
                     limit={plan.usage.receipts_created.limit}
                   />
+                  <p className="text-[11px] text-slate-500">
+                    <Link
+                      href="/docs/guide/rate-limits"
+                      className="text-primary-400 hover:text-primary-300 transition"
+                    >
+                      Read the rate limits guide &rarr;
+                    </Link>
+                  </p>
                 </div>
               )}
 
