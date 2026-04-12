@@ -1327,12 +1327,21 @@ export default function CustomerDashboardPage() {
             <p className="text-xs text-slate-500">
               All transactions are policy-protected and verifiable.
             </p>
-            <Link
-              href="/quickstart"
-              className="text-xs text-slate-500 underline hover:text-slate-300"
-            >
-              Or follow the full quickstart guide
-            </Link>
+            <div className="flex items-center justify-center gap-3">
+              <Link
+                href="/quickstart"
+                className="text-xs text-slate-500 underline hover:text-slate-300"
+              >
+                Full quickstart guide
+              </Link>
+              <span className="text-slate-600">&middot;</span>
+              <Link
+                href="/docs/guide/readiness"
+                className="text-xs text-slate-500 underline hover:text-slate-300"
+              >
+                Readiness &amp; health checks
+              </Link>
+            </div>
           </div>
         </section>
 

@@ -43,7 +43,7 @@ const upcomingGuides = [
     description:
       "Understand what \"ready\" means for your integration, interpret CLI doctor output, and verify RPC connectivity.",
     publicRef: { label: "CLI Doctor", href: "/docs/cli/doctor" },
-    ready: false,
+    ready: true,
   },
   {
     title: "Receipt Operations",
