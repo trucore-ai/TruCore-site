@@ -314,8 +314,14 @@ export default function CustomerKeysPage() {
 
       {/* Error banner */}
       {error && (
-        <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-          {error}
+        <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300 space-y-2">
+          <p>{error}</p>
+          <Link
+            href="/docs/guide/troubleshooting#auth-keys"
+            className="text-xs text-slate-400 hover:text-primary-200 transition-colors"
+          >
+            Troubleshooting guide →
+          </Link>
         </div>
       )}
 

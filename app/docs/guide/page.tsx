@@ -53,6 +53,14 @@ const upcomingGuides = [
     publicRef: { label: "Receipts & Trust", href: "/docs/receipts-and-trust" },
     ready: true,
   },
+  {
+    title: "Troubleshooting",
+    href: "/docs/guide/troubleshooting",
+    description:
+      "Diagnose and resolve common integration issues. Symptom-driven error classification with recovery steps and escalation guidance.",
+    publicRef: null,
+    ready: true,
+  },
 ] as const;
 
 /* ── Page ── */

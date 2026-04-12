@@ -330,6 +330,12 @@ export const sections: DocsNavSection[] = [
         description:
           "Browse, verify, and export your receipts with content_hash verification.",
       },
+      {
+        title: "Troubleshooting",
+        href: "/docs/guide/troubleshooting",
+        description:
+          "Diagnose and resolve common integration issues with symptom-driven recovery steps.",
+      },
     ],
   },
 ];

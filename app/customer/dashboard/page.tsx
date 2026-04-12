@@ -746,12 +746,20 @@ export default function CustomerDashboardPage() {
             className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-4 text-sm text-red-300 space-y-3"
           >
             <p>{classifiedError.message}</p>
-            <button
-              onClick={handleRetry}
-              className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-200 transition hover:bg-white/10"
-            >
-              Retry
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleRetry}
+                className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-200 transition hover:bg-white/10"
+              >
+                Retry
+              </button>
+              <Link
+                href="/docs/guide/troubleshooting"
+                className="text-xs text-slate-400 hover:text-primary-200 transition-colors"
+              >
+                Troubleshooting guide →
+              </Link>
+            </div>
           </div>
         )}
 

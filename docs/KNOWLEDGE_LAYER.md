@@ -237,7 +237,7 @@ of truth. These site pages derive from internal docs:
 | /docs/guide/webhooks | Webhook Setup & Debugging | Phase B ✅ | agent-transaction-firewall webhook module |
 | /docs/guide/readiness | Readiness & Health Checks | Phase B ✅ | CLI doctor + new operational content |
 | /docs/guide/receipts-ops | Receipt Operations | Phase B ✅ | Extract from /customer/receipts UI copy |
-| /docs/guide/troubleshooting | Troubleshooting | Phase C | Classified error states from dashboard |
+| /docs/guide/troubleshooting | Troubleshooting | Phase C ✅ | Classified error states from dashboard |
 | /docs/guide/production-bot | Production Bot Configuration | Phase C | Expand /docs/cli/guides/production-bot-basics |
 | /docs/guide/reconcile | Reconcile & State Recovery | Phase D | New (depends on backend feature maturity) |
 
@@ -314,7 +314,7 @@ of truth. These site pages derive from internal docs:
 - [x] Fix C1–C4 terminology issues in customer-facing surfaces — done in Prompt 124
 
 **Phase C — Troubleshooting & advanced**
-- [ ] /docs/guide/troubleshooting (top error patterns, classified recovery)
+- [x] /docs/guide/troubleshooting (top error patterns, classified recovery) — done in Prompt 125
 - [ ] /docs/guide/production-bot (expand CLI guide into authenticated context)
 - [ ] Support-deflection content (common failures → self-serve resolution)
 
