@@ -620,6 +620,17 @@ export default function TroubleshootingGuide() {
           with the symptom, error message, and the steps you have already
           tried. This helps the team resolve your issue faster.
         </p>
+        <p className="text-slate-300">
+          For a step-by-step walkthrough, see the{" "}
+          <Link
+            href="/docs/guide/support-deflection"
+            className="font-semibold text-primary-200 hover:text-primary-100"
+          >
+            Support Deflection
+          </Link>{" "}
+          guide — it includes a symptom → guide map, a pre-support
+          checklist, and escalation criteria.
+        </p>
       </section>
 
       {/* ── Related guides ── */}

@@ -342,6 +342,12 @@ export const sections: DocsNavSection[] = [
         description:
           "Environment setup, key strategy, readiness checks, rate-limit-aware operation, and safe rollout patterns.",
       },
+      {
+        title: "Support Deflection",
+        href: "/docs/guide/support-deflection",
+        description:
+          "Decide when to self-serve, what to try first, and when to contact support.",
+      },
     ],
   },
 ];

@@ -239,6 +239,7 @@ of truth. These site pages derive from internal docs:
 | /docs/guide/receipts-ops | Receipt Operations | Phase B ✅ | Extract from /customer/receipts UI copy |
 | /docs/guide/troubleshooting | Troubleshooting | Phase C ✅ | Classified error states from dashboard |
 | /docs/guide/production-bot | Production Bot Configuration | Phase C ✅ | Expand /docs/cli/guides/production-bot-basics |
+| /docs/guide/support-deflection | Support Deflection | Phase C ✅ | Symptom routing, escalation criteria, pre-support checklist |
 | /docs/guide/reconcile | Reconcile & State Recovery | Phase D | New (depends on backend feature maturity) |
 
 **Linking pattern:**
@@ -316,7 +317,7 @@ of truth. These site pages derive from internal docs:
 **Phase C — Troubleshooting & advanced**
 - [x] /docs/guide/troubleshooting (top error patterns, classified recovery) — done in Prompt 125
 - [x] /docs/guide/production-bot (environment setup, key strategy, readiness, rollout) — done in Prompt 126
-- [ ] Support-deflection content (common failures → self-serve resolution)
+- [x] /docs/guide/support-deflection (symptom routing, escalation criteria, pre-support checklist) — done in Prompt 127
 
 **Phase D — Account-scoped operational references**
 - [ ] /docs/guide/reconcile (state reconciliation when available)

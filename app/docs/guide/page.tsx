@@ -69,6 +69,14 @@ const upcomingGuides = [
     publicRef: { label: "Hello-World Bot", href: "/docs/hello-world-bot" },
     ready: true,
   },
+  {
+    title: "Support Deflection",
+    href: "/docs/guide/support-deflection",
+    description:
+      "Decide when to self-serve, what to try first, what to collect before escalation, and when to contact support.",
+    publicRef: null,
+    ready: true,
+  },
 ] as const;
 
 /* ── Page ── */

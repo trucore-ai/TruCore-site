@@ -759,6 +759,13 @@ export default function CustomerDashboardPage() {
               >
                 Troubleshooting guide →
               </Link>
+              <span className="text-slate-600">&middot;</span>
+              <Link
+                href="/docs/guide/support-deflection"
+                className="text-xs text-slate-400 hover:text-primary-200 transition-colors"
+              >
+                Need help? →
+              </Link>
             </div>
           </div>
         )}
