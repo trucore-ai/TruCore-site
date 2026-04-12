@@ -234,7 +234,7 @@ of truth. These site pages derive from internal docs:
 | /docs/guide | Customer Guides Overview | Phase A | New |
 | /docs/guide/key-lifecycle | API Key Lifecycle | Phase B ✅ | Extract from /customer/keys UI copy + /docs/auth |
 | /docs/guide/rate-limits | Rate Limits & Recovery | Phase B ✅ | Portal rate-limit text + new content |
-| /docs/guide/webhooks | Webhook Setup & Debugging | Phase B | agent-transaction-firewall webhook module |
+| /docs/guide/webhooks | Webhook Setup & Debugging | Phase B ✅ | agent-transaction-firewall webhook module |
 | /docs/guide/readiness | Readiness & Health Checks | Phase B | CLI doctor + new operational content |
 | /docs/guide/receipts-ops | Receipt Operations | Phase B | Extract from /customer/receipts UI copy |
 | /docs/guide/troubleshooting | Troubleshooting | Phase C | Classified error states from dashboard |
@@ -308,7 +308,7 @@ of truth. These site pages derive from internal docs:
 - [x] /docs/guide (overview page with section links) — done in Prompt 118
 - [x] /docs/guide/key-lifecycle (extract + expand from UI copy) — done in Prompt 119
 - [x] /docs/guide/rate-limits (rate-limit headers, backoff, recovery) — done in Prompt 120
-- [ ] /docs/guide/webhooks (setup, delivery verification, DLQ)
+- [x] /docs/guide/webhooks (setup, delivery verification, DLQ)
 - [ ] /docs/guide/readiness (health checks, integration readiness)
 - [ ] /docs/guide/receipts-ops (browse, verify, export operations)
 - [ ] Fix C1–C4 terminology issues in customer-facing surfaces

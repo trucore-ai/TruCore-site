@@ -35,7 +35,7 @@ const upcomingGuides = [
     description:
       "Configure webhook endpoints, verify delivery signatures, inspect dead-letter queues, and troubleshoot failures.",
     publicRef: null,
-    ready: false,
+    ready: true,
   },
   {
     title: "Readiness & Health Checks",
