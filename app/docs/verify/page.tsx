@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 import { TrackedLink } from "@/components/tracked-link";
 
@@ -44,6 +45,14 @@ export default function DocsVerifyPage() {
           . This page explains how to use verification in practice.
         </p>
       </div>
+
+      {/* ── Glossary callout ── */}
+      <p className="text-sm text-slate-400">
+        Need the full public terminology map? See the{" "}
+        <Link href="/docs/terminology-and-endpoints" className="text-primary-200 transition-colors hover:text-primary-100">
+          terminology &amp; endpoint glossary
+        </Link>.
+      </p>
 
       {/* ── A) What --verify Does ── */}
       <section className="space-y-5">

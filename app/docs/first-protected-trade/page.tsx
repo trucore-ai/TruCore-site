@@ -179,6 +179,16 @@ export default function FirstProtectedTradePage() {
             .
           </p>
         </div>
+
+        {/* ── Glossary callout ── */}
+        <p className="text-sm text-slate-400">
+          This page uses API-level terms (<code className="font-mono text-slate-300">allow</code>,{" "}
+          <code className="font-mono text-slate-300">approved</code>). For the full mapping across
+          spec, API, CLI, and UI see the{" "}
+          <Link href="/docs/terminology-and-endpoints" className="text-primary-200 transition-colors hover:text-primary-100">
+            terminology &amp; endpoint glossary
+          </Link>.
+        </p>
       </header>
 
       {/* ── Install ── */}

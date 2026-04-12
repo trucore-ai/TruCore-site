@@ -134,6 +134,13 @@ req_5555555555     ALLOWED    ✔          2026-02-27T18:38:22Z`}
           <p className="text-sm text-slate-400">
             If verification fails or the decision is BLOCKED, your script should halt. No transaction is sent.
           </p>
+          <p className="text-sm text-slate-400">
+            The CLI uses ALLOWED/BLOCKED &mdash; the spec uses allow/deny. See the{" "}
+            <Link href="/docs/terminology-and-endpoints" className="text-primary-200 transition-colors hover:text-primary-100">
+              terminology glossary
+            </Link>{" "}
+            for the full mapping.
+          </p>
         </div>
         <AtfCopyCommand
           label="Simulate with verify gate"

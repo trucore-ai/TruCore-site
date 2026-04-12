@@ -83,6 +83,17 @@ export default function ReceiptsAndTrustPage() {
         </p>
       </div>
 
+      {/* ── Glossary callout ── */}
+      <p className="text-sm text-slate-400">
+        Confused by <code className="font-mono text-slate-300">approved</code> vs{" "}
+        <code className="font-mono text-slate-300">allow</code> vs{" "}
+        <code className="font-mono text-slate-300">ALLOWED</code>?{" "}
+        See the{" "}
+        <Link href="/docs/terminology-and-endpoints" className="text-primary-200 transition-colors hover:text-primary-100">
+          terminology &amp; endpoint glossary
+        </Link>.
+      </p>
+
       {/* ── What is a Receipt ── */}
       <section className="space-y-4">
         <HeadingAnchor id="what-is-a-receipt">What is a Receipt?</HeadingAnchor>

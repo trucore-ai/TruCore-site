@@ -180,6 +180,17 @@ export default function ReceiptSpecificationV1Page() {
               Verify Receipt Utility
             </Link>
           </li>
+          <li>
+            <Link
+              href="/docs/terminology-and-endpoints"
+              className="font-semibold text-primary-100 transition-colors hover:text-primary-200"
+            >
+              Terminology &amp; Endpoint Glossary &rarr;
+            </Link>
+            <span className="ml-1 text-sm text-slate-400">
+              Maps spec, API, CLI, and UI terms to canonical definitions
+            </span>
+          </li>
         </ul>
       </SpecSection>
     </article>

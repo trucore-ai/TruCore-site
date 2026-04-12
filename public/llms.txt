@@ -37,6 +37,7 @@ GET https://trucore.xyz/api/bot-feedback for schema and examples.
 - ATF Overview: https://trucore.xyz/atf
 - CLI Docs: https://trucore.xyz/docs/cli
 - Receipts: https://trucore.xyz/receipts
+- Terminology & Endpoint Glossary: https://trucore.xyz/docs/terminology-and-endpoints
 - Security: https://trucore.xyz/security/overview
 - Changelog: https://trucore.xyz/changelog
 - Human Feedback: https://trucore.xyz/feedback
