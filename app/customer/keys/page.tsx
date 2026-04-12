@@ -284,7 +284,13 @@ export default function CustomerKeysPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">API Keys</h1>
           <p className="mt-1 text-sm text-slate-400">
-            Manage API keys for your integrations
+            Manage API keys for your integrations.{" "}
+            <Link
+              href="/docs/guide/key-lifecycle"
+              className="text-primary-300 hover:text-primary-200"
+            >
+              Read the key lifecycle guide →
+            </Link>
           </p>
         </div>
         <div className="flex items-center gap-3">

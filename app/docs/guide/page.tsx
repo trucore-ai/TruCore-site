@@ -19,7 +19,7 @@ const upcomingGuides = [
     description:
       "Create, rotate, revoke, and scope API keys. Understand one-time secret display, environment setup, and key hygiene.",
     publicRef: { label: "Auth & API Keys", href: "/docs/auth" },
-    ready: false,
+    ready: true,
   },
   {
     title: "Rate Limits & Recovery",
@@ -178,35 +178,52 @@ export default function CustomerGuidesOverview() {
       <section className="space-y-4">
         <HeadingAnchor id="guides">Guides</HeadingAnchor>
         <div className="grid gap-4 md:grid-cols-2">
-          {upcomingGuides.map((guide) => (
-            <Card
-              key={guide.href}
-              className="group relative h-full p-6 transition-colors hover:border-white/[0.12]"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="text-lg font-bold tracking-tight text-accent-300">
-                  {guide.title}
-                </h3>
-                <span className="shrink-0 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400">
-                  Coming soon
-                </span>
-              </div>
-              <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                {guide.description}
-              </p>
-              {guide.publicRef && (
-                <p className="mt-3 text-xs text-slate-500">
-                  Public reference:{" "}
-                  <Link
-                    href={guide.publicRef.href}
-                    className="text-primary-300 hover:text-primary-200"
-                  >
-                    {guide.publicRef.label}
-                  </Link>
+          {upcomingGuides.map((guide) => {
+            const inner = (
+              <>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-lg font-bold tracking-tight text-accent-300">
+                    {guide.title}
+                  </h3>
+                  {guide.ready ? (
+                    <span className="shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
+                      Available
+                    </span>
+                  ) : (
+                    <span className="shrink-0 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400">
+                      Coming soon
+                    </span>
+                  )}
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                  {guide.description}
                 </p>
-              )}
-            </Card>
-          ))}
+                {guide.publicRef && (
+                  <p className="mt-3 text-xs text-slate-500">
+                    Public reference:{" "}
+                    <span className="text-primary-300">
+                      {guide.publicRef.label}
+                    </span>
+                  </p>
+                )}
+              </>
+            );
+
+            return guide.ready ? (
+              <Link key={guide.href} href={guide.href} className="block">
+                <Card className="group relative h-full p-6 transition-colors hover:border-white/[0.12]">
+                  {inner}
+                </Card>
+              </Link>
+            ) : (
+              <Card
+                key={guide.href}
+                className="group relative h-full p-6 transition-colors hover:border-white/[0.12]"
+              >
+                {inner}
+              </Card>
+            );
+          })}
         </div>
       </section>
 

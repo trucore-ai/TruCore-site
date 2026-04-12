@@ -232,7 +232,7 @@ of truth. These site pages derive from internal docs:
 | Route | Title | Priority | Source |
 |-------|-------|----------|--------|
 | /docs/guide | Customer Guides Overview | Phase A | New |
-| /docs/guide/key-lifecycle | API Key Lifecycle | Phase B | Extract from /customer/keys UI copy + /docs/auth |
+| /docs/guide/key-lifecycle | API Key Lifecycle | Phase B ✅ | Extract from /customer/keys UI copy + /docs/auth |
 | /docs/guide/rate-limits | Rate Limits & Recovery | Phase B | Portal rate-limit text + new content |
 | /docs/guide/webhooks | Webhook Setup & Debugging | Phase B | agent-transaction-firewall webhook module |
 | /docs/guide/readiness | Readiness & Health Checks | Phase B | CLI doctor + new operational content |
@@ -306,7 +306,7 @@ of truth. These site pages derive from internal docs:
 
 **Phase B — Initial customer guides**
 - [x] /docs/guide (overview page with section links) — done in Prompt 118
-- [ ] /docs/guide/key-lifecycle (extract + expand from UI copy)
+- [x] /docs/guide/key-lifecycle (extract + expand from UI copy) — done in Prompt 119
 - [ ] /docs/guide/rate-limits (rate-limit headers, backoff, recovery)
 - [ ] /docs/guide/webhooks (setup, delivery verification, DLQ)
 - [ ] /docs/guide/readiness (health checks, integration readiness)
