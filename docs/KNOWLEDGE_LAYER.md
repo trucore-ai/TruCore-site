@@ -285,14 +285,27 @@ of truth. These site pages derive from internal docs:
 ### Phased backlog
 
 **Phase A — Scaffold (this prompt or next)**
-- [ ] Decide route pattern: `/docs/guide/*` (confirmed)
-- [ ] Plan docs-nav.ts update: add "Customer Guides" section (items gated by auth)
-- [ ] Plan auth middleware extension for `/docs/guide/*` routes
-- [ ] Plan sitemap exclusion for guide routes
-- [ ] Document the above in this file (done)
+- [x] Decide route pattern: `/docs/guide/*` (confirmed)
+- [x] Plan docs-nav.ts update: add "Customer Guides" section (items gated by auth)
+- [x] Plan auth middleware extension for `/docs/guide/*` routes
+- [x] Plan sitemap exclusion for guide routes
+- [x] Document the above in this file (done)
+
+**Phase A — Implementation (Prompt 118)**
+- [x] Route: `app/docs/guide/page.tsx` with full overview landing page
+- [x] Layout: `app/docs/guide/layout.tsx` wraps DocsShell + GuideAuthGate
+- [x] Auth: `components/docs/guide-auth-gate.tsx` — client-side isLoggedIn() check
+      (same pattern as /customer/* routes). Unauthenticated users see sign-in prompt.
+- [x] Nav: "Customer Guides" section added to docs-nav.ts with `authenticated: true`
+      flag. DocsNavSidebar filters authenticated sections for unauthenticated users.
+- [x] Sitemap: authenticated sections excluded from sitemap generation
+- [x] Robots: `/docs/guide/` added to disallow rules
+- [x] Public docs hub: authenticated sections excluded from card grid
+- [x] llms.txt: no changes needed (static file, no guide references)
+- [x] Metadata: guide overview page has `robots: { index: false, follow: false }`
 
 **Phase B — Initial customer guides**
-- [ ] /docs/guide (overview page with section links)
+- [x] /docs/guide (overview page with section links) — done in Prompt 118
 - [ ] /docs/guide/key-lifecycle (extract + expand from UI copy)
 - [ ] /docs/guide/rate-limits (rate-limit headers, backoff, recovery)
 - [ ] /docs/guide/webhooks (setup, delivery verification, DLQ)

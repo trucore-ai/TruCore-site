@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { sections, type DocsNavSection } from "@/lib/docs-nav";
+import { isLoggedIn } from "@/lib/customer-auth";
 
 const STORAGE_KEY = "trucore:docs-nav-open";
 
@@ -106,10 +107,13 @@ export function DocsNavSidebar() {
   );
   const [search, setSearch] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [authed, setAuthed] = useState(false);
 
   // Sync from localStorage after mount. Updates the external store (not
   // React state) so this is an allowed "external system update" pattern.
   useEffect(() => {
+    setAuthed(isLoggedIn());
+
     const stored = readOpenState();
     if (Object.keys(stored).length === 0) return;
 
@@ -128,7 +132,12 @@ export function DocsNavSidebar() {
     setOpenSectionsStore(next);
   }, []);
 
-  const filtered = useMemo(() => filterSections(search, sections), [search]);
+  const visibleSections = useMemo(
+    () => sections.filter((s) => !s.authenticated || authed),
+    [authed],
+  );
+
+  const filtered = useMemo(() => filterSections(search, visibleSections), [search, visibleSections]);
 
   const sidebarContent = (onNavigate?: () => void) => (
     <div className="flex h-full flex-col">

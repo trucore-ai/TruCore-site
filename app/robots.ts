@@ -6,6 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
+        disallow: "/docs/guide/",
       },
     ],
     sitemap: "https://trucore.xyz/sitemap.xml",

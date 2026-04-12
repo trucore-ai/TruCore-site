@@ -7,6 +7,8 @@ export type DocsNavItem = {
 export type DocsNavSection = {
   title: string;
   items: DocsNavItem[];
+  /** When true, the section should only be shown to authenticated customers. */
+  authenticated?: boolean;
 };
 
 export const DOCS_VERSION = "v0.1";
@@ -285,6 +287,48 @@ export const sections: DocsNavSection[] = [
         href: "/docs/cli/guides/production-bot-basics",
         description:
           "Profile separation, receipts retention, and operational hygiene.",
+      },
+    ],
+  },
+  {
+    title: "Customer Guides",
+    authenticated: true,
+    items: [
+      {
+        title: "Customer Guides Overview",
+        href: "/docs/guide",
+        description:
+          "Operational guidance for teams running TruCore ATF in production. Start here.",
+      },
+      {
+        title: "API Key Lifecycle",
+        href: "/docs/guide/key-lifecycle",
+        description:
+          "Create, rotate, revoke, and scope API keys with environment setup and key hygiene.",
+      },
+      {
+        title: "Rate Limits & Recovery",
+        href: "/docs/guide/rate-limits",
+        description:
+          "Read rate-limit headers, implement backoff, and recover gracefully.",
+      },
+      {
+        title: "Webhook Setup & Debugging",
+        href: "/docs/guide/webhooks",
+        description:
+          "Configure endpoints, verify delivery signatures, and troubleshoot failures.",
+      },
+      {
+        title: "Readiness & Health Checks",
+        href: "/docs/guide/readiness",
+        description:
+          "Interpret CLI doctor output, verify RPC connectivity, and confirm integration readiness.",
+      },
+      {
+        title: "Receipt Operations",
+        href: "/docs/guide/receipts-ops",
+        description:
+          "Browse, verify, and export your receipts with content_hash verification.",
       },
     ],
   },

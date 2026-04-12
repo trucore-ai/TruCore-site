@@ -11,7 +11,10 @@ export const metadata: Metadata = {
     "Technical documentation for TruCore ATF covering quickstart flows, policy model concepts, and permit semantics.",
 };
 
-const docsCards = sections.flatMap((section) => section.items).filter((item) => item.href !== "/docs");
+const docsCards = sections
+  .filter((section) => !section.authenticated)
+  .flatMap((section) => section.items)
+  .filter((item) => item.href !== "/docs");
 
 export default function DocsHubPage() {
   return (

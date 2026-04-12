@@ -36,14 +36,16 @@ const corePages: Array<{ path: string; priority: number }> = [
 /**
  * Docs pages derived from docs-nav.ts (the navigation source of truth).
  * New pages added to docs-nav.ts are included in the sitemap automatically.
+ * Authenticated sections (e.g. Customer Guides) are excluded.
  */
-const docsPages: Array<{ path: string; priority: number }> = sections.flatMap(
-  (section) =>
+const docsPages: Array<{ path: string; priority: number }> = sections
+  .filter((section) => !section.authenticated)
+  .flatMap((section) =>
     section.items.map((item) => ({
       path: item.href,
       priority: item.href === "/docs" ? 0.8 : 0.7,
     }))
-);
+  );
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getAllPostsMeta();
