@@ -227,7 +227,7 @@ function getHeadline(decision: "ALLOW" | "DENY" | "UNKNOWN") {
     case "ALLOW":
       return "Protected Trade Verified";
     case "DENY":
-      return "Transaction Blocked by Policy";
+      return "Transaction Denied by Policy";
     case "UNKNOWN":
     default:
       return "Receipt Status Unavailable";

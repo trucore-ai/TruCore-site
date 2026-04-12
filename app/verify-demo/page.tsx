@@ -12,6 +12,7 @@ import {
   FALLBACK_RESULT,
   type ProtectResult,
 } from "@/lib/verify-demo-data";
+import { normalizeDecision, isAllowedDecision } from "@/lib/normalize-decision";
 
 export default function VerifyDemoPage() {
   return (
@@ -99,8 +100,8 @@ function VerifyDemoContent() {
     };
   }, []);
 
-  const decision = result?.decision ?? "unknown";
-  const isAllow = decision.toLowerCase() === "allow";
+  const decision = normalizeDecision(result?.decision);
+  const isAllow = decision === "ALLOWED";
 
   /* ── Share mode: minimal receipt view ── */
   if (isShareMode) {
@@ -132,7 +133,7 @@ function VerifyDemoContent() {
                       isAllow ? "text-green-400" : "text-red-400"
                     }`}
                   >
-                    {decision.toUpperCase()}
+                    {decision}
                   </p>
                 </div>
 
@@ -232,7 +233,7 @@ function VerifyDemoContent() {
                   isAllow ? "text-green-400" : "text-red-400"
                 }`}
               >
-                {decision.toUpperCase()}
+                {decision}
               </p>
               {result.reason && (
                 <p className="mt-2 text-base text-slate-300">{result.reason}</p>
@@ -286,7 +287,7 @@ function VerifyDemoContent() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">What This Receipt Proves</p>
                 <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-slate-300">
                   <li>The exact policy rules that were applied</li>
-                  <li>The deterministic decision made (ALLOW or DENY)</li>
+                  <li>The deterministic decision made (ALLOWED or DENIED)</li>
                   <li>The precise transaction inputs used</li>
                 </ul>
                 <p className="mt-2 text-xs text-slate-400">Anyone with this receipt can independently verify the decision was made correctly.</p>

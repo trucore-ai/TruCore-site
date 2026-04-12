@@ -14,6 +14,7 @@ import { ProofLinksCard } from "@/components/proof-links-card";
 import { ProofBundleActions } from "@/components/proof-bundle-actions";
 import { ProofPacketView } from "@/components/proof-packet-view";
 import { DistributionActions } from "@/components/distribution-actions";
+import { normalizeDecision, isAllowedDecision } from "@/lib/normalize-decision";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,10 +57,8 @@ function formatTimestamp(ts: number): string {
 }
 
 function decisionBadge(decision: string) {
-  const isAllow =
-    decision === "ALLOW" ||
-    decision === "allowed" ||
-    decision === "approved";
+  const label = normalizeDecision(decision);
+  const isAllow = label === "ALLOWED";
   return (
     <span
       className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide ${
@@ -68,7 +67,7 @@ function decisionBadge(decision: string) {
           : "bg-red-500/20 text-red-300"
       }`}
     >
-      {decision}
+      {label}
     </span>
   );
 }

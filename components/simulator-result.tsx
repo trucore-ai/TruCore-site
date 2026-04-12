@@ -1,5 +1,6 @@
 import type { SimResult } from "@/lib/simulator";
 import { TrackedLink } from "@/components/tracked-link";
+import { normalizeDecision } from "@/lib/normalize-decision";
 
 type RateLimitMetadata = {
   limit: string;
@@ -97,7 +98,7 @@ export function SimulatorResult({
     return (
       <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
         <p className="text-sm text-slate-300">
-          Submit a simulation request to preview deterministic allow or deny behavior.
+          Submit a simulation request to preview deterministic allowed or denied behavior.
         </p>
       </div>
     );
@@ -114,7 +115,7 @@ export function SimulatorResult({
               : "mt-1 text-lg font-semibold text-red-300"
           }
         >
-          {result.status}
+          {normalizeDecision(result.status)}
         </p>
       </div>
 
@@ -142,7 +143,7 @@ export function SimulatorResult({
       {result.status === "allowed" ? (
         <div className="space-y-3 rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-4">
           <p className="text-sm font-semibold text-emerald-200">
-            Trade approved - receipt issued
+            Trade allowed — receipt issued
           </p>
           <p className="text-sm text-emerald-100">
             The policy engine evaluated this trade against spend caps, protocol allowlists,

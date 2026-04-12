@@ -548,7 +548,7 @@ export default function CustomerDashboardPage() {
       // Check if protection was denied
       const decision = (protectRes as Record<string, unknown>).decision as string;
       if (decision !== "ALLOW") {
-        setQuickTradeError("Trade was blocked by protection policies. Execution skipped.");
+        setQuickTradeError("Trade was denied by protection policies. Execution skipped.");
         setQuickTradeFailedStep("protect");
         trackQuickTradeFailed("protect");
         setQuickTradeActive(false);
