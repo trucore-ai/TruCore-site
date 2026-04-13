@@ -30,9 +30,20 @@ const description =
 export const metadata: Metadata = {
   title,
   description,
+  keywords: [
+    "receipt specification",
+    "ATF receipt format",
+    "deterministic receipts",
+    "content_hash",
+    "SHA-256",
+    "receipt version contract",
+    "RFC-style spec",
+    "TruCore ATF",
+  ],
   openGraph: {
     title,
     description,
+    url: "https://trucore.xyz/docs/receipt-specification-v1",
     images: ["/docs/receipt-specification-v1/opengraph-image"],
   },
   twitter: {
@@ -40,6 +51,9 @@ export const metadata: Metadata = {
     title,
     description,
     images: ["/docs/receipt-specification-v1/opengraph-image"],
+  },
+  alternates: {
+    canonical: "https://trucore.xyz/docs/receipt-specification-v1",
   },
 };
 

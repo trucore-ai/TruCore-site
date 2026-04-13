@@ -7,9 +7,36 @@ import { SafeToTryBanner, DemoVsRealBlock, WhatHappensBlock } from "@/components
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
-  title: "First Protected Trade - Golden Path",
+  title: "First Protected Trade - Golden Path | TruCore",
   description:
     "Protect your first bot intent in minutes. Submit a swap, receive a receipt, verify the hash. HTTP, Python, TypeScript, CLI, and OpenClaw paths.",
+  keywords: [
+    "first protected trade",
+    "golden path",
+    "ATF quickstart",
+    "bot protect",
+    "swap receipt",
+    "deterministic verification",
+    "AI agent transaction",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "First Protected Trade - Golden Path | TruCore",
+    description:
+      "Submit a swap intent, receive a tamper-evident receipt, and verify the hash. Five integration paths: HTTP, Python, TypeScript, CLI, and OpenClaw.",
+    url: "https://trucore.xyz/docs/first-protected-trade",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "First Protected Trade - Golden Path | TruCore",
+    description:
+      "Protect your first bot intent in minutes with deterministic receipts and hash verification.",
+    images: ["/opengraph-image"],
+  },
+  alternates: {
+    canonical: "https://trucore.xyz/docs/first-protected-trade",
+  },
 };
 
 const cliVersion = getAtfCliVersion();

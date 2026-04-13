@@ -8,8 +8,34 @@ import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
-  title: "Quickstart",
-  description: "A concise ATF quickstart from policy definition to receipt recording.",
+  title: "Quickstart | TruCore ATF",
+  description:
+    "A concise ATF quickstart from policy definition to receipt recording. One install, one command, verifiable receipt.",
+  keywords: [
+    "ATF quickstart",
+    "agent transaction firewall",
+    "CLI quickstart",
+    "deterministic receipts",
+    "policy enforcement",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Quickstart | TruCore ATF",
+    description:
+      "One install, one command. See a policy decision and a verifiable receipt in seconds.",
+    url: "https://trucore.xyz/docs/quickstart",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Quickstart | TruCore ATF",
+    description:
+      "From zero to a verifiable receipt in one command. ATF quickstart guide.",
+    images: ["/opengraph-image"],
+  },
+  alternates: {
+    canonical: "https://trucore.xyz/docs/quickstart",
+  },
 };
 
 const cliVersion = getAtfCliVersion();

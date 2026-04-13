@@ -3,9 +3,35 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "Terminology & Endpoint Glossary",
+  title: "Terminology & Endpoint Glossary | TruCore ATF",
   description:
     "Reference mapping of ATF terms across spec, API, CLI, and UI surfaces. Endpoint comparison for protect vs simulate flows.",
+  keywords: [
+    "ATF terminology",
+    "endpoint glossary",
+    "protect vs simulate",
+    "API reference",
+    "receipt vocabulary",
+    "agent transaction firewall",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Terminology & Endpoint Glossary | TruCore ATF",
+    description:
+      "ATF uses different terms at different layers. This glossary maps every public term across spec, API, CLI, and UI to its canonical meaning.",
+    url: "https://trucore.xyz/docs/terminology-and-endpoints",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terminology & Endpoint Glossary | TruCore ATF",
+    description:
+      "Complete reference mapping of ATF terms across spec, API, CLI, and UI surfaces.",
+    images: ["/opengraph-image"],
+  },
+  alternates: {
+    canonical: "https://trucore.xyz/docs/terminology-and-endpoints",
+  },
 };
 
 export default function TerminologyAndEndpointsPage() {

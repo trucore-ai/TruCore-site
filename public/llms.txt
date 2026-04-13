@@ -20,6 +20,7 @@ TruCore ATF enforces policy before a transaction reaches the network. It blocks 
 - Architecture overview: https://github.com/trucore-ai/atf-spec/blob/main/spec/architecture.md
 - MCP integration: https://github.com/trucore-ai/atf-spec/blob/main/docs/mcp-integration.md
 - Threat model: https://github.com/trucore-ai/atf-spec/blob/main/spec/threat-model.md
+- Hello-world bot tutorial: https://github.com/trucore-ai/atf-spec/blob/main/docs/hello-world-bot.md
 
 ## Bot Feedback (we read every message)
 POST https://trucore.xyz/api/bot-feedback

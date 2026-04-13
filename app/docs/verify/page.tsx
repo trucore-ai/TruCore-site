@@ -4,9 +4,35 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { TrackedLink } from "@/components/tracked-link";
 
 export const metadata: Metadata = {
-  title: "Verification",
+  title: "Verification | TruCore ATF",
   description:
     "Understand what content_hash means, what --verify guarantees, and how to use receipt verification in production.",
+  keywords: [
+    "receipt verification",
+    "content_hash",
+    "deterministic verification",
+    "SHA-256",
+    "tamper-evident receipts",
+    "ATF verify",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Verification | TruCore ATF",
+    description:
+      "What content_hash means, what --verify guarantees, and how to verify ATF receipts in production.",
+    url: "https://trucore.xyz/docs/verify",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Verification | TruCore ATF",
+    description:
+      "Deterministic receipt verification: content_hash, --verify, and production workflows.",
+    images: ["/opengraph-image"],
+  },
+  alternates: {
+    canonical: "https://trucore.xyz/docs/verify",
+  },
 };
 
 export default function DocsVerifyPage() {

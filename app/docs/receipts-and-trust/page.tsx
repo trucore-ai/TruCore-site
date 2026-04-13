@@ -4,9 +4,35 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { CopyBlock } from "@/components/copy-block";
 
 export const metadata: Metadata = {
-  title: "Receipts & Trust",
+  title: "Receipts & Trust | TruCore ATF",
   description:
     "How ATF receipts work: what they prove, how to verify them, and why they matter for agent transactions.",
+  keywords: [
+    "ATF receipts",
+    "tamper-evident receipts",
+    "receipt verification",
+    "content_hash",
+    "agent audit trail",
+    "deterministic decisions",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Receipts & Trust | TruCore ATF",
+    description:
+      "Every ATF decision produces a tamper-evident receipt. Learn what receipts prove, how to verify them, and why they matter for autonomous agent trading.",
+    url: "https://trucore.xyz/docs/receipts-and-trust",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Receipts & Trust | TruCore ATF",
+    description:
+      "Tamper-evident receipts for every agent transaction decision. The proof layer for auditable autonomous trading.",
+    images: ["/opengraph-image"],
+  },
+  alternates: {
+    canonical: "https://trucore.xyz/docs/receipts-and-trust",
+  },
 };
 
 const RECEIPT_EXAMPLE = `{
