@@ -30,7 +30,11 @@ export function DocsBreadcrumbs() {
               ) : (
                 <Link
                   href={crumb.href}
-                  className="text-slate-500 transition-colors hover:text-primary-200"
+                  className={`transition-colors hover:text-primary-200 ${
+                    crumb.href === "/docs/guide"
+                      ? "text-primary-300/70"
+                      : "text-slate-500"
+                  }`}
                 >
                   {crumb.label}
                 </Link>

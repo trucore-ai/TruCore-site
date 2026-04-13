@@ -31,14 +31,21 @@ export function buildBreadcrumbs(pathname: string): BreadcrumbSegment[] {
   // Check for exact nav match first
   const match = navLookup.get(pathname);
   if (match) {
-    // If the item is in a subsection (CLI Deep Dives, CLI Guides), add the
-    // parent section crumb pointing to the group's first page.
-    if (match.section.title !== "Documentation") {
-      crumbs.push({ label: match.section.title, href: sectionFirstHref(match.section) });
-    }
+    const sectionHref = sectionFirstHref(match.section);
+    const isOverview = match.item.href === sectionHref;
 
-    // Always add the current page crumb
-    crumbs.push({ label: match.item.title, href: match.item.href });
+    if (match.section.title !== "Documentation") {
+      if (isOverview) {
+        // Overview page IS the section — use section title as terminal crumb
+        // to avoid redundant "Customer Guides > Customer Guides Overview"
+        crumbs.push({ label: match.section.title, href: match.item.href });
+      } else {
+        crumbs.push({ label: match.section.title, href: sectionHref });
+        crumbs.push({ label: match.item.title, href: match.item.href });
+      }
+    } else {
+      crumbs.push({ label: match.item.title, href: match.item.href });
+    }
 
     return crumbs;
   }

@@ -413,3 +413,75 @@ test.describe("docs sidebar nav — authenticated", () => {
     await freshContext.close();
   });
 });
+
+/* ── Breadcrumb and active-guide orientation (authenticated) ── */
+
+test.describe("docs breadcrumb and active-guide orientation — authenticated", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("guide overview page shows 'Documentation > Customer Guides' breadcrumb", async ({ page }) => {
+    await page.goto("/docs/guide");
+
+    const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
+    await expect(breadcrumb).toBeVisible();
+
+    // Should show "Documentation" as a link and "Customer Guides" as terminal
+    await expect(breadcrumb.getByRole("link", { name: "Documentation" })).toBeVisible();
+    await expect(breadcrumb.getByText("Customer Guides", { exact: true })).toBeVisible();
+
+    // Should NOT show "Customer Guides Overview" — that's the old redundant trail
+    await expect(breadcrumb.getByText("Customer Guides Overview")).not.toBeVisible();
+  });
+
+  test("individual guide page shows full 3-level breadcrumb trail", async ({ page }) => {
+    await page.goto("/docs/guide/key-lifecycle");
+
+    const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
+    await expect(breadcrumb.getByRole("link", { name: "Documentation" })).toBeVisible();
+    await expect(breadcrumb.getByRole("link", { name: "Customer Guides" })).toBeVisible();
+    await expect(breadcrumb.getByText("API Key Lifecycle")).toBeVisible();
+  });
+
+  test("'Customer Guides' breadcrumb link navigates to guide overview", async ({ page }) => {
+    await page.goto("/docs/guide/key-lifecycle");
+
+    const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
+    const guideLink = breadcrumb.getByRole("link", { name: "Customer Guides" });
+    await guideLink.click();
+    await expect(page).toHaveURL("/docs/guide");
+  });
+
+  test("active guide link is highlighted in sidebar nav", async ({ page }) => {
+    await page.goto("/docs/guide/key-lifecycle");
+
+    const nav = page.getByRole("navigation", { name: "Documentation" });
+    const activeLink = nav.getByRole("link", { name: "API Key Lifecycle" });
+    await expect(activeLink).toBeVisible();
+    await expect(activeLink).toHaveClass(/border-primary-400/);
+    await expect(activeLink).toHaveClass(/bg-primary-500\/10/);
+  });
+
+  test("Customer Guides section is auto-expanded when on a guide page", async ({ page }) => {
+    await page.goto("/docs/guide/troubleshooting");
+
+    const nav = page.getByRole("navigation", { name: "Documentation" });
+    // The section button should be visible and expanded
+    const sectionButton = nav.getByRole("button", { name: "Customer Guides" });
+    await expect(sectionButton).toHaveAttribute("aria-expanded", "true");
+    // Active guide link should be visible
+    await expect(nav.getByRole("link", { name: "Troubleshooting" })).toBeVisible();
+  });
+
+  test("public docs breadcrumb is unaffected", async ({ page }) => {
+    await page.goto("/docs/atf-architecture");
+
+    const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
+    await expect(breadcrumb.getByRole("link", { name: "Documentation" })).toBeVisible();
+    await expect(breadcrumb.getByText("ATF Architecture")).toBeVisible();
+    // Should NOT show Customer Guides in breadcrumb
+    await expect(breadcrumb.getByText("Customer Guides")).not.toBeVisible();
+  });
+});

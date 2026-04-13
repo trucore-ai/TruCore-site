@@ -124,6 +124,23 @@ export function DocsNavSidebar() {
     setOpenSectionsStore(next);
   }, []);
 
+  // Auto-expand the section that contains the current page so the active
+  // link is always visible — even if the user previously collapsed it.
+  useEffect(() => {
+    for (const section of sections) {
+      const hasActive = section.items.some((item) => isActivePath(pathname, item.href));
+      if (hasActive) {
+        const current = getOpenSectionsSnapshot();
+        if (!current[section.title]) {
+          const next = { ...current, [section.title]: true };
+          persistOpenState(next);
+          setOpenSectionsStore(next);
+        }
+        break;
+      }
+    }
+  }, [pathname]);
+
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   const toggleSection = useCallback((title: string) => {
@@ -177,6 +194,7 @@ export function DocsNavSidebar() {
         {filtered.map((section, index) => {
           const isOpen = openSections[section.title] ?? true;
           const isFirstAuth = section.authenticated && (index === 0 || !filtered[index - 1]?.authenticated);
+          const isSectionActive = section.items.some((item) => isActivePath(pathname, item.href));
 
           return (
             <div key={section.title} className="mb-5">
@@ -191,7 +209,9 @@ export function DocsNavSidebar() {
               <button
                 type="button"
                 onClick={() => toggleSection(section.title)}
-                className="flex w-full items-center justify-between rounded-md px-1.5 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500 transition-colors hover:text-slate-300"
+                className={`flex w-full items-center justify-between rounded-md px-1.5 py-2 text-[11px] font-bold uppercase tracking-[0.14em] transition-colors hover:text-slate-300 ${
+                  isSectionActive ? "text-primary-300/80" : "text-slate-500"
+                }`}
                 aria-expanded={isOpen}
               >
                 <span>{section.title}</span>
