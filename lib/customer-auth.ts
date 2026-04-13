@@ -25,6 +25,7 @@ const ONBOARDING_PROXY_BASE = "/api/onboarding";
 const RECEIPTS_PROXY_BASE = "/api/customer/receipts";
 const KEYS_PROXY_BASE = "/api/customer/keys";
 const UPGRADES_PROXY_BASE = "/api/customer/upgrades";
+const POLICY_PROXY_BASE = "/api/customer/policy";
 
 const TOKEN_KEY = "atf_customer_token";
 const TENANT_KEY = "atf_customer_tenant";
@@ -1010,4 +1011,52 @@ export async function cancelUpgradeRequest(
   }
 
   return data;
+}
+
+// ---------------------------------------------------------------------------
+// Policy
+// ---------------------------------------------------------------------------
+
+export interface PolicyPlanLimits {
+  tx_limit_per_month: number;
+  policy_overrides_enabled: boolean;
+}
+
+export interface EffectivePolicyResponse {
+  plan_code: string;
+  plan_limits: PolicyPlanLimits;
+  overrides: Record<string, unknown>;
+  effective: Record<string, unknown>;
+}
+
+export async function fetchPolicy(): Promise<EffectivePolicyResponse> {
+  const token = getToken();
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
+
+  let res: Response;
+  try {
+    res = await fetch(`${POLICY_PROXY_BASE}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the policy service.");
+  }
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
+  }
+
+  if (res.status >= 500) {
+    throw new ApiError("upstream_5xx", "Policy service is temporarily unavailable.");
+  }
+
+  if (!res.ok) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "We couldn't load your policy data.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
+  }
+
+  return res.json();
 }

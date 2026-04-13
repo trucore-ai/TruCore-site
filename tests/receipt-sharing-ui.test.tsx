@@ -74,6 +74,7 @@ vi.mock("@/lib/customer-auth", () => {
     fetchReceipts: (...args: unknown[]) => mockFetchReceipts(...args),
     requestVerificationEmail: vi.fn(),
     fetchUpgradeRequests: (...args: unknown[]) => mockFetchUpgradeRequests(...args),
+    fetchPolicy: vi.fn().mockResolvedValue({}),
     ApiError,
   };
 });

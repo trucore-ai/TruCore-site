@@ -16,8 +16,10 @@ import {
   fetchReceipts,
   requestVerificationEmail,
   fetchUpgradeRequests,
+  fetchPolicy,
   ApiError,
   type UpgradeRequestData,
+  type EffectivePolicyResponse,
 } from "@/lib/customer-auth";
 import { buildVerifyUrl } from "@/lib/share-utils";
 import { normalizeDecision, isAllowedDecision } from "@/lib/normalize-decision";
@@ -31,6 +33,7 @@ import { ProofLinksCard } from "@/components/proof-links-card";
 import { ProofBundleActions } from "@/components/proof-bundle-actions";
 import { ProofPacketView } from "@/components/proof-packet-view";
 import { DistributionActions } from "@/components/distribution-actions";
+import { PolicySummaryCard } from "@/components/policy-summary-card";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -236,6 +239,10 @@ export default function CustomerDashboardPage() {
   // Upgrade requests
   const [pendingUpgrade, setPendingUpgrade] = useState<UpgradeRequestData | null>(null);
 
+  // Policy data
+  const [policyData, setPolicyData] = useState<EffectivePolicyResponse | null>(null);
+  const [policyLoading, setPolicyLoading] = useState(true);
+
   // Verification
   const [emailVerified, setEmailVerified] = useState(true);
   const [resending, setResending] = useState(false);
@@ -373,6 +380,14 @@ export default function CustomerDashboardPage() {
       .catch(() => {
         // Non-fatal
       });
+
+    // Policy data (non-fatal)
+    fetchPolicy()
+      .then((p) => setPolicyData(p))
+      .catch(() => {
+        // Non-fatal – card will show graceful fallback
+      })
+      .finally(() => setPolicyLoading(false));
   }, [mergeBackendOnboardingStep, router]);
 
   // -----------------------------------------------------------------------
@@ -1712,6 +1727,9 @@ export default function CustomerDashboardPage() {
             </div>
           </section>
         )}
+
+        {/* Policy & Protections */}
+        <PolicySummaryCard policy={policyData} loading={policyLoading} />
 
         {/* Quick Test Request */}
         <RunTestRequest apiKey={savedApiKey} />
