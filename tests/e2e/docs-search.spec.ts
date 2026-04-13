@@ -340,3 +340,76 @@ test.describe("docs scored search — authenticated", () => {
     await freshContext.close();
   });
 });
+
+/* ── Authenticated sidebar navigation (Customer Guides visibility) ── */
+
+test.describe("docs sidebar nav — authenticated", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("authenticated user sees Customer Guides section in sidebar", async ({ page }) => {
+    await page.goto("/docs");
+
+    const nav = page.getByRole("navigation", { name: "Documentation" });
+    await expect(nav.getByText("Customer Guides", { exact: true })).toBeVisible();
+  });
+
+  test("authenticated user sees 'Your Guides' divider label", async ({ page }) => {
+    await page.goto("/docs");
+
+    await expect(page.getByText("Your Guides", { exact: true })).toBeVisible();
+  });
+
+  test("authenticated user sees representative guide links in sidebar", async ({ page }) => {
+    await page.goto("/docs");
+
+    const nav = page.getByRole("navigation", { name: "Documentation" });
+    await expect(nav.getByRole("link", { name: "Customer Guides Overview" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "API Key Lifecycle" })).toBeVisible();
+    await expect(nav.getByRole("link", { name: "Troubleshooting" })).toBeVisible();
+  });
+
+  test("clicking a guide link in sidebar navigates correctly", async ({ page }) => {
+    await page.goto("/docs");
+
+    const nav = page.getByRole("navigation", { name: "Documentation" });
+    await nav.getByRole("link", { name: "API Key Lifecycle" }).click();
+
+    await expect(page).toHaveURL("/docs/guide/key-lifecycle");
+  });
+
+  test("sidebar search placeholder reflects authenticated state", async ({ page }) => {
+    await page.goto("/docs");
+
+    const searchInput = page.locator("#docs-sidebar-search");
+    await expect(searchInput).toHaveAttribute("placeholder", "Search docs & guides...");
+  });
+
+  test("scored search placeholder reflects authenticated state", async ({ page }) => {
+    await page.goto("/docs");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await expect(input).toHaveAttribute("placeholder", "Search docs & guides");
+  });
+
+  test("public user does not see Your Guides divider or Customer Guides", async ({ page }) => {
+    const freshContext = await page.context().browser()!.newContext();
+    const freshPage = await freshContext.newPage();
+    await silenceAnalytics(freshPage);
+
+    await freshPage.goto("/docs");
+
+    const nav = freshPage.getByRole("navigation", { name: "Documentation" });
+    await expect(nav.getByText("Customer Guides", { exact: true })).not.toBeVisible();
+    await expect(freshPage.getByText("Your Guides", { exact: true })).not.toBeVisible();
+
+    // Sidebar search should have public placeholder
+    const searchInput = freshPage.locator("#docs-sidebar-search");
+    await expect(searchInput).toHaveAttribute("placeholder", "Search docs...");
+
+    await freshPage.close();
+    await freshContext.close();
+  });
+});

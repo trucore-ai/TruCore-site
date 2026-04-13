@@ -144,7 +144,7 @@ export function DocsNavSidebar() {
       {/* Search input */}
       <div className="mb-4">
         <label htmlFor="docs-sidebar-search" className="sr-only">
-          Search docs
+          {authed ? "Search docs & guides" : "Search docs"}
         </label>
         <div className="relative">
           <svg
@@ -161,7 +161,7 @@ export function DocsNavSidebar() {
           <input
             id="docs-sidebar-search"
             type="search"
-            placeholder="Search docs..."
+            placeholder={authed ? "Search docs & guides..." : "Search docs..."}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-lg border border-white/[0.08] bg-neutral-900/60 py-2.5 pl-9 pr-3 text-sm text-slate-200 placeholder:text-slate-500 transition-colors focus-visible:border-primary-300/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
@@ -174,11 +174,20 @@ export function DocsNavSidebar() {
         {filtered.length === 0 && (
           <p className="px-1 py-4 text-sm text-slate-500">No results found.</p>
         )}
-        {filtered.map((section) => {
+        {filtered.map((section, index) => {
           const isOpen = openSections[section.title] ?? true;
+          const isFirstAuth = section.authenticated && (index === 0 || !filtered[index - 1]?.authenticated);
 
           return (
             <div key={section.title} className="mb-5">
+              {isFirstAuth && (
+                <div className="mb-4 mt-2">
+                  <div className="h-px bg-gradient-to-r from-primary-400/20 via-primary-400/10 to-transparent" aria-hidden="true" />
+                  <p className="mt-2.5 px-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-primary-300/70">
+                    Your Guides
+                  </p>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => toggleSection(section.title)}

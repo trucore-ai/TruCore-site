@@ -35,4 +35,47 @@ describe("docs nav active highlighting", () => {
     expect(sectionTitles).toContain("CLI Deep Dives");
     expect(sectionTitles).toContain("CLI Guides");
   });
+
+  it("Customer Guides section exists and is marked authenticated", () => {
+    const guideSection = sections.find((s) => s.title === "Customer Guides");
+    expect(guideSection).toBeDefined();
+    expect(guideSection!.authenticated).toBe(true);
+  });
+
+  it("Customer Guides section contains expected guide items", () => {
+    const guideSection = sections.find((s) => s.title === "Customer Guides")!;
+    const titles = guideSection.items.map((i) => i.title);
+    expect(titles).toContain("Customer Guides Overview");
+    expect(titles).toContain("API Key Lifecycle");
+    expect(titles).toContain("Rate Limits & Recovery");
+    expect(titles).toContain("Webhook Setup & Debugging");
+    expect(titles).toContain("Troubleshooting");
+    expect(titles).toContain("Reconcile & State Recovery");
+  });
+
+  it("Customer Guides items all link to /docs/guide paths", () => {
+    const guideSection = sections.find((s) => s.title === "Customer Guides")!;
+    for (const item of guideSection.items) {
+      expect(item.href).toMatch(/^\/docs\/guide/);
+    }
+  });
+
+  it("public sections are not marked authenticated", () => {
+    const publicSections = sections.filter((s) => s.title !== "Customer Guides");
+    for (const section of publicSections) {
+      expect(section.authenticated).toBeFalsy();
+    }
+  });
+
+  it("filtering with authenticated=false excludes Customer Guides", () => {
+    const visible = sections.filter((s) => !s.authenticated);
+    const titles = visible.map((s) => s.title);
+    expect(titles).not.toContain("Customer Guides");
+  });
+
+  it("filtering with authenticated=true includes Customer Guides", () => {
+    const visible = sections.filter((s) => !s.authenticated || true);
+    const titles = visible.map((s) => s.title);
+    expect(titles).toContain("Customer Guides");
+  });
 });

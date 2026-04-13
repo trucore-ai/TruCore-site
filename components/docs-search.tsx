@@ -176,7 +176,7 @@ export function DocsSearch({ entries, includeAuth = false }: { entries?: DocsInd
         }}
         onFocus={() => setOpen(true)}
         onKeyDown={onKeyDown}
-        placeholder="Search docs"
+        placeholder={includeAuth ? "Search docs & guides" : "Search docs"}
         className="w-full rounded-lg border border-white/15 bg-neutral-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-300 focus:border-primary-300/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
         role="combobox"
         aria-expanded={open}
