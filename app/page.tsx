@@ -74,7 +74,7 @@ export default function Home() {
               For Solana AI agents and trading bots
             </p>
             <h1 className="mt-4 text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
-              Agent Transaction Control
+              AI Capital Management for Safe Execution
             </h1>
             <p className="mt-6 text-2xl font-semibold text-amber-200/90">
               Policy enforced before execution. Verified receipt after every decision. Learn from outcomes to improve capital deployment over time.
