@@ -7,6 +7,13 @@
   "builders_url": "https://trucore.xyz/builders",
   "status_url": "https://trucore.xyz/status",
   "api_base_url": "https://api.trucore.xyz",
+  "documentation": {
+    "docs_sitemap": "https://trucore.xyz/api/docs/sitemap",
+    "llms_txt": "https://trucore.xyz/llms.txt",
+    "metadata_schema": "https://github.com/trucore-ai/atf-spec/blob/main/docs/metadata-schema.md",
+    "getting_started": "https://trucore.xyz/docs/getting-started",
+    "spec_repo": "https://github.com/trucore-ai/atf-spec"
+  },
   "mcp": {
     "endpoint": "https://api.trucore.xyz/mcp",
     "status": "live",

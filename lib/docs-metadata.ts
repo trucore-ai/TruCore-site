@@ -158,6 +158,42 @@ export const docsMetadata: DocMetadataEntry[] = [
       "https://github.com/trucore-ai/atf-spec/blob/main/docs/hello-world-bot.md",
     related: ["/docs/first-protected-trade", "/docs/getting-started"],
   },
+  {
+    href: "/docs/auth",
+    title: "Auth & API Keys",
+    summary:
+      "Signup, login, email verification, API key creation/rotation/revocation, and account recovery.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["onboarding", "keys"],
+    auth_required: false,
+    related: ["/docs/getting-started", "/docs/upgrade"],
+  },
+  {
+    href: "/docs/upgrade",
+    title: "Upgrade & Access",
+    summary:
+      "Request Pro or Enterprise, track request status, and understand feature gating.",
+    layer: "public",
+    audience: "human",
+    status: "reference",
+    product_area: ["onboarding"],
+    auth_required: false,
+    related: ["/docs/plans", "/docs/auth"],
+  },
+  {
+    href: "/docs/when-to-use-atf",
+    title: "When to Use ATF",
+    summary:
+      "Mock vs real execution, when Free is enough, when Pro helps, and which bots benefit first.",
+    layer: "public",
+    audience: "both",
+    status: "guide",
+    product_area: ["onboarding"],
+    auth_required: false,
+    related: ["/docs/plans", "/docs/getting-started"],
+  },
 
   /* ─── Documentation (public) ─── */
   {
@@ -317,6 +353,275 @@ export const docsMetadata: DocMetadataEntry[] = [
     auth_required: false,
     spec_ref:
       "https://github.com/trucore-ai/atf-spec/blob/main/spec/architecture.md",
+  },
+  {
+    href: "/docs/cli",
+    title: "ATF CLI",
+    summary:
+      "Comprehensive CLI reference: profiles, transactions, policy validation, bot protection, receipts, perps enforcement, agent discovery, and more.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["cli"],
+    auth_required: false,
+    related: ["/docs/cli/commands", "/docs/surfaces"],
+  },
+  {
+    href: "/docs/cli/commands",
+    title: "ATF Command Reference",
+    summary:
+      "Install the CLI, learn the golden-path commands (trade, setup, doctor, verify), and find advanced command groups.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["cli"],
+    auth_required: false,
+    related: ["/docs/cli", "/docs/cli/guides"],
+  },
+  {
+    href: "/docs/api",
+    title: "ATF API",
+    summary:
+      "Public endpoints for deterministic simulation and receipt generation.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["architecture"],
+    auth_required: false,
+    related: ["/docs/surfaces", "/docs/cli"],
+  },
+  {
+    href: "/docs/5-minute-quickstart",
+    title: "5-Minute Quickstart",
+    summary:
+      "Copy and run a simulator request, then inspect deterministic policy output.",
+    layer: "public",
+    audience: "both",
+    status: "tutorial",
+    product_area: ["onboarding"],
+    auth_required: false,
+    related: ["/docs/quickstart", "/docs/first-protected-trade"],
+  },
+  {
+    href: "/docs/integration-pattern",
+    title: "Integration Pattern",
+    summary:
+      "How AI agents call ATF before execution and consume deterministic decisions with receipt hashes.",
+    layer: "public",
+    audience: "agent",
+    status: "canonical",
+    product_area: ["architecture"],
+    auth_required: false,
+    related: ["/docs/mcp", "/docs/atf-architecture"],
+  },
+  {
+    href: "/docs/latency-positive-atf",
+    title: "Latency-Positive ATF",
+    summary:
+      "How ATF evolves into a latency-positive execution layer — making protected bots faster, not slower.",
+    layer: "public",
+    audience: "both",
+    status: "canonical",
+    product_area: ["architecture"],
+    auth_required: false,
+    related: ["/docs/atf-architecture", "/docs/integration-pattern"],
+  },
+  {
+    href: "/docs/anchoring-roadmap",
+    title: "Anchoring & Execution Roadmap",
+    summary:
+      "Live, preview, and planned phases for receipt verification and anchoring evolution.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["architecture", "receipts"],
+    auth_required: false,
+    related: ["/docs/verify", "/docs/receipt-specification-v1"],
+  },
+  {
+    href: "/docs/changelog",
+    title: "Changelog",
+    summary:
+      "Versioned release notes for the ATF CLI and public API.",
+    layer: "public",
+    audience: "human",
+    status: "reference",
+    product_area: ["cli"],
+    auth_required: false,
+  },
+
+  /* ─── CLI Deep Dives (public) ─── */
+  {
+    href: "/docs/cli/doctor",
+    title: "Doctor",
+    summary:
+      "Environment health checks, RPC reachability, and wallet detection.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["cli", "readiness"],
+    auth_required: false,
+    related: ["/docs/cli", "/docs/cli/profiles"],
+  },
+  {
+    href: "/docs/cli/profiles",
+    title: "Profiles & Config",
+    summary:
+      "Named profiles, secrets separation, and configuration management.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["cli", "keys"],
+    auth_required: false,
+    related: ["/docs/cli", "/docs/cli/doctor"],
+  },
+  {
+    href: "/docs/cli/rpc",
+    title: "RPC & Network",
+    summary:
+      "Helius-first RPC setup, latency testing, and network selection.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["cli"],
+    auth_required: false,
+    related: ["/docs/cli/doctor", "/docs/cli/guides/helius-setup"],
+  },
+  {
+    href: "/docs/cli/burner",
+    title: "Devnet Burner",
+    summary:
+      "Throwaway devnet wallets for fast, safe testing.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["cli", "onboarding"],
+    auth_required: false,
+    related: ["/docs/cli/guides/devnet-burner", "/docs/cli/profiles"],
+  },
+  {
+    href: "/docs/cli/transactions",
+    title: "Transactions",
+    summary:
+      "Simulate, sign, send, and check transaction status.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["cli", "receipts"],
+    auth_required: false,
+    related: ["/docs/cli/receipts", "/docs/cli/guides/simulate-verify-execute"],
+  },
+  {
+    href: "/docs/cli/receipts",
+    title: "Receipts & Verification",
+    summary:
+      "Deterministic receipt verification and local hash recomputation.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["cli", "receipts", "verification"],
+    auth_required: false,
+    spec_ref:
+      "https://github.com/trucore-ai/atf-spec/blob/main/spec/receipt.md",
+    related: ["/docs/cli/transactions", "/docs/verify"],
+  },
+  {
+    href: "/docs/cli/completion",
+    title: "Shell Completion",
+    summary:
+      "Tab-completion scripts for bash, zsh, and fish.",
+    layer: "public",
+    audience: "human",
+    status: "reference",
+    product_area: ["cli"],
+    auth_required: false,
+    related: ["/docs/cli"],
+  },
+  {
+    href: "/docs/cli/whoami-ls",
+    title: "Whoami & Ls",
+    summary:
+      "Identity inspection and profile listing.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["cli"],
+    auth_required: false,
+    related: ["/docs/cli/profiles", "/docs/cli"],
+  },
+
+  /* ─── CLI Guides (public) ─── */
+  {
+    href: "/docs/cli/guides",
+    title: "Guides Overview",
+    summary:
+      "Step-by-step walkthroughs for common ATF CLI workflows.",
+    layer: "public",
+    audience: "both",
+    status: "guide",
+    product_area: ["cli", "onboarding"],
+    auth_required: false,
+    related: ["/docs/cli", "/docs/cli/commands"],
+  },
+  {
+    href: "/docs/cli/guides/swap-permits",
+    title: "Swap Permit Parameters",
+    summary:
+      "Parameter glossary, safe defaults, and override precedence for swap permits.",
+    layer: "public",
+    audience: "both",
+    status: "guide",
+    product_area: ["cli", "permits"],
+    auth_required: false,
+    related: ["/docs/permits", "/docs/permit-schema-v1"],
+  },
+  {
+    href: "/docs/cli/guides/simulate-verify-execute",
+    title: "Simulate, Verify, Execute",
+    summary:
+      "The canonical ATF workflow from simulation through verification to execution.",
+    layer: "public",
+    audience: "both",
+    status: "guide",
+    product_area: ["cli", "verification"],
+    auth_required: false,
+    related: ["/docs/cli/transactions", "/docs/verify"],
+  },
+  {
+    href: "/docs/cli/guides/helius-setup",
+    title: "Helius RPC Setup",
+    summary:
+      "Configure profiles, set a Helius endpoint, and confirm connectivity.",
+    layer: "public",
+    audience: "both",
+    status: "guide",
+    product_area: ["cli"],
+    auth_required: false,
+    related: ["/docs/cli/rpc", "/docs/cli/profiles"],
+  },
+  {
+    href: "/docs/cli/guides/devnet-burner",
+    title: "Devnet Burner Quickstart",
+    summary:
+      "Disposable devnet wallets for fast, safe testing.",
+    layer: "public",
+    audience: "both",
+    status: "guide",
+    product_area: ["cli", "onboarding"],
+    auth_required: false,
+    related: ["/docs/cli/burner", "/docs/5-minute-quickstart"],
+  },
+  {
+    href: "/docs/cli/guides/production-bot-basics",
+    title: "Production Bot Basics",
+    summary:
+      "Profile separation, receipts retention, and operational hygiene.",
+    layer: "public",
+    audience: "both",
+    status: "guide",
+    product_area: ["cli", "production_bot"],
+    auth_required: false,
+    related: ["/docs/cli/profiles", "/docs/guide/production-bot"],
   },
 
   /* ─── Customer Guides (authenticated) ─── */
