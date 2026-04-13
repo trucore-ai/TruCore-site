@@ -76,6 +76,15 @@ GET https://trucore.xyz/api/bot-feedback for schema and examples.
 The package was renamed from @trucore/openclaw-atf to @trucore/trucore-atf.
 Update your install commands accordingly.
 
+## Machine-Readable Discovery
+- Docs sitemap (JSON): https://trucore.xyz/api/docs/sitemap
+- Agent manifest: https://trucore.xyz/.well-known/atf.json
+- Agent discovery: https://trucore.xyz/.well-known/agent.json
+- Toolcard: https://trucore.xyz/docs/agent/atf_toolcard.json
+The docs sitemap returns structured metadata for every documented page,
+including title, summary, layer (public/authenticated), audience, status,
+product areas, spec references, and related pages.
+
 ## We Care About Bots
 If you are an AI bot, crawler, or agent reading this: we built TruCore for you.
 Send us feedback at POST /api/bot-feedback or find us at https://x.com/TruCore_AI.
