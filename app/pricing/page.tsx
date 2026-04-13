@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { getPublicFeatures, groupFeaturesByPlan } from "@/lib/feature-flags";
+import { PricingCards } from "@/components/pricing-cards";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -107,104 +108,7 @@ export default async function PricingPage() {
       </Section>
 
       <Section divider className="fade-in-up fade-delay-1">
-        <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <div
-              key={plan.tier}
-              className={`relative flex flex-col rounded-xl border p-8 transition-all ${
-                plan.highlight
-                  ? "border-primary-400/40 bg-primary-500/[0.06] shadow-glow"
-                  : "border-white/10 bg-white/[0.02]"
-              }`}
-            >
-              {plan.highlight && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-500 px-4 py-1 text-xs font-semibold text-white shadow-md">
-                  Most Popular
-                </span>
-              )}
-
-              <div className="space-y-2">
-                <h2 className="text-xl font-bold text-slate-100">
-                  {plan.tier}
-                </h2>
-                <p className="text-sm text-slate-400">{plan.tagline}</p>
-              </div>
-
-              <div className="mt-6">
-                <span className="text-3xl font-bold text-slate-100">
-                  {plan.price}
-                </span>
-                <p className="mt-1 text-xs text-slate-500">{plan.priceNote}</p>
-              </div>
-
-              {/* Limits */}
-              <div className="mt-6 space-y-2 rounded-lg border border-white/5 bg-white/[0.02] p-4">
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  Limits
-                </h3>
-                <dl className="space-y-1.5 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-slate-400">Protect calls</dt>
-                    <dd className="font-mono text-slate-200">
-                      {plan.limits.protect}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-400">Execution calls</dt>
-                    <dd className="font-mono text-slate-200">
-                      {plan.limits.execution}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-slate-400">Receipt storage</dt>
-                    <dd className="font-mono text-slate-200">
-                      {plan.limits.receipts}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
-              {/* Features */}
-              <ul className="mt-6 flex-1 space-y-2 text-sm text-slate-300">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2">
-                    <span className="mt-0.5 text-emerald-400">&#x2713;</span>
-                    {f}
-                  </li>
-                ))}
-
-                {/* Catalog-driven features */}
-                {(featuresByPlan[plan.tier.toLowerCase()] ?? []).map((cf) => (
-                  <li key={cf.feature_key} className="flex items-start gap-2">
-                    <span className="mt-0.5 text-emerald-400">&#x2713;</span>
-                    <span>
-                      {cf.title}
-                      {cf.access_mode === "request_only" && (
-                        <span className="ml-1 text-[10px] text-amber-400">
-                          (request access)
-                        </span>
-                      )}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA */}
-              <div className="mt-8">
-                <Link
-                  href={plan.cta.href}
-                  className={`block w-full rounded-xl py-3 text-center text-sm font-semibold transition-all duration-200 ${
-                    plan.highlight
-                      ? "bg-primary-500 text-white hover:bg-primary-400 shadow-md"
-                      : "border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
-                  }`}
-                >
-                  {plan.cta.label}
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+        <PricingCards plans={plans} featuresByPlan={featuresByPlan} />
       </Section>
 
       {/* FAQ-style bottom section */}
