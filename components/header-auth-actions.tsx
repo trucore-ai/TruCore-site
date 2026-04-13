@@ -40,7 +40,7 @@ export function HeaderAuthActions() {
         href="/login"
         className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-300 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 sm:text-sm"
       >
-        Log In
+        Sign In
       </Link>
       <Link
         href="/signup"
