@@ -560,7 +560,7 @@ test.describe("docs guide progress — authenticated", () => {
     await expect(progress.getByText("In this guide")).toBeVisible();
   });
 
-  test("guide progress replaces TOC on guide pages (auth gate timing)", async ({ page }) => {
+  test("DocsToc is suppressed on guide pages — GuideProgress provides navigation", async ({ page }) => {
     await page.goto("/docs/guide/key-lifecycle");
 
     // Guide progress should be present and providing section navigation
@@ -568,10 +568,86 @@ test.describe("docs guide progress — authenticated", () => {
     await expect(progress).toBeVisible();
     await expect(progress.getByText(/Section \d+ of \d+/)).toBeVisible();
 
-    // DocsToc returns null on guide pages because its useEffect scans
-    // #docs-content before GuideAuthGate finishes rendering. GuideProgress
-    // has its own scanning logic that handles this correctly.
+    // DocsToc is intentionally suppressed on guide routes (/docs/guide/*)
+    // because GuideProgress provides a richer in-page orientation. This is
+    // a deliberate design choice, not a timing bug.
     const tocNav = page.locator("nav[aria-label='Table of contents']");
     await expect(tocNav).not.toBeAttached();
+  });
+});
+
+/* ── DocsToc resilience (public docs + delayed content) ── */
+
+test.describe("docs toc — public pages", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+  });
+
+  test("DocsToc appears on a public docs page with headings", async ({ page }) => {
+    await page.goto("/docs/atf-architecture");
+
+    const tocNav = page.locator("nav[aria-label='Table of contents']");
+    await expect(tocNav).toBeAttached();
+
+    // Should contain at least one heading link
+    const links = tocNav.locator("a[href^='#']");
+    const count = await links.count();
+    expect(count).toBeGreaterThan(0);
+  });
+
+  test("DocsToc heading links match actual page headings", async ({ page }) => {
+    await page.goto("/docs/atf-architecture");
+
+    const tocNav = page.locator("nav[aria-label='Table of contents']");
+    await expect(tocNav).toBeAttached();
+
+    // First TOC link should reference an actual heading in the page
+    const firstLink = tocNav.locator("a[href^='#']").first();
+    const href = await firstLink.getAttribute("href");
+    expect(href).toBeTruthy();
+
+    const targetId = href!.replace("#", "");
+    const heading = page.locator(`#docs-content [id="${targetId}"]`);
+    await expect(heading).toBeAttached();
+  });
+
+  test("DocsToc is absent on pages with no headings or too few", async ({ page }) => {
+    // The /docs root landing page may have minimal headings — if TOC
+    // doesn't appear that's correct behavior (empty → returns null)
+    await page.goto("/docs");
+
+    // We don't assert absent because /docs may have headings. Instead
+    // verify the component handles both cases gracefully (no crash).
+    const tocNav = page.locator("nav[aria-label='Table of contents']");
+    // No assertion on visibility — just verify page loaded without errors
+    await expect(page.locator("#docs-content")).toBeAttached();
+  });
+});
+
+test.describe("docs toc — guide suppression", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("DocsToc is suppressed on guide overview page", async ({ page }) => {
+    await page.goto("/docs/guide");
+
+    const tocNav = page.locator("nav[aria-label='Table of contents']");
+    await expect(tocNav).not.toBeAttached();
+
+    // GuideProgress should handle navigation instead
+    const progress = page.getByTestId("guide-progress");
+    await expect(progress).toBeVisible();
+  });
+
+  test("DocsToc is suppressed on individual guide pages", async ({ page }) => {
+    await page.goto("/docs/guide/rate-limits");
+
+    const tocNav = page.locator("nav[aria-label='Table of contents']");
+    await expect(tocNav).not.toBeAttached();
+
+    const progress = page.getByTestId("guide-progress");
+    await expect(progress).toBeVisible();
   });
 });

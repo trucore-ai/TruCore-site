@@ -63,6 +63,13 @@ function setActiveHeading(id: string) {
  * Right-column Table of Contents that auto-generates entries from h2/h3
  * headings in the main content area. Highlights the currently visible
  * section using IntersectionObserver. Respects reduced-motion preferences.
+ *
+ * Heading discovery uses a MutationObserver so it works correctly even
+ * when content renders after the initial pathname-based effect (e.g.
+ * auth-gated routes where content appears asynchronously).
+ *
+ * Guide routes (/docs/guide/*) are intentionally suppressed here because
+ * GuideProgress provides a richer in-page orientation for those pages.
  */
 export function DocsToc() {
   const items = useSyncExternalStore(subscribeToc, getTocSnapshot, getServerTocSnapshot);
@@ -73,44 +80,80 @@ export function DocsToc() {
 
   // Re-scan headings whenever the route changes so the TOC stays current
   // across client-side navigations (the layout stays mounted between pages).
+  // A MutationObserver re-scans when content appears after the initial render
+  // (e.g. auth gates, lazy-loaded content).
   useEffect(() => {
     // Reset store first so stale headings don't flash
     setTocItems(SERVER_TOC_SNAPSHOT);
     setActiveHeading(SERVER_ACTIVE_SNAPSHOT);
 
+    // Guide routes use GuideProgress for in-page navigation
+    if (pathname === "/docs/guide" || pathname.startsWith("/docs/guide/")) return;
+
     const content = document.getElementById("docs-content");
     if (!content) return;
 
-    const tocItems = extractTocFromDom(content);
-    setTocItems(tocItems);
+    let currentItemIds: string[] = [];
+    let rafId = 0;
 
-    if (tocItems.length === 0) return;
+    function setupScrollObserver(tocItems: TocItem[]) {
+      observerRef.current?.disconnect();
+      if (tocItems.length === 0) return;
 
-    // Observe each heading for active-section highlighting
-    const headingElements = tocItems
-      .map((item) => document.getElementById(item.id))
-      .filter(Boolean) as HTMLElement[];
+      const headingElements = tocItems
+        .map((item) => document.getElementById(item.id))
+        .filter(Boolean) as HTMLElement[];
 
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        // Pick the first visible entry from the top
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          // Pick the first visible entry from the top
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
 
-        if (visible.length > 0) {
-          setActiveHeading(visible[0].target.id);
-        }
-      },
-      {
-        rootMargin: "-80px 0px -60% 0px",
-        threshold: 0,
-      },
-    );
+          if (visible.length > 0) {
+            setActiveHeading(visible[0].target.id);
+          }
+        },
+        {
+          rootMargin: "-80px 0px -60% 0px",
+          threshold: 0,
+        },
+      );
 
-    headingElements.forEach((el) => observerRef.current?.observe(el));
+      headingElements.forEach((el) => observerRef.current?.observe(el));
+    }
+
+    function scan() {
+      const nextItems = extractTocFromDom(content!);
+      const nextIds = nextItems.map((i) => i.id);
+
+      // Only update stores + observer when headings actually changed
+      if (
+        nextIds.length !== currentItemIds.length ||
+        nextIds.some((id, i) => id !== currentItemIds[i])
+      ) {
+        currentItemIds = nextIds;
+        setTocItems(nextItems);
+        setupScrollObserver(nextItems);
+      }
+    }
+
+    // Initial scan
+    scan();
+
+    // Re-scan when content changes (handles auth gates, lazy content, etc.)
+    // Debounced via requestAnimationFrame to avoid excessive rescanning
+    // during complex renders.
+    const mo = new MutationObserver(() => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(scan);
+    });
+    mo.observe(content, { childList: true, subtree: true });
 
     return () => {
+      cancelAnimationFrame(rafId);
+      mo.disconnect();
       observerRef.current?.disconnect();
     };
   }, [pathname]);
