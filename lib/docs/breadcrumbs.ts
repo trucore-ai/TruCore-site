@@ -32,7 +32,9 @@ export function buildBreadcrumbs(pathname: string): BreadcrumbSegment[] {
   const match = navLookup.get(pathname);
   if (match) {
     const sectionHref = sectionFirstHref(match.section);
-    const isOverview = match.item.href === sectionHref;
+    const isOverview =
+      match.item.href === sectionHref &&
+      /overview/i.test(match.item.title);
 
     if (match.section.title !== "Documentation") {
       if (isOverview) {

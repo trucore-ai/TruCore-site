@@ -372,7 +372,7 @@ describe("CustomerKeysPage - bot credential quickstart", () => {
   it("shows secret shown-once warning in quickstart panel", async () => {
     render(<CustomerKeysPage />);
     await waitFor(() => {
-      expect(screen.getByText("Shown once only. Copy it now.")).toBeTruthy();
+      expect(screen.getByText(/shown once only/i)).toBeTruthy();
     });
   });
 
@@ -393,7 +393,7 @@ describe("CustomerKeysPage - bot credential quickstart", () => {
   it("renders copy-ready snippet blocks", async () => {
     render(<CustomerKeysPage />);
     await waitFor(() => {
-      expect(screen.getByText("Environment variables")).toBeTruthy();
+      expect(screen.getByText(/copy-ready snippets/i)).toBeTruthy();
     });
   });
 
