@@ -2,9 +2,32 @@ import type { Metadata } from "next";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "ATF Policy Examples",
+  title: "ATF Policy Examples | TruCore",
   description:
     "Structured, reusable ATF policy examples for swap guardrails, lending exposure caps, and time-bound execution.",
+  keywords: [
+    "ATF policy examples",
+    "swap guardrails",
+    "lending exposure caps",
+    "time-bound execution",
+    "policy configuration",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "ATF Policy Examples | TruCore",
+    description:
+      "Reusable ATF policy examples: swap guardrails, lending caps, and time-bound execution.",
+    url: "https://trucore.xyz/docs/policy-examples",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ATF Policy Examples | TruCore",
+    description:
+      "Reusable ATF policy examples: swap guardrails, lending caps, and time-bound execution.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/policy-examples" },
 };
 
 const swapGuardrailPolicy = `{

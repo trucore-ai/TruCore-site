@@ -3,9 +3,34 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "Hello-World Bot Tutorial",
+  title: "Hello-World Bot Tutorial | TruCore ATF",
   description:
     "Understand how a minimal Python trading bot changes when you add ATF protection. Unprotected vs protected, side by side.",
+  keywords: [
+    "ATF tutorial",
+    "hello world bot",
+    "Python trading bot",
+    "agent transaction firewall",
+    "ATF integration example",
+    "policy gate",
+    "deterministic receipts",
+    "TruCore",
+  ],
+  openGraph: {
+    title: "Hello-World Bot Tutorial | TruCore ATF",
+    description:
+      "A minimal Python bot, unprotected then ATF-protected, in under 30 lines. See exactly what changes.",
+    url: "https://trucore.xyz/docs/hello-world-bot",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hello-World Bot Tutorial | TruCore ATF",
+    description:
+      "A minimal Python bot, unprotected then ATF-protected, in under 30 lines.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/hello-world-bot" },
 };
 
 export default function HelloWorldBotPage() {

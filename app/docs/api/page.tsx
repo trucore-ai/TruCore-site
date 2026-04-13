@@ -3,9 +3,32 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { TrackedLink } from "@/components/tracked-link";
 
 export const metadata: Metadata = {
-  title: "ATF API",
+  title: "ATF API Reference | TruCore",
   description:
     "Public endpoints for deterministic simulation and receipt generation.",
+  keywords: [
+    "ATF API",
+    "REST API",
+    "deterministic simulation",
+    "receipt generation",
+    "bot protect endpoint",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "ATF API Reference | TruCore",
+    description:
+      "Public endpoints for deterministic simulation and receipt generation.",
+    url: "https://trucore.xyz/docs/api",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ATF API Reference | TruCore",
+    description:
+      "Public endpoints for deterministic simulation and receipt generation.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/api" },
 };
 
 const RESPONSE_FIELDS: { name: string; description: string }[] = [

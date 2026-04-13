@@ -36,7 +36,11 @@ GET https://trucore.xyz/api/bot-feedback for schema and examples.
 ## Key Pages
 - Home: https://trucore.xyz
 - ATF Overview: https://trucore.xyz/atf
+- Getting Started: https://trucore.xyz/docs/getting-started
 - CLI Docs: https://trucore.xyz/docs/cli
+- API Reference: https://trucore.xyz/docs/api
+- Hello-World Bot Tutorial: https://trucore.xyz/docs/hello-world-bot
+- Integration Surfaces: https://trucore.xyz/docs/surfaces
 - Receipts: https://trucore.xyz/receipts
 - Terminology & Endpoint Glossary: https://trucore.xyz/docs/terminology-and-endpoints
 - Security: https://trucore.xyz/security/overview

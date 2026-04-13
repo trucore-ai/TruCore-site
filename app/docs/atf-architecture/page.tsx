@@ -3,9 +3,34 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "ATF Architecture & Enforcement Model",
+  title: "ATF Architecture & Enforcement Model | TruCore",
   description:
     "Technical deep dive on ATF threat model, permit schema, deterministic invariants, replay protection, and receipt hashing.",
+  keywords: [
+    "ATF architecture",
+    "enforcement model",
+    "threat model",
+    "permit schema",
+    "deterministic invariants",
+    "replay protection",
+    "receipt hashing",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "ATF Architecture & Enforcement Model | TruCore",
+    description:
+      "Technical deep dive: threat model, permit schema, deterministic invariants, and receipt hashing.",
+    url: "https://trucore.xyz/docs/atf-architecture",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ATF Architecture & Enforcement Model | TruCore",
+    description:
+      "Threat model, permit schema, deterministic invariants, and receipt hashing.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/atf-architecture" },
 };
 
 export default function DocsAtfArchitecturePage() {

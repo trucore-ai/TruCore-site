@@ -4,9 +4,32 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { CopyBlock } from "@/components/copy-block";
 
 export const metadata: Metadata = {
-  title: "Getting Started - ATF Developer Guide",
+  title: "Getting Started | TruCore ATF",
   description:
     "Create an account, get an API key, and protect your first trade with the Agent Transaction Firewall in minutes.",
+  keywords: [
+    "ATF getting started",
+    "agent transaction firewall",
+    "API key setup",
+    "first protected trade",
+    "developer onboarding",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Getting Started | TruCore ATF",
+    description:
+      "Create an account, get an API key, and protect your first trade with ATF in minutes.",
+    url: "https://trucore.xyz/docs/getting-started",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Getting Started | TruCore ATF",
+    description:
+      "Create an account, get an API key, and protect your first trade with ATF in minutes.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/getting-started" },
 };
 
 const SIGNUP_CURL = `curl -sS https://api.trucore.xyz/auth/signup \\

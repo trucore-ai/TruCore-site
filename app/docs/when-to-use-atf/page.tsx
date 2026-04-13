@@ -3,9 +3,32 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "When to Use ATF",
+  title: "When to Use ATF | TruCore",
   description:
     "Guidelines on when to use mock vs real execution, when Free is enough, when Pro becomes useful, and what kinds of bots benefit first from ATF.",
+  keywords: [
+    "when to use ATF",
+    "mock execution",
+    "real execution",
+    "ATF Free vs Pro",
+    "trading bot protection",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "When to Use ATF | TruCore",
+    description:
+      "Decide when to start with ATF, which mode to use, and when upgrading makes sense.",
+    url: "https://trucore.xyz/docs/when-to-use-atf",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "When to Use ATF | TruCore",
+    description:
+      "Decide when to start with ATF, which mode to use, and when upgrading makes sense.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/when-to-use-atf" },
 };
 
 export default function WhenToUseAtfPage() {

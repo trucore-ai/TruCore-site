@@ -2,9 +2,29 @@ import type { Metadata } from "next";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "Changelog",
+  title: "Changelog | TruCore ATF",
   description:
     "Versioned release notes for the ATF CLI and public API.",
+  keywords: [
+    "ATF changelog",
+    "release notes",
+    "ATF CLI versions",
+    "API changes",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Changelog | TruCore ATF",
+    description: "Versioned release notes for the ATF CLI and public API.",
+    url: "https://trucore.xyz/docs/changelog",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Changelog | TruCore ATF",
+    description: "Versioned release notes for the ATF CLI and public API.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/changelog" },
 };
 
 export default function DocsChangelogPage() {

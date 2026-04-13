@@ -2,9 +2,33 @@ import type { Metadata } from "next";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "Policy Model",
+  title: "Policy Model | TruCore ATF",
   description:
     "ATF policy primitives including allowlists, spend limits, slippage bounds, cooldowns, and fail-closed behavior.",
+  keywords: [
+    "ATF policy model",
+    "allowlists",
+    "spend limits",
+    "slippage bounds",
+    "cooldowns",
+    "fail-closed",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Policy Model | TruCore ATF",
+    description:
+      "ATF policy primitives: allowlists, spend limits, slippage bounds, cooldowns, and fail-closed behavior.",
+    url: "https://trucore.xyz/docs/policy-model",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Policy Model | TruCore ATF",
+    description:
+      "ATF policy primitives: allowlists, spend limits, slippage bounds, cooldowns, and fail-closed.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/policy-model" },
 };
 
 export default function DocsPolicyModelPage() {

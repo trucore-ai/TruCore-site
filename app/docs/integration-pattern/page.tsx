@@ -4,9 +4,33 @@ import { AgentFlowDiagram } from "@/components/agent-flow-diagram";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "ATF Integration Pattern",
+  title: "ATF Integration Pattern | TruCore",
   description:
     "Integrate an AI agent with ATF before execution, evaluate deterministic policy outcomes, and consume receipt hashes for runtime audit logs.",
+  keywords: [
+    "ATF integration pattern",
+    "agent integration",
+    "policy evaluation",
+    "receipt hashes",
+    "audit logs",
+    "pre-execution firewall",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "ATF Integration Pattern | TruCore",
+    description:
+      "Integrate an AI agent with ATF — evaluate policy outcomes and consume receipt hashes for audit.",
+    url: "https://trucore.xyz/docs/integration-pattern",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ATF Integration Pattern | TruCore",
+    description:
+      "Integrate an AI agent with ATF — evaluate policy outcomes and consume receipt hashes for audit.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/integration-pattern" },
 };
 
 export default function DocsIntegrationPatternPage() {

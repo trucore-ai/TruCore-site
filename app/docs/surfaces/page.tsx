@@ -4,9 +4,33 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { CopyBlock } from "@/components/copy-block";
 
 export const metadata: Metadata = {
-  title: "Integration Surfaces - API, CLI, Plugin & MCP",
+  title: "Integration Surfaces | TruCore ATF",
   description:
     "How to integrate with ATF: REST API, CLI tool, OpenClaw plugin, and hosted MCP endpoint. Current capabilities, maturity, and tool inventory.",
+  keywords: [
+    "ATF integration",
+    "REST API",
+    "CLI tool",
+    "OpenClaw plugin",
+    "MCP endpoint",
+    "agent integration",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Integration Surfaces | TruCore ATF",
+    description:
+      "REST API, CLI, OpenClaw plugin, and hosted MCP endpoint — all the ways to integrate with ATF.",
+    url: "https://trucore.xyz/docs/surfaces",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Integration Surfaces | TruCore ATF",
+    description:
+      "REST API, CLI, OpenClaw plugin, and hosted MCP — all the ways to integrate with ATF.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/surfaces" },
 };
 
 const API_EXAMPLE = `curl -sS https://api.trucore.xyz/v1/bot/protect \\

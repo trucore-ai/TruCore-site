@@ -3,9 +3,33 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "Plans & Feature Tiers",
+  title: "Plans & Feature Tiers | TruCore ATF",
   description:
     "ATF Free, Pro, and Enterprise plans. Understand limits, feature availability, and how to upgrade.",
+  keywords: [
+    "ATF pricing",
+    "ATF plans",
+    "Free plan",
+    "Pro plan",
+    "Enterprise plan",
+    "feature tiers",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Plans & Feature Tiers | TruCore ATF",
+    description:
+      "ATF Free, Pro, and Enterprise plans — limits, features, and how to upgrade.",
+    url: "https://trucore.xyz/docs/plans",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Plans & Feature Tiers | TruCore ATF",
+    description:
+      "ATF Free, Pro, and Enterprise plans — limits, features, and how to upgrade.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/plans" },
 };
 
 type FeatureRow = {

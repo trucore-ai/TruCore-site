@@ -4,9 +4,32 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { CopyBlock } from "@/components/copy-block";
 
 export const metadata: Metadata = {
-  title: "Upgrade & Access",
+  title: "Upgrade & Access | TruCore ATF",
   description:
     "Request Pro or Enterprise access, understand what happens after approval, and how ATF feature gating works.",
+  keywords: [
+    "ATF upgrade",
+    "Pro access",
+    "Enterprise access",
+    "feature gating",
+    "plan upgrade",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Upgrade & Access | TruCore ATF",
+    description:
+      "Request Pro or Enterprise access and understand ATF feature gating.",
+    url: "https://trucore.xyz/docs/upgrade",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Upgrade & Access | TruCore ATF",
+    description:
+      "Request Pro or Enterprise access and understand ATF feature gating.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/upgrade" },
 };
 
 const UPGRADE_REQUEST_CURL = `curl -sS https://api.trucore.xyz/customer/upgrades/request \\

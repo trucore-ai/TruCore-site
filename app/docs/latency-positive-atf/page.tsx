@@ -3,9 +3,32 @@ import Link from "next/link";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "Latency-Positive ATF - Faster and Safer Execution",
+  title: "Latency-Positive ATF | TruCore",
   description:
     "How ATF evolves from security middleware into a latency-positive execution layer - making protected bots faster than unprotected ones.",
+  keywords: [
+    "latency positive",
+    "ATF performance",
+    "execution intelligence",
+    "trading latency",
+    "security middleware",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Latency-Positive ATF | TruCore",
+    description:
+      "A firewall that makes your bot faster, not slower. ATF as shared execution intelligence.",
+    url: "https://trucore.xyz/docs/latency-positive-atf",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Latency-Positive ATF | TruCore",
+    description:
+      "A firewall that makes your bot faster, not slower. ATF as shared execution intelligence.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/latency-positive-atf" },
 };
 
 export default function DocsLatencyPositiveAtfPage() {

@@ -8,9 +8,33 @@ import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
-  title: "ATF CLI Documentation",
+  title: "ATF CLI Documentation | TruCore",
   description:
     "Complete reference for the ATF CLI. Environment checks, devnet burner mode, transaction signing, receipt verification, and more.",
+  keywords: [
+    "ATF CLI",
+    "command line interface",
+    "receipt verification",
+    "devnet burner",
+    "transaction signing",
+    "environment check",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "ATF CLI Documentation | TruCore",
+    description:
+      "Complete CLI reference — environment checks, devnet burner mode, signing, receipt verification, and more.",
+    url: "https://trucore.xyz/docs/cli",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ATF CLI Documentation | TruCore",
+    description:
+      "Complete CLI reference — environment checks, devnet burner, signing, and receipt verification.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/cli" },
 };
 
 /* ── Command reference table data ── */

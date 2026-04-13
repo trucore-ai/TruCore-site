@@ -5,9 +5,33 @@ import { AtfCopyCommand } from "@/components/atf-copy-command";
 import { getAtfCliTag, getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
-  title: "Perps Enforcement",
+  title: "Perps Enforcement | TruCore ATF",
   description:
     "ATF perps enforcement for Hyperliquid, Drift v2, and Mango v4. Feature-gated, fail-closed, deterministic receipts.",
+  keywords: [
+    "perps enforcement",
+    "Hyperliquid",
+    "Drift v2",
+    "Mango v4",
+    "perpetual futures",
+    "ATF policy",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Perps Enforcement | TruCore ATF",
+    description:
+      "ATF perps enforcement for Hyperliquid, Drift v2, and Mango v4 with fail-closed receipts.",
+    url: "https://trucore.xyz/docs/perps",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Perps Enforcement | TruCore ATF",
+    description:
+      "ATF perps enforcement for Hyperliquid, Drift v2, and Mango v4.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/perps" },
 };
 
 export default function DocsPerpsPage() {

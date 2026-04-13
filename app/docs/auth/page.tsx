@@ -4,9 +4,33 @@ import { HeadingAnchor } from "@/components/heading-anchor";
 import { CopyBlock } from "@/components/copy-block";
 
 export const metadata: Metadata = {
-  title: "Auth & API Key Management",
+  title: "Auth & API Key Management | TruCore ATF",
   description:
     "Signup, login, email verification, API key creation/rotation/revocation, and account recovery for ATF.",
+  keywords: [
+    "ATF authentication",
+    "API key management",
+    "signup",
+    "login",
+    "key rotation",
+    "key revocation",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Auth & API Key Management | TruCore ATF",
+    description:
+      "Signup, login, email verification, API key creation/rotation/revocation, and account recovery for ATF.",
+    url: "https://trucore.xyz/docs/auth",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Auth & API Key Management | TruCore ATF",
+    description:
+      "Signup, login, API key management, and account recovery for ATF.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/auth" },
 };
 
 const SIGNUP_CURL = `curl -sS https://api.trucore.xyz/auth/signup \\

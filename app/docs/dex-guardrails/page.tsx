@@ -6,9 +6,33 @@ import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliTag, getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
-  title: "DEX Guardrails",
+  title: "DEX Guardrails | TruCore ATF",
   description:
     "ATF DEX guardrails: slippage caps, DEX allowlists, mint allow/deny lists, unverified route deny, and deterministic receipts.",
+  keywords: [
+    "DEX guardrails",
+    "slippage caps",
+    "DEX allowlist",
+    "mint allow deny list",
+    "route verification",
+    "ATF policy",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "DEX Guardrails | TruCore ATF",
+    description:
+      "Slippage caps, DEX allowlists, mint lists, and deterministic receipts for safer on-chain execution.",
+    url: "https://trucore.xyz/docs/dex-guardrails",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DEX Guardrails | TruCore ATF",
+    description:
+      "Slippage caps, DEX allowlists, mint lists, and deterministic receipts for safer on-chain execution.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/dex-guardrails" },
 };
 
 export default function DocsDexGuardrailsPage() {

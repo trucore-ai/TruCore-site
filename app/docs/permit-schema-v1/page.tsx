@@ -4,12 +4,32 @@ import { CopyBlock } from "@/components/copy-block";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "ATF Permit Schema v1",
+  title: "ATF Permit Schema v1 | TruCore",
   description: "Versioned permit fields and deterministic evaluation contract for ATF.",
+  keywords: [
+    "permit schema v1",
+    "ATF permits",
+    "deterministic evaluation",
+    "permit fields",
+    "TruCore ATF",
+  ],
   robots: {
     index: true,
     follow: true,
   },
+  openGraph: {
+    title: "ATF Permit Schema v1 | TruCore",
+    description: "Versioned permit fields and deterministic evaluation contract for ATF.",
+    url: "https://trucore.xyz/docs/permit-schema-v1",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ATF Permit Schema v1 | TruCore",
+    description: "Versioned permit fields and deterministic evaluation contract for ATF.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/permit-schema-v1" },
 };
 
 const permitExample = `{

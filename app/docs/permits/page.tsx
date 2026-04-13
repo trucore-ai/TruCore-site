@@ -2,9 +2,33 @@ import type { Metadata } from "next";
 import { HeadingAnchor } from "@/components/heading-anchor";
 
 export const metadata: Metadata = {
-  title: "Permits",
+  title: "Permits | TruCore ATF",
   description:
     "ATF permit schema and operational guidance for scope, TTL, nonce, domain separation, and replay resistance.",
+  keywords: [
+    "ATF permits",
+    "permit schema",
+    "TTL",
+    "nonce",
+    "domain separation",
+    "replay resistance",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "Permits | TruCore ATF",
+    description:
+      "ATF permit schema: scope, TTL, nonce, domain separation, and replay resistance.",
+    url: "https://trucore.xyz/docs/permits",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Permits | TruCore ATF",
+    description:
+      "ATF permit schema: scope, TTL, nonce, domain separation, and replay resistance.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/permits" },
 };
 
 export default function DocsPermitsPage() {

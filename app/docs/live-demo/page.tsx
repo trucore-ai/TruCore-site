@@ -5,9 +5,32 @@ import { PlatformRunbook } from "@/components/platform-runbook";
 import { getAtfCliVersion } from "@/lib/version";
 
 export const metadata: Metadata = {
-  title: "ATF Execution Example",
+  title: "ATF Execution Example | TruCore",
   description:
     "Walk through a complete ATF request cycle: protect an intent, inspect the receipt fields, and verify the outcome deterministically.",
+  keywords: [
+    "ATF execution example",
+    "request cycle",
+    "receipt inspection",
+    "deterministic verification",
+    "protect intent",
+    "TruCore ATF",
+  ],
+  openGraph: {
+    title: "ATF Execution Example | TruCore",
+    description:
+      "Walk through a complete ATF request cycle: protect, inspect, and verify deterministically.",
+    url: "https://trucore.xyz/docs/live-demo",
+    images: ["/opengraph-image"],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ATF Execution Example | TruCore",
+    description:
+      "Walk through a complete ATF request cycle: protect, inspect, and verify.",
+    images: ["/opengraph-image"],
+  },
+  alternates: { canonical: "https://trucore.xyz/docs/live-demo" },
 };
 
 export default function DocsLiveDemoPage() {
