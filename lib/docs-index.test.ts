@@ -51,4 +51,27 @@ describe("docsIndex", () => {
       expect(entry.tags.length, `${entry.href} missing tags`).toBeGreaterThanOrEqual(1);
     }
   });
+
+  it("authenticated guide entries are marked authRequired", () => {
+    const guideEntries = docsIndex.filter((e) => e.href.startsWith("/docs/guide"));
+    expect(guideEntries.length).toBeGreaterThanOrEqual(10);
+    for (const entry of guideEntries) {
+      expect(entry.authRequired, `${entry.href} should be authRequired`).toBe(true);
+    }
+  });
+
+  it("matches key guide search terms", () => {
+    expect(searchDocs("key lifecycle")).toContain("/docs/guide/key-lifecycle");
+    expect(searchDocs("rate limits")).toContain("/docs/guide/rate-limits");
+    expect(searchDocs("webhooks")).toContain("/docs/guide/webhooks");
+    expect(searchDocs("reconcile")).toContain("/docs/guide/reconcile");
+    expect(searchDocs("troubleshooting")).toContain("/docs/guide/troubleshooting");
+  });
+
+  it("public entries do not have authRequired set", () => {
+    const publicEntries = docsIndex.filter((e) => !e.href.startsWith("/docs/guide"));
+    for (const entry of publicEntries) {
+      expect(entry.authRequired, `${entry.href} should not be authRequired`).toBeFalsy();
+    }
+  });
 });

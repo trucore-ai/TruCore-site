@@ -28,7 +28,7 @@ function buildSnippet(title: string, snippets: string[], tags: string[], query: 
   return title;
 }
 
-export function DocsSearch({ entries }: { entries?: DocsIndexEntry[] }) {
+export function DocsSearch({ entries, includeAuth = false }: { entries?: DocsIndexEntry[]; includeAuth?: boolean }) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
@@ -37,10 +37,10 @@ export function DocsSearch({ entries }: { entries?: DocsIndexEntry[] }) {
 
   const normalizedQuery = query.trim().toLowerCase();
 
-  /** Default to public-only entries from the shared docsIndex. */
+  /** When includeAuth is true, include authRequired entries; otherwise filter them out. */
   const searchableEntries = useMemo(
-    () => (entries ?? docsIndex).filter((e) => !e.authRequired),
-    [entries],
+    () => (entries ?? docsIndex).filter((e) => includeAuth || !e.authRequired),
+    [entries, includeAuth],
   );
 
   const results = useMemo<SearchResult[]>(() => {

@@ -1,10 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { DocsBreadcrumbs } from "@/components/docs/docs-breadcrumbs";
 import { DocsNavSidebar } from "@/components/docs/docs-nav-sidebar";
 import { DocsSearch } from "@/components/docs-search";
 import { DocsToc } from "@/components/docs/docs-toc";
+import { isLoggedIn } from "@/lib/customer-auth";
 
 type DocsShellProps = {
   children: ReactNode;
@@ -20,6 +21,12 @@ type DocsShellProps = {
  * - Right: Table of Contents (sticky, collapsible on mobile)
  */
 export function DocsShell({ children }: DocsShellProps) {
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    setAuthed(isLoggedIn());
+  }, []);
+
   return (
     <div className="docs-shell mx-auto max-w-[90rem] px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
       <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[260px_minmax(0,1fr)_220px] xl:gap-14">
@@ -34,7 +41,7 @@ export function DocsShell({ children }: DocsShellProps) {
           </div>
 
           <div className="mb-8">
-            <DocsSearch />
+            <DocsSearch includeAuth={authed} />
           </div>
 
           <div id="docs-content" className="docs-content prose-docs">

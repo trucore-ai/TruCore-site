@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { silenceAnalytics } from "./helpers/smoke-fixtures";
+import { injectCustomerAuth, silenceAnalytics } from "./helpers/smoke-fixtures";
 
 test.describe("docs sidebar search", () => {
   test.beforeEach(async ({ page }) => {
@@ -242,5 +242,101 @@ test.describe("docs scored search", () => {
     await input.fill("webhooks debugging");
     const webhookGuide = page.getByRole("option", { name: /Webhook Setup/i });
     await expect(webhookGuide).not.toBeVisible();
+  });
+});
+
+/* ── Authenticated DocsSearch (customer guides visible when logged in) ── */
+
+test.describe("docs scored search — authenticated", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("authenticated user sees guide results for 'key lifecycle'", async ({ page }) => {
+    await page.goto("/docs/guide");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("key lifecycle");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+    await expect(listbox.getByRole("option", { name: /API Key Lifecycle/i })).toBeVisible();
+  });
+
+  test("authenticated user sees guide results for 'reconcile'", async ({ page }) => {
+    await page.goto("/docs/guide");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("reconcile");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+    await expect(listbox.getByRole("option", { name: /Reconcile & State Recovery/i })).toBeVisible();
+  });
+
+  test("authenticated user sees guide results for 'rate limits'", async ({ page }) => {
+    await page.goto("/docs/guide");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("rate limits");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+    await expect(listbox.getByRole("option", { name: /Rate Limits & Recovery/i })).toBeVisible();
+  });
+
+  test("authenticated user sees guide results for 'webhooks'", async ({ page }) => {
+    await page.goto("/docs/guide");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("webhooks");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+    await expect(listbox.getByRole("option", { name: /Webhook Setup/i })).toBeVisible();
+  });
+
+  test("click-through navigation works for authenticated guide results", async ({ page }) => {
+    await page.goto("/docs/guide");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("key lifecycle");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+
+    await listbox.getByRole("option", { name: /API Key Lifecycle/i }).click();
+    await expect(page).toHaveURL("/docs/guide/key-lifecycle");
+  });
+
+  test("public docs still appear in authenticated search", async ({ page }) => {
+    await page.goto("/docs/guide");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("quickstart");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+    // Multiple quickstart entries may match; just verify at least one public doc appears
+    await expect(listbox.getByRole("option", { name: /Quickstart/i }).first()).toBeVisible();
+  });
+
+  test("public visitor on /docs still cannot see guide results", async ({ page }) => {
+    // Use a fresh context without auth injection
+    const freshContext = await page.context().browser()!.newContext();
+    const freshPage = await freshContext.newPage();
+    await silenceAnalytics(freshPage);
+
+    await freshPage.goto("/docs");
+
+    const input = freshPage.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("key lifecycle");
+
+    const guideOption = freshPage.getByRole("option", { name: /API Key Lifecycle/i });
+    await expect(guideOption).not.toBeVisible();
+
+    await freshPage.close();
+    await freshContext.close();
   });
 });

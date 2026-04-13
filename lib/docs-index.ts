@@ -445,4 +445,106 @@ export const docsIndex: DocsIndexEntry[] = [
     ],
     tags: ["policy examples", "examples", "allowlist", "configuration", "copy paste"],
   },
+
+  /* ─── Customer Guides (authenticated) ─── */
+  {
+    href: "/docs/guide",
+    title: "Customer Guides Overview",
+    contentSnippets: [
+      "Operational guidance for production TruCore teams.",
+      "Key lifecycle, rate limits, webhooks, receipts, and troubleshooting.",
+    ],
+    tags: ["customer guides", "operations", "production", "overview"],
+    authRequired: true,
+  },
+  {
+    href: "/docs/guide/key-lifecycle",
+    title: "API Key Lifecycle",
+    contentSnippets: [
+      "Create, store, scope, rotate, and revoke API keys safely.",
+      "Key hygiene best practices for production environments.",
+    ],
+    tags: ["api key", "key lifecycle", "rotate", "revoke", "scope", "production"],
+    authRequired: true,
+  },
+  {
+    href: "/docs/guide/rate-limits",
+    title: "Rate Limits & Recovery",
+    contentSnippets: [
+      "Read rate-limit headers, implement backoff, and recover when throttled.",
+      "Per-plan rate limits and retry strategies.",
+    ],
+    tags: ["rate limits", "throttle", "backoff", "retry", "recovery", "headers"],
+    authRequired: true,
+  },
+  {
+    href: "/docs/guide/webhooks",
+    title: "Webhook Setup & Debugging",
+    contentSnippets: [
+      "Configure webhook endpoints, verify HMAC signatures, and troubleshoot delivery.",
+      "End-to-end webhook integration walkthrough.",
+    ],
+    tags: ["webhooks", "hmac", "signatures", "delivery", "debugging", "endpoints"],
+    authRequired: true,
+  },
+  {
+    href: "/docs/guide/readiness",
+    title: "Readiness & Health Checks",
+    contentSnippets: [
+      "CLI doctor output, API health endpoint, and readiness verification.",
+      "Pre-launch checklist for production deployments.",
+    ],
+    tags: ["readiness", "health check", "doctor", "pre-launch", "production"],
+    authRequired: true,
+  },
+  {
+    href: "/docs/guide/receipts-ops",
+    title: "Receipt Operations",
+    contentSnippets: [
+      "Browse, verify, and export receipts with content-hash verification.",
+      "Operational receipt management for customer teams.",
+    ],
+    tags: ["receipts", "operations", "verify", "export", "content hash"],
+    authRequired: true,
+  },
+  {
+    href: "/docs/guide/troubleshooting",
+    title: "Troubleshooting",
+    contentSnippets: [
+      "Diagnose and resolve common integration issues.",
+      "Error codes, debugging steps, and escalation paths.",
+    ],
+    tags: ["troubleshooting", "debug", "errors", "integration issues", "support"],
+    authRequired: true,
+  },
+  {
+    href: "/docs/guide/production-bot",
+    title: "Production Bot Configuration",
+    contentSnippets: [
+      "Setup, key provisioning, readiness checks, and rate-limit-aware bot operations.",
+      "End-to-end guide for running a production bot with TruCore.",
+    ],
+    tags: ["production bot", "bot config", "keys", "readiness", "rate limits"],
+    authRequired: true,
+  },
+  {
+    href: "/docs/guide/support-deflection",
+    title: "Support Deflection",
+    contentSnippets: [
+      "Self-serve diagnostic decisions and what to try before opening a ticket.",
+      "Reduce support load with structured triage paths.",
+    ],
+    tags: ["support deflection", "self-serve", "triage", "diagnostics"],
+    authRequired: true,
+  },
+  {
+    href: "/docs/guide/reconcile",
+    title: "Reconcile & State Recovery",
+    contentSnippets: [
+      "Assess system health, detect state drift, and repair inconsistencies.",
+      "Webhook replay, receipt reconciliation, and recovery workflows.",
+    ],
+    tags: ["reconcile", "state recovery", "drift", "repair", "webhooks", "receipts"],
+    authRequired: true,
+  },
 ];

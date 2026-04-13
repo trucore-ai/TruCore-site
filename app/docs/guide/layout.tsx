@@ -1,17 +1,13 @@
 import type { ReactNode } from "react";
-import { DocsShell } from "@/components/docs/docs-shell";
 import { GuideAuthGate } from "@/components/docs/guide-auth-gate";
 
 /**
  * Layout for /docs/guide/* routes.
  *
- * Renders the standard docs shell (sidebar, breadcrumbs, TOC) but wraps
- * children in the GuideAuthGate so only authenticated customers see content.
+ * The parent /docs/layout.tsx already provides DocsShell (sidebar,
+ * breadcrumbs, search, TOC). This layout only adds the auth gate so
+ * only authenticated customers see guide content.
  */
 export default function GuideLayout({ children }: { children: ReactNode }) {
-  return (
-    <DocsShell>
-      <GuideAuthGate>{children}</GuideAuthGate>
-    </DocsShell>
-  );
+  return <GuideAuthGate>{children}</GuideAuthGate>;
 }
