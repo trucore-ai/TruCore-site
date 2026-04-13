@@ -355,6 +355,29 @@ export const docsMetadata: DocMetadataEntry[] = [
       "https://github.com/trucore-ai/atf-spec/blob/main/spec/architecture.md",
   },
   {
+    href: "/docs/live-demo",
+    title: "Live Demo",
+    summary:
+      "Interactive demonstration of ATF policy enforcement in action.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["onboarding"],
+    auth_required: false,
+  },
+  {
+    href: "/docs/policy-examples",
+    title: "Policy Examples",
+    summary:
+      "Concrete policy configurations for common use cases with copy-paste examples.",
+    layer: "public",
+    audience: "both",
+    status: "reference",
+    product_area: ["policy"],
+    auth_required: false,
+    related: ["/docs/policy-model", "/docs/dex-guardrails"],
+  },
+  {
     href: "/docs/cli",
     title: "ATF CLI",
     summary:

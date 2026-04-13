@@ -21,8 +21,6 @@ const corePages: Array<{ path: string; priority: number }> = [
   { path: "/process", priority: 0.8 },
   { path: "/demo", priority: 0.8 },
   { path: "/enterprise", priority: 0.8 },
-  { path: "/docs/live-demo", priority: 0.7 },
-  { path: "/docs/policy-examples", priority: 0.7 },
   { path: "/blog", priority: 0.7 },
   { path: "/security", priority: 0.6 },
   { path: "/security/compliance", priority: 0.6 },

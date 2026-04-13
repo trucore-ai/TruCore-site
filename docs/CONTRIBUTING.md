@@ -54,6 +54,7 @@ Changes to docs pages may affect these surfaces:
 
 | Surface | Source | Auto-updates? |
 | --- | --- | --- |
+| `/docs` search | `lib/docs-index.ts` | Manual |
 | `/sitemap.xml` | `app/sitemap.ts` ← `docs-nav.ts` | Yes |
 | `/api/docs/sitemap` (JSON) | `app/api/docs/sitemap/route.ts` ← `docs-metadata.ts` | Yes |
 | `/.well-known/agent.json` | `public/.well-known/agent.json` | Manual |
@@ -62,10 +63,21 @@ Changes to docs pages may affect these surfaces:
 
 When adding a high-value public page, consider whether it should also appear in `llms.txt`.
 
+## Search Index (docs-index.ts)
+
+`lib/docs-index.ts` powers the client-side docs search component.
+
+- Every **public** page in `docs-nav.ts` needs a matching entry in `docs-index.ts`.
+- **Authenticated** pages (Customer Guides) are excluded — the search component is public-facing.
+- Each entry needs `href`, `title`, at least one `contentSnippets` line, and at least one `tag`.
+- Tags should mirror the page's `product_area` and key concepts; snippets should capture the opening sentence or key phrases.
+- Run `npx vitest run lib/docs-index.test.ts` to verify coverage stays aligned.
+
 ## Validation Checklist
 
 - [ ] Page builds without TypeScript errors (`npx tsc --noEmit`)
-- [ ] Entry exists in both `docs-nav.ts` and `docs-metadata.ts`
+- [ ] Entry exists in `docs-nav.ts`, `docs-metadata.ts`, **and** `docs-index.ts`
 - [ ] Metadata export is a valid `Metadata` object
 - [ ] Authenticated pages are not exposed in public discovery
 - [ ] `LAST_UPDATED` in `docs-nav.ts` is current
+- [ ] Search index tests pass (`npx vitest run lib/docs-index.test.ts`)

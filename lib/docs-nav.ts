@@ -202,6 +202,24 @@ export const sections: DocsNavSection[] = [
         description:
           "Machine-readable ATF manifest, OpenClaw plugin, recipes_v2 self-install, and receipts-backed savings reporting for autonomous agents.",
       },
+      {
+        title: "Terminology & Endpoint Glossary",
+        href: "/docs/terminology-and-endpoints",
+        description:
+          "Reference mapping of ATF terms across spec, API, CLI, and UI surfaces.",
+      },
+      {
+        title: "Live Demo",
+        href: "/docs/live-demo",
+        description:
+          "Interactive demonstration of ATF policy enforcement in action.",
+      },
+      {
+        title: "Policy Examples",
+        href: "/docs/policy-examples",
+        description:
+          "Concrete policy configurations for common use cases with copy-paste examples.",
+      },
     ],
   },
   {
