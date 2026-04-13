@@ -485,3 +485,93 @@ test.describe("docs breadcrumb and active-guide orientation — authenticated", 
     await expect(breadcrumb.getByText("Customer Guides")).not.toBeVisible();
   });
 });
+
+/* ── In-page guide progress affordance (authenticated) ── */
+
+test.describe("docs guide progress — authenticated", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("'In this guide' progress appears on a long guide page", async ({ page }) => {
+    await page.goto("/docs/guide/key-lifecycle");
+
+    const progress = page.getByTestId("guide-progress");
+    await expect(progress).toBeVisible();
+    await expect(progress.getByText("In this guide")).toBeVisible();
+    await expect(progress.getByText(/Section \d+ of \d+/)).toBeVisible();
+  });
+
+  test("expanding progress shows numbered section list", async ({ page }) => {
+    await page.goto("/docs/guide/rate-limits");
+
+    const progress = page.getByTestId("guide-progress");
+    await progress.getByText("In this guide").click();
+
+    const list = page.locator("#guide-progress-list");
+    await expect(list).toBeVisible();
+
+    // Should contain numbered sections as links
+    const items = list.locator("li");
+    const count = await items.count();
+    expect(count).toBeGreaterThanOrEqual(4);
+
+    // First item should be a link
+    await expect(items.first().getByRole("link")).toBeVisible();
+  });
+
+  test("clicking a section link scrolls and closes the list", async ({ page }) => {
+    await page.goto("/docs/guide/troubleshooting");
+
+    const progress = page.getByTestId("guide-progress");
+    await progress.getByText("In this guide").click();
+
+    const list = page.locator("#guide-progress-list");
+    await expect(list).toBeVisible();
+
+    // Click on a section link (any will do)
+    const firstLink = list.locator("li").first().getByRole("link");
+    const href = await firstLink.getAttribute("href");
+    await firstLink.click();
+
+    // List should close after clicking
+    await expect(list).not.toBeVisible();
+
+    // URL hash should update
+    expect(href).toBeTruthy();
+    await expect(page).toHaveURL(new RegExp(`#${href!.replace("#", "")}`));
+  });
+
+  test("progress appears on production-bot guide (another long guide)", async ({ page }) => {
+    await page.goto("/docs/guide/production-bot");
+
+    const progress = page.getByTestId("guide-progress");
+    await expect(progress).toBeVisible();
+    await expect(progress.getByText(/Section \d+ of \d+/)).toBeVisible();
+  });
+
+  test("guide overview page also shows progress when it has enough sections", async ({ page }) => {
+    await page.goto("/docs/guide");
+
+    // The overview page has ≥4 h2 sections so progress renders here too
+    const progress = page.getByTestId("guide-progress");
+    await expect(progress).toBeVisible();
+    await expect(progress.getByText("In this guide")).toBeVisible();
+  });
+
+  test("guide progress replaces TOC on guide pages (auth gate timing)", async ({ page }) => {
+    await page.goto("/docs/guide/key-lifecycle");
+
+    // Guide progress should be present and providing section navigation
+    const progress = page.getByTestId("guide-progress");
+    await expect(progress).toBeVisible();
+    await expect(progress.getByText(/Section \d+ of \d+/)).toBeVisible();
+
+    // DocsToc returns null on guide pages because its useEffect scans
+    // #docs-content before GuideAuthGate finishes rendering. GuideProgress
+    // has its own scanning logic that handles this correctly.
+    const tocNav = page.locator("nav[aria-label='Table of contents']");
+    await expect(tocNav).not.toBeAttached();
+  });
+});
