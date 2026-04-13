@@ -51,7 +51,7 @@ describe("waitlist-store", () => {
     delete process.env.POSTGRES_URL;
     delete process.env.DATABASE_URL;
     process.env.WAITLIST_FALLBACK_MODE = "memory";
-    process.env.NODE_ENV = "test";
+    vi.stubEnv("NODE_ENV", "test");
 
     dbMocks.ensureWaitlistTable.mockResolvedValue(undefined);
     dbMocks.upsertWaitlistSignup.mockResolvedValue({ isNew: true });
@@ -134,7 +134,7 @@ describe("waitlist-store", () => {
     });
 
     it("test helpers throw in production", () => {
-      process.env.NODE_ENV = "production";
+      vi.stubEnv("NODE_ENV", "production");
       expect(() => __resetMemoryStoreForTesting()).toThrow("not available in production");
       expect(() => __getMemoryEntriesForTesting()).toThrow("not available in production");
     });

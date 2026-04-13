@@ -25,14 +25,14 @@ function makeReq(
   url: string,
   opts: { method?: string; headers?: Record<string, string>; body?: string } = {},
 ): NextRequest {
-  const init: RequestInit & { headers: Record<string, string> } = {
+  const init = {
     method: opts.method ?? "GET",
     headers: {
       "x-forwarded-for": IP,
       ...(opts.headers ?? {}),
     },
-  };
-  if (opts.body) init.body = opts.body;
+  } satisfies RequestInit;
+  if (opts.body) (init as RequestInit & { body?: string }).body = opts.body;
   return new NextRequest(`http://localhost${url}`, init);
 }
 

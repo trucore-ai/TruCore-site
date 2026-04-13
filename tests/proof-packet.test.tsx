@@ -136,7 +136,7 @@ describe("buildProofPacket — sensitive field exclusion", () => {
   it("does not expose receipt_id in proof", () => {
     const packet = buildProofPacket(hash, { receiptId: "rcpt_999" });
     const json = JSON.stringify(packet);
-    expect((packet.proof as Record<string, unknown>).receipt_id).toBeUndefined();
+    expect((packet.proof as unknown as Record<string, unknown>).receipt_id).toBeUndefined();
     // receipt_id should not appear anywhere in the output
     expect(json).not.toContain("rcpt_999");
   });

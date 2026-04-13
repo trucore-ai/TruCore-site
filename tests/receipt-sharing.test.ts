@@ -264,7 +264,7 @@ describe("shareToTelegram", () => {
 
 describe("telemetry tracking", () => {
   // Mock fetch for telemetry
-  const mockFetch = vi.fn(() => Promise.resolve({ ok: true }));
+  const mockFetch = vi.fn((_url: string, _init?: RequestInit) => Promise.resolve({ ok: true }));
 
   beforeEach(() => {
     vi.stubGlobal("fetch", mockFetch);
@@ -286,7 +286,7 @@ describe("telemetry tracking", () => {
     );
 
     const [[, options]] = mockFetch.mock.calls;
-    const body = JSON.parse(options.body);
+    const body = JSON.parse(options!.body as string);
     expect(body.event_name).toBe("receipt_copied");
     expect(body.platform).toBe("copy");
     expect(body.receipt_id).toBe("rcpt-123");
@@ -296,7 +296,7 @@ describe("telemetry tracking", () => {
     trackReceiptShared("twitter", "rcpt-456");
 
     const [[, options]] = mockFetch.mock.calls;
-    const body = JSON.parse(options.body);
+    const body = JSON.parse(options!.body as string);
     expect(body.event_name).toBe("receipt_shared");
     expect(body.platform).toBe("twitter");
     expect(body.receipt_id).toBe("rcpt-456");

@@ -35,7 +35,7 @@ describe("portal login cookie flags", () => {
   });
 
   it("sets partner_portal_session with hardened attributes on successful login in production", async () => {
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
     dbMocks.getActivePartnerPortalTokenByHash.mockResolvedValue({
       id: "portal-token-1",
       owner_email: "partner@example.com",
@@ -60,7 +60,7 @@ describe("portal login cookie flags", () => {
   });
 
   it("does not set session cookie for invalid token", async () => {
-    process.env.NODE_ENV = "test";
+    vi.stubEnv("NODE_ENV", "test");
     dbMocks.getActivePartnerPortalTokenByHash.mockResolvedValue(null);
 
     const response = await portalLoginPost(buildPostRequest("ptl_live_invalid") as never);
@@ -70,7 +70,7 @@ describe("portal login cookie flags", () => {
   });
 
   it("allows Secure to be present or absent outside production while keeping core flags", async () => {
-    process.env.NODE_ENV = "test";
+    vi.stubEnv("NODE_ENV", "test");
     dbMocks.getActivePartnerPortalTokenByHash.mockResolvedValue({
       id: "portal-token-2",
       owner_email: "partner@example.com",

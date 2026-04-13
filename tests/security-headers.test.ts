@@ -1,9 +1,10 @@
+import { describe, expect, it } from "vitest";
 import { SECURITY_HEADERS, CSP_DIRECTIVES } from "@/lib/security-headers";
 
 describe("security headers", () => {
   it("includes required hardening headers", () => {
     const headers = new Headers(
-      SECURITY_HEADERS.map((entry) => [entry.key, entry.value]),
+      SECURITY_HEADERS.map((entry): [string, string] => [entry.key, entry.value]),
     );
 
     expect(headers.get("strict-transport-security")).toBeTruthy();

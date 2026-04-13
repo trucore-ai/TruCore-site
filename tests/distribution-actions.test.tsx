@@ -22,7 +22,7 @@ vi.mock("@/lib/track", () => ({
 import { trackEvent } from "@/lib/track";
 
 // Mock clipboard
-const mockWriteText = vi.fn(() => Promise.resolve());
+const mockWriteText = vi.fn((_text: string) => Promise.resolve());
 
 beforeEach(() => {
   vi.clearAllMocks();
