@@ -107,3 +107,140 @@ test.describe("docs sidebar search", () => {
     await expect(nav.getByRole("link", { name: "Customer Guides Overview" })).not.toBeVisible();
   });
 });
+
+/* ── DocsSearch scored-search component (mounted in docs layout) ── */
+
+test.describe("docs scored search", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+  });
+
+  test("DocsSearch input is visible on /docs", async ({ page }) => {
+    await page.goto("/docs");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await expect(input).toBeVisible();
+    await expect(input).toHaveAttribute("placeholder", "Search docs");
+  });
+
+  test("typing a query shows scored dropdown results", async ({ page }) => {
+    await page.goto("/docs");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("receipt");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+
+    // Title-match results should appear (title match scores higher)
+    await expect(listbox.getByRole("option", { name: /Receipts & Trust/i })).toBeVisible();
+  });
+
+  test("snippet/tag-aware search surfaces deeper matches", async ({ page }) => {
+    await page.goto("/docs");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    // "tamper" only appears in contentSnippets for Receipts & Trust
+    await input.fill("tamper");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+    await expect(listbox.getByRole("option", { name: /Receipts & Trust/i })).toBeVisible();
+  });
+
+  test("keyboard ArrowDown / ArrowUp cycles active result", async ({ page }) => {
+    await page.goto("/docs");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("cli");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+
+    const options = listbox.getByRole("option");
+    const count = await options.count();
+    // First option should be active (aria-selected)
+    await expect(options.nth(0)).toHaveAttribute("aria-selected", "true");
+
+    // Press ArrowDown to move to second option
+    await input.press("ArrowDown");
+    if (count > 1) {
+      await expect(options.nth(1)).toHaveAttribute("aria-selected", "true");
+      await expect(options.nth(0)).toHaveAttribute("aria-selected", "false");
+    }
+
+    // Press ArrowUp to return to first
+    await input.press("ArrowUp");
+    await expect(options.nth(0)).toHaveAttribute("aria-selected", "true");
+  });
+
+  test("Enter navigates to the active result", async ({ page }) => {
+    await page.goto("/docs");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("quickstart");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+
+    // The first result should be "Quickstart" (title match scores highest)
+    const firstOption = listbox.getByRole("option").nth(0);
+    await expect(firstOption).toHaveAttribute("aria-selected", "true");
+
+    await input.press("Enter");
+    await expect(page).toHaveURL(/\/docs\//);
+  });
+
+  test("clicking a result navigates correctly", async ({ page }) => {
+    await page.goto("/docs");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("permit");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+
+    // Click the first result
+    await listbox.getByRole("option").nth(0).click();
+    await expect(page).toHaveURL(/\/docs\//);
+  });
+
+  test("no-match query shows empty state", async ({ page }) => {
+    await page.goto("/docs");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("xyznonexistent99");
+
+    await expect(page.getByText("No matching docs found.")).toBeVisible();
+  });
+
+  test("Escape closes the dropdown", async ({ page }) => {
+    await page.goto("/docs");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    await input.fill("receipt");
+
+    const listbox = page.getByRole("listbox", { name: "Docs search results" });
+    await expect(listbox).toBeVisible();
+
+    await input.press("Escape");
+    await expect(listbox).not.toBeVisible();
+  });
+
+  test("authenticated docs are excluded for public visitors", async ({ page }) => {
+    await page.goto("/docs");
+
+    const input = page.getByRole("combobox", { name: "Search documentation" });
+    // Search for terms that might match guide content
+    await input.fill("key lifecycle");
+
+    // The listbox may or may not appear, but no guide results should be present
+    const guideOption = page.getByRole("option", { name: /Customer Guides/i });
+    await expect(guideOption).not.toBeVisible();
+
+    // Also try a broader guide-specific search
+    await input.fill("webhooks debugging");
+    const webhookGuide = page.getByRole("option", { name: /Webhook Setup/i });
+    await expect(webhookGuide).not.toBeVisible();
+  });
+});

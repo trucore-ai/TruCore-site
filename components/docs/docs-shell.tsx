@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { DocsBreadcrumbs } from "@/components/docs/docs-breadcrumbs";
 import { DocsNavSidebar } from "@/components/docs/docs-nav-sidebar";
+import { DocsSearch } from "@/components/docs-search";
 import { DocsToc } from "@/components/docs/docs-toc";
 
 type DocsShellProps = {
@@ -30,6 +31,10 @@ export function DocsShell({ children }: DocsShellProps) {
           <div className="mb-8">
             <DocsBreadcrumbs />
             <div className="gradient-divider mt-5" aria-hidden="true" />
+          </div>
+
+          <div className="mb-8">
+            <DocsSearch />
           </div>
 
           <div id="docs-content" className="docs-content prose-docs">

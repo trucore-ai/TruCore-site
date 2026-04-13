@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
-import { docsIndex } from "@/lib/docs-index";
+import { docsIndex, type DocsIndexEntry } from "@/lib/docs-index";
 
 type SearchResult = {
   href: string;
@@ -28,7 +28,7 @@ function buildSnippet(title: string, snippets: string[], tags: string[], query: 
   return title;
 }
 
-export function DocsSearch() {
+export function DocsSearch({ entries }: { entries?: DocsIndexEntry[] }) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
@@ -37,12 +37,18 @@ export function DocsSearch() {
 
   const normalizedQuery = query.trim().toLowerCase();
 
+  /** Default to public-only entries from the shared docsIndex. */
+  const searchableEntries = useMemo(
+    () => (entries ?? docsIndex).filter((e) => !e.authRequired),
+    [entries],
+  );
+
   const results = useMemo<SearchResult[]>(() => {
     if (!normalizedQuery) {
       return [];
     }
 
-    const scored = docsIndex
+    const scored = searchableEntries
       .map((entry) => {
         const haystack = [
           entry.title,
@@ -89,7 +95,7 @@ export function DocsSearch() {
       .map(({ href, title, snippet }) => ({ href, title, snippet }));
 
     return scored;
-  }, [normalizedQuery]);
+  }, [normalizedQuery, searchableEntries]);
 
   const safeActiveIndex = results.length
     ? Math.min(activeIndex, results.length - 1)
@@ -157,7 +163,7 @@ export function DocsSearch() {
   return (
     <div ref={containerRef} className="relative w-full max-w-xl">
       <label htmlFor="docs-search" className="sr-only">
-        Search docs
+        Search documentation
       </label>
       <input
         id="docs-search"

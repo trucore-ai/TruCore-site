@@ -3,6 +3,8 @@ export type DocsIndexEntry = {
   title: string;
   contentSnippets: string[];
   tags: string[];
+  /** When true, the entry is only visible to authenticated customers. */
+  authRequired?: boolean;
 };
 
 export const docsIndex: DocsIndexEntry[] = [
