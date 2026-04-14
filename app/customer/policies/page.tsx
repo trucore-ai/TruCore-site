@@ -1171,6 +1171,7 @@ export default function CustomerPoliciesPage() {
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const [editing, setEditing] = useState(false);
+  const [highlightFieldKey, setHighlightFieldKey] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -1221,7 +1222,26 @@ export default function CustomerPoliciesPage() {
   }, [router, loadPolicy, loadHistorySummary]);
 
   // Initialize form values from current overrides when entering edit mode.
-  function enterEditMode() {
+  // Scroll to and briefly highlight the target field after edit form mounts.
+  useEffect(() => {
+    if (!editing || !highlightFieldKey) return;
+    const timer = setTimeout(() => {
+      const el = document.querySelector(`[data-field-key="${highlightFieldKey}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-amber-400/60", "rounded-xl");
+        const fade = setTimeout(() => {
+          el.classList.remove("ring-2", "ring-amber-400/60", "rounded-xl");
+          setHighlightFieldKey(null);
+        }, 1500);
+        return () => clearTimeout(fade);
+      }
+      setHighlightFieldKey(null);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [editing, highlightFieldKey]);
+
+  function enterEditMode(fieldKey?: string) {
     const values: Record<string, string> = {};
     const lists: Record<string, string[]> = {};
     const overrides = policy?.overrides ?? {};
@@ -1266,6 +1286,7 @@ export default function CustomerPoliciesPage() {
     });
     setSaveError("");
     setSaveSuccess(false);
+    setHighlightFieldKey(fieldKey ?? null);
     setEditing(true);
   }
 
@@ -1923,7 +1944,7 @@ export default function CustomerPoliciesPage() {
                           {overridesEnabled && rec.fieldKey && (
                             <button
                               type="button"
-                              onClick={enterEditMode}
+                              onClick={() => enterEditMode(rec.fieldKey)}
                               className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
                               data-testid={`recommendation-action-${rec.id}`}
                             >
@@ -1985,7 +2006,7 @@ export default function CustomerPoliciesPage() {
               </div>
               {!editing && (
                 <button
-                  onClick={enterEditMode}
+                  onClick={() => enterEditMode()}
                   className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-medium text-amber-200 transition hover:bg-amber-500/20"
                 >
                   Edit Overrides
@@ -2013,7 +2034,8 @@ export default function CustomerPoliciesPage() {
                     return (
                       <div
                         key={group.id}
-                        className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-4"
+                        className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-4 transition-shadow duration-300"
+                        data-field-key="token_policy"
                       >
                         <div>
                           <h3 className="text-xs font-semibold text-slate-200">
@@ -2183,10 +2205,12 @@ export default function CustomerPoliciesPage() {
                     (f) => f.group === group.id,
                   );
                   if (groupFields.length === 0) return null;
+                  const groupFieldKeys = groupFields.map((f) => f.key);
                   return (
                     <div
                       key={group.id}
-                      className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-4"
+                      className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-4 transition-shadow duration-300"
+                      {...(groupFieldKeys.length === 1 ? { "data-field-key": groupFieldKeys[0] } : {})}
                     >
                       <div>
                         <h3 className="text-xs font-semibold text-slate-200">
@@ -2207,7 +2231,7 @@ export default function CustomerPoliciesPage() {
                               ? (listValues[field.key] ?? []).length === 0
                               : (formValues[field.key] ?? "") === "";
                           return (
-                            <div key={field.key} className="space-y-1.5">
+                            <div key={field.key} className="space-y-1.5" data-field-key={field.key}>
                               <div className="flex items-center justify-between">
                                 <label
                                   htmlFor={`override-${field.key}`}

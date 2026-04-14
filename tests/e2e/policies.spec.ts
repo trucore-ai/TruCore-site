@@ -866,3 +866,253 @@ test.describe("customer policies — mixed recommendation sources", () => {
     await expect(tokenCard).not.toBeVisible();
   });
 });
+
+// ────────────────────────────────────────────────────────────────────────────
+// Recommendation action buttons (View setting →)
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — recommendation action buttons", () => {
+  test.describe("deterministic recommendation actions", () => {
+    test.beforeEach(async ({ page }) => {
+      await silenceAnalytics(page);
+      await mockAuthRoutes(page, { emailVerified: true });
+      await mockDashboardRoutes(page);
+      await mockPolicyRoutes(page, { plan: "pro" });
+      await mockReceiptSummaryRoute(page);
+      await injectCustomerAuth(page);
+    });
+
+    test("clicking 'View setting' on a deterministic recommendation enters edit mode", async ({ page }) => {
+      await page.goto("/customer/policies");
+
+      // Wait for recommendations to render
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // add-program-restrictions is the deterministic rec with fieldKey for PRO_POLICY
+      const actionBtn = page.getByTestId("recommendation-action-add-program-restrictions");
+      await expect(actionBtn).toBeVisible();
+      await expect(actionBtn).toContainText("View setting");
+
+      // Click the action button
+      await actionBtn.click();
+
+      // Recommendations section should be hidden (edit mode active)
+      await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+
+      // Edit mode elements should be visible
+      await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Save Overrides" })).toBeVisible();
+    });
+
+    test("'View setting' scrolls to and highlights the target field", async ({ page }) => {
+      await page.goto("/customer/policies");
+
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // add-program-restrictions targets allowed_programs
+      const actionBtn = page.getByTestId("recommendation-action-add-program-restrictions");
+      await actionBtn.click();
+
+      const targetField = page.locator('[data-field-key="allowed_programs"]').first();
+      await expect(targetField).toBeVisible();
+
+      // The element should have the highlight ring class applied briefly
+      await expect(targetField).toHaveClass(/ring-amber-400/, { timeout: 2000 });
+    });
+
+    test("'View setting' on a programs recommendation targets the correct field", async ({ page }) => {
+      await page.goto("/customer/policies");
+
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // add-program-restrictions targets allowed_programs
+      const actionBtn = page.getByTestId("recommendation-action-add-program-restrictions");
+      await expect(actionBtn).toBeVisible();
+      await actionBtn.click();
+
+      const targetField = page.locator('[data-field-key="allowed_programs"]').first();
+      await expect(targetField).toBeVisible();
+      await expect(targetField).toHaveClass(/ring-amber-400/, { timeout: 2000 });
+    });
+
+    test("recommendations without fieldKey do not render action button", async ({ page }) => {
+      await page.goto("/customer/policies");
+
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // customize-policy has no fieldKey — should not have an action button
+      const customizeCard = page.getByTestId("recommendation-customize-policy");
+      if (await customizeCard.isVisible()) {
+        await expect(
+          customizeCard.getByRole("button", { name: /View setting/ }),
+        ).not.toBeVisible();
+      }
+    });
+
+    test("no action buttons on free plan even when fieldKey exists", async ({ page }) => {
+      await mockPolicyRoutes(page, { plan: "free" });
+      await page.goto("/customer/policies");
+
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // Free plan → overridesEnabled is false → no action buttons at all
+      const actionButtons = page.locator("[data-testid^='recommendation-action-']");
+      await expect(actionButtons).toHaveCount(0);
+    });
+  });
+
+  test.describe("history-aware recommendation actions", () => {
+    test.beforeEach(async ({ page }) => {
+      await silenceAnalytics(page);
+      await mockAuthRoutes(page, { emailVerified: true });
+      await mockDashboardRoutes(page);
+      await mockPolicyRoutes(page, { plan: "pro" });
+      await mockReceiptSummaryRoute(page, { variant: "rich" });
+      await injectCustomerAuth(page);
+    });
+
+    test("clicking 'View setting' on a history-aware recommendation enters edit mode", async ({ page }) => {
+      await page.goto("/customer/policies");
+
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // Pick a history recommendation with fieldKey — e.g., history-slippage-headroom
+      const actionBtn = page.getByTestId("recommendation-action-history-slippage-headroom");
+      await expect(actionBtn).toBeVisible();
+      await actionBtn.click();
+
+      // Edit mode should be active
+      await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+      await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+    });
+
+    test("history recommendation 'View setting' highlights correct field", async ({ page }) => {
+      await page.goto("/customer/policies");
+
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // history-slippage-headroom targets max_slippage_bps
+      const actionBtn = page.getByTestId("recommendation-action-history-slippage-headroom");
+      await actionBtn.click();
+
+      const targetField = page.locator('[data-field-key="max_slippage_bps"]').first();
+      await expect(targetField).toBeVisible();
+      await expect(targetField).toHaveClass(/ring-amber-400/, { timeout: 2000 });
+    });
+
+    test("history recommendation targeting token_policy highlights token group", async ({ page }) => {
+      await page.goto("/customer/policies");
+
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // history-narrow-tokens targets token_policy
+      const actionBtn = page.getByTestId("recommendation-action-history-narrow-tokens");
+      await expect(actionBtn).toBeVisible();
+      await actionBtn.click();
+
+      const tokenGroup = page.locator('[data-field-key="token_policy"]');
+      await expect(tokenGroup).toBeVisible();
+      await expect(tokenGroup).toHaveClass(/ring-amber-400/, { timeout: 2000 });
+    });
+
+    test("history-recent-denials does not render action button (no fieldKey)", async ({ page }) => {
+      await page.goto("/customer/policies");
+
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      const denialCard = page.getByTestId("recommendation-history-recent-denials");
+      await expect(denialCard).toBeVisible();
+
+      // No action button since history-recent-denials has no fieldKey
+      await expect(
+        denialCard.getByRole("button", { name: /View setting/ }),
+      ).not.toBeVisible();
+    });
+  });
+
+  test.describe("edge cases", () => {
+    test.beforeEach(async ({ page }) => {
+      await silenceAnalytics(page);
+      await mockAuthRoutes(page, { emailVerified: true });
+      await mockDashboardRoutes(page);
+      await mockReceiptSummaryRoute(page);
+      await injectCustomerAuth(page);
+    });
+
+    test("recommendation section behaves correctly with no recommendations", async ({ page }) => {
+      // Use a policy where all best practices are already followed:
+      // simulation required, tight slippage, token allowlist set, programs restricted
+      await page.route("**/api/customer/policy", (route) => {
+        if (route.request().url().includes("/overrides")) return route.fallback();
+        return route.fulfill({
+          status: 200,
+          json: {
+            plan_code: "pro",
+            plan_limits: {
+              tx_limit_per_month: 5000,
+              policy_overrides_enabled: true,
+              max_notional_usd: 25000,
+              max_value_sol: 1000,
+              max_slippage_bps: 50,
+              require_simulation_success: true,
+            },
+            overrides: {
+              max_slippage_bps: 50,
+              require_simulation_success: true,
+              token_policy: { mode: "allowlist", allowed_mints: ["SOL", "USDC"], denied_mints: [] },
+              allowed_programs: ["11111111111111111111111111111111"],
+            },
+            effective: {
+              tx_limit_per_month: 5000,
+              max_notional_usd: 25000,
+              max_value_sol: 1000,
+              max_slippage_bps: 50,
+              require_simulation_success: true,
+              token_policy: { mode: "allowlist", allowed_mints: ["SOL", "USDC"], denied_mints: [] },
+              allowed_programs: ["11111111111111111111111111111111"],
+            },
+          },
+        });
+      });
+      await page.goto("/customer/policies");
+
+      // With tight policy + empty history, should have very few/no recommendations
+      // The section may not render at all, or render with zero cards
+      const recSection = page.getByTestId("policy-recommendations");
+      const isVisible = await recSection.isVisible().catch(() => false);
+      if (isVisible) {
+        // If section is visible, action buttons should only exist on cards with fieldKey
+        const cards = page.getByTestId("recommendation-cards").locator("[data-testid^='recommendation-']");
+        const count = await cards.count();
+        for (let i = 0; i < count; i++) {
+          const card = cards.nth(i);
+          const cardTestId = await card.getAttribute("data-testid");
+          if (!cardTestId || cardTestId.startsWith("recommendation-action-")) continue;
+          // Each card's action button should only exist when the card has fieldKey
+          const actionBtn = card.locator("[data-testid^='recommendation-action-']");
+          const btnCount = await actionBtn.count();
+          // Action buttons should be at most 1 per card
+          expect(btnCount).toBeLessThanOrEqual(1);
+        }
+      }
+    });
+
+    test("highlight clears after timeout (does not persist)", async ({ page }) => {
+      await mockPolicyRoutes(page, { plan: "pro" });
+      await page.goto("/customer/policies");
+
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      const actionBtn = page.getByTestId("recommendation-action-add-program-restrictions");
+      await actionBtn.click();
+
+      const targetField = page.locator('[data-field-key="allowed_programs"]').first();
+
+      // Highlight appears
+      await expect(targetField).toHaveClass(/ring-amber-400/, { timeout: 2000 });
+
+      // Highlight clears after ~1.5s
+      await expect(targetField).not.toHaveClass(/ring-amber-400/, { timeout: 5000 });
+    });
+  });
+});
