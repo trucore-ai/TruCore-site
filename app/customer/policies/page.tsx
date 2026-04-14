@@ -9,6 +9,7 @@ import {
   updatePolicyOverrides,
   type EffectivePolicyResponse,
 } from "@/lib/customer-auth";
+import { PremiumSlider } from "@/components/premium-slider";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -85,6 +86,12 @@ const EDITABLE_FIELDS = [
 ] as const;
 
 type EditableKey = (typeof EDITABLE_FIELDS)[number]["key"];
+
+const NUMERIC_FORMAT: Record<string, (v: number) => string> = {
+  max_slippage_bps: (v) => `${v.toLocaleString()} bps`,
+  max_notional_usd: (v) => `$${v.toLocaleString()}`,
+  max_value_sol: (v) => `${v.toLocaleString()} SOL`,
+};
 
 // ---------------------------------------------------------------------------
 // Page
@@ -545,16 +552,15 @@ export default function CustomerPoliciesPage() {
                         </div>
                       </div>
                     ) : (
-                      <input
+                      <PremiumSlider
                         id={`override-${field.key}`}
-                        type="number"
-                        min={"min" in field ? field.min : undefined}
-                        max={"max" in field ? field.max : undefined}
+                        min={"min" in field ? field.min : 0}
+                        max={"max" in field ? field.max : 100}
                         placeholder={"placeholder" in field ? field.placeholder : undefined}
                         value={formValues[field.key] ?? ""}
-                        onChange={(e) => updateField(field.key, e.target.value)}
+                        onChange={(v) => updateField(field.key, v)}
                         disabled={saving}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 outline-none transition focus:border-amber-500/40 disabled:opacity-50"
+                        formatDisplay={NUMERIC_FORMAT[field.key]}
                       />
                     )}
                     <p className="text-[10px] text-slate-500">{field.hint}</p>
