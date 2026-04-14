@@ -865,6 +865,7 @@ describe("CustomerPoliciesPage", () => {
     });
   });
 
+  // -----------------------------------------------------------------------
   // Backend validation errors (422)
   // -----------------------------------------------------------------------
 
@@ -895,6 +896,143 @@ describe("CustomerPoliciesPage", () => {
           screen.getByText("Unsupported override key: bad_key"),
         ).toBeTruthy();
       });
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Effective Policy Preview
+  // -----------------------------------------------------------------------
+
+  describe("effective policy preview", () => {
+    it("renders policy-at-a-glance section in view mode", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Policy at a Glance")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("policy-preview")).toBeTruthy();
+      expect(screen.getByTestId("policy-rules")).toBeTruthy();
+    });
+
+    it("shows plain-English rule for transaction limits", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Transactions above \$25,000 USD will be denied/),
+        ).toBeTruthy();
+      });
+    });
+
+    it("shows plain-English rule for slippage", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Slippage is capped at 100 bps/)).toBeTruthy();
+      });
+    });
+
+    it("shows plain-English rule for simulation", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Simulation must succeed before execution."),
+        ).toBeTruthy();
+      });
+    });
+
+    it("shows token policy explanation for allowlist", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_TOKEN_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/2 approved tokens are permitted/),
+        ).toBeTruthy();
+      });
+    });
+
+    it("marks overridden rules with Override badge", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_OVERRIDES);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-rules")).toBeTruthy();
+      });
+
+      // max_slippage_bps is overridden — check that its rule has "Override" badge
+      const rules = screen.getByTestId("policy-rules");
+      const overrideBadges = rules.querySelectorAll("span");
+      const overrideTexts = Array.from(overrideBadges).map((el) => el.textContent);
+      expect(overrideTexts.some((t) => t === "Override")).toBe(true);
+      expect(overrideTexts.some((t) => t === "Default")).toBe(true);
+    });
+
+    it("shows what-this-means outcomes section", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-outcomes")).toBeTruthy();
+      });
+
+      expect(screen.getByText("What this means")).toBeTruthy();
+      expect(
+        screen.getByText("If simulation fails, execution will not proceed."),
+      ).toBeTruthy();
+    });
+
+    it("hides preview in edit mode", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      expect(screen.queryByTestId("policy-preview")).toBeNull();
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Source badges in effective policy grid
+  // -----------------------------------------------------------------------
+
+  describe("source badges on effective policy values", () => {
+    it("shows Override badge for overridden fields", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_OVERRIDES);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("source-badge-max_slippage_bps")).toBeTruthy();
+      });
+
+      expect(
+        screen.getByTestId("source-badge-max_slippage_bps").textContent,
+      ).toBe("Override");
+    });
+
+    it("shows Default badge for non-overridden fields", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_OVERRIDES);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("source-badge-require_simulation_success"),
+        ).toBeTruthy();
+      });
+
+      expect(
+        screen.getByTestId("source-badge-require_simulation_success").textContent,
+      ).toBe("Default");
     });
   });
 });

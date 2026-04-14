@@ -445,6 +445,55 @@ test.describe("customer policies — token policy editor", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────────
+// Effective Policy Preview
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — effective policy preview", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await injectCustomerAuth(page);
+  });
+
+  test("policy at a glance section is visible in view mode", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-preview")).toBeVisible();
+    await expect(page.getByText("Policy at a Glance")).toBeVisible();
+    await expect(page.getByTestId("policy-rules")).toBeVisible();
+  });
+
+  test("plain-English rules describe effective policy", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    // Should have at least one rule
+    const rules = page.getByTestId("policy-rules").locator("li");
+    await expect(rules.first()).toBeVisible();
+    const count = await rules.count();
+    expect(count).toBeGreaterThanOrEqual(3);
+  });
+
+  test("what-this-means outcomes section is shown", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-outcomes")).toBeVisible();
+    await expect(page.getByText("What this means")).toBeVisible();
+  });
+
+  test("preview is hidden when entering edit mode", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-preview")).toBeVisible();
+
+    await page.getByRole("button", { name: "Edit Overrides" }).click();
+
+    await expect(page.getByTestId("policy-preview")).not.toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
 // Unauthenticated — redirect
 // ────────────────────────────────────────────────────────────────────────────
 

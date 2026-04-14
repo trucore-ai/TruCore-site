@@ -463,6 +463,164 @@ function rangeGuidance(
 }
 
 // ---------------------------------------------------------------------------
+// Plain-English policy rule generation
+// ---------------------------------------------------------------------------
+
+interface PolicyRule {
+  text: string;
+  source: "default" | "override";
+  category: "limits" | "safety" | "tokens" | "programs";
+}
+
+function generatePolicyRules(
+  effective: Record<string, unknown>,
+  overrides: Record<string, unknown>,
+): PolicyRule[] {
+  const rules: PolicyRule[] = [];
+  const isOverride = (key: string) =>
+    Object.prototype.hasOwnProperty.call(overrides, key);
+
+  // Transaction limits
+  const maxUsd = effective.max_notional_usd;
+  if (typeof maxUsd === "number" && maxUsd > 0) {
+    rules.push({
+      text: `Transactions above $${maxUsd.toLocaleString()} USD will be denied.`,
+      source: isOverride("max_notional_usd") ? "override" : "default",
+      category: "limits",
+    });
+  }
+
+  const maxSol = effective.max_value_sol;
+  if (typeof maxSol === "number" && maxSol > 0) {
+    rules.push({
+      text: `Transactions above ${maxSol.toLocaleString()} SOL will be denied.`,
+      source: isOverride("max_value_sol") ? "override" : "default",
+      category: "limits",
+    });
+  }
+
+  // Slippage
+  const slippage = effective.max_slippage_bps;
+  if (typeof slippage === "number") {
+    const pct = slippage / 100;
+    const pctStr = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(2);
+    rules.push({
+      text: `Slippage is capped at ${slippage} bps (${pctStr}%).`,
+      source: isOverride("max_slippage_bps") ? "override" : "default",
+      category: "safety",
+    });
+  }
+
+  // Simulation
+  const simRequired = effective.require_simulation_success;
+  if (simRequired === true) {
+    rules.push({
+      text: "Simulation must succeed before execution.",
+      source: isOverride("require_simulation_success") ? "override" : "default",
+      category: "safety",
+    });
+  } else if (simRequired === false) {
+    rules.push({
+      text: "Transactions may execute without successful simulation.",
+      source: isOverride("require_simulation_success") ? "override" : "default",
+      category: "safety",
+    });
+  }
+
+  // Token policy
+  const tp = effective.token_policy;
+  if (tp && typeof tp === "object" && !Array.isArray(tp)) {
+    const tpObj = tp as Record<string, unknown>;
+    const mode = String(tpObj.mode ?? "unrestricted");
+    const allowed = Array.isArray(tpObj.allowed_mints) ? tpObj.allowed_mints.length : 0;
+    const denied = Array.isArray(tpObj.denied_mints) ? tpObj.denied_mints.length : 0;
+    if (mode === "allowlist") {
+      rules.push({
+        text: allowed > 0
+          ? `Only ${allowed} approved token${allowed !== 1 ? "s are" : " is"} permitted.`
+          : "Token allowlist is active but empty — all tokens are currently blocked.",
+        source: isOverride("token_policy") ? "override" : "default",
+        category: "tokens",
+      });
+    } else if (mode === "denylist") {
+      rules.push({
+        text: denied > 0
+          ? `${denied} token${denied !== 1 ? "s are" : " is"} blocked. All others are permitted.`
+          : "Token blocklist is active but empty — no tokens are blocked.",
+        source: isOverride("token_policy") ? "override" : "default",
+        category: "tokens",
+      });
+    } else {
+      rules.push({
+        text: "Token access is unrestricted.",
+        source: isOverride("token_policy") ? "override" : "default",
+        category: "tokens",
+      });
+    }
+  }
+
+  // Program controls
+  const allowedProgs = effective.allowed_programs;
+  const deniedProgs = effective.denied_programs;
+  if (Array.isArray(allowedProgs) && allowedProgs.length > 0) {
+    rules.push({
+      text: `Only ${allowedProgs.length} approved program${allowedProgs.length !== 1 ? "s may" : " may"} be invoked.`,
+      source: isOverride("allowed_programs") ? "override" : "default",
+      category: "programs",
+    });
+  }
+  if (Array.isArray(deniedProgs) && deniedProgs.length > 0) {
+    rules.push({
+      text: `${deniedProgs.length} program${deniedProgs.length !== 1 ? "s are" : " is"} blocked from execution.`,
+      source: isOverride("denied_programs") ? "override" : "default",
+      category: "programs",
+    });
+  }
+  if (
+    (!Array.isArray(allowedProgs) || allowedProgs.length === 0) &&
+    (!Array.isArray(deniedProgs) || deniedProgs.length === 0)
+  ) {
+    rules.push({
+      text: "All on-chain programs are permitted.",
+      source: "default",
+      category: "programs",
+    });
+  }
+
+  return rules;
+}
+
+// ---------------------------------------------------------------------------
+// What-this-means outcomes
+// ---------------------------------------------------------------------------
+
+function generateOutcomes(
+  effective: Record<string, unknown>,
+): string[] {
+  const outcomes: string[] = [];
+  const maxUsd = effective.max_notional_usd;
+  const maxSol = effective.max_value_sol;
+  if ((typeof maxUsd === "number" && maxUsd > 0) || (typeof maxSol === "number" && maxSol > 0)) {
+    outcomes.push("Large trades outside your limits will be blocked.");
+  }
+  if (effective.require_simulation_success === true) {
+    outcomes.push("If simulation fails, execution will not proceed.");
+  }
+  const tp = effective.token_policy;
+  if (tp && typeof tp === "object" && !Array.isArray(tp)) {
+    const mode = String((tp as Record<string, unknown>).mode ?? "unrestricted");
+    if (mode === "unrestricted") {
+      outcomes.push("When token policy is unrestricted, token access is governed by other active rules.");
+    } else if (mode === "allowlist") {
+      outcomes.push("Allowlist mode means only listed tokens are permitted.");
+    } else if (mode === "denylist") {
+      outcomes.push("Blocklist mode means listed tokens are blocked; everything else is allowed.");
+    }
+  }
+  return outcomes;
+}
+
+// ---------------------------------------------------------------------------
 // Human-readable labels for effective policy display
 // ---------------------------------------------------------------------------
 
@@ -857,6 +1015,7 @@ export default function CustomerPoliciesPage() {
     title: string,
     keys: string[],
     values: Record<string, unknown>,
+    policyOverrides?: Record<string, unknown>,
   ) {
     const entries = keys
       .filter((k) => values[k] !== undefined)
@@ -868,16 +1027,33 @@ export default function CustomerPoliciesPage() {
           {title}
         </h3>
         <div className="divide-y divide-white/5">
-          {entries.map(({ key, value }) => (
-            <div key={key} className="flex items-center justify-between py-2.5">
-              <span className="text-xs text-slate-400">
-                {EFFECTIVE_LABELS[key] ?? key}
-              </span>
-              <span className="text-xs text-slate-200 font-medium">
-                {renderValue(key, value)}
-              </span>
-            </div>
-          ))}
+          {entries.map(({ key, value }) => {
+            const isOverride = policyOverrides
+              ? Object.prototype.hasOwnProperty.call(policyOverrides, key)
+              : false;
+            return (
+              <div key={key} className="flex items-center justify-between py-2.5">
+                <span className="text-xs text-slate-400 flex items-center gap-2">
+                  {EFFECTIVE_LABELS[key] ?? key}
+                  {policyOverrides && (
+                    <span
+                      className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium leading-none ${
+                        isOverride
+                          ? "bg-amber-500/15 text-amber-300 border border-amber-500/20"
+                          : "bg-white/5 text-slate-500 border border-white/5"
+                      }`}
+                      data-testid={`source-badge-${key}`}
+                    >
+                      {isOverride ? "Override" : "Default"}
+                    </span>
+                  )}
+                </span>
+                <span className="text-xs text-slate-200 font-medium">
+                  {renderValue(key, value)}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -1023,28 +1199,86 @@ export default function CustomerPoliciesPage() {
 
         {/* Effective policy (view mode) */}
         {!editing && (
-          <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-5">
-            <h2 className="text-sm font-medium text-slate-300">
-              Effective Policy
-            </h2>
-            <p className="text-[10px] text-slate-500">
-              These are the merged values that the firewall enforces on every
-              transaction. Plan defaults are combined with any custom overrides.
-            </p>
-            {renderEffectiveSection("Transaction Limits", limitKeys, effective)}
-            {renderEffectiveSection("Execution Safety", protectionKeys, effective)}
-            {renderEffectiveSection("Token Controls", tokenKeys, effective)}
-            {renderEffectiveSection("Program Controls", programKeys, effective)}
+          <>
+            {/* Policy at a Glance — plain-English summary */}
+            <section
+              className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-4"
+              data-testid="policy-preview"
+            >
+              <h2 className="text-sm font-medium text-slate-200">
+                Policy at a Glance
+              </h2>
+              <p className="text-[10px] text-slate-500">
+                A plain-English summary of your current effective policy.
+              </p>
+              <ul className="space-y-2" data-testid="policy-rules">
+                {generatePolicyRules(effective, overrides).map((rule, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0 text-[10px] leading-none text-slate-600">
+                      &#9679;
+                    </span>
+                    <span className="text-xs text-slate-300 leading-relaxed">
+                      {rule.text}
+                    </span>
+                    <span
+                      className={`ml-auto shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-medium leading-none ${
+                        rule.source === "override"
+                          ? "bg-amber-500/15 text-amber-300 border border-amber-500/20"
+                          : "bg-white/5 text-slate-500 border border-white/5"
+                      }`}
+                    >
+                      {rule.source === "override" ? "Override" : "Default"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-            {/* Catch-all for any extra effective keys */}
-            {(() => {
-              const known = new Set([...limitKeys, ...tokenKeys, ...protectionKeys, ...programKeys]);
-              const extra = Object.keys(effective).filter((k) => !known.has(k));
-              return extra.length > 0
-                ? renderEffectiveSection("Other", extra, effective)
-                : null;
-            })()}
-          </section>
+              {/* What this means */}
+              {(() => {
+                const outcomes = generateOutcomes(effective);
+                if (outcomes.length === 0) return null;
+                return (
+                  <div
+                    className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3 space-y-1.5"
+                    data-testid="policy-outcomes"
+                  >
+                    <p className="text-[10px] font-medium text-slate-400">
+                      What this means
+                    </p>
+                    {outcomes.map((o, i) => (
+                      <p key={i} className="text-[10px] text-slate-500 leading-relaxed">
+                        {o}
+                      </p>
+                    ))}
+                  </div>
+                );
+              })()}
+            </section>
+
+            {/* Detailed effective policy grid */}
+            <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-5">
+              <h2 className="text-sm font-medium text-slate-300">
+                Effective Policy
+              </h2>
+              <p className="text-[10px] text-slate-500">
+                These are the merged values that the firewall enforces on every
+                transaction. Plan defaults are combined with any custom overrides.
+              </p>
+              {renderEffectiveSection("Transaction Limits", limitKeys, effective, overrides)}
+              {renderEffectiveSection("Execution Safety", protectionKeys, effective, overrides)}
+              {renderEffectiveSection("Token Controls", tokenKeys, effective, overrides)}
+              {renderEffectiveSection("Program Controls", programKeys, effective, overrides)}
+
+              {/* Catch-all for any extra effective keys */}
+              {(() => {
+                const known = new Set([...limitKeys, ...tokenKeys, ...protectionKeys, ...programKeys]);
+                const extra = Object.keys(effective).filter((k) => !known.has(k));
+                return extra.length > 0
+                  ? renderEffectiveSection("Other", extra, effective, overrides)
+                  : null;
+              })()}
+            </section>
+          </>
         )}
 
         {/* Overrides — editable or read-only */}
