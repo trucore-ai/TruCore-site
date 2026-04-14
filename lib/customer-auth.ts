@@ -1098,6 +1098,16 @@ export async function updatePolicyOverrides(
     throw new ApiError("forbidden", msg);
   }
 
+  if (res.status === 422) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    // Backend returns { detail: { error, message, validation_errors } }
+    const detail = typeof body.detail === "object" && body.detail !== null ? body.detail as Record<string, unknown> : body;
+    const errors = Array.isArray(detail.validation_errors) ? detail.validation_errors as string[] : [];
+    const msg = errors.length > 0 ? errors.join(" ") : (typeof detail.message === "string" ? detail.message : "One or more override values are invalid.");
+    throw new ApiError("invalid_overrides", msg);
+  }
+
   if (res.status === 429) {
     await throwApiError(res, "Rate limit reached. Please try again later.");
   }

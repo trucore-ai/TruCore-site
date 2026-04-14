@@ -29,7 +29,7 @@ function tierLabel(code: string): string {
   return labels[code] ?? code;
 }
 
-// Editable override fields exposed in the first version.
+// Editable override fields exposed for policy customization.
 const EDITABLE_FIELDS = [
   {
     key: "max_slippage_bps",
@@ -50,10 +50,37 @@ const EDITABLE_FIELDS = [
     hint: "Maximum notional transaction value in USD.",
   },
   {
+    key: "max_value_sol",
+    label: "Max Value (SOL)",
+    type: "number" as const,
+    min: 1,
+    max: 100_000,
+    placeholder: "e.g. 500",
+    hint: "Maximum transaction value in SOL (1–100,000).",
+  },
+  {
     key: "require_simulation_success",
     label: "Require Simulation Success",
     type: "boolean" as const,
     hint: "When enabled, transactions must pass simulation before execution.",
+  },
+  {
+    key: "allowed_programs",
+    label: "Allowed Programs",
+    type: "list" as const,
+    maxItems: 50,
+    itemMaxLen: 64,
+    placeholder: "Program ID",
+    hint: "Only these program IDs will be permitted. Leave empty for plan default.",
+  },
+  {
+    key: "denied_programs",
+    label: "Denied Programs",
+    type: "list" as const,
+    maxItems: 50,
+    itemMaxLen: 64,
+    placeholder: "Program ID",
+    hint: "Transactions involving these program IDs will be blocked.",
   },
 ] as const;
 
@@ -75,6 +102,7 @@ export default function CustomerPoliciesPage() {
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [listValues, setListValues] = useState<Record<string, string[]>>({});
 
   const loadPolicy = useCallback(async () => {
     try {
@@ -103,16 +131,20 @@ export default function CustomerPoliciesPage() {
   // Initialize form values from current overrides when entering edit mode.
   function enterEditMode() {
     const values: Record<string, string> = {};
+    const lists: Record<string, string[]> = {};
     const overrides = policy?.overrides ?? {};
     for (const field of EDITABLE_FIELDS) {
       const current = overrides[field.key];
-      if (current !== undefined && current !== null) {
+      if (field.type === "list") {
+        lists[field.key] = Array.isArray(current) ? [...(current as string[])] : [];
+      } else if (current !== undefined && current !== null) {
         values[field.key] = String(current);
       } else {
         values[field.key] = "";
       }
     }
     setFormValues(values);
+    setListValues(lists);
     setSaveError("");
     setSaveSuccess(false);
     setEditing(true);
@@ -122,10 +154,29 @@ export default function CustomerPoliciesPage() {
     setEditing(false);
     setSaveError("");
     setSaveSuccess(false);
+    setListValues({});
   }
 
   function updateField(key: string, value: string) {
     setFormValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function addListItem(key: string, value: string) {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    setListValues((prev) => {
+      const current = prev[key] ?? [];
+      if (current.includes(trimmed)) return prev;
+      return { ...prev, [key]: [...current, trimmed] };
+    });
+  }
+
+  function removeListItem(key: string, index: number) {
+    setListValues((prev) => {
+      const current = [...(prev[key] ?? [])];
+      current.splice(index, 1);
+      return { ...prev, [key]: current };
+    });
   }
 
   async function handleSave() {
@@ -144,6 +195,24 @@ export default function CustomerPoliciesPage() {
 
     // Apply editable field values.
     for (const field of EDITABLE_FIELDS) {
+      if (field.type === "list") {
+        const items = listValues[field.key] ?? [];
+        if (items.length === 0) continue; // omit if empty = revert to plan default
+        // Client-side validation for list fields
+        if (items.length > field.maxItems) {
+          setSaveError(`${field.label} must have at most ${field.maxItems} entries.`);
+          return;
+        }
+        for (const item of items) {
+          if (item.length === 0 || item.length > field.itemMaxLen) {
+            setSaveError(`${field.label} entries must be 1–${field.itemMaxLen} characters.`);
+            return;
+          }
+        }
+        newOverrides[field.key] = items;
+        continue;
+      }
+
       const raw = formValues[field.key]?.trim() ?? "";
       if (raw === "") continue; // omit = revert to plan default
 
@@ -241,9 +310,10 @@ export default function CustomerPoliciesPage() {
   const hasOverrides = Object.keys(overrides).length > 0;
 
   // Partition effective keys into categories for display
-  const limitKeys = ["tx_limit_per_month", "max_notional_usd"];
+  const limitKeys = ["tx_limit_per_month", "max_notional_usd", "max_value_sol"];
   const tokenKeys = ["allowed_mints", "denied_mints", "custom_token_allowlist_enabled"];
   const protectionKeys = ["max_slippage_bps", "require_simulation_success"];
+  const programKeys = ["allowed_programs", "denied_programs", "blocked_programs"];
 
   function renderValue(key: string, val: unknown): string {
     if (val === null || val === undefined) return "—";
@@ -345,10 +415,11 @@ export default function CustomerPoliciesPage() {
           {renderSection("Limits", limitKeys, effective)}
           {renderSection("Token Controls", tokenKeys, effective)}
           {renderSection("Protection Rules", protectionKeys, effective)}
+          {renderSection("Program Controls", programKeys, effective)}
 
           {/* Catch-all for any extra effective keys */}
           {(() => {
-            const known = new Set([...limitKeys, ...tokenKeys, ...protectionKeys]);
+            const known = new Set([...limitKeys, ...tokenKeys, ...protectionKeys, ...programKeys]);
             const extra = Object.keys(effective).filter((k) => !known.has(k));
             return extra.length > 0
               ? renderSection("Other", extra, effective)
@@ -411,13 +482,65 @@ export default function CustomerPoliciesPage() {
                         <option value="true">Yes</option>
                         <option value="false">No</option>
                       </select>
+                    ) : field.type === "list" ? (
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-2">
+                          {(listValues[field.key] ?? []).map((item, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-1 rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-xs text-amber-200 font-mono"
+                            >
+                              {item}
+                              <button
+                                type="button"
+                                onClick={() => removeListItem(field.key, idx)}
+                                disabled={saving}
+                                className="ml-1 text-amber-400 hover:text-red-400 disabled:opacity-50"
+                                aria-label={`Remove ${item}`}
+                              >
+                                &times;
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            id={`override-${field.key}`}
+                            type="text"
+                            placeholder={field.placeholder}
+                            disabled={saving}
+                            className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 font-mono outline-none transition focus:border-amber-500/40 disabled:opacity-50"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                addListItem(field.key, (e.target as HTMLInputElement).value);
+                                (e.target as HTMLInputElement).value = "";
+                              }
+                            }}
+                          />
+                          <button
+                            type="button"
+                            disabled={saving}
+                            onClick={() => {
+                              const input = document.getElementById(`override-${field.key}`) as HTMLInputElement;
+                              if (input) {
+                                addListItem(field.key, input.value);
+                                input.value = "";
+                              }
+                            }}
+                            className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-200 transition hover:bg-amber-500/20 disabled:opacity-50"
+                          >
+                            Add
+                          </button>
+                        </div>
+                      </div>
                     ) : (
                       <input
                         id={`override-${field.key}`}
                         type="number"
-                        min={field.min}
-                        max={field.max}
-                        placeholder={field.placeholder}
+                        min={"min" in field ? field.min : undefined}
+                        max={"max" in field ? field.max : undefined}
+                        placeholder={"placeholder" in field ? field.placeholder : undefined}
                         value={formValues[field.key] ?? ""}
                         onChange={(e) => updateField(field.key, e.target.value)}
                         disabled={saving}

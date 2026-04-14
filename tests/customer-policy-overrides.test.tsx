@@ -72,6 +72,23 @@ const PRO_POLICY_WITH_OVERRIDES = {
   },
 };
 
+const PRO_POLICY_WITH_PROGRAMS = {
+  plan_code: "pro",
+  plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true },
+  overrides: {
+    max_slippage_bps: 100,
+    allowed_programs: ["prog1", "prog2"],
+    denied_programs: ["bad1"],
+  },
+  effective: {
+    max_slippage_bps: 100,
+    max_notional_usd: 25000,
+    require_simulation_success: true,
+    allowed_programs: ["prog1", "prog2"],
+    denied_programs: ["bad1"],
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -150,9 +167,13 @@ describe("CustomerPoliciesPage", () => {
       expect(
         screen.getByLabelText("Max Transaction Value (USD)"),
       ).toBeTruthy();
+      expect(screen.getByLabelText("Max Value (SOL)")).toBeTruthy();
       expect(
         screen.getByLabelText("Require Simulation Success"),
       ).toBeTruthy();
+      // List fields have labels displayed
+      expect(screen.getByText("Allowed Programs")).toBeTruthy();
+      expect(screen.getByText("Denied Programs")).toBeTruthy();
 
       // Action buttons
       expect(screen.getByText("Save Overrides")).toBeTruthy();
@@ -349,6 +370,220 @@ describe("CustomerPoliciesPage", () => {
       expect(
         (screen.getByLabelText("Max Slippage (bps)") as HTMLInputElement).value,
       ).toBe("150");
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // max_value_sol field
+  // -----------------------------------------------------------------------
+
+  describe("max_value_sol field", () => {
+    it("saves max_value_sol as a number", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockUpdatePolicyOverrides.mockResolvedValue({
+        overrides: { max_value_sol: 500 },
+        message: "Policy overrides updated successfully",
+      });
+
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      const solInput = screen.getByLabelText("Max Value (SOL)");
+      fireEvent.change(solInput, { target: { value: "500" } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("Save Overrides"));
+      });
+
+      await waitFor(() => {
+        expect(mockUpdatePolicyOverrides).toHaveBeenCalledTimes(1);
+      });
+
+      const payload = mockUpdatePolicyOverrides.mock.calls[0][0] as Record<string, unknown>;
+      expect(payload.max_value_sol).toBe(500);
+    });
+
+    it("validates max_value_sol range (1–100,000)", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      const solInput = screen.getByLabelText("Max Value (SOL)");
+      fireEvent.change(solInput, { target: { value: "999999" } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("Save Overrides"));
+      });
+
+      expect(screen.getByText(/must be a number between/)).toBeTruthy();
+      expect(mockUpdatePolicyOverrides).not.toHaveBeenCalled();
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Program list editors
+  // -----------------------------------------------------------------------
+
+  describe("program list editors", () => {
+    it("pre-populates program lists from overrides", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_PROGRAMS);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      // Should show existing program items as tags
+      expect(screen.getByText("prog1")).toBeTruthy();
+      expect(screen.getByText("prog2")).toBeTruthy();
+      expect(screen.getByText("bad1")).toBeTruthy();
+    });
+
+    it("adds programs to the allowed list and saves", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockUpdatePolicyOverrides.mockResolvedValue({
+        overrides: { allowed_programs: ["newProg"] },
+        message: "ok",
+      });
+
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      // Type into the allowed programs input and press Enter
+      const input = screen.getByLabelText("Allowed Programs");
+      fireEvent.change(input, { target: { value: "newProg" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      // Tag should appear
+      expect(screen.getByText("newProg")).toBeTruthy();
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("Save Overrides"));
+      });
+
+      await waitFor(() => {
+        expect(mockUpdatePolicyOverrides).toHaveBeenCalledTimes(1);
+      });
+
+      const payload = mockUpdatePolicyOverrides.mock.calls[0][0] as Record<string, unknown>;
+      expect(payload.allowed_programs).toEqual(["newProg"]);
+    });
+
+    it("removes a program from a list when × is clicked", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_PROGRAMS);
+      mockUpdatePolicyOverrides.mockResolvedValue({
+        overrides: { max_slippage_bps: 100, allowed_programs: ["prog2"], denied_programs: ["bad1"] },
+        message: "ok",
+      });
+
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      // Remove prog1
+      const removeBtn = screen.getByLabelText("Remove prog1");
+      fireEvent.click(removeBtn);
+
+      // prog1 should be gone
+      expect(screen.queryByText("prog1")).toBeNull();
+      // prog2 should still be there
+      expect(screen.getByText("prog2")).toBeTruthy();
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("Save Overrides"));
+      });
+
+      await waitFor(() => {
+        expect(mockUpdatePolicyOverrides).toHaveBeenCalledTimes(1);
+      });
+
+      const payload = mockUpdatePolicyOverrides.mock.calls[0][0] as Record<string, unknown>;
+      expect(payload.allowed_programs).toEqual(["prog2"]);
+    });
+
+    it("omits empty program lists from save payload", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockUpdatePolicyOverrides.mockResolvedValue({
+        overrides: {},
+        message: "ok",
+      });
+
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      // Don't add any programs — just save
+      await act(async () => {
+        fireEvent.click(screen.getByText("Save Overrides"));
+      });
+
+      await waitFor(() => {
+        expect(mockUpdatePolicyOverrides).toHaveBeenCalledTimes(1);
+      });
+
+      const payload = mockUpdatePolicyOverrides.mock.calls[0][0] as Record<string, unknown>;
+      // Empty lists should be omitted
+      expect(payload.allowed_programs).toBeUndefined();
+      expect(payload.denied_programs).toBeUndefined();
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Backend validation errors (422)
+  // -----------------------------------------------------------------------
+
+  describe("backend validation errors", () => {
+    it("displays 422 validation error from backend", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockUpdatePolicyOverrides.mockRejectedValue(
+        new Error("Unsupported override key: bad_key"),
+      );
+
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      const slippageInput = screen.getByLabelText("Max Slippage (bps)");
+      fireEvent.change(slippageInput, { target: { value: "100" } });
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("Save Overrides"));
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Unsupported override key: bad_key"),
+        ).toBeTruthy();
+      });
     });
   });
 });
