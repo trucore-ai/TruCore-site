@@ -621,6 +621,141 @@ function generateOutcomes(
 }
 
 // ---------------------------------------------------------------------------
+// Policy simulation scenarios — frontend-derived from effective policy
+// ---------------------------------------------------------------------------
+
+interface SimulationScenario {
+  title: string;
+  description: string;
+  outcome: "Allowed" | "Denied";
+  reason: string;
+  category: "limits" | "safety" | "tokens" | "programs";
+}
+
+function generateSimulationScenarios(
+  effective: Record<string, unknown>,
+): SimulationScenario[] {
+  const scenarios: SimulationScenario[] = [];
+
+  // --- Transaction limit scenarios ---
+  const maxUsd = effective.max_notional_usd;
+  if (typeof maxUsd === "number" && maxUsd > 0) {
+    const overAmount = Math.round(maxUsd * 1.2).toLocaleString();
+    const underAmount = Math.round(maxUsd * 0.5).toLocaleString();
+    scenarios.push({
+      title: "Large USD transaction",
+      description: `Swap worth $${overAmount} USD`,
+      outcome: "Denied",
+      reason: `Exceeds your $${maxUsd.toLocaleString()} USD transaction limit.`,
+      category: "limits",
+    });
+    scenarios.push({
+      title: "Normal USD transaction",
+      description: `Swap worth $${underAmount} USD`,
+      outcome: "Allowed",
+      reason: `Within your $${maxUsd.toLocaleString()} USD transaction limit.`,
+      category: "limits",
+    });
+  }
+
+  const maxSol = effective.max_value_sol;
+  if (typeof maxSol === "number" && maxSol > 0) {
+    const overSol = Math.round(maxSol * 1.5).toLocaleString();
+    scenarios.push({
+      title: "Oversized SOL transaction",
+      description: `Transfer of ${overSol} SOL`,
+      outcome: "Denied",
+      reason: `Exceeds your ${maxSol.toLocaleString()} SOL value limit.`,
+      category: "limits",
+    });
+  }
+
+  // --- Slippage scenario ---
+  const slippage = effective.max_slippage_bps;
+  if (typeof slippage === "number") {
+    const exceedBps = slippage + 50;
+    scenarios.push({
+      title: "High-slippage swap",
+      description: `Swap with ${exceedBps} bps slippage`,
+      outcome: "Denied",
+      reason: `Slippage exceeds your ${slippage} bps cap.`,
+      category: "safety",
+    });
+  }
+
+  // --- Simulation requirement scenario ---
+  if (effective.require_simulation_success === true) {
+    scenarios.push({
+      title: "Failed simulation",
+      description: "Transaction where simulation returns an error",
+      outcome: "Denied",
+      reason: "Your policy requires simulation to succeed before execution.",
+      category: "safety",
+    });
+  }
+
+  // --- Token policy scenarios ---
+  const tp = effective.token_policy;
+  if (tp && typeof tp === "object" && !Array.isArray(tp)) {
+    const tpObj = tp as Record<string, unknown>;
+    const mode = String(tpObj.mode ?? "unrestricted");
+    const allowed = Array.isArray(tpObj.allowed_mints) ? tpObj.allowed_mints : [];
+    const denied = Array.isArray(tpObj.denied_mints) ? tpObj.denied_mints : [];
+
+    if (mode === "allowlist" && allowed.length > 0) {
+      const firstMint = resolveMintDisplay(String(allowed[0]));
+      scenarios.push({
+        title: "Approved token swap",
+        description: `Swap involving ${firstMint.symbol}`,
+        outcome: "Allowed",
+        reason: `${firstMint.symbol} is on your approved token list.`,
+        category: "tokens",
+      });
+      scenarios.push({
+        title: "Unlisted token swap",
+        description: "Swap involving an unlisted token",
+        outcome: "Denied",
+        reason: "Only tokens on your allowlist are permitted.",
+        category: "tokens",
+      });
+    } else if (mode === "denylist" && denied.length > 0) {
+      const firstDenied = resolveMintDisplay(String(denied[0]));
+      scenarios.push({
+        title: "Blocked token swap",
+        description: `Swap involving ${firstDenied.symbol}`,
+        outcome: "Denied",
+        reason: `${firstDenied.symbol} is on your blocked token list.`,
+        category: "tokens",
+      });
+    }
+  }
+
+  // --- Program control scenarios ---
+  const allowedProgs = effective.allowed_programs;
+  const deniedProgs = effective.denied_programs;
+  if (Array.isArray(deniedProgs) && deniedProgs.length > 0) {
+    scenarios.push({
+      title: "Blocked program call",
+      description: "Transaction invoking a denied program",
+      outcome: "Denied",
+      reason: "The program is on your block list.",
+      category: "programs",
+    });
+  }
+  if (Array.isArray(allowedProgs) && allowedProgs.length > 0) {
+    scenarios.push({
+      title: "Unapproved program call",
+      description: "Transaction invoking a program not on your allowlist",
+      outcome: "Denied",
+      reason: "Only approved programs may be invoked.",
+      category: "programs",
+    });
+  }
+
+  return scenarios;
+}
+
+// ---------------------------------------------------------------------------
 // Human-readable labels for effective policy display
 // ---------------------------------------------------------------------------
 
@@ -1254,6 +1389,65 @@ export default function CustomerPoliciesPage() {
                 );
               })()}
             </section>
+
+            {/* Policy Simulation — example outcomes */}
+            {(() => {
+              const scenarios = generateSimulationScenarios(effective);
+              if (scenarios.length === 0) return null;
+              return (
+                <section
+                  className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4"
+                  data-testid="policy-simulation"
+                >
+                  <div>
+                    <h2 className="text-sm font-medium text-slate-200">
+                      How Your Policy Behaves
+                    </h2>
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Example scenarios showing how your current effective policy would respond.
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2" data-testid="simulation-scenarios">
+                    {scenarios.map((scenario, idx) => (
+                      <div
+                        key={idx}
+                        className={`rounded-lg border p-4 space-y-2 ${
+                          scenario.outcome === "Allowed"
+                            ? "border-emerald-500/20 bg-emerald-500/5"
+                            : "border-red-500/20 bg-red-500/5"
+                        }`}
+                        data-testid={`scenario-card-${idx}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-slate-200">
+                            {scenario.title}
+                          </span>
+                          <span
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none ${
+                              scenario.outcome === "Allowed"
+                                ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/20"
+                                : "bg-red-500/15 text-red-300 border border-red-500/20"
+                            }`}
+                            data-testid="scenario-outcome"
+                          >
+                            {scenario.outcome}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-400">
+                          {scenario.description}
+                        </p>
+                        <p className="text-[10px] text-slate-500 leading-relaxed">
+                          {scenario.reason}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-slate-600 text-center">
+                    These examples reflect your current effective policy. They are not live transactions.
+                  </p>
+                </section>
+              );
+            })()}
 
             {/* Detailed effective policy grid */}
             <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-5">

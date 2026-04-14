@@ -494,6 +494,59 @@ test.describe("customer policies — effective policy preview", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────────
+// Policy Simulation — example outcomes
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — policy simulation", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await injectCustomerAuth(page);
+  });
+
+  test("simulation section is visible in view mode", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-simulation")).toBeVisible();
+    await expect(page.getByText("How Your Policy Behaves")).toBeVisible();
+    await expect(page.getByTestId("simulation-scenarios")).toBeVisible();
+  });
+
+  test("scenario cards show Allowed and Denied outcomes", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const badges = page.getByTestId("scenario-outcome");
+    await expect(badges.first()).toBeVisible();
+    const count = await badges.count();
+    expect(count).toBeGreaterThanOrEqual(3);
+
+    const texts = await badges.allTextContents();
+    expect(texts.some((t) => t === "Allowed")).toBe(true);
+    expect(texts.some((t) => t === "Denied")).toBe(true);
+  });
+
+  test("simulation section is hidden in edit mode", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-simulation")).toBeVisible();
+
+    await page.getByRole("button", { name: "Edit Overrides" }).click();
+
+    await expect(page.getByTestId("policy-simulation")).not.toBeVisible();
+  });
+
+  test("disclaimer text is visible", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(
+      page.getByText("These examples reflect your current effective policy"),
+    ).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
 // Unauthenticated — redirect
 // ────────────────────────────────────────────────────────────────────────────
 
