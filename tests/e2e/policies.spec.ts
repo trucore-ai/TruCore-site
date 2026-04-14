@@ -27,6 +27,7 @@ test.describe("customer policies — free plan (read-only)", () => {
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
     await injectCustomerAuth(page);
   });
 
@@ -67,6 +68,7 @@ test.describe("customer policies — pro plan editing", () => {
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
     await injectCustomerAuth(page);
   });
 
@@ -198,6 +200,7 @@ test.describe("customer policies — program list editors", () => {
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro_with_programs" });
+    await mockReceiptSummaryRoute(page);
     await injectCustomerAuth(page);
   });
 
@@ -306,6 +309,7 @@ test.describe("customer policies — validation error", () => {
         },
       },
     });
+    await mockReceiptSummaryRoute(page);
     await injectCustomerAuth(page);
   });
 
@@ -337,6 +341,7 @@ test.describe("customer policies — token policy editor", () => {
     await silenceAnalytics(page);
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
+    await mockReceiptSummaryRoute(page);
     await injectCustomerAuth(page);
   });
 
@@ -456,6 +461,7 @@ test.describe("customer policies — effective policy preview", () => {
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
     await injectCustomerAuth(page);
   });
 
@@ -505,6 +511,7 @@ test.describe("customer policies — policy simulation", () => {
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
     await injectCustomerAuth(page);
   });
 
@@ -558,6 +565,7 @@ test.describe("customer policies — policy recommendations", () => {
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
     await injectCustomerAuth(page);
   });
 
