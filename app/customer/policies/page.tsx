@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   isLoggedIn,
   fetchPolicy,
+  updatePolicyOverrides,
   type EffectivePolicyResponse,
 } from "@/lib/customer-auth";
 
@@ -28,6 +29,36 @@ function tierLabel(code: string): string {
   return labels[code] ?? code;
 }
 
+// Editable override fields exposed in the first version.
+const EDITABLE_FIELDS = [
+  {
+    key: "max_slippage_bps",
+    label: "Max Slippage (bps)",
+    type: "number" as const,
+    min: 1,
+    max: 1000,
+    placeholder: "e.g. 100",
+    hint: "Maximum allowed slippage in basis points (1–1000).",
+  },
+  {
+    key: "max_notional_usd",
+    label: "Max Transaction Value (USD)",
+    type: "number" as const,
+    min: 1,
+    max: 10_000_000,
+    placeholder: "e.g. 25000",
+    hint: "Maximum notional transaction value in USD.",
+  },
+  {
+    key: "require_simulation_success",
+    label: "Require Simulation Success",
+    type: "boolean" as const,
+    hint: "When enabled, transactions must pass simulation before execution.",
+  },
+] as const;
+
+type EditableKey = (typeof EDITABLE_FIELDS)[number]["key"];
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
@@ -38,23 +69,118 @@ export default function CustomerPoliciesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Edit state
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+
+  const loadPolicy = useCallback(async () => {
+    try {
+      const p = await fetchPolicy();
+      setPolicy(p);
+      setError("");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not load policy data. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isLoggedIn()) {
       router.replace("/login");
       return;
     }
+    loadPolicy();
+  }, [router, loadPolicy]);
 
-    fetchPolicy()
-      .then((p) => setPolicy(p))
-      .catch((err) => {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Could not load policy data. Please try again.",
-        );
-      })
-      .finally(() => setLoading(false));
-  }, [router]);
+  // Initialize form values from current overrides when entering edit mode.
+  function enterEditMode() {
+    const values: Record<string, string> = {};
+    const overrides = policy?.overrides ?? {};
+    for (const field of EDITABLE_FIELDS) {
+      const current = overrides[field.key];
+      if (current !== undefined && current !== null) {
+        values[field.key] = String(current);
+      } else {
+        values[field.key] = "";
+      }
+    }
+    setFormValues(values);
+    setSaveError("");
+    setSaveSuccess(false);
+    setEditing(true);
+  }
+
+  function cancelEdit() {
+    setEditing(false);
+    setSaveError("");
+    setSaveSuccess(false);
+  }
+
+  function updateField(key: string, value: string) {
+    setFormValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSave() {
+    // Build new overrides: start with current non-editable overrides,
+    // then merge editable field values.
+    const currentOverrides = { ...(policy?.overrides ?? {}) };
+    const editableKeys = new Set<string>(EDITABLE_FIELDS.map((f) => f.key));
+
+    // Preserve overrides the UI does not expose.
+    const newOverrides: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(currentOverrides)) {
+      if (!editableKeys.has(k)) {
+        newOverrides[k] = v;
+      }
+    }
+
+    // Apply editable field values.
+    for (const field of EDITABLE_FIELDS) {
+      const raw = formValues[field.key]?.trim() ?? "";
+      if (raw === "") continue; // omit = revert to plan default
+
+      if (field.type === "boolean") {
+        newOverrides[field.key] = raw === "true";
+      } else if (field.type === "number") {
+        const num = Number(raw);
+        if (isNaN(num) || num < field.min || num > field.max) {
+          setSaveError(
+            `${field.label} must be a number between ${field.min.toLocaleString()} and ${field.max.toLocaleString()}.`,
+          );
+          return;
+        }
+        newOverrides[field.key] = num;
+      }
+    }
+
+    setSaving(true);
+    setSaveError("");
+    setSaveSuccess(false);
+
+    try {
+      await updatePolicyOverrides(newOverrides);
+      // Refresh policy to show updated effective values.
+      await loadPolicy();
+      setEditing(false);
+      setSaveSuccess(true);
+    } catch (err) {
+      setSaveError(
+        err instanceof Error
+          ? err.message
+          : "Could not save overrides. Please try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
 
   // -----------------------------------------------------------------------
   // Loading
@@ -117,7 +243,7 @@ export default function CustomerPoliciesPage() {
   // Partition effective keys into categories for display
   const limitKeys = ["tx_limit_per_month", "max_notional_usd"];
   const tokenKeys = ["allowed_mints", "denied_mints", "custom_token_allowlist_enabled"];
-  const protectionKeys = ["max_slippage_bps"];
+  const protectionKeys = ["max_slippage_bps", "require_simulation_success"];
 
   function renderValue(key: string, val: unknown): string {
     if (val === null || val === undefined) return "—";
@@ -180,7 +306,7 @@ export default function CustomerPoliciesPage() {
               {tierLabel(planCode)}
             </span>{" "}
             plan defaults{hasOverrides ? " with custom overrides applied" : ""}.
-            All values shown are read-only.
+            {!overridesEnabled && " All values shown are read-only."}
           </p>
         </div>
 
@@ -230,29 +356,145 @@ export default function CustomerPoliciesPage() {
           })()}
         </section>
 
-        {/* Overrides */}
-        {hasOverrides && (
-          <section className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-6 space-y-3">
-            <h2 className="text-sm font-medium text-amber-300">
-              Custom Overrides
-            </h2>
-            <p className="text-[10px] text-slate-500">
-              These values override your plan defaults. Contact your account
-              owner to modify.
+        {/* Save success banner */}
+        {saveSuccess && !editing && (
+          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+            <p className="text-xs text-emerald-300">
+              Policy overrides saved successfully.
             </p>
-            <div className="divide-y divide-white/5">
-              {Object.entries(overrides).map(([key, value]) => (
-                <div key={key} className="flex items-center justify-between py-2">
-                  <span className="text-xs text-amber-200/80 font-mono">
-                    {key}
-                  </span>
-                  <span className="text-xs text-amber-200 font-medium">
-                    {renderValue(key, value)}
-                  </span>
-                </div>
-              ))}
+          </div>
+        )}
+
+        {/* Overrides — editable or read-only */}
+        {overridesEnabled ? (
+          <section className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-medium text-amber-300">
+                  Custom Overrides
+                </h2>
+                <p className="mt-1 text-[10px] text-slate-500">
+                  {editing
+                    ? "Edit your override values below. Clear a field to revert to plan default."
+                    : "These values override your plan defaults."}
+                </p>
+              </div>
+              {!editing && (
+                <button
+                  onClick={enterEditMode}
+                  className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-medium text-amber-200 transition hover:bg-amber-500/20"
+                >
+                  Edit Overrides
+                </button>
+              )}
             </div>
+
+            {editing ? (
+              <div className="space-y-4">
+                {EDITABLE_FIELDS.map((field) => (
+                  <div key={field.key} className="space-y-1">
+                    <label
+                      htmlFor={`override-${field.key}`}
+                      className="block text-xs font-medium text-slate-300"
+                    >
+                      {field.label}
+                    </label>
+                    {field.type === "boolean" ? (
+                      <select
+                        id={`override-${field.key}`}
+                        value={formValues[field.key] ?? ""}
+                        onChange={(e) => updateField(field.key, e.target.value)}
+                        disabled={saving}
+                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 outline-none transition focus:border-amber-500/40 disabled:opacity-50"
+                      >
+                        <option value="">Plan default</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                      </select>
+                    ) : (
+                      <input
+                        id={`override-${field.key}`}
+                        type="number"
+                        min={field.min}
+                        max={field.max}
+                        placeholder={field.placeholder}
+                        value={formValues[field.key] ?? ""}
+                        onChange={(e) => updateField(field.key, e.target.value)}
+                        disabled={saving}
+                        className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 outline-none transition focus:border-amber-500/40 disabled:opacity-50"
+                      />
+                    )}
+                    <p className="text-[10px] text-slate-500">{field.hint}</p>
+                  </div>
+                ))}
+
+                {saveError && (
+                  <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
+                    <p className="text-xs text-red-300">{saveError}</p>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="rounded-lg bg-amber-600 px-5 py-2 text-xs font-semibold text-white transition hover:bg-amber-500 disabled:opacity-50"
+                  >
+                    {saving ? "Saving…" : "Save Overrides"}
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    disabled={saving}
+                    className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/10 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : hasOverrides ? (
+              <div className="divide-y divide-white/5">
+                {Object.entries(overrides).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between py-2">
+                    <span className="text-xs text-amber-200/80 font-mono">
+                      {key}
+                    </span>
+                    <span className="text-xs text-amber-200 font-medium">
+                      {renderValue(key, value)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500">
+                No custom overrides set. Click Edit Overrides to customize your policy.
+              </p>
+            )}
           </section>
+        ) : (
+          /* Read-only overrides for non-entitled plans */
+          hasOverrides && (
+            <section className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-6 space-y-3">
+              <h2 className="text-sm font-medium text-amber-300">
+                Custom Overrides
+              </h2>
+              <p className="text-[10px] text-slate-500">
+                These values override your plan defaults. Contact your account
+                owner to modify.
+              </p>
+              <div className="divide-y divide-white/5">
+                {Object.entries(overrides).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between py-2">
+                    <span className="text-xs text-amber-200/80 font-mono">
+                      {key}
+                    </span>
+                    <span className="text-xs text-amber-200 font-medium">
+                      {renderValue(key, value)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
         )}
 
         {/* Info footer */}

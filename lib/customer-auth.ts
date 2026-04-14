@@ -1029,6 +1029,11 @@ export interface EffectivePolicyResponse {
   effective: Record<string, unknown>;
 }
 
+export interface PolicyOverridesUpdateResponse {
+  overrides: Record<string, unknown>;
+  message: string;
+}
+
 export async function fetchPolicy(): Promise<EffectivePolicyResponse> {
   const token = getToken();
   if (!token) throw new ApiError("unauthorized", "Not authenticated");
@@ -1055,6 +1060,56 @@ export async function fetchPolicy(): Promise<EffectivePolicyResponse> {
     let body: Record<string, unknown> = {};
     try { body = await res.json(); } catch { /* use default */ }
     const msg = typeof body.message === "string" ? body.message : "We couldn't load your policy data.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
+  }
+
+  return res.json();
+}
+
+export async function updatePolicyOverrides(
+  overrides: Record<string, unknown>,
+): Promise<PolicyOverridesUpdateResponse> {
+  const token = getToken();
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
+
+  let res: Response;
+  try {
+    res = await fetch(`${POLICY_PROXY_BASE}/overrides`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ overrides }),
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the policy service.");
+  }
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
+  }
+
+  if (res.status === 403) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "Your plan does not support policy overrides.";
+    throw new ApiError("forbidden", msg);
+  }
+
+  if (res.status === 429) {
+    await throwApiError(res, "Rate limit reached. Please try again later.");
+  }
+
+  if (res.status >= 500) {
+    throw new ApiError("upstream_5xx", "Policy service is temporarily unavailable.");
+  }
+
+  if (!res.ok) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "We couldn't update your policy overrides.";
     throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
   }
 
