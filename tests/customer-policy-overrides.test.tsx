@@ -1125,6 +1125,197 @@ describe("CustomerPoliciesPage", () => {
   });
 
   // -----------------------------------------------------------------------
+  // Policy Recommendations
+  // -----------------------------------------------------------------------
+
+  describe("policy recommendations", () => {
+    it("renders recommendations section in view mode", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      expect(screen.getByText("Policy Recommendations")).toBeTruthy();
+    });
+
+    it("shows recommendation for unrestricted token access", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          token_policy: { mode: "unrestricted", allowed_mints: [], denied_mints: [] },
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Restrict token access")).toBeTruthy();
+      });
+
+      expect(screen.getByText(/token policy is set to unrestricted/)).toBeTruthy();
+    });
+
+    it("shows recommendation for empty token allowlist", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        overrides: { token_policy: { mode: "allowlist", allowed_mints: [], denied_mints: [] } },
+        effective: {
+          ...PRO_POLICY.effective,
+          token_policy: { mode: "allowlist", allowed_mints: [], denied_mints: [] },
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Add tokens to your allowlist")).toBeTruthy();
+      });
+
+      expect(screen.getByText(/empty allowlist prevents all token activity/)).toBeTruthy();
+    });
+
+    it("shows recommendation when simulation is not required", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Enable simulation requirement")).toBeTruthy();
+      });
+
+      expect(screen.getByText(/without passing simulation/)).toBeTruthy();
+    });
+
+    it("shows recommendation for very high slippage", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          max_slippage_bps: 500,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Tighten slippage tolerance")).toBeTruthy();
+      });
+
+      expect(screen.getByText(/higher than most users/)).toBeTruthy();
+    });
+
+    it("shows recommendation when no program restrictions are set", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Add program restrictions")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("recommendation-add-program-restrictions")).toBeTruthy();
+    });
+
+    it("does not show program restriction recommendation when programs are configured", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_PROGRAMS);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Policy & Protections")).toBeTruthy();
+      });
+
+      expect(screen.queryByTestId("recommendation-add-program-restrictions")).toBeNull();
+    });
+
+    it("shows recommendation to customize when no overrides are set", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Customize your policy")).toBeTruthy();
+      });
+
+      expect(screen.getByText(/no overrides are set/)).toBeTruthy();
+    });
+
+    it("displays source labels on each recommendation", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      const sources = screen.getAllByTestId("recommendation-source");
+      expect(sources.length).toBeGreaterThan(0);
+      const texts = sources.map((s) => s.textContent);
+      expect(texts.every((t) => t === "Default guidance" || t === "Policy analysis" || t === "Policy Intelligence")).toBe(true);
+    });
+
+    it("displays priority labels on each recommendation", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      const priorities = screen.getAllByTestId("recommendation-priority");
+      const texts = priorities.map((p) => p.textContent);
+      expect(texts.some((t) => t === "High priority")).toBe(true);
+    });
+
+    it("shows View setting action for editable recommendations", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-action-enable-simulation")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("recommendation-action-enable-simulation").textContent).toContain("View setting");
+    });
+
+    it("hides recommendations section in edit mode", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      expect(screen.queryByTestId("policy-recommendations")).toBeNull();
+    });
+
+    it("shows advisory disclaimer", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/recommendations are advisory/)).toBeTruthy();
+      });
+    });
+  });
+
+  // -----------------------------------------------------------------------
   // Source badges in effective policy grid
   // -----------------------------------------------------------------------
 

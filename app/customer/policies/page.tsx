@@ -775,6 +775,182 @@ const EFFECTIVE_LABELS: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// Policy recommendations — deterministic, frontend-derived
+// ---------------------------------------------------------------------------
+
+type RecommendationPriority = "high" | "medium" | "low";
+type RecommendationSource = "Default guidance" | "Policy analysis" | "Policy Intelligence";
+
+interface PolicyRecommendation {
+  id: string;
+  title: string;
+  explanation: string;
+  why: string;
+  priority: RecommendationPriority;
+  source: RecommendationSource;
+  /** Editable field key to highlight when user clicks "View setting" */
+  fieldKey?: string;
+}
+
+function generatePolicyRecommendations(
+  effective: Record<string, unknown>,
+  overrides: Record<string, unknown>,
+  overridesEnabled: boolean,
+): PolicyRecommendation[] {
+  const recommendations: PolicyRecommendation[] = [];
+
+  // 1. Simulation not required
+  if (effective.require_simulation_success === false) {
+    recommendations.push({
+      id: "enable-simulation",
+      title: "Enable simulation requirement",
+      explanation:
+        "Your policy allows transactions to execute without passing simulation first.",
+      why: "Simulation catches errors, reverts, and unexpected losses before real funds are at risk. Most users keep this on.",
+      priority: "high",
+      source: "Default guidance",
+      fieldKey: "require_simulation_success",
+    });
+  }
+
+  // 2. Very permissive slippage
+  const slippage = effective.max_slippage_bps;
+  if (typeof slippage === "number" && slippage > 300) {
+    recommendations.push({
+      id: "tighten-slippage",
+      title: "Tighten slippage tolerance",
+      explanation: `Your slippage cap is set to ${slippage} bps (${(slippage / 100).toFixed(slippage % 100 === 0 ? 0 : 2)}%). This is higher than most users configure.`,
+      why: "High slippage tolerance increases the risk of unfavorable execution prices. Most users stay under 200 bps.",
+      priority: "medium",
+      source: "Default guidance",
+      fieldKey: "max_slippage_bps",
+    });
+  }
+
+  // 3. Very high transaction limits
+  const maxUsd = effective.max_notional_usd;
+  if (typeof maxUsd === "number" && maxUsd > 200_000) {
+    recommendations.push({
+      id: "review-usd-limit",
+      title: "Review USD transaction limit",
+      explanation: `Your per-transaction limit is $${maxUsd.toLocaleString()} USD, which is well above the typical range.`,
+      why: "Extremely high limits increase exposure if an agent misbehaves. Consider whether your use case requires this level of access.",
+      priority: "low",
+      source: "Policy analysis",
+      fieldKey: "max_notional_usd",
+    });
+  }
+  const maxSol = effective.max_value_sol;
+  if (typeof maxSol === "number" && maxSol > 5_000) {
+    recommendations.push({
+      id: "review-sol-limit",
+      title: "Review SOL transaction limit",
+      explanation: `Your per-transaction SOL limit is ${maxSol.toLocaleString()} SOL, which is above the typical range.`,
+      why: "High SOL limits increase exposure per transaction. Most users stay under 1,000 SOL.",
+      priority: "low",
+      source: "Policy analysis",
+      fieldKey: "max_value_sol",
+    });
+  }
+
+  // 4. Token access unrestricted
+  const tp = effective.token_policy;
+  if (tp && typeof tp === "object" && !Array.isArray(tp)) {
+    const tpObj = tp as Record<string, unknown>;
+    const mode = String(tpObj.mode ?? "unrestricted");
+    const allowed = Array.isArray(tpObj.allowed_mints) ? tpObj.allowed_mints : [];
+    const denied = Array.isArray(tpObj.denied_mints) ? tpObj.denied_mints : [];
+
+    if (mode === "unrestricted") {
+      recommendations.push({
+        id: "restrict-tokens",
+        title: "Restrict token access",
+        explanation:
+          "Your token policy is set to unrestricted — any token mint is permitted in transactions.",
+        why: "Restricting token access to known, vetted mints reduces the risk of interacting with malicious or worthless tokens.",
+        priority: "medium",
+        source: "Default guidance",
+        fieldKey: "token_policy",
+      });
+    } else if (mode === "allowlist" && allowed.length === 0) {
+      recommendations.push({
+        id: "fix-empty-allowlist",
+        title: "Add tokens to your allowlist",
+        explanation:
+          "Token access is set to allowlist mode, but the list is empty. This means all token transactions will be blocked.",
+        why: "An empty allowlist prevents all token activity. Add at least the tokens your agent needs to operate.",
+        priority: "high",
+        source: "Policy analysis",
+        fieldKey: "token_policy",
+      });
+    } else if (mode === "denylist" && denied.length === 0) {
+      recommendations.push({
+        id: "populate-denylist",
+        title: "Add tokens to your denylist",
+        explanation:
+          "Token access is set to denylist mode, but no tokens are blocked. This is effectively the same as unrestricted.",
+        why: "If you chose denylist mode, consider adding known risky or unwanted tokens to make the restriction meaningful.",
+        priority: "low",
+        source: "Policy analysis",
+        fieldKey: "token_policy",
+      });
+    }
+  }
+
+  // 5. No program restrictions
+  const allowedProgs = effective.allowed_programs;
+  const deniedProgs = effective.denied_programs;
+  const hasAllowedProgs = Array.isArray(allowedProgs) && allowedProgs.length > 0;
+  const hasDeniedProgs = Array.isArray(deniedProgs) && deniedProgs.length > 0;
+  if (!hasAllowedProgs && !hasDeniedProgs) {
+    recommendations.push({
+      id: "add-program-restrictions",
+      title: "Add program restrictions",
+      explanation:
+        "No program allowlist or denylist is configured. All on-chain programs are permitted.",
+      why: "Restricting programs to known, trusted addresses prevents your agent from invoking unexpected contracts.",
+      priority: "low",
+      source: "Default guidance",
+      fieldKey: "allowed_programs",
+    });
+  }
+
+  // 6. Overrides enabled but no customization
+  if (overridesEnabled && Object.keys(overrides).length === 0) {
+    recommendations.push({
+      id: "customize-policy",
+      title: "Customize your policy",
+      explanation:
+        "Your plan supports policy customization, but no overrides are set. You are running on plan defaults.",
+      why: "Tailoring your policy to your specific use case provides better protection than generic plan defaults.",
+      priority: "low",
+      source: "Default guidance",
+    });
+  }
+
+  // Sort by priority: high → medium → low
+  const order: Record<RecommendationPriority, number> = { high: 0, medium: 1, low: 2 };
+  recommendations.sort((a, b) => order[a.priority] - order[b.priority]);
+
+  return recommendations;
+}
+
+const PRIORITY_STYLES: Record<RecommendationPriority, { badge: string; border: string }> = {
+  high: {
+    badge: "bg-red-500/15 text-red-300 border border-red-500/20",
+    border: "border-red-500/20",
+  },
+  medium: {
+    badge: "bg-amber-500/15 text-amber-300 border border-amber-500/20",
+    border: "border-amber-500/20",
+  },
+  low: {
+    badge: "bg-white/5 text-slate-400 border border-white/10",
+    border: "border-white/10",
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -1444,6 +1620,79 @@ export default function CustomerPoliciesPage() {
                   </div>
                   <p className="text-[9px] text-slate-600 text-center">
                     These examples reflect your current effective policy. They are not live transactions.
+                  </p>
+                </section>
+              );
+            })()}
+
+            {/* Policy Recommendations */}
+            {(() => {
+              const recommendations = generatePolicyRecommendations(effective, overrides, overridesEnabled);
+              if (recommendations.length === 0) return null;
+              return (
+                <section
+                  className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-4"
+                  data-testid="policy-recommendations"
+                >
+                  <div>
+                    <h2 className="text-sm font-medium text-slate-200">
+                      Policy Recommendations
+                    </h2>
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Suggestions to strengthen your policy based on your current configuration.
+                    </p>
+                  </div>
+                  <div className="space-y-3" data-testid="recommendation-cards">
+                    {recommendations.map((rec) => {
+                      const styles = PRIORITY_STYLES[rec.priority];
+                      return (
+                        <div
+                          key={rec.id}
+                          className={`rounded-lg border ${styles.border} bg-white/[0.02] p-4 space-y-2`}
+                          data-testid={`recommendation-${rec.id}`}
+                        >
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="text-xs font-semibold text-slate-200">
+                              {rec.title}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none ${styles.badge}`}
+                                data-testid="recommendation-priority"
+                              >
+                                {rec.priority === "high" ? "High priority" : rec.priority === "medium" ? "Medium" : "Suggestion"}
+                              </span>
+                              <span
+                                className="inline-flex items-center rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-[10px] font-medium leading-none text-slate-500"
+                                data-testid="recommendation-source"
+                              >
+                                {rec.source}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-slate-400 leading-relaxed">
+                            {rec.explanation}
+                          </p>
+                          <p className="text-[10px] text-slate-500 leading-relaxed">
+                            <span className="font-medium text-slate-400">Why it matters:</span>{" "}
+                            {rec.why}
+                          </p>
+                          {overridesEnabled && rec.fieldKey && (
+                            <button
+                              type="button"
+                              onClick={enterEditMode}
+                              className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
+                              data-testid={`recommendation-action-${rec.id}`}
+                            >
+                              View setting &rarr;
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[9px] text-slate-600 text-center">
+                    These recommendations are advisory. They are derived from your current policy configuration, not from live transaction data.
                   </p>
                 </section>
               );

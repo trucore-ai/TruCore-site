@@ -547,6 +547,60 @@ test.describe("customer policies — policy simulation", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────────
+// Policy Recommendations
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — policy recommendations", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await injectCustomerAuth(page);
+  });
+
+  test("recommendations section is visible in view mode", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    await expect(page.getByText("Policy Recommendations")).toBeVisible();
+    await expect(page.getByTestId("recommendation-cards")).toBeVisible();
+  });
+
+  test("recommendation cards show priority and source labels", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const priorities = page.getByTestId("recommendation-priority");
+    await expect(priorities.first()).toBeVisible();
+    const count = await priorities.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+
+    const sources = page.getByTestId("recommendation-source");
+    await expect(sources.first()).toBeVisible();
+  });
+
+  test("recommendations section is hidden in edit mode", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    await page.getByRole("button", { name: "Edit Overrides" }).click();
+
+    await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+  });
+
+  test("advisory disclaimer is visible", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(
+      page.getByText("recommendations are advisory"),
+    ).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
 // Unauthenticated — redirect
 // ────────────────────────────────────────────────────────────────────────────
 
