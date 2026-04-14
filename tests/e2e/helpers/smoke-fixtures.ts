@@ -528,6 +528,69 @@ export async function mockPolicyRoutes(page: Page, opts?: PolicyMockOpts) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// Receipt summary mocks (history-aware recommendations)
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Rich history summary — triggers multiple recommendation types. */
+export const RICH_HISTORY_SUMMARY = {
+  period_days: 30,
+  total_receipts: 42,
+  decisions: { allow: 38, deny: 4 },
+  dry_run_count: 5,
+  intent_types: { swap: 30, multi_hop_swap: 8, lend: 4 },
+  denial_reasons: ["slippage_exceeded", "notional_limit"],
+  recent_tokens: ["SOL", "USDC", "BONK"],
+  recent_programs: ["JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"],
+  avg_notional_usd: 2500,
+  max_notional_usd: 18000,
+  avg_slippage_bps: 55,
+  simulation_failures: 3,
+  simulation_total: 40,
+};
+
+/** Empty history summary — new customer with no receipts. */
+export const EMPTY_HISTORY_SUMMARY = {
+  period_days: 30,
+  total_receipts: 0,
+  decisions: {},
+  dry_run_count: 0,
+  intent_types: {},
+  denial_reasons: [],
+  recent_tokens: [],
+  recent_programs: [],
+  avg_notional_usd: null,
+  max_notional_usd: null,
+  avg_slippage_bps: null,
+  simulation_failures: 0,
+  simulation_total: 0,
+};
+
+export type ReceiptSummaryMockOpts = {
+  /** Provide a custom summary object, or "empty" / "rich" shortcuts. */
+  variant?: "rich" | "empty" | Record<string, unknown>;
+  /** HTTP status to return (default 200). */
+  status?: number;
+};
+
+export async function mockReceiptSummaryRoute(
+  page: Page,
+  opts?: ReceiptSummaryMockOpts,
+) {
+  const variant = opts?.variant ?? "empty";
+  const status = opts?.status ?? 200;
+  const body =
+    variant === "rich"
+      ? RICH_HISTORY_SUMMARY
+      : variant === "empty"
+        ? EMPTY_HISTORY_SUMMARY
+        : variant;
+
+  await page.route("**/api/customer/receipts/summary*", (route: Route) =>
+    route.fulfill({ status, json: body }),
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // Telemetry / analytics — silently absorb
 // ────────────────────────────────────────────────────────────────────────────
 

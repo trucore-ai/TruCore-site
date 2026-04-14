@@ -3,8 +3,10 @@ import {
   mockAuthRoutes,
   mockDashboardRoutes,
   mockPolicyRoutes,
+  mockReceiptSummaryRoute,
   injectCustomerAuth,
   silenceAnalytics,
+  RICH_HISTORY_SUMMARY,
 } from "./helpers/smoke-fixtures";
 
 /**
@@ -614,5 +616,245 @@ test.describe("customer policies — unauthenticated", () => {
 
     // Should redirect to /login
     await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// History-aware policy recommendations
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — history-aware recommendations", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await injectCustomerAuth(page);
+  });
+
+  test("history-aware recommendation cards appear with rich summary data", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // At least one history-sourced recommendation should be present
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+    expect(allSources).toContain("Customer history");
+  });
+
+  test("source label shows 'Customer history' on history-based recommendations", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Find all recommendation cards with "Customer history" source
+    const historyCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-history-']");
+    const count = await historyCards.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+
+    // Every history card should have source label "Customer history"
+    for (let i = 0; i < count; i++) {
+      const sourceLabel = historyCards.nth(i).getByTestId("recommendation-source");
+      await expect(sourceLabel).toHaveText("Customer history");
+    }
+  });
+
+  test("evidence text is visible on history-based recommendation cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Evidence text references receipt count and period — pick a specific card
+    const slippageCard = page.getByTestId("recommendation-history-slippage-headroom");
+    await expect(slippageCard).toBeVisible();
+    await expect(
+      slippageCard.getByText(`Based on ${RICH_HISTORY_SUMMARY.total_receipts} receipts`),
+    ).toBeVisible();
+  });
+
+  test("slippage headroom recommendation appears when slippage cap is loose", async ({ page }) => {
+    // PRO_POLICY effective has max_slippage_bps: 200, avg_slippage_bps in rich summary is 55
+    // 200 > 55 * 3 = 165 → triggers slippage headroom
+    await page.goto("/customer/policies");
+
+    const slippageCard = page.getByTestId("recommendation-history-slippage-headroom");
+    await expect(slippageCard).toBeVisible();
+    await expect(slippageCard).toContainText("slippage cap is wider");
+    await expect(slippageCard).toContainText("55 bps");
+  });
+
+  test("narrow-token recommendation appears when token usage is narrow and unrestricted", async ({ page }) => {
+    // PRO policy has no token_policy (unrestricted), rich summary has 3 tokens
+    await page.goto("/customer/policies");
+
+    const tokenCard = page.getByTestId("recommendation-history-narrow-tokens");
+    await expect(tokenCard).toBeVisible();
+    await expect(tokenCard).toContainText("small set of tokens");
+    await expect(tokenCard).toContainText("SOL, USDC, BONK");
+  });
+
+  test("simulation-failure recommendation appears when failures present and simulation not required", async ({ page }) => {
+    // We need a policy where require_simulation_success is false
+    // Default PRO_POLICY has require_simulation_success: true — need custom
+    await mockPolicyRoutes(page, { plan: "pro" });
+
+    // Override the policy route with simulation not required
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: {
+            tx_limit_per_month: 5000,
+            policy_overrides_enabled: true,
+            max_notional_usd: 25000,
+            max_value_sol: 1000,
+            max_slippage_bps: 500,
+            require_simulation_success: false,
+          },
+          overrides: { max_slippage_bps: 200 },
+          effective: {
+            tx_limit_per_month: 5000,
+            max_notional_usd: 25000,
+            max_value_sol: 1000,
+            max_slippage_bps: 200,
+            require_simulation_success: false,
+          },
+        },
+      });
+    });
+
+    await page.goto("/customer/policies");
+
+    const simCard = page.getByTestId("recommendation-history-simulation-failures");
+    await expect(simCard).toBeVisible();
+    await expect(simCard).toContainText("simulation failures detected");
+    await expect(simCard).toContainText(`${RICH_HISTORY_SUMMARY.simulation_failures}`);
+  });
+
+  test("denial recommendation appears when denials are present in history", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const denialCard = page.getByTestId("recommendation-history-recent-denials");
+    await expect(denialCard).toBeVisible();
+    await expect(denialCard).toContainText("denied");
+    await expect(denialCard).toContainText("slippage_exceeded");
+  });
+
+  test("disclaimer mentions transaction history when history recs are shown", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    await expect(
+      page.getByText("your own recent transaction history"),
+    ).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// History recommendations — empty/unavailable degradation
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — empty history graceful degradation", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await injectCustomerAuth(page);
+  });
+
+  test("empty summary shows only deterministic recommendations (no history cards)", async ({ page }) => {
+    await mockReceiptSummaryRoute(page, { variant: "empty" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // No history-sourced recommendations should appear
+    const historyCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-history-']");
+    await expect(historyCards).toHaveCount(0);
+
+    // Deterministic recommendations should still be present
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+    expect(allSources.length).toBeGreaterThanOrEqual(1);
+    expect(allSources.every((s) => s !== "Customer history")).toBe(true);
+  });
+
+  test("failed summary fetch degrades to deterministic-only recommendations", async ({ page }) => {
+    await mockReceiptSummaryRoute(page, { variant: "empty", status: 500 });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // No history cards
+    const historyCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-history-']");
+    await expect(historyCards).toHaveCount(0);
+
+    // Disclaimer should NOT mention transaction history
+    await expect(
+      page.getByText("your own recent transaction history"),
+    ).not.toBeVisible();
+  });
+
+  test("no summary mock at all still shows deterministic recommendations", async ({ page }) => {
+    // No mockReceiptSummaryRoute called — request will 404 / fail
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Deterministic recs present
+    const sources = page.getByTestId("recommendation-source");
+    await expect(sources.first()).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Mixed recommendation sources — deterministic + history coexistence
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — mixed recommendation sources", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await injectCustomerAuth(page);
+  });
+
+  test("deterministic and history recommendations coexist with accurate source labels", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+
+    // Should have both deterministic and history sources
+    expect(allSources.some((s) => s !== "Customer history")).toBe(true);
+    expect(allSources.some((s) => s === "Customer history")).toBe(true);
+
+    // Total recommendation count should be > the count from either source alone
+    expect(allSources.length).toBeGreaterThanOrEqual(3);
+  });
+
+  test("narrow-tokens recommendation does not appear when token policy is allowlist", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro_with_token_policy" });
+    await page.goto("/customer/policies");
+
+    // Token policy is allowlist — narrow-tokens rec should NOT appear
+    const tokenCard = page.getByTestId("recommendation-history-narrow-tokens");
+    await expect(tokenCard).not.toBeVisible();
   });
 });
