@@ -412,6 +412,61 @@ export async function fetchReceipts(
   return res.json();
 }
 
+export interface ReceiptSummary {
+  period_days: number;
+  total_receipts: number;
+  decisions: Record<string, number>;
+  dry_run_count: number;
+  intent_types: Record<string, number>;
+  denial_reasons: string[];
+  recent_tokens: string[];
+  recent_programs: string[];
+  avg_notional_usd: number | null;
+  max_notional_usd: number | null;
+  avg_slippage_bps: number | null;
+  simulation_failures: number;
+  simulation_total: number;
+}
+
+export async function fetchReceiptSummary(
+  periodDays: number = 30,
+): Promise<ReceiptSummary> {
+  const token = getToken();
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
+
+  const url = `${RECEIPTS_PROXY_BASE}/summary?period_days=${periodDays}`;
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the receipts summary service.");
+  }
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
+  }
+
+  if (res.status >= 500) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "Receipt summary is temporarily unavailable.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "upstream_5xx", msg);
+  }
+
+  if (!res.ok) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "We couldn't load your receipt summary.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
+  }
+
+  return res.json();
+}
+
 export async function fetchReceiptDetail(
   receiptId: string,
 ): Promise<Record<string, unknown>> {

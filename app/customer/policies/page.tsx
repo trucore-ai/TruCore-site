@@ -7,7 +7,9 @@ import {
   isLoggedIn,
   fetchPolicy,
   updatePolicyOverrides,
+  fetchReceiptSummary,
   type EffectivePolicyResponse,
+  type ReceiptSummary,
 } from "@/lib/customer-auth";
 import { PremiumSlider } from "@/components/premium-slider";
 
@@ -775,11 +777,34 @@ const EFFECTIVE_LABELS: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Policy recommendations — deterministic, frontend-derived
+// Policy recommendations — deterministic, frontend-derived + customer history
 // ---------------------------------------------------------------------------
 
 type RecommendationPriority = "high" | "medium" | "low";
-type RecommendationSource = "Default guidance" | "Policy analysis" | "Policy Intelligence";
+
+/**
+ * Recommendation source taxonomy.
+ *
+ * Active sources (used today):
+ *   - "Default guidance"   — generic best-practice recommendations
+ *   - "Policy analysis"    — derived from the customer's current policy values
+ *   - "Customer history"   — derived from the customer's own receipt history
+ *
+ * Future sources (defined in the type for forward-compatibility, not shown in
+ * the UI until actually wired):
+ *   - "Policy Intelligence" — PIL-backed backend signals
+ *   - "Market analysis"     — real-time market probe data
+ *   - "Cohort benchmark"    — anonymized cross-cohort comparisons
+ *   - "External context"    — third-party data feeds
+ */
+type RecommendationSource =
+  | "Default guidance"
+  | "Policy analysis"
+  | "Customer history"
+  | "Policy Intelligence"
+  | "Market analysis"
+  | "Cohort benchmark"
+  | "External context";
 
 interface PolicyRecommendation {
   id: string;
@@ -790,6 +815,10 @@ interface PolicyRecommendation {
   source: RecommendationSource;
   /** Editable field key to highlight when user clicks "View setting" */
   fieldKey?: string;
+  /** Optional evidence text (for future richer intelligence sources) */
+  evidence?: string;
+  /** Optional confidence score 0–1 (for future PIL/ML sources) */
+  confidence?: number;
 }
 
 function generatePolicyRecommendations(
@@ -935,6 +964,184 @@ function generatePolicyRecommendations(
   return recommendations;
 }
 
+// ---------------------------------------------------------------------------
+// Customer-history-aware recommendations
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate recommendations informed by the customer's own receipt history.
+ *
+ * All recommendations are grounded in actual customer data from the
+ * ReceiptSummary.  Each is labeled with source "Customer history" and
+ * includes a brief evidence string derived from the summary.
+ *
+ * Returns an empty array when the summary has no receipts or when no
+ * history-based recommendations apply — degrades gracefully.
+ */
+function generateHistoryRecommendations(
+  summary: ReceiptSummary,
+  effective: Record<string, unknown>,
+): PolicyRecommendation[] {
+  const recs: PolicyRecommendation[] = [];
+
+  // Need at least a handful of receipts to make meaningful recommendations
+  if (summary.total_receipts < 3) return recs;
+
+  // 1. Policy limits much higher than actual usage
+  const policyMaxUsd = effective.max_notional_usd;
+  if (
+    summary.avg_notional_usd !== null &&
+    typeof policyMaxUsd === "number" &&
+    policyMaxUsd > 0 &&
+    summary.avg_notional_usd > 0 &&
+    policyMaxUsd > summary.avg_notional_usd * 5
+  ) {
+    const avgStr = `$${Math.round(summary.avg_notional_usd).toLocaleString()}`;
+    const maxStr = summary.max_notional_usd !== null
+      ? `$${Math.round(summary.max_notional_usd).toLocaleString()}`
+      : avgStr;
+    recs.push({
+      id: "history-limit-headroom",
+      title: "Your USD limit has significant headroom",
+      explanation:
+        `Your recent transactions average ${avgStr} USD with a peak of ${maxStr}, ` +
+        `but your policy allows up to $${policyMaxUsd.toLocaleString()}.`,
+      why:
+        "Tightening your limit closer to your actual usage reduces exposure if your agent is compromised.",
+      priority: "low",
+      source: "Customer history",
+      fieldKey: "max_notional_usd",
+      evidence: `Based on ${summary.total_receipts} receipts over the last ${summary.period_days} days.`,
+    });
+  }
+
+  // 2. Slippage cap wider than recent trades need
+  const policySlippage = effective.max_slippage_bps;
+  if (
+    summary.avg_slippage_bps !== null &&
+    typeof policySlippage === "number" &&
+    policySlippage > 0 &&
+    summary.avg_slippage_bps > 0 &&
+    policySlippage > summary.avg_slippage_bps * 3
+  ) {
+    const avgBps = Math.round(summary.avg_slippage_bps);
+    recs.push({
+      id: "history-slippage-headroom",
+      title: "Your slippage cap is wider than recent usage",
+      explanation:
+        `Your recent trades averaged ${avgBps} bps slippage, but your policy allows up to ${policySlippage} bps.`,
+      why:
+        "A tighter slippage cap reduces the risk of unfavorable execution prices without impacting your typical trades.",
+      priority: "low",
+      source: "Customer history",
+      fieldKey: "max_slippage_bps",
+      evidence: `Based on ${summary.total_receipts} receipts over the last ${summary.period_days} days.`,
+    });
+  }
+
+  // 3. Simulation failures suggest requiring simulation
+  if (
+    summary.simulation_failures > 0 &&
+    summary.simulation_total > 0 &&
+    effective.require_simulation_success !== true
+  ) {
+    const failPct = Math.round((summary.simulation_failures / summary.simulation_total) * 100);
+    recs.push({
+      id: "history-simulation-failures",
+      title: "Recent simulation failures detected",
+      explanation:
+        `${summary.simulation_failures} of your last ${summary.simulation_total} ` +
+        `executions failed (${failPct}%). Requiring simulation success would catch these before execution.`,
+      why:
+        "Simulation pre-checks prevent failed transactions from consuming gas and causing unexpected losses.",
+      priority: "medium",
+      source: "Customer history",
+      fieldKey: "require_simulation_success",
+      evidence: `${summary.simulation_failures} failures in the last ${summary.period_days} days.`,
+    });
+  }
+
+  // 4. Narrow token usage suggests allowlist mode
+  const tp = effective.token_policy;
+  const isUnrestricted =
+    !tp ||
+    (typeof tp === "object" &&
+      !Array.isArray(tp) &&
+      String((tp as Record<string, unknown>).mode ?? "unrestricted") === "unrestricted");
+
+  if (
+    isUnrestricted &&
+    summary.recent_tokens.length > 0 &&
+    summary.recent_tokens.length <= 5
+  ) {
+    const tokenList = summary.recent_tokens.join(", ");
+    recs.push({
+      id: "history-narrow-tokens",
+      title: "You use a small set of tokens",
+      explanation:
+        `Your recent activity involves only ${summary.recent_tokens.length} token${summary.recent_tokens.length !== 1 ? "s" : ""}: ${tokenList}. ` +
+        "Switching to allowlist mode would restrict access to just these tokens.",
+      why:
+        "Restricting to known tokens prevents your agent from interacting with unfamiliar or malicious mints.",
+      priority: "low",
+      source: "Customer history",
+      fieldKey: "token_policy",
+      evidence: `Based on ${summary.total_receipts} receipts over the last ${summary.period_days} days.`,
+    });
+  }
+
+  // 5. Narrow program usage suggests adding restrictions
+  const allowedProgs = effective.allowed_programs;
+  const deniedProgs = effective.denied_programs;
+  const hasProgRestrictions =
+    (Array.isArray(allowedProgs) && allowedProgs.length > 0) ||
+    (Array.isArray(deniedProgs) && deniedProgs.length > 0);
+
+  if (
+    !hasProgRestrictions &&
+    summary.recent_programs.length > 0 &&
+    summary.recent_programs.length <= 5
+  ) {
+    recs.push({
+      id: "history-narrow-programs",
+      title: "You use a small set of programs",
+      explanation:
+        `Your recent activity involves only ${summary.recent_programs.length} on-chain program${summary.recent_programs.length !== 1 ? "s" : ""}. ` +
+        "Adding a program allowlist would prevent your agent from calling unexpected contracts.",
+      why:
+        "Restricting to known programs is a strong security measure when your usage is predictable.",
+      priority: "low",
+      source: "Customer history",
+      fieldKey: "allowed_programs",
+      evidence: `Based on ${summary.total_receipts} receipts over the last ${summary.period_days} days.`,
+    });
+  }
+
+  // 6. Recent denials — review policy
+  const denyCount = summary.decisions["deny"] ?? 0;
+  const allowCount = summary.decisions["allow"] ?? 0;
+  if (denyCount > 0 && allowCount > 0) {
+    const denyPct = Math.round((denyCount / summary.total_receipts) * 100);
+    const reasonHint =
+      summary.denial_reasons.length > 0
+        ? ` Common reasons: ${summary.denial_reasons.slice(0, 3).join(", ")}.`
+        : "";
+    recs.push({
+      id: "history-recent-denials",
+      title: "Some recent transactions were denied",
+      explanation:
+        `${denyCount} of ${summary.total_receipts} recent transactions (${denyPct}%) were denied by your policy.${reasonHint}`,
+      why:
+        "If denials are expected, your policy is working correctly. If not, review your limits to ensure they match your intended usage.",
+      priority: denyPct > 20 ? "medium" : "low",
+      source: "Customer history",
+      evidence: `${denyCount} denial${denyCount !== 1 ? "s" : ""} in the last ${summary.period_days} days.`,
+    });
+  }
+
+  return recs;
+}
+
 const PRIORITY_STYLES: Record<RecommendationPriority, { badge: string; border: string }> = {
   high: {
     badge: "bg-red-500/15 text-red-300 border border-red-500/20",
@@ -959,6 +1166,7 @@ export default function CustomerPoliciesPage() {
   const [policy, setPolicy] = useState<EffectivePolicyResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [historySummary, setHistorySummary] = useState<ReceiptSummary | null>(null);
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -992,13 +1200,25 @@ export default function CustomerPoliciesPage() {
     }
   }, []);
 
+  // Fetch receipt summary for history-aware recommendations (non-blocking).
+  const loadHistorySummary = useCallback(async () => {
+    try {
+      const summary = await fetchReceiptSummary(30);
+      setHistorySummary(summary);
+    } catch {
+      // History summary is optional — degrade gracefully.
+      setHistorySummary(null);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isLoggedIn()) {
       router.replace("/login");
       return;
     }
     loadPolicy();
-  }, [router, loadPolicy]);
+    loadHistorySummary();
+  }, [router, loadPolicy, loadHistorySummary]);
 
   // Initialize form values from current overrides when entering edit mode.
   function enterEditMode() {
@@ -1627,8 +1847,25 @@ export default function CustomerPoliciesPage() {
 
             {/* Policy Recommendations */}
             {(() => {
-              const recommendations = generatePolicyRecommendations(effective, overrides, overridesEnabled);
-              if (recommendations.length === 0) return null;
+              const deterministicRecs = generatePolicyRecommendations(effective, overrides, overridesEnabled);
+              const historyRecs = historySummary
+                ? generateHistoryRecommendations(historySummary, effective)
+                : [];
+              // Merge, deduplicate by id, sort by priority
+              const seenIds = new Set<string>();
+              const allRecs: PolicyRecommendation[] = [];
+              for (const rec of [...deterministicRecs, ...historyRecs]) {
+                if (!seenIds.has(rec.id)) {
+                  seenIds.add(rec.id);
+                  allRecs.push(rec);
+                }
+              }
+              const order: Record<RecommendationPriority, number> = { high: 0, medium: 1, low: 2 };
+              allRecs.sort((a, b) => order[a.priority] - order[b.priority]);
+
+              if (allRecs.length === 0) return null;
+
+              const hasHistoryRecs = historyRecs.length > 0;
               return (
                 <section
                   className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-4"
@@ -1639,11 +1876,12 @@ export default function CustomerPoliciesPage() {
                       Policy Recommendations
                     </h2>
                     <p className="mt-1 text-[10px] text-slate-500">
-                      Suggestions to strengthen your policy based on your current configuration.
+                      Suggestions to strengthen your policy based on your current configuration
+                      {hasHistoryRecs ? " and your recent transaction history" : ""}.
                     </p>
                   </div>
                   <div className="space-y-3" data-testid="recommendation-cards">
-                    {recommendations.map((rec) => {
+                    {allRecs.map((rec) => {
                       const styles = PRIORITY_STYLES[rec.priority];
                       return (
                         <div
@@ -1677,6 +1915,11 @@ export default function CustomerPoliciesPage() {
                             <span className="font-medium text-slate-400">Why it matters:</span>{" "}
                             {rec.why}
                           </p>
+                          {rec.evidence && (
+                            <p className="text-[9px] text-slate-600 leading-relaxed italic">
+                              {rec.evidence}
+                            </p>
+                          )}
                           {overridesEnabled && rec.fieldKey && (
                             <button
                               type="button"
@@ -1692,7 +1935,7 @@ export default function CustomerPoliciesPage() {
                     })}
                   </div>
                   <p className="text-[9px] text-slate-600 text-center">
-                    These recommendations are advisory. They are derived from your current policy configuration, not from live transaction data.
+                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? " and your own recent transaction history" : ""}, not from live market data or cross-customer analysis.
                   </p>
                 </section>
               );

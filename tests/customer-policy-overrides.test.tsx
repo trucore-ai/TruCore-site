@@ -12,6 +12,7 @@ vi.mock("next/navigation", () => ({
 
 const mockFetchPolicy = vi.fn();
 const mockUpdatePolicyOverrides = vi.fn();
+const mockFetchReceiptSummary = vi.fn();
 
 vi.mock("@/lib/customer-auth", () => {
   class ApiError extends Error {
@@ -29,6 +30,8 @@ vi.mock("@/lib/customer-auth", () => {
     fetchPolicy: (...args: unknown[]) => mockFetchPolicy(...args),
     updatePolicyOverrides: (...args: unknown[]) =>
       mockUpdatePolicyOverrides(...args),
+    fetchReceiptSummary: (...args: unknown[]) =>
+      mockFetchReceiptSummary(...args),
     ApiError,
   };
 });
@@ -112,6 +115,40 @@ const PRO_POLICY_WITH_TOKEN_POLICY = {
   },
 };
 
+/** Receipt summary with meaningful history data for testing. */
+const HISTORY_SUMMARY = {
+  period_days: 30,
+  total_receipts: 42,
+  decisions: { allow: 38, deny: 4 },
+  dry_run_count: 5,
+  intent_types: { swap: 30, multi_hop_swap: 8, lend: 4 },
+  denial_reasons: ["slippage_exceeded", "notional_limit"],
+  recent_tokens: ["SOL", "USDC", "BONK"],
+  recent_programs: ["JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"],
+  avg_notional_usd: 5200,
+  max_notional_usd: 45000,
+  avg_slippage_bps: 85,
+  simulation_failures: 3,
+  simulation_total: 40,
+};
+
+/** Empty history summary (new customer). */
+const EMPTY_HISTORY_SUMMARY = {
+  period_days: 30,
+  total_receipts: 0,
+  decisions: {},
+  dry_run_count: 0,
+  intent_types: {},
+  denial_reasons: [],
+  recent_tokens: [],
+  recent_programs: [],
+  avg_notional_usd: null,
+  max_notional_usd: null,
+  avg_slippage_bps: null,
+  simulation_failures: 0,
+  simulation_total: 0,
+};
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -119,6 +156,9 @@ const PRO_POLICY_WITH_TOKEN_POLICY = {
 describe("CustomerPoliciesPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: history summary returns empty (no history).  Tests that need
+    // history data will override this.
+    mockFetchReceiptSummary.mockResolvedValue(EMPTY_HISTORY_SUMMARY);
   });
 
   // -----------------------------------------------------------------------
@@ -1311,6 +1351,238 @@ describe("CustomerPoliciesPage", () => {
 
       await waitFor(() => {
         expect(screen.getByText(/recommendations are advisory/)).toBeTruthy();
+      });
+    });
+
+    // -------------------------------------------------------------------
+    // Customer-history-aware recommendations
+    // -------------------------------------------------------------------
+
+    describe("customer-history recommendations", () => {
+      it("shows limit-headroom recommendation when policy limit >> avg usage", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: {
+            ...PRO_POLICY.effective,
+            // 50_000 > 5200 * 5 → triggers headroom rec
+            max_notional_usd: 50000,
+          },
+        });
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-history-limit-headroom")).toBeTruthy();
+        });
+
+        expect(
+          screen.getByTestId("recommendation-history-limit-headroom").textContent,
+        ).toContain("significant headroom");
+      });
+
+      it("shows slippage-headroom recommendation when policy slippage >> avg usage", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: {
+            ...PRO_POLICY.effective,
+            // 500 > 85 * 3 → triggers slippage rec
+            max_slippage_bps: 500,
+          },
+        });
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-history-slippage-headroom")).toBeTruthy();
+        });
+
+        expect(
+          screen.getByTestId("recommendation-history-slippage-headroom").textContent,
+        ).toContain("wider than recent usage");
+      });
+
+      it("shows simulation-failures recommendation when failures exist and sim not required", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: {
+            ...PRO_POLICY.effective,
+            require_simulation_success: false,
+          },
+        });
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-history-simulation-failures")).toBeTruthy();
+        });
+
+        expect(
+          screen.getByTestId("recommendation-history-simulation-failures").textContent,
+        ).toContain("simulation failures");
+      });
+
+      it("shows narrow-tokens recommendation when few tokens used and unrestricted", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        // PRO_POLICY has no token_policy → unrestricted
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-history-narrow-tokens")).toBeTruthy();
+        });
+
+        expect(
+          screen.getByTestId("recommendation-history-narrow-tokens").textContent,
+        ).toContain("small set of tokens");
+      });
+
+      it("does NOT show narrow-tokens when token_policy is allowlist", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_TOKEN_POLICY);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+        });
+
+        expect(screen.queryByTestId("recommendation-history-narrow-tokens")).toBeNull();
+      });
+
+      it("shows narrow-programs recommendation when few programs used and no restrictions", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        // PRO_POLICY has no allowed/denied programs → no restrictions
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-history-narrow-programs")).toBeTruthy();
+        });
+
+        expect(
+          screen.getByTestId("recommendation-history-narrow-programs").textContent,
+        ).toContain("small set of programs");
+      });
+
+      it("does NOT show narrow-programs when programs are configured", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_PROGRAMS);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+        });
+
+        expect(screen.queryByTestId("recommendation-history-narrow-programs")).toBeNull();
+      });
+
+      it("shows recent-denials recommendation when denials exist", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-history-recent-denials")).toBeTruthy();
+        });
+
+        const card = screen.getByTestId("recommendation-history-recent-denials");
+        expect(card.textContent).toContain("denied");
+        expect(card.textContent).toContain("slippage_exceeded");
+      });
+
+      it("renders evidence text on history recommendations", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-history-recent-denials")).toBeTruthy();
+        });
+
+        const denialsCard = screen.getByTestId("recommendation-history-recent-denials");
+        expect(denialsCard.textContent).toContain("30 days");
+      });
+
+      it("shows 'Customer history' source label on history recommendations", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-history-recent-denials")).toBeTruthy();
+        });
+
+        const sources = screen.getAllByTestId("recommendation-source");
+        const historySourceLabels = sources.filter(
+          (el) => el.textContent === "Customer history",
+        );
+        expect(historySourceLabels.length).toBeGreaterThan(0);
+      });
+
+      it("does NOT show history recommendations when summary is null (fetch fails)", async () => {
+        mockFetchReceiptSummary.mockRejectedValue(new Error("network error"));
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+        });
+
+        expect(screen.queryByTestId("recommendation-history-recent-denials")).toBeNull();
+        expect(screen.queryByTestId("recommendation-history-narrow-tokens")).toBeNull();
+      });
+
+      it("does NOT show history recommendations when receipt count is below threshold", async () => {
+        mockFetchReceiptSummary.mockResolvedValue({
+          ...HISTORY_SUMMARY,
+          total_receipts: 2, // below threshold of 3
+        });
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+        });
+
+        expect(screen.queryByTestId("recommendation-history-recent-denials")).toBeNull();
+        expect(screen.queryByTestId("recommendation-history-narrow-tokens")).toBeNull();
+      });
+
+      it("includes transaction history mention in disclaimer when history recs present", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-history-recent-denials")).toBeTruthy();
+        });
+
+        // Both the subtitle and disclaimer mention history; confirm at least one exists
+        const matches = screen.getAllByText(/recent transaction history/);
+        expect(matches.length).toBeGreaterThan(0);
+      });
+
+      it("deterministic and history recommendations coexist without duplication", async () => {
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: {
+            ...PRO_POLICY.effective,
+            require_simulation_success: false, // triggers both deterministic + history recs
+          },
+        });
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+        });
+
+        // Deterministic simulation recommendation
+        expect(screen.getByTestId("recommendation-enable-simulation")).toBeTruthy();
+        // History-derived simulation recommendation
+        expect(screen.getByTestId("recommendation-history-simulation-failures")).toBeTruthy();
+        // Both should be in the recommendation cards container
+        const cards = screen.getByTestId("recommendation-cards");
+        expect(cards.children.length).toBeGreaterThanOrEqual(2);
       });
     });
   });
