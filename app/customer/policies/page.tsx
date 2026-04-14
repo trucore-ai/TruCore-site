@@ -1243,6 +1243,7 @@ export default function CustomerPoliciesPage() {
                                 disabled={saving || !tokenMintInput.trim()}
                                 onClick={() => addTokenMint(tokenMintInput)}
                                 className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-200 transition hover:bg-amber-500/20 disabled:opacity-50"
+                                data-testid="token-mint-add-btn"
                               >
                                 Add
                               </button>

@@ -403,7 +403,7 @@ test.describe("customer policies — token policy editor", () => {
 
     const input = page.getByPlaceholder("Token symbol or mint address");
     await input.fill("CustomMint123");
-    await page.getByRole("button", { name: "Add" }).click();
+    await page.getByTestId("token-mint-add-btn").click();
 
     await expect(page.locator("[title='CustomMint123']")).toBeVisible();
   });
@@ -423,9 +423,9 @@ test.describe("customer policies — token policy editor", () => {
     ]);
 
     const body = request.postDataJSON();
-    expect(body.token_policy).toBeDefined();
-    expect(body.token_policy.mode).toBe("allowlist");
-    expect(body.token_policy.allowed_mints).toContain("USDC");
+    expect(body.overrides.token_policy).toBeDefined();
+    expect(body.overrides.token_policy.mode).toBe("allowlist");
+    expect(body.overrides.token_policy.allowed_mints).toContain("USDC");
   });
 
   test("existing token policy is loaded when entering edit mode", async ({ page }) => {
