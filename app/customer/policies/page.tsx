@@ -99,6 +99,87 @@ const EDITABLE_FIELDS = [
 
 type EditableKey = (typeof EDITABLE_FIELDS)[number]["key"];
 
+// ---------------------------------------------------------------------------
+// Token policy model
+// ---------------------------------------------------------------------------
+
+type TokenPolicyMode = "unrestricted" | "allowlist" | "denylist";
+
+interface TokenPolicyState {
+  mode: TokenPolicyMode;
+  allowed_mints: string[];
+  denied_mints: string[];
+}
+
+const DEFAULT_TOKEN_POLICY: TokenPolicyState = {
+  mode: "unrestricted",
+  allowed_mints: [],
+  denied_mints: [],
+};
+
+const TOKEN_MODES: {
+  id: TokenPolicyMode;
+  label: string;
+  tagline: string;
+  detail: string;
+  emptyNote: string;
+  strictness: string;
+  strictnessColor: string;
+}[] = [
+  {
+    id: "unrestricted",
+    label: "Open",
+    tagline: "Any token allowed",
+    detail: "All tokens are permitted. No restrictions on which mints can appear in transactions.",
+    emptyNote: "No token lists needed — all mints are allowed.",
+    strictness: "Permissive",
+    strictnessColor: "text-orange-400",
+  },
+  {
+    id: "denylist",
+    label: "Block Selected",
+    tagline: "Block specific tokens",
+    detail: "All tokens are allowed except those on your deny list. Add tokens you want to block.",
+    emptyNote: "No tokens blocked yet — effectively the same as Open mode. Add mints below to start blocking.",
+    strictness: "Moderate",
+    strictnessColor: "text-amber-300",
+  },
+  {
+    id: "allowlist",
+    label: "Allow Selected Only",
+    tagline: "Only approved tokens",
+    detail: "Only tokens on your allow list are permitted. Everything else is blocked.",
+    emptyNote: "No tokens allowed yet — all transactions will be blocked. Add at least one mint to proceed.",
+    strictness: "Restrictive",
+    strictnessColor: "text-emerald-400",
+  },
+];
+
+const WELL_KNOWN_MINTS: { symbol: string; name: string; address: string }[] = [
+  { symbol: "SOL", name: "Solana", address: "So11111111111111111111111111111111111111112" },
+  { symbol: "USDC", name: "USD Coin", address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" },
+  { symbol: "USDT", name: "Tether USD", address: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB" },
+  { symbol: "BONK", name: "Bonk", address: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263" },
+  { symbol: "JUP", name: "Jupiter", address: "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN" },
+  { symbol: "RAY", name: "Raydium", address: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R" },
+  { symbol: "PYTH", name: "Pyth Network", address: "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3" },
+  { symbol: "ORCA", name: "Orca", address: "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE" },
+  { symbol: "mSOL", name: "Marinade SOL", address: "mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So" },
+  { symbol: "JitoSOL", name: "Jito SOL", address: "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn" },
+];
+
+/** Resolve a mint identifier: look up known symbols, otherwise return as-is. */
+function resolveMintDisplay(mint: string): { symbol: string; isKnown: boolean } {
+  const upper = mint.toUpperCase();
+  const known = WELL_KNOWN_MINTS.find(
+    (m) => m.symbol.toUpperCase() === upper || m.address === mint,
+  );
+  if (known) return { symbol: known.symbol, isKnown: true };
+  // Truncate long addresses for display
+  if (mint.length > 16) return { symbol: `${mint.slice(0, 6)}…${mint.slice(-4)}`, isKnown: false };
+  return { symbol: mint, isKnown: false };
+}
+
 const NUMERIC_FORMAT: Record<string, (v: number) => string> = {
   max_slippage_bps: (v) => `${v.toLocaleString()} bps`,
   max_notional_usd: (v) => `$${v.toLocaleString()}`,
@@ -184,6 +265,11 @@ const FIELD_GROUPS = [
     description: "Slippage tolerance and simulation requirements",
   },
   {
+    id: "tokens",
+    title: "Token Access Policy",
+    description: "Control which tokens your agent can trade",
+  },
+  {
     id: "programs",
     title: "Program Controls",
     description: "Restrict which on-chain programs can be invoked",
@@ -205,11 +291,14 @@ interface RiskProfile {
   programColor: string;
   simulationRequired: string;
   simulationColor: string;
+  tokenAccess: string;
+  tokenColor: string;
 }
 
 function computeRiskProfile(
   formValues: Record<string, string>,
   listValues: Record<string, string[]>,
+  tokenPolicy?: TokenPolicyState,
 ): RiskProfile {
   const slippage = Number(formValues.max_slippage_bps) || 0;
   const notional = Number(formValues.max_notional_usd) || 0;
@@ -310,6 +399,22 @@ function computeRiskProfile(
     }
   }
 
+  // Token access dimension
+  let tokenAccess = "Plan default";
+  let tokenColor = "text-slate-400";
+  if (tokenPolicy) {
+    if (tokenPolicy.mode === "allowlist") {
+      tokenAccess = tokenPolicy.allowed_mints.length > 0 ? "Allowlist only" : "Deny all (empty)";
+      tokenColor = "text-emerald-400";
+    } else if (tokenPolicy.mode === "denylist") {
+      tokenAccess = tokenPolicy.denied_mints.length > 0 ? "Blocklist active" : "Open (empty blocklist)";
+      tokenColor = tokenPolicy.denied_mints.length > 0 ? "text-amber-300" : "text-slate-400";
+    } else {
+      tokenAccess = "Open";
+      tokenColor = "text-orange-400";
+    }
+  }
+
   return {
     overall,
     overallColor,
@@ -321,6 +426,8 @@ function computeRiskProfile(
     programColor,
     simulationRequired,
     simulationColor,
+    tokenAccess,
+    tokenColor,
   };
 }
 
@@ -371,6 +478,7 @@ const EFFECTIVE_LABELS: Record<string, string> = {
   allowed_mints: "Allowed token mints",
   denied_mints: "Denied token mints",
   custom_token_allowlist_enabled: "Custom token allowlist",
+  token_policy: "Token access policy",
 };
 
 // ---------------------------------------------------------------------------
@@ -391,9 +499,12 @@ export default function CustomerPoliciesPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [listValues, setListValues] = useState<Record<string, string[]>>({});
+  const [tokenPolicy, setTokenPolicy] = useState<TokenPolicyState>({ ...DEFAULT_TOKEN_POLICY });
+  const [tokenMintInput, setTokenMintInput] = useState("");
   const [editSnapshot, setEditSnapshot] = useState<{
     values: Record<string, string>;
     lists: Record<string, string[]>;
+    tokenPolicy: TokenPolicyState;
   } | null>(null);
 
   const loadPolicy = useCallback(async () => {
@@ -435,13 +546,34 @@ export default function CustomerPoliciesPage() {
         values[field.key] = "";
       }
     }
+    // Initialize token policy from overrides
+    const tp = overrides.token_policy;
+    const initTokenPolicy: TokenPolicyState = tp && typeof tp === "object" && !Array.isArray(tp)
+      ? {
+          mode: (tp as Record<string, unknown>).mode as TokenPolicyMode ?? "unrestricted",
+          allowed_mints: Array.isArray((tp as Record<string, unknown>).allowed_mints)
+            ? [...((tp as Record<string, unknown>).allowed_mints as string[])]
+            : [],
+          denied_mints: Array.isArray((tp as Record<string, unknown>).denied_mints)
+            ? [...((tp as Record<string, unknown>).denied_mints as string[])]
+            : [],
+        }
+      : { ...DEFAULT_TOKEN_POLICY };
+
     setFormValues(values);
     setListValues(lists);
+    setTokenPolicy(initTokenPolicy);
+    setTokenMintInput("");
     setEditSnapshot({
       values: { ...values },
       lists: Object.fromEntries(
         Object.entries(lists).map(([k, v]) => [k, [...v]]),
       ),
+      tokenPolicy: {
+        mode: initTokenPolicy.mode,
+        allowed_mints: [...initTokenPolicy.allowed_mints],
+        denied_mints: [...initTokenPolicy.denied_mints],
+      },
     });
     setSaveError("");
     setSaveSuccess(false);
@@ -454,6 +586,8 @@ export default function CustomerPoliciesPage() {
     setSaveError("");
     setSaveSuccess(false);
     setListValues({});
+    setTokenPolicy({ ...DEFAULT_TOKEN_POLICY });
+    setTokenMintInput("");
   }
 
   function applyPreset(preset: Preset) {
@@ -463,6 +597,37 @@ export default function CustomerPoliciesPage() {
 
   function updateField(key: string, value: string) {
     setFormValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  // Token policy helpers
+  function setTokenPolicyMode(mode: TokenPolicyMode) {
+    setTokenPolicy((prev) => ({
+      mode,
+      allowed_mints: mode === "allowlist" ? prev.allowed_mints : [],
+      denied_mints: mode === "denylist" ? prev.denied_mints : [],
+    }));
+  }
+
+  function addTokenMint(mint: string) {
+    const trimmed = mint.trim();
+    if (!trimmed) return;
+    setTokenPolicy((prev) => {
+      const listKey = prev.mode === "allowlist" ? "allowed_mints" : "denied_mints";
+      const current = prev[listKey];
+      if (current.includes(trimmed)) return prev;
+      if (current.length >= 50) return prev;
+      return { ...prev, [listKey]: [...current, trimmed] };
+    });
+    setTokenMintInput("");
+  }
+
+  function removeTokenMint(index: number) {
+    setTokenPolicy((prev) => {
+      const listKey = prev.mode === "allowlist" ? "allowed_mints" : "denied_mints";
+      const updated = [...prev[listKey]];
+      updated.splice(index, 1);
+      return { ...prev, [listKey]: updated };
+    });
   }
 
   function addListItem(key: string, value: string) {
@@ -487,7 +652,10 @@ export default function CustomerPoliciesPage() {
     // Build new overrides: start with current non-editable overrides,
     // then merge editable field values.
     const currentOverrides = { ...(policy?.overrides ?? {}) };
-    const editableKeys = new Set<string>(EDITABLE_FIELDS.map((f) => f.key));
+    const editableKeys = new Set<string>([
+      ...EDITABLE_FIELDS.map((f) => f.key),
+      "token_policy",
+    ]);
 
     // Preserve overrides the UI does not expose.
     const newOverrides: Record<string, unknown> = {};
@@ -532,6 +700,19 @@ export default function CustomerPoliciesPage() {
         }
         newOverrides[field.key] = num;
       }
+    }
+
+    // Apply token policy (only if not unrestricted-with-empty-lists = plan default)
+    const isTokenPolicyDefault =
+      tokenPolicy.mode === "unrestricted" &&
+      tokenPolicy.allowed_mints.length === 0 &&
+      tokenPolicy.denied_mints.length === 0;
+    if (!isTokenPolicyDefault) {
+      newOverrides.token_policy = {
+        mode: tokenPolicy.mode,
+        allowed_mints: tokenPolicy.mode === "allowlist" ? tokenPolicy.allowed_mints : [],
+        denied_mints: tokenPolicy.mode === "denylist" ? tokenPolicy.denied_mints : [],
+      };
     }
 
     setSaving(true);
@@ -615,15 +796,24 @@ export default function CustomerPoliciesPage() {
 
   // Partition effective keys into categories for display
   const limitKeys = ["tx_limit_per_month", "max_notional_usd", "max_value_sol"];
-  const tokenKeys = ["allowed_mints", "denied_mints", "custom_token_allowlist_enabled"];
+  const tokenKeys = ["token_policy", "allowed_mints", "denied_mints", "custom_token_allowlist_enabled"];
   const protectionKeys = ["max_slippage_bps", "require_simulation_success"];
   const programKeys = ["allowed_programs", "denied_programs", "blocked_programs"];
 
   // Live risk profile & preset detection
-  const riskProfile = computeRiskProfile(formValues, listValues);
+  const riskProfile = computeRiskProfile(formValues, listValues, tokenPolicy);
   const activePreset = detectPreset(formValues, listValues);
 
   // Detect unsaved changes
+  const tokenPolicyChanged =
+    editing &&
+    editSnapshot !== null &&
+    (tokenPolicy.mode !== editSnapshot.tokenPolicy.mode ||
+      tokenPolicy.allowed_mints.length !== editSnapshot.tokenPolicy.allowed_mints.length ||
+      tokenPolicy.denied_mints.length !== editSnapshot.tokenPolicy.denied_mints.length ||
+      tokenPolicy.allowed_mints.some((m, i) => m !== editSnapshot.tokenPolicy.allowed_mints[i]) ||
+      tokenPolicy.denied_mints.some((m, i) => m !== editSnapshot.tokenPolicy.denied_mints[i]));
+
   const hasChanges =
     editing &&
     editSnapshot !== null &&
@@ -636,10 +826,20 @@ export default function CustomerPoliciesPage() {
         return (
           curr.length !== init.length || curr.some((v, i) => v !== init[i])
         );
-      }));
+      }) ||
+      tokenPolicyChanged);
 
   function renderValue(key: string, val: unknown): string {
     if (val === null || val === undefined) return "—";
+    if (key === "token_policy" && typeof val === "object" && val !== null && !Array.isArray(val)) {
+      const tp = val as Record<string, unknown>;
+      const mode = String(tp.mode ?? "unrestricted");
+      const allowed = Array.isArray(tp.allowed_mints) ? tp.allowed_mints.length : 0;
+      const denied = Array.isArray(tp.denied_mints) ? tp.denied_mints.length : 0;
+      if (mode === "allowlist") return `Allowlist (${allowed} mint${allowed !== 1 ? "s" : ""})`;
+      if (mode === "denylist") return `Blocklist (${denied} mint${denied !== 1 ? "s" : ""})`;
+      return "Open (unrestricted)";
+    }
     if (typeof val === "boolean") return val ? "Yes" : "No";
     if (typeof val === "number") {
       if (val < 0) return "Unlimited";
@@ -758,7 +958,7 @@ export default function CustomerPoliciesPage() {
                 {riskProfile.overall}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
               <div className="space-y-1">
                 <p className="text-[10px] text-slate-500">Transaction Freedom</p>
                 <p className={`text-xs font-medium ${riskProfile.transactionColor}`}>
@@ -775,6 +975,12 @@ export default function CustomerPoliciesPage() {
                 <p className="text-[10px] text-slate-500">Simulation</p>
                 <p className={`text-xs font-medium ${riskProfile.simulationColor}`}>
                   {riskProfile.simulationRequired}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] text-slate-500">Token Access</p>
+                <p className={`text-xs font-medium ${riskProfile.tokenColor}`}>
+                  {riskProfile.tokenAccess}
                 </p>
               </div>
               <div className="space-y-1">
@@ -871,6 +1077,187 @@ export default function CustomerPoliciesPage() {
               <>
                 {/* Grouped field sections */}
                 {FIELD_GROUPS.map((group) => {
+                  // Special rendering for the token policy section
+                  if (group.id === "tokens") {
+                    const activeMode = TOKEN_MODES.find((m) => m.id === tokenPolicy.mode)!;
+                    const activeMintList =
+                      tokenPolicy.mode === "allowlist"
+                        ? tokenPolicy.allowed_mints
+                        : tokenPolicy.mode === "denylist"
+                          ? tokenPolicy.denied_mints
+                          : [];
+                    const showMintEditor = tokenPolicy.mode !== "unrestricted";
+                    const mintListLabel =
+                      tokenPolicy.mode === "allowlist" ? "Allowed Mints" : "Blocked Mints";
+
+                    return (
+                      <div
+                        key={group.id}
+                        className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-4"
+                      >
+                        <div>
+                          <h3 className="text-xs font-semibold text-slate-200">
+                            {group.title}
+                          </h3>
+                          <p className="mt-0.5 text-[10px] text-slate-500">
+                            {group.description}
+                          </p>
+                        </div>
+
+                        {/* Mode selector */}
+                        <div className="space-y-3">
+                          <p className="text-[10px] text-slate-500">
+                            Choose how token access is controlled:
+                          </p>
+                          <div className="grid gap-2 sm:grid-cols-3">
+                            {TOKEN_MODES.map((mode) => (
+                              <button
+                                key={mode.id}
+                                type="button"
+                                onClick={() => setTokenPolicyMode(mode.id)}
+                                disabled={saving}
+                                className={`rounded-lg border p-3 text-left transition disabled:opacity-50 ${
+                                  tokenPolicy.mode === mode.id
+                                    ? "border-amber-400/50 bg-amber-500/10 shadow-sm shadow-amber-500/10"
+                                    : "border-white/10 bg-white/[0.02] hover:bg-white/5"
+                                }`}
+                                data-testid={`token-mode-${mode.id}`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span
+                                    className={`text-xs font-semibold ${
+                                      tokenPolicy.mode === mode.id
+                                        ? "text-amber-200"
+                                        : "text-slate-300"
+                                    }`}
+                                  >
+                                    {mode.label}
+                                  </span>
+                                  <span className={`text-[10px] font-medium ${mode.strictnessColor}`}>
+                                    {mode.strictness}
+                                  </span>
+                                </div>
+                                <p className="mt-1 text-[10px] text-slate-500 leading-relaxed">
+                                  {mode.tagline}
+                                </p>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Mode explanation */}
+                        <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3">
+                          <p className="text-[10px] text-slate-400 leading-relaxed">
+                            {activeMode.detail}
+                          </p>
+                        </div>
+
+                        {/* Mint list editor */}
+                        {showMintEditor && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-medium text-slate-300">
+                                {mintListLabel}
+                              </label>
+                              <span className="text-[10px] text-slate-500">
+                                {activeMintList.length} / 50
+                              </span>
+                            </div>
+
+                            {/* Existing mints as chips */}
+                            <div className="flex flex-wrap gap-2">
+                              {activeMintList.length === 0 && (
+                                <p className="text-[10px] text-slate-500 italic">
+                                  {activeMode.emptyNote}
+                                </p>
+                              )}
+                              {activeMintList.map((mint, idx) => {
+                                const display = resolveMintDisplay(mint);
+                                return (
+                                  <span
+                                    key={idx}
+                                    className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-mono ${
+                                      display.isKnown
+                                        ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
+                                        : "border-amber-500/20 bg-amber-500/10 text-amber-200"
+                                    }`}
+                                    title={mint}
+                                  >
+                                    {display.symbol}
+                                    <button
+                                      type="button"
+                                      onClick={() => removeTokenMint(idx)}
+                                      disabled={saving}
+                                      className="ml-1 text-current opacity-60 hover:opacity-100 hover:text-red-400 disabled:opacity-30"
+                                      aria-label={`Remove ${display.symbol}`}
+                                    >
+                                      &times;
+                                    </button>
+                                  </span>
+                                );
+                              })}
+                            </div>
+
+                            {/* Quick-add well-known tokens */}
+                            <div className="space-y-1.5">
+                              <p className="text-[10px] text-slate-500">
+                                Quick add popular tokens:
+                              </p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {WELL_KNOWN_MINTS.filter(
+                                  (m) => !activeMintList.includes(m.symbol) && !activeMintList.includes(m.address),
+                                ).map((m) => (
+                                  <button
+                                    key={m.symbol}
+                                    type="button"
+                                    onClick={() => addTokenMint(m.symbol)}
+                                    disabled={saving || activeMintList.length >= 50}
+                                    className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-1 text-[10px] text-slate-400 transition hover:bg-white/10 hover:text-slate-200 disabled:opacity-30"
+                                    title={`${m.name} (${m.address})`}
+                                  >
+                                    + {m.symbol}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Custom mint input */}
+                            <div className="flex gap-2">
+                              <input
+                                id="token-mint-input"
+                                type="text"
+                                placeholder="Token symbol or mint address"
+                                value={tokenMintInput}
+                                onChange={(e) => setTokenMintInput(e.target.value)}
+                                disabled={saving}
+                                className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 font-mono outline-none transition focus:border-amber-500/40 disabled:opacity-50"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    addTokenMint(tokenMintInput);
+                                  }
+                                }}
+                              />
+                              <button
+                                type="button"
+                                disabled={saving || !tokenMintInput.trim()}
+                                onClick={() => addTokenMint(tokenMintInput)}
+                                className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-200 transition hover:bg-amber-500/20 disabled:opacity-50"
+                              >
+                                Add
+                              </button>
+                            </div>
+
+                            <p className="text-[10px] text-slate-500">
+                              Enter well-known symbols (SOL, USDC) or full mint addresses.
+                              The backend resolves symbols to on-chain addresses.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
                   const groupFields = EDITABLE_FIELDS.filter(
                     (f) => f.group === group.id,
                   );

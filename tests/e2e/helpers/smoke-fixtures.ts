@@ -456,8 +456,28 @@ const PRO_POLICY_WITH_PROGRAMS = {
   },
 };
 
+const PRO_POLICY_WITH_TOKEN_POLICY = {
+  ...PRO_POLICY,
+  overrides: {
+    max_slippage_bps: 200,
+    token_policy: {
+      mode: "allowlist",
+      allowed_mints: ["SOL", "USDC"],
+      denied_mints: [],
+    },
+  },
+  effective: {
+    ...PRO_POLICY.effective,
+    token_policy: {
+      mode: "allowlist",
+      allowed_mints: ["SOL", "USDC"],
+      denied_mints: [],
+    },
+  },
+};
+
 export type PolicyMockOpts = {
-  plan?: "free" | "pro" | "pro_with_programs";
+  plan?: "free" | "pro" | "pro_with_programs" | "pro_with_token_policy";
   patchStatus?: number;
   patchBody?: Record<string, unknown>;
 };
@@ -470,7 +490,9 @@ export async function mockPolicyRoutes(page: Page, opts?: PolicyMockOpts) {
       ? FREE_POLICY
       : plan === "pro_with_programs"
         ? PRO_POLICY_WITH_PROGRAMS
-        : PRO_POLICY;
+        : plan === "pro_with_token_policy"
+          ? PRO_POLICY_WITH_TOKEN_POLICY
+          : PRO_POLICY;
 
   // Intercept GET /api/customer/policy (same-origin proxy)
   let currentPolicy = { ...policyData };

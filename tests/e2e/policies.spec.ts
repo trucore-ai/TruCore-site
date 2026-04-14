@@ -327,6 +327,124 @@ test.describe("customer policies — validation error", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────────
+// Token policy editor
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — token policy editor", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("token mode selector is visible in edit mode", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await page.goto("/customer/policies");
+
+    await page.getByRole("button", { name: "Edit Overrides" }).click();
+
+    await expect(page.getByText("Token Access Policy")).toBeVisible();
+    await expect(page.getByTestId("token-mode-unrestricted")).toBeVisible();
+    await expect(page.getByTestId("token-mode-denylist")).toBeVisible();
+    await expect(page.getByTestId("token-mode-allowlist")).toBeVisible();
+  });
+
+  test("switching to allowlist shows mint editor and quick-add buttons", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await page.goto("/customer/policies");
+
+    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("token-mode-allowlist").click();
+
+    await expect(page.getByText("Quick add popular tokens:")).toBeVisible();
+    await expect(page.getByPlaceholder("Token symbol or mint address")).toBeVisible();
+    await expect(page.getByRole("button", { name: "+ SOL" })).toBeVisible();
+  });
+
+  test("quick-add adds a token chip and removes the quick-add button", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await page.goto("/customer/policies");
+
+    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("token-mode-allowlist").click();
+    await page.getByRole("button", { name: "+ SOL" }).click();
+
+    // Chip should appear
+    await expect(page.getByLabel("Remove SOL")).toBeVisible();
+    // Quick-add button for SOL should be gone
+    await expect(page.getByRole("button", { name: "+ SOL" })).not.toBeVisible();
+  });
+
+  test("remove button on chip removes the token", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro_with_token_policy" });
+    await page.goto("/customer/policies");
+
+    await page.getByRole("button", { name: "Edit Overrides" }).click();
+
+    // SOL and USDC chips should be present
+    await expect(page.getByLabel("Remove SOL")).toBeVisible();
+    await expect(page.getByLabel("Remove USDC")).toBeVisible();
+
+    await page.getByLabel("Remove SOL").click();
+
+    // SOL should be gone
+    await expect(page.getByLabel("Remove SOL")).not.toBeVisible();
+    // USDC should remain
+    await expect(page.getByLabel("Remove USDC")).toBeVisible();
+  });
+
+  test("custom mint can be added via text input", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await page.goto("/customer/policies");
+
+    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("token-mode-allowlist").click();
+
+    const input = page.getByPlaceholder("Token symbol or mint address");
+    await input.fill("CustomMint123");
+    await page.getByRole("button", { name: "Add" }).click();
+
+    await expect(page.locator("[title='CustomMint123']")).toBeVisible();
+  });
+
+  test("save with allowlist includes token_policy in request", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await page.goto("/customer/policies");
+
+    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("token-mode-allowlist").click();
+    await page.getByRole("button", { name: "+ USDC" }).click();
+
+    // Capture the save request
+    const [request] = await Promise.all([
+      page.waitForRequest("**/api/customer/policy/overrides"),
+      page.getByRole("button", { name: "Save Overrides" }).click(),
+    ]);
+
+    const body = request.postDataJSON();
+    expect(body.token_policy).toBeDefined();
+    expect(body.token_policy.mode).toBe("allowlist");
+    expect(body.token_policy.allowed_mints).toContain("USDC");
+  });
+
+  test("existing token policy is loaded when entering edit mode", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro_with_token_policy" });
+    await page.goto("/customer/policies");
+
+    await page.getByRole("button", { name: "Edit Overrides" }).click();
+
+    // Allowlist mode should be selected
+    const allowlistBtn = page.getByTestId("token-mode-allowlist");
+    await expect(allowlistBtn).toHaveClass(/border-amber/);
+
+    // Mints should be loaded
+    await expect(page.getByLabel("Remove SOL")).toBeVisible();
+    await expect(page.getByLabel("Remove USDC")).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
 // Unauthenticated — redirect
 // ────────────────────────────────────────────────────────────────────────────
 

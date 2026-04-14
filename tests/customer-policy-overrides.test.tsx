@@ -89,6 +89,29 @@ const PRO_POLICY_WITH_PROGRAMS = {
   },
 };
 
+const PRO_POLICY_WITH_TOKEN_POLICY = {
+  plan_code: "pro",
+  plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true },
+  overrides: {
+    max_slippage_bps: 100,
+    token_policy: {
+      mode: "allowlist",
+      allowed_mints: ["SOL", "USDC"],
+      denied_mints: [],
+    },
+  },
+  effective: {
+    max_slippage_bps: 100,
+    max_notional_usd: 25000,
+    require_simulation_success: true,
+    token_policy: {
+      mode: "allowlist",
+      allowed_mints: ["SOL", "USDC"],
+      denied_mints: [],
+    },
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -554,6 +577,294 @@ describe("CustomerPoliciesPage", () => {
   });
 
   // -----------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Token policy editor
+  // -----------------------------------------------------------------------
+
+  describe("token policy editor", () => {
+    it("shows token policy section in edit mode for pro plan", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      expect(screen.getByText("Token Access Policy")).toBeTruthy();
+      expect(screen.getByTestId("token-mode-unrestricted")).toBeTruthy();
+      expect(screen.getByTestId("token-mode-denylist")).toBeTruthy();
+      expect(screen.getByTestId("token-mode-allowlist")).toBeTruthy();
+    });
+
+    it("defaults to unrestricted mode when no token_policy override exists", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      // Unrestricted button should have the selected styling (amber border)
+      const unrestrictedBtn = screen.getByTestId("token-mode-unrestricted");
+      expect(unrestrictedBtn.className).toContain("border-amber");
+    });
+
+    it("initializes from existing token_policy override", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_TOKEN_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      // Allowlist button should be selected
+      const allowlistBtn = screen.getByTestId("token-mode-allowlist");
+      expect(allowlistBtn.className).toContain("border-amber");
+
+      // Mints should appear as chips
+      expect(screen.getByText("SOL")).toBeTruthy();
+      expect(screen.getByText("USDC")).toBeTruthy();
+    });
+
+    it("switching to allowlist mode shows mint editor", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+      fireEvent.click(screen.getByTestId("token-mode-allowlist"));
+
+      // Should show the quick-add section and custom input
+      expect(screen.getByText("Quick add popular tokens:")).toBeTruthy();
+      expect(screen.getByPlaceholderText("Token symbol or mint address")).toBeTruthy();
+    });
+
+    it("switching to denylist mode shows mint editor", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+      fireEvent.click(screen.getByTestId("token-mode-denylist"));
+
+      expect(screen.getByText("Quick add popular tokens:")).toBeTruthy();
+    });
+
+    it("unrestricted mode hides mint editor", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      // Default is unrestricted — no mint input should be shown
+      expect(screen.queryByPlaceholderText("Token symbol or mint address")).toBeNull();
+    });
+
+    it("adds a token via quick-add button", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+      fireEvent.click(screen.getByTestId("token-mode-allowlist"));
+
+      // Click quick-add for SOL
+      fireEvent.click(screen.getByText("+ SOL"));
+
+      // SOL should now appear as a chip (without the + prefix)
+      expect(screen.getByTitle("SOL")).toBeTruthy();
+      expect(screen.getByLabelText("Remove SOL")).toBeTruthy();
+    });
+
+    it("removes a token by clicking the × button", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_TOKEN_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      // SOL and USDC should be present
+      expect(screen.getByLabelText("Remove SOL")).toBeTruthy();
+      expect(screen.getByLabelText("Remove USDC")).toBeTruthy();
+
+      // Remove SOL
+      fireEvent.click(screen.getByLabelText("Remove SOL"));
+
+      // SOL should be gone, USDC should remain
+      expect(screen.queryByLabelText("Remove SOL")).toBeNull();
+      expect(screen.getByLabelText("Remove USDC")).toBeTruthy();
+    });
+
+    it("adds a custom mint via text input", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+      fireEvent.click(screen.getByTestId("token-mode-allowlist"));
+
+      const input = screen.getByPlaceholderText("Token symbol or mint address");
+      fireEvent.change(input, { target: { value: "customMint123" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      // Chip should appear
+      expect(screen.getByTitle("customMint123")).toBeTruthy();
+    });
+
+    it("includes token_policy in save payload for non-default mode", async () => {
+      mockFetchPolicy
+        .mockResolvedValueOnce(PRO_POLICY)
+        .mockResolvedValueOnce(PRO_POLICY);
+      mockUpdatePolicyOverrides.mockResolvedValue({
+        overrides: { token_policy: { mode: "allowlist", allowed_mints: ["SOL"], denied_mints: [] } },
+        message: "ok",
+      });
+
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+      fireEvent.click(screen.getByTestId("token-mode-allowlist"));
+      fireEvent.click(screen.getByText("+ SOL"));
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("Save Overrides"));
+      });
+
+      await waitFor(() => {
+        expect(mockUpdatePolicyOverrides).toHaveBeenCalledWith(
+          expect.objectContaining({
+            token_policy: {
+              mode: "allowlist",
+              allowed_mints: ["SOL"],
+              denied_mints: [],
+            },
+          }),
+        );
+      });
+    });
+
+    it("omits token_policy from save payload when default unrestricted", async () => {
+      mockFetchPolicy
+        .mockResolvedValueOnce(PRO_POLICY)
+        .mockResolvedValueOnce(PRO_POLICY);
+      mockUpdatePolicyOverrides.mockResolvedValue({
+        overrides: {},
+        message: "ok",
+      });
+
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      // Leave as unrestricted (default) and save
+      await act(async () => {
+        fireEvent.click(screen.getByText("Save Overrides"));
+      });
+
+      await waitFor(() => {
+        expect(mockUpdatePolicyOverrides).toHaveBeenCalled();
+      });
+
+      const payload = mockUpdatePolicyOverrides.mock.calls[0][0];
+      expect(payload.token_policy).toBeUndefined();
+    });
+
+    it("cancel resets token policy to default", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+      fireEvent.click(screen.getByTestId("token-mode-allowlist"));
+      fireEvent.click(screen.getByText("+ SOL"));
+
+      // Cancel
+      fireEvent.click(screen.getByText("Cancel"));
+
+      // Re-enter edit mode
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+      fireEvent.click(screen.getByText("Edit Overrides"));
+
+      // Should be back to unrestricted
+      const unrestrictedBtn = screen.getByTestId("token-mode-unrestricted");
+      expect(unrestrictedBtn.className).toContain("border-amber");
+    });
+
+    it("denylist mode sets denied_mints in payload", async () => {
+      mockFetchPolicy
+        .mockResolvedValueOnce(PRO_POLICY)
+        .mockResolvedValueOnce(PRO_POLICY);
+      mockUpdatePolicyOverrides.mockResolvedValue({
+        overrides: { token_policy: { mode: "denylist", allowed_mints: [], denied_mints: ["BONK"] } },
+        message: "ok",
+      });
+
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Edit Overrides")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByText("Edit Overrides"));
+      fireEvent.click(screen.getByTestId("token-mode-denylist"));
+      fireEvent.click(screen.getByText("+ BONK"));
+
+      await act(async () => {
+        fireEvent.click(screen.getByText("Save Overrides"));
+      });
+
+      await waitFor(() => {
+        expect(mockUpdatePolicyOverrides).toHaveBeenCalledWith(
+          expect.objectContaining({
+            token_policy: {
+              mode: "denylist",
+              allowed_mints: [],
+              denied_mints: ["BONK"],
+            },
+          }),
+        );
+      });
+    });
+  });
+
   // Backend validation errors (422)
   // -----------------------------------------------------------------------
 
