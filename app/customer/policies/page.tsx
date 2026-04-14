@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -97,6 +97,7 @@ export default function CustomerPoliciesPage() {
   const [error, setError] = useState("");
 
   // Edit state
+  const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -485,6 +486,11 @@ export default function CustomerPoliciesPage() {
                     ) : field.type === "list" ? (
                       <div className="space-y-2">
                         <div className="flex flex-wrap gap-2">
+                          {(listValues[field.key] ?? []).length === 0 && (
+                            <span className="text-[10px] text-slate-500 italic">
+                              No entries — add program IDs below.
+                            </span>
+                          )}
                           {(listValues[field.key] ?? []).map((item, idx) => (
                             <span
                               key={idx}
@@ -506,6 +512,10 @@ export default function CustomerPoliciesPage() {
                         <div className="flex gap-2">
                           <input
                             id={`override-${field.key}`}
+                            ref={(el) => {
+                              if (el) listInputRefs.current.set(field.key, el);
+                              else listInputRefs.current.delete(field.key);
+                            }}
                             type="text"
                             placeholder={field.placeholder}
                             disabled={saving}
@@ -522,7 +532,7 @@ export default function CustomerPoliciesPage() {
                             type="button"
                             disabled={saving}
                             onClick={() => {
-                              const input = document.getElementById(`override-${field.key}`) as HTMLInputElement;
+                              const input = listInputRefs.current.get(field.key);
                               if (input) {
                                 addListItem(field.key, input.value);
                                 input.value = "";

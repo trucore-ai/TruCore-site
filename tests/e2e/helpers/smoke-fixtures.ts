@@ -399,6 +399,113 @@ export async function injectCustomerAuth(page: Page) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// Policy mocks
+// ────────────────────────────────────────────────────────────────────────────
+
+const FREE_POLICY = {
+  plan_code: "free",
+  plan_limits: {
+    tx_limit_per_month: 50,
+    policy_overrides_enabled: false,
+    max_notional_usd: 1000,
+    max_slippage_bps: 300,
+    require_simulation_success: true,
+  },
+  overrides: {},
+  effective: {
+    tx_limit_per_month: 50,
+    max_notional_usd: 1000,
+    max_slippage_bps: 300,
+    require_simulation_success: true,
+  },
+};
+
+const PRO_POLICY = {
+  plan_code: "pro",
+  plan_limits: {
+    tx_limit_per_month: 5000,
+    policy_overrides_enabled: true,
+    max_notional_usd: 25000,
+    max_value_sol: 1000,
+    max_slippage_bps: 500,
+    require_simulation_success: true,
+  },
+  overrides: {
+    max_slippage_bps: 200,
+  },
+  effective: {
+    tx_limit_per_month: 5000,
+    max_notional_usd: 25000,
+    max_value_sol: 1000,
+    max_slippage_bps: 200,
+    require_simulation_success: true,
+  },
+};
+
+const PRO_POLICY_WITH_PROGRAMS = {
+  ...PRO_POLICY,
+  overrides: {
+    max_slippage_bps: 200,
+    allowed_programs: ["11111111111111111111111111111111"],
+    denied_programs: ["DEaDBeeF11111111111111111111111111111111111111"],
+  },
+  effective: {
+    ...PRO_POLICY.effective,
+    allowed_programs: ["11111111111111111111111111111111"],
+    denied_programs: ["DEaDBeeF11111111111111111111111111111111111111"],
+  },
+};
+
+export type PolicyMockOpts = {
+  plan?: "free" | "pro" | "pro_with_programs";
+  patchStatus?: number;
+  patchBody?: Record<string, unknown>;
+};
+
+export async function mockPolicyRoutes(page: Page, opts?: PolicyMockOpts) {
+  const plan = opts?.plan ?? "pro";
+
+  const policyData =
+    plan === "free"
+      ? FREE_POLICY
+      : plan === "pro_with_programs"
+        ? PRO_POLICY_WITH_PROGRAMS
+        : PRO_POLICY;
+
+  // Intercept GET /api/customer/policy (same-origin proxy)
+  let currentPolicy = { ...policyData };
+
+  await page.route("**/api/customer/policy", (route: Route) => {
+    if (route.request().url().includes("/overrides")) return route.fallback();
+    return route.fulfill({ status: 200, json: currentPolicy });
+  });
+
+  // Intercept PATCH /api/customer/policy/overrides (same-origin proxy)
+  const patchStatus = opts?.patchStatus ?? 200;
+  const patchBody = opts?.patchBody;
+
+  await page.route("**/api/customer/policy/overrides", (route: Route) => {
+    if (patchStatus !== 200) {
+      return route.fulfill({ status: patchStatus, json: patchBody ?? {} });
+    }
+
+    // Parse the request body and update currentPolicy to simulate a save
+    const body = route.request().postDataJSON();
+    const newOverrides = body?.overrides ?? {};
+    currentPolicy = {
+      ...currentPolicy,
+      overrides: newOverrides,
+      effective: { ...currentPolicy.effective, ...newOverrides },
+    };
+
+    return route.fulfill({
+      status: 200,
+      json: { overrides: newOverrides, message: "Policy overrides updated." },
+    });
+  });
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // Telemetry / analytics — silently absorb
 // ────────────────────────────────────────────────────────────────────────────
 
