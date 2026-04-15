@@ -1656,10 +1656,147 @@ describe("CustomerPoliciesPage", () => {
         expect(screen.getByTestId("recommendation-enable-simulation")).toBeTruthy();
         // History-derived simulation recommendation
         expect(screen.getByTestId("recommendation-history-simulation-failures")).toBeTruthy();
-        // Both should be in the recommendation cards container
+        // Both should be present within the recommendation cards container
         const cards = screen.getByTestId("recommendation-cards");
-        expect(cards.children.length).toBeGreaterThanOrEqual(2);
+        // enable-simulation is high-priority → top section
+        expect(cards.querySelector('[data-testid="recommendation-enable-simulation"]')).toBeTruthy();
+        // history-simulation-failures is medium-priority → top section
+        expect(cards.querySelector('[data-testid="recommendation-history-simulation-failures"]')).toBeTruthy();
       });
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Recommendation display prioritization
+  // -----------------------------------------------------------------------
+
+  describe("recommendation display prioritization", () => {
+    it("places high-priority recommendations in the top section", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false, // high-priority rec
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("top-recommendations")).toBeTruthy();
+      });
+
+      const topSection = screen.getByTestId("top-recommendations");
+      expect(topSection.querySelector('[data-testid="recommendation-enable-simulation"]')).toBeTruthy();
+    });
+
+    it("places low-priority non-actionable recs in the more-suggestions section", async () => {
+      // PRO_POLICY generates "customize-policy" (low, no fieldKey) and
+      // "add-program-restrictions" (low, has fieldKey) etc.
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("more-suggestions")).toBeTruthy();
+      });
+
+      // "customize-policy" is low priority without fieldKey → "more"
+      expect(screen.getByTestId("more-suggestions-toggle")).toBeTruthy();
+    });
+
+    it("hides more-suggestions cards by default", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("more-suggestions")).toBeTruthy();
+      });
+
+      // The list should be in the DOM but hidden
+      const list = screen.getByTestId("more-suggestions-list");
+      expect(list.className).toContain("hidden");
+    });
+
+    it("expands more-suggestions section when toggle is clicked", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("more-suggestions-toggle")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByTestId("more-suggestions-toggle"));
+
+      const list = screen.getByTestId("more-suggestions-list");
+      expect(list.className).not.toContain("hidden");
+    });
+
+    it("more-suggestions toggle has correct aria-expanded attribute", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("more-suggestions-toggle")).toBeTruthy();
+      });
+
+      const toggle = screen.getByTestId("more-suggestions-toggle");
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+
+      fireEvent.click(toggle);
+      expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    });
+
+    it("medium-priority actionable recs appear in top section, not more-suggestions", async () => {
+      // max_slippage_bps=500 generates a medium-priority rec with fieldKey
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          max_slippage_bps: 500,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-tighten-slippage")).toBeTruthy();
+      });
+
+      const topSection = screen.getByTestId("top-recommendations");
+      expect(topSection.querySelector('[data-testid="recommendation-tighten-slippage"]')).toBeTruthy();
+    });
+
+    it("shows correct count in more-suggestions toggle label", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("more-suggestions-toggle")).toBeTruthy();
+      });
+
+      const label = screen.getByTestId("more-suggestions-toggle").textContent!;
+      expect(label).toMatch(/more suggestion/);
+    });
+
+    it("sorts actionable recs before non-actionable within same priority", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+          max_slippage_bps: 500,
+          token_policy: { mode: "unrestricted", allowed_mints: [], denied_mints: [] },
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("top-recommendations")).toBeTruthy();
+      });
+
+      // All medium-priority actionable recs (tighten-slippage, restrict-tokens)
+      // should be in top section
+      const topSection = screen.getByTestId("top-recommendations");
+      expect(topSection.querySelector('[data-testid="recommendation-tighten-slippage"]')).toBeTruthy();
+      expect(topSection.querySelector('[data-testid="recommendation-restrict-tokens"]')).toBeTruthy();
     });
   });
 

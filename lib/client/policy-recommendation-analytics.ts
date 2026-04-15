@@ -69,6 +69,8 @@ export function trackRecommendationImpression(opts: {
   total_visible_count: number;
   visible_sources_count: number;
   has_gated_sources: boolean;
+  /** Display section: "top" or "more" — for future ranking analysis */
+  recommendation_display_section?: string;
 }): void {
   if (_firedImpressions.has(opts.recommendation_id)) return;
   _firedImpressions.add(opts.recommendation_id);

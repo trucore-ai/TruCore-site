@@ -1568,6 +1568,73 @@ function hasExpandableDetail(rec: PolicyRecommendation): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Recommendation display prioritization
+// ---------------------------------------------------------------------------
+
+/**
+ * Display section classification — determines which visual group a
+ * recommendation appears in.
+ *
+ * "top"   → shown prominently at the top of the list (always visible)
+ * "more"  → shown in a collapsed "More suggestions" section
+ *
+ * Classification rules (intentionally simple and explainable):
+ *   1. High priority → always "top"
+ *   2. Medium priority + actionable (has fieldKey) → "top"
+ *   3. Everything else → "more"
+ *
+ * Future hook: this function can incorporate aggregated engagement data
+ * (e.g. click-through rates by source) without changing the rendering model.
+ */
+type DisplaySection = "top" | "more";
+
+function classifyDisplaySection(rec: PolicyRecommendation): DisplaySection {
+  if (rec.priority === "high") return "top";
+  if (rec.priority === "medium" && rec.fieldKey) return "top";
+  return "more";
+}
+
+/**
+ * Recommendation sort comparator — multi-dimensional, explainable ordering.
+ *
+ * Sort dimensions (in order of precedence):
+ *   1. Priority:     high (0) → medium (1) → low (2)
+ *   2. Actionability: has fieldKey (0) → no fieldKey (1)
+ *   3. Source trust:  signal-backed sources with confidence (0) → other (1)
+ *   4. Confidence:    higher first (descending), null last
+ *
+ * This comparator is shared by both the "top" and "more" sections.
+ *
+ * Future hook: an additional `engagementWeight` parameter could be
+ * injected here from aggregated analytics without rewriting the sort.
+ */
+const PRIORITY_RANK: Record<RecommendationPriority, number> = { high: 0, medium: 1, low: 2 };
+
+function compareRecommendations(a: PolicyRecommendation, b: PolicyRecommendation): number {
+  // 1. Priority
+  const pa = PRIORITY_RANK[a.priority];
+  const pb = PRIORITY_RANK[b.priority];
+  if (pa !== pb) return pa - pb;
+
+  // 2. Actionability — actionable (has fieldKey) sorts first
+  const aa = a.fieldKey ? 0 : 1;
+  const ab = b.fieldKey ? 0 : 1;
+  if (aa !== ab) return aa - ab;
+
+  // 3. Source trust — signal-backed with confidence sorts first
+  const sa = a.confidence != null ? 0 : 1;
+  const sb = b.confidence != null ? 0 : 1;
+  if (sa !== sb) return sa - sb;
+
+  // 4. Confidence descending (null treated as -1)
+  const ca = a.confidence ?? -1;
+  const cb = b.confidence ?? -1;
+  if (ca !== cb) return cb - ca;
+
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -1584,6 +1651,7 @@ export default function CustomerPoliciesPage() {
   const [refreshingSignals, setRefreshingSignals] = useState(false);
   const [signalRefreshCooldown, setSignalRefreshCooldown] = useState(false);
   const [expandedRecs, setExpandedRecs] = useState<Set<string>>(new Set());
+  const [showMoreSuggestions, setShowMoreSuggestions] = useState(false);
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -2380,7 +2448,7 @@ export default function CustomerPoliciesPage() {
               const externalRecs = canExternal && externalContext
                 ? generateExternalContextRecommendations(externalContext)
                 : [];
-              // Merge, deduplicate by id, sort by priority
+              // Merge, deduplicate by id, sort by multi-dimensional comparator
               const seenIds = new Set<string>();
               const allRecs: PolicyRecommendation[] = [];
               for (const rec of [...deterministicRecs, ...historyRecs, ...marketRecs, ...pilRecs, ...benchmarkRecs, ...externalRecs]) {
@@ -2389,8 +2457,11 @@ export default function CustomerPoliciesPage() {
                   allRecs.push(rec);
                 }
               }
-              const order: Record<RecommendationPriority, number> = { high: 0, medium: 1, low: 2 };
-              allRecs.sort((a, b) => order[a.priority] - order[b.priority]);
+              allRecs.sort(compareRecommendations);
+
+              // Split into display sections
+              const topRecs = allRecs.filter((r) => classifyDisplaySection(r) === "top");
+              const moreRecs = allRecs.filter((r) => classifyDisplaySection(r) === "more");
 
               // Count gated sources for teaser — sources that have data but
               // are not available at the caller's plan tier.
@@ -2507,145 +2578,316 @@ export default function CustomerPoliciesPage() {
                     })()}
                   </div>
                   <div className="space-y-3" data-testid="recommendation-cards">
-                    {allRecs.map((rec) => {
-                      const styles = PRIORITY_STYLES[rec.priority];
-                      const expandable = hasExpandableDetail(rec);
-                      const isExpanded = expandedRecs.has(rec.id);
-                      const sourceFraming = getSourceDetailFraming(rec);
-                      // Analytics: card impression (deduplicated per render cycle)
-                      trackRecommendationImpression({
-                        recommendation_id: rec.id,
-                        recommendation_source: rec.source,
-                        recommendation_priority: rec.priority,
-                        plan_tier: planCode,
-                        had_confidence: rec.confidence != null,
-                        had_evidence: !!rec.evidence,
-                        field_key_present: !!rec.fieldKey,
-                        ...recAnalyticsCtx,
-                      });
-                      return (
-                        <div
-                          key={rec.id}
-                          className={`rounded-lg border ${styles.border} bg-white/[0.02] p-4 space-y-2`}
-                          data-testid={`recommendation-${rec.id}`}
-                        >
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <span className="text-xs font-semibold text-slate-200">
-                              {rec.title}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none ${styles.badge}`}
-                                data-testid="recommendation-priority"
-                              >
-                                {rec.priority === "high" ? "High priority" : rec.priority === "medium" ? "Medium" : "Suggestion"}
-                              </span>
-                              <span
-                                className="inline-flex items-center rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-[10px] font-medium leading-none text-slate-500"
-                                data-testid="recommendation-source"
-                              >
-                                {rec.source}
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-[10px] text-slate-400 leading-relaxed">
-                            {rec.explanation}
-                          </p>
-                          {expandable && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const wasExpanded = expandedRecs.has(rec.id);
-                                if (wasExpanded) {
-                                  trackRecommendationCollapse({
-                                    recommendation_id: rec.id,
-                                    recommendation_source: rec.source,
-                                    plan_tier: planCode,
-                                  });
-                                } else {
-                                  trackRecommendationExpand({
-                                    recommendation_id: rec.id,
-                                    recommendation_source: rec.source,
-                                    recommendation_priority: rec.priority,
-                                    plan_tier: planCode,
-                                    had_confidence: rec.confidence != null,
-                                    had_evidence: !!rec.evidence,
-                                  });
-                                }
-                                setExpandedRecs((prev) => {
-                                  const next = new Set(prev);
-                                  if (next.has(rec.id)) next.delete(rec.id);
-                                  else next.add(rec.id);
-                                  return next;
-                                });
-                              }}
-                              className="inline-flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 transition"
-                              aria-expanded={isExpanded}
-                              data-testid={`recommendation-details-toggle-${rec.id}`}
-                            >
-                              <svg
-                                className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-90" : ""}`}
-                                viewBox="0 0 16 16"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                              >
-                                <path d="M6 4l4 4-4 4" />
-                              </svg>
-                              Why this recommendation?
-                            </button>
-                          )}
-                          {isExpanded && (
+                    {/* ── Top recommendations ── */}
+                    {topRecs.length > 0 && (
+                      <div className="space-y-3" data-testid="top-recommendations">
+                        {topRecs.map((rec) => {
+                          const styles = PRIORITY_STYLES[rec.priority];
+                          const expandable = hasExpandableDetail(rec);
+                          const isExpanded = expandedRecs.has(rec.id);
+                          const sourceFraming = getSourceDetailFraming(rec);
+                          const section: DisplaySection = "top";
+                          trackRecommendationImpression({
+                            recommendation_id: rec.id,
+                            recommendation_source: rec.source,
+                            recommendation_priority: rec.priority,
+                            plan_tier: planCode,
+                            had_confidence: rec.confidence != null,
+                            had_evidence: !!rec.evidence,
+                            field_key_present: !!rec.fieldKey,
+                            recommendation_display_section: section,
+                            ...recAnalyticsCtx,
+                          });
+                          return (
                             <div
-                              className="ml-4 border-l border-white/5 pl-3 space-y-1.5"
-                              data-testid={`recommendation-details-${rec.id}`}
+                              key={rec.id}
+                              className={`rounded-lg border ${styles.border} bg-white/[0.02] p-4 space-y-2`}
+                              data-testid={`recommendation-${rec.id}`}
                             >
-                              {sourceFraming && (
-                                <p className="text-[9px] text-slate-600 leading-relaxed">
-                                  {sourceFraming}
-                                </p>
-                              )}
-                              <p className="text-[10px] text-slate-500 leading-relaxed">
-                                <span className="font-medium text-slate-400">Why it matters:</span>{" "}
-                                {rec.why}
-                              </p>
-                              {rec.evidence && (
-                                <p className="text-[9px] text-slate-600 leading-relaxed italic">
-                                  {rec.evidence}
-                                </p>
-                              )}
-                              {rec.confidence != null && (rec.source === "Policy Intelligence" || rec.source === "Cohort benchmark" || rec.source === "External context") && (
-                                <span
-                                  className="inline-flex items-center gap-1 text-[9px] text-slate-600"
-                                  data-testid="recommendation-confidence"
-                                >
-                                  Confidence: {rec.confidence >= 0.7 ? "high" : rec.confidence >= 0.4 ? "medium" : "low"}
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <span className="text-xs font-semibold text-slate-200">
+                                  {rec.title}
                                 </span>
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none ${styles.badge}`}
+                                    data-testid="recommendation-priority"
+                                  >
+                                    {rec.priority === "high" ? "High priority" : rec.priority === "medium" ? "Medium" : "Suggestion"}
+                                  </span>
+                                  <span
+                                    className="inline-flex items-center rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-[10px] font-medium leading-none text-slate-500"
+                                    data-testid="recommendation-source"
+                                  >
+                                    {rec.source}
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-[10px] text-slate-400 leading-relaxed">
+                                {rec.explanation}
+                              </p>
+                              {expandable && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const wasExpanded = expandedRecs.has(rec.id);
+                                    if (wasExpanded) {
+                                      trackRecommendationCollapse({
+                                        recommendation_id: rec.id,
+                                        recommendation_source: rec.source,
+                                        plan_tier: planCode,
+                                      });
+                                    } else {
+                                      trackRecommendationExpand({
+                                        recommendation_id: rec.id,
+                                        recommendation_source: rec.source,
+                                        recommendation_priority: rec.priority,
+                                        plan_tier: planCode,
+                                        had_confidence: rec.confidence != null,
+                                        had_evidence: !!rec.evidence,
+                                      });
+                                    }
+                                    setExpandedRecs((prev) => {
+                                      const next = new Set(prev);
+                                      if (next.has(rec.id)) next.delete(rec.id);
+                                      else next.add(rec.id);
+                                      return next;
+                                    });
+                                  }}
+                                  className="inline-flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 transition"
+                                  aria-expanded={isExpanded}
+                                  data-testid={`recommendation-details-toggle-${rec.id}`}
+                                >
+                                  <svg
+                                    className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  >
+                                    <path d="M6 4l4 4-4 4" />
+                                  </svg>
+                                  Why this recommendation?
+                                </button>
+                              )}
+                              {isExpanded && (
+                                <div
+                                  className="ml-4 border-l border-white/5 pl-3 space-y-1.5"
+                                  data-testid={`recommendation-details-${rec.id}`}
+                                >
+                                  {sourceFraming && (
+                                    <p className="text-[9px] text-slate-600 leading-relaxed">
+                                      {sourceFraming}
+                                    </p>
+                                  )}
+                                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                                    <span className="font-medium text-slate-400">Why it matters:</span>{" "}
+                                    {rec.why}
+                                  </p>
+                                  {rec.evidence && (
+                                    <p className="text-[9px] text-slate-600 leading-relaxed italic">
+                                      {rec.evidence}
+                                    </p>
+                                  )}
+                                  {rec.confidence != null && (rec.source === "Policy Intelligence" || rec.source === "Cohort benchmark" || rec.source === "External context") && (
+                                    <span
+                                      className="inline-flex items-center gap-1 text-[9px] text-slate-600"
+                                      data-testid="recommendation-confidence"
+                                    >
+                                      Confidence: {rec.confidence >= 0.7 ? "high" : rec.confidence >= 0.4 ? "medium" : "low"}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              {overridesEnabled && rec.fieldKey && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    trackRecommendationViewSetting({
+                                      recommendation_id: rec.id,
+                                      recommendation_source: rec.source,
+                                      recommendation_priority: rec.priority,
+                                      plan_tier: planCode,
+                                      field_key_present: true,
+                                    });
+                                    enterEditMode(rec.fieldKey);
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
+                                  data-testid={`recommendation-action-${rec.id}`}
+                                >
+                                  View setting &rarr;
+                                </button>
                               )}
                             </div>
-                          )}
-                          {overridesEnabled && rec.fieldKey && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                trackRecommendationViewSetting({
-                                  recommendation_id: rec.id,
-                                  recommendation_source: rec.source,
-                                  recommendation_priority: rec.priority,
-                                  plan_tier: planCode,
-                                  field_key_present: true,
-                                });
-                                enterEditMode(rec.fieldKey);
-                              }}
-                              className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
-                              data-testid={`recommendation-action-${rec.id}`}
-                            >
-                              View setting &rarr;
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                      </div>
+                    )}
+                    {/* ── More suggestions (collapsed by default) ── */}
+                    {moreRecs.length > 0 && (
+                      <div data-testid="more-suggestions">
+                        <button
+                          type="button"
+                          onClick={() => setShowMoreSuggestions((v) => !v)}
+                          className="flex w-full items-center gap-2 rounded-lg border border-white/5 bg-white/[0.01] px-4 py-2.5 text-[11px] text-slate-500 transition hover:border-white/10 hover:text-slate-400"
+                          aria-expanded={showMoreSuggestions}
+                          data-testid="more-suggestions-toggle"
+                        >
+                          <svg
+                            className={`h-3 w-3 transition-transform ${showMoreSuggestions ? "rotate-90" : ""}`}
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M6 4l4 4-4 4" />
+                          </svg>
+                          {showMoreSuggestions ? "Hide" : "Show"} {moreRecs.length} more suggestion{moreRecs.length !== 1 ? "s" : ""}
+                        </button>
+                        <div className={`mt-3 space-y-2 ${showMoreSuggestions ? "" : "hidden"}`} data-testid="more-suggestions-list">
+                            {moreRecs.map((rec) => {
+                              const styles = PRIORITY_STYLES[rec.priority];
+                              const expandable = hasExpandableDetail(rec);
+                              const isExpanded = expandedRecs.has(rec.id);
+                              const sourceFraming = getSourceDetailFraming(rec);
+                              const section: DisplaySection = "more";
+                              trackRecommendationImpression({
+                                recommendation_id: rec.id,
+                                recommendation_source: rec.source,
+                                recommendation_priority: rec.priority,
+                                plan_tier: planCode,
+                                had_confidence: rec.confidence != null,
+                                had_evidence: !!rec.evidence,
+                                field_key_present: !!rec.fieldKey,
+                                recommendation_display_section: section,
+                                ...recAnalyticsCtx,
+                              });
+                              return (
+                                <div
+                                  key={rec.id}
+                                  className={`rounded-lg border ${styles.border} bg-white/[0.015] p-3.5 space-y-1.5 opacity-90`}
+                                  data-testid={`recommendation-${rec.id}`}
+                                >
+                                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                                    <span className="text-[11px] font-medium text-slate-300">
+                                      {rec.title}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                      <span
+                                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none ${styles.badge}`}
+                                        data-testid="recommendation-priority"
+                                      >
+                                        {rec.priority === "high" ? "High priority" : rec.priority === "medium" ? "Medium" : "Suggestion"}
+                                      </span>
+                                      <span
+                                        className="inline-flex items-center rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-[10px] font-medium leading-none text-slate-500"
+                                        data-testid="recommendation-source"
+                                      >
+                                        {rec.source}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                                    {rec.explanation}
+                                  </p>
+                                  {expandable && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const wasExpanded = expandedRecs.has(rec.id);
+                                        if (wasExpanded) {
+                                          trackRecommendationCollapse({
+                                            recommendation_id: rec.id,
+                                            recommendation_source: rec.source,
+                                            plan_tier: planCode,
+                                          });
+                                        } else {
+                                          trackRecommendationExpand({
+                                            recommendation_id: rec.id,
+                                            recommendation_source: rec.source,
+                                            recommendation_priority: rec.priority,
+                                            plan_tier: planCode,
+                                            had_confidence: rec.confidence != null,
+                                            had_evidence: !!rec.evidence,
+                                          });
+                                        }
+                                        setExpandedRecs((prev) => {
+                                          const next = new Set(prev);
+                                          if (next.has(rec.id)) next.delete(rec.id);
+                                          else next.add(rec.id);
+                                          return next;
+                                        });
+                                      }}
+                                      className="inline-flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 transition"
+                                      aria-expanded={isExpanded}
+                                      data-testid={`recommendation-details-toggle-${rec.id}`}
+                                    >
+                                      <svg
+                                        className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                                        viewBox="0 0 16 16"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                      >
+                                        <path d="M6 4l4 4-4 4" />
+                                      </svg>
+                                      Why this recommendation?
+                                    </button>
+                                  )}
+                                  {isExpanded && (
+                                    <div
+                                      className="ml-4 border-l border-white/5 pl-3 space-y-1.5"
+                                      data-testid={`recommendation-details-${rec.id}`}
+                                    >
+                                      {sourceFraming && (
+                                        <p className="text-[9px] text-slate-600 leading-relaxed">
+                                          {sourceFraming}
+                                        </p>
+                                      )}
+                                      <p className="text-[10px] text-slate-500 leading-relaxed">
+                                        <span className="font-medium text-slate-400">Why it matters:</span>{" "}
+                                        {rec.why}
+                                      </p>
+                                      {rec.evidence && (
+                                        <p className="text-[9px] text-slate-600 leading-relaxed italic">
+                                          {rec.evidence}
+                                        </p>
+                                      )}
+                                      {rec.confidence != null && (rec.source === "Policy Intelligence" || rec.source === "Cohort benchmark" || rec.source === "External context") && (
+                                        <span
+                                          className="inline-flex items-center gap-1 text-[9px] text-slate-600"
+                                          data-testid="recommendation-confidence"
+                                        >
+                                          Confidence: {rec.confidence >= 0.7 ? "high" : rec.confidence >= 0.4 ? "medium" : "low"}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                  {overridesEnabled && rec.fieldKey && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        trackRecommendationViewSetting({
+                                          recommendation_id: rec.id,
+                                          recommendation_source: rec.source,
+                                          recommendation_priority: rec.priority,
+                                          plan_tier: planCode,
+                                          field_key_present: true,
+                                        });
+                                        enterEditMode(rec.fieldKey);
+                                      }}
+                                      className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
+                                      data-testid={`recommendation-action-${rec.id}`}
+                                    >
+                                      View setting &rarr;
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                      </div>
+                    )}
                   </div>
                   <p className="text-[9px] text-slate-600 text-center">
                     These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasPilRecs ? ", policy intelligence analysis of your transaction patterns" : ""}{hasBenchmarkRecs ? ", anonymized cohort benchmarks" : ""}{hasExternalRecs ? ", external infrastructure signals" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : ""}{!hasHistoryRecs && !hasMarketRecs && !hasPilRecs && !hasBenchmarkRecs && !hasExternalRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
