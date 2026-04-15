@@ -4,9 +4,11 @@ import {
   mockDashboardRoutes,
   mockPolicyRoutes,
   mockReceiptSummaryRoute,
+  mockMarketConditionsRoute,
   injectCustomerAuth,
   silenceAnalytics,
   RICH_HISTORY_SUMMARY,
+  MARKET_STRESSED,
 } from "./helpers/smoke-fixtures";
 
 /**
@@ -1114,5 +1116,357 @@ test.describe("customer policies — recommendation action buttons", () => {
       // Highlight clears after ~1.5s
       await expect(targetField).not.toHaveClass(/ring-amber-400/, { timeout: 5000 });
     });
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Market-aware policy recommendations — degraded/stressed conditions
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — market-aware recommendations (degraded)", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockReceiptSummaryRoute(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("market-aware recommendation cards appear when conditions are degraded", async ({ page }) => {
+    // Policy with simulation NOT required — triggers market-enable-simulation
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: false },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: false },
+        },
+      });
+    });
+    await mockMarketConditionsRoute(page, { variant: "degraded" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const marketCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-market-']");
+    const count = await marketCards.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+  });
+
+  test("source label shows 'Market analysis' on market-based recommendations", async ({ page }) => {
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: false },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: false },
+        },
+      });
+    });
+    await mockMarketConditionsRoute(page, { variant: "degraded" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+    expect(allSources).toContain("Market analysis");
+  });
+
+  test("evidence text is visible on market-based recommendation cards", async ({ page }) => {
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: false },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: false },
+        },
+      });
+    });
+    await mockMarketConditionsRoute(page, { variant: "degraded" });
+    await page.goto("/customer/policies");
+
+    const simCard = page.getByTestId("recommendation-market-enable-simulation");
+    await expect(simCard).toBeVisible();
+
+    // Evidence text should contain the summary from the market conditions fixture
+    await expect(
+      simCard.locator("p.italic"),
+    ).toContainText("degradation");
+  });
+});
+
+test.describe("customer policies — market-aware recommendations (stressed)", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockReceiptSummaryRoute(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("simulation-related market recommendation appears when stressed + simulation not required", async ({ page }) => {
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: false },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: false },
+        },
+      });
+    });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await page.goto("/customer/policies");
+
+    const simCard = page.getByTestId("recommendation-market-enable-simulation");
+    await expect(simCard).toBeVisible();
+    await expect(simCard).toContainText("Enable simulation");
+
+    // Priority should be high when stressed
+    const priority = simCard.getByTestId("recommendation-priority");
+    await expect(priority).toHaveText("High priority");
+  });
+
+  test("slippage-tightening recommendation appears when stressed + loose slippage", async ({ page }) => {
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: true },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: true },
+        },
+      });
+    });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await page.goto("/customer/policies");
+
+    const slippageCard = page.getByTestId("recommendation-market-tighten-slippage");
+    await expect(slippageCard).toBeVisible();
+    await expect(slippageCard).toContainText("tightening slippage");
+    await expect(slippageCard).toContainText("200 bps");
+  });
+
+  test("transaction submission throttling recommendation appears when sendTransaction is throttled", async ({ page }) => {
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: false },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: false },
+        },
+      });
+    });
+    // MARKET_STRESSED includes sendTransaction in throttled_methods
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await page.goto("/customer/policies");
+
+    const txCard = page.getByTestId("recommendation-market-tx-submission-throttled");
+    await expect(txCard).toBeVisible();
+    await expect(txCard).toContainText("submission is being throttled");
+
+    const priority = txCard.getByTestId("recommendation-priority");
+    await expect(priority).toHaveText("High priority");
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Market-aware + deterministic + history recommendation coexistence
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — all three recommendation sources coexist", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await injectCustomerAuth(page);
+  });
+
+  test("deterministic, history, and market recommendations coexist with accurate source labels", async ({ page }) => {
+    // Need simulation NOT required so market rec triggers
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: false },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: false },
+        },
+      });
+    });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+
+    // All three source types should be represented
+    expect(allSources.some((s) => s === "Default guidance")).toBe(true);
+    expect(allSources.some((s) => s === "Customer history")).toBe(true);
+    expect(allSources.some((s) => s === "Market analysis")).toBe(true);
+
+    expect(allSources.length).toBeGreaterThanOrEqual(4);
+  });
+
+  test("disclaimer mentions execution conditions when market recs are present", async ({ page }) => {
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: false },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: false },
+        },
+      });
+    });
+    await mockMarketConditionsRoute(page, { variant: "degraded" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    await expect(
+      page.getByText("current execution infrastructure conditions"),
+    ).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Market-aware recommendations — stable / no-signal / failure degradation
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — market-aware graceful degradation", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("stable market conditions produce no market recommendation cards", async ({ page }) => {
+    await mockMarketConditionsRoute(page, { variant: "stable" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const marketCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-market-']");
+    await expect(marketCards).toHaveCount(0);
+
+    // "Market analysis" source badge should not appear
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+    expect(allSources.every((s) => s !== "Market analysis")).toBe(true);
+  });
+
+  test("failed market-conditions fetch degrades gracefully without breaking the page", async ({ page }) => {
+    await mockMarketConditionsRoute(page, { variant: "stable", status: 500 });
+    await page.goto("/customer/policies");
+
+    // Page still loads — policy recommendations section should be visible
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // No market cards
+    const marketCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-market-']");
+    await expect(marketCards).toHaveCount(0);
+
+    // Disclaimer should NOT mention execution conditions
+    await expect(
+      page.getByText("current execution infrastructure conditions"),
+    ).not.toBeVisible();
+  });
+
+  test("no market-conditions mock at all still shows deterministic recommendations", async ({ page }) => {
+    // No mockMarketConditionsRoute called — request will fail
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Deterministic recs present
+    const sources = page.getByTestId("recommendation-source");
+    await expect(sources.first()).toBeVisible();
+
+    // No market cards
+    const marketCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-market-']");
+    await expect(marketCards).toHaveCount(0);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Market-aware recommendation action buttons
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — market recommendation action buttons", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockReceiptSummaryRoute(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("clicking 'View setting' on market-enable-simulation enters edit mode and highlights field", async ({ page }) => {
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: false },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: false },
+        },
+      });
+    });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const actionBtn = page.getByTestId("recommendation-action-market-enable-simulation");
+    await expect(actionBtn).toBeVisible();
+    await expect(actionBtn).toContainText("View setting");
+    await actionBtn.click();
+
+    // Edit mode should be active
+    await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+    await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+
+    // require_simulation_success field should be highlighted
+    const targetField = page.locator('[data-field-key="require_simulation_success"]').first();
+    await expect(targetField).toBeVisible();
+    await expect(targetField).toHaveClass(/ring-amber-400/, { timeout: 2000 });
   });
 });

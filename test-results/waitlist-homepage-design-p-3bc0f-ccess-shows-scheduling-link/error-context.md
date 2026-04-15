@@ -1,0 +1,661 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - link "Sign In" [ref=e7] [cursor=pointer]:
+          - /url: /login
+        - link "Sign Up" [ref=e8] [cursor=pointer]:
+          - /url: /signup
+      - generic [ref=e10]:
+        - link "TruCore home" [ref=e11] [cursor=pointer]:
+          - /url: /
+          - img "TruCore logo" [ref=e12]
+          - generic [ref=e13]: TruCore
+        - navigation "Primary" [ref=e14]:
+          - link "Docs" [ref=e15] [cursor=pointer]:
+            - /url: /docs
+          - link "ATF" [ref=e16] [cursor=pointer]:
+            - /url: /atf
+          - link "Receipts" [ref=e17] [cursor=pointer]:
+            - /url: /receipts
+          - link "Pricing" [ref=e18] [cursor=pointer]:
+            - /url: /pricing
+          - link "Builders" [ref=e19] [cursor=pointer]:
+            - /url: /builders
+          - link "Try ATF" [ref=e20] [cursor=pointer]:
+            - /url: /try
+    - main [ref=e22]:
+      - generic [ref=e23]:
+        - generic [ref=e25]:
+          - img "TruCore banner"
+          - generic [ref=e26]:
+            - paragraph [ref=e27]: For Solana AI agents and trading bots
+            - heading "AI Capital Management for Safe Execution" [level=1] [ref=e28]
+            - paragraph [ref=e29]: Policy enforced before execution. Verified receipt after every decision. Learn from outcomes to improve capital deployment over time.
+            - paragraph [ref=e30]: TruCore gives AI agent transactions a deterministic control layer. Define policy rules before execution, verify every decision with cryptographic receipts, and feed execution outcomes back into the intelligence loop so agents improve capital deployment under operator-gated control.
+            - paragraph [ref=e31]: No signup required. No wallet access. Built for traders, protocol teams, and agent builders.
+            - generic [ref=e32]:
+              - link "Start Your First Protected Trade" [ref=e33] [cursor=pointer]:
+                - /url: /try
+              - link "Verify a Receipt" [ref=e34] [cursor=pointer]:
+                - /url: /verify-demo
+            - paragraph [ref=e35]: No signup or wallet required. See a real protected trade and cryptographic receipt.
+            - generic [ref=e36]:
+              - paragraph [ref=e37]: "What happens next:"
+              - list [ref=e38]:
+                - listitem [ref=e39]: You submit a transaction
+                - listitem [ref=e40]: ATF evaluates policy
+                - listitem [ref=e41]: You receive a decision and receipt
+              - paragraph [ref=e42]: You stay in control. You can start in safe mode with no real execution.
+            - generic [ref=e43]:
+              - link "5-min quickstart" [ref=e44] [cursor=pointer]:
+                - /url: /docs/5-minute-quickstart
+              - generic [ref=e45]: /
+              - link "Pricing" [ref=e46] [cursor=pointer]:
+                - /url: /pricing
+              - generic [ref=e47]: /
+              - link "Receipts" [ref=e48] [cursor=pointer]:
+                - /url: /receipts
+              - generic [ref=e49]: /
+              - link "Example Verified Receipt" [ref=e50] [cursor=pointer]:
+                - /url: /r/example
+              - generic [ref=e51]: /
+              - link "What is ATF?" [ref=e52] [cursor=pointer]:
+                - /url: /agent-transaction-firewall
+        - paragraph [ref=e54]: Every decision is enforced before execution. Every result produces a cryptographic receipt. You can verify it independently.
+        - generic [ref=e55]:
+          - list [ref=e57]:
+            - listitem [ref=e58]:
+              - link "Permit-based authorization" [ref=e59] [cursor=pointer]:
+                - /url: /docs/permits
+            - listitem [ref=e60]:
+              - link "Deterministic invariant checks" [ref=e61] [cursor=pointer]:
+                - /url: /docs/quickstart
+            - listitem [ref=e62]:
+              - link "Tamper-evident receipts" [ref=e63] [cursor=pointer]:
+                - /url: /docs/quickstart#deterministic-enforcement-proof
+            - listitem [ref=e64]:
+              - link "Signed whitepaper integrity" [ref=e65] [cursor=pointer]:
+                - /url: /atf/whitepaper
+          - region "ATF system status" [ref=e66]:
+            - generic [ref=e67]:
+              - paragraph [ref=e71]: All Systems Operational
+              - generic [ref=e72]:
+                - generic [ref=e73]:
+                  - paragraph [ref=e74]: Protected Transactions
+                  - paragraph [ref=e75]: "0"
+                - generic [ref=e76]:
+                  - paragraph [ref=e77]: Receipts Verified
+                  - paragraph [ref=e78]: "0"
+                - generic [ref=e79]:
+                  - paragraph [ref=e80]: Uptime
+                  - paragraph [ref=e81]: 9d 23h
+              - link "View Dashboard" [ref=e82] [cursor=pointer]:
+                - /url: /dashboard
+                - text: View Dashboard
+                - generic [ref=e83]: →
+            - generic [ref=e85]:
+              - paragraph [ref=e88]: Infrastructure
+              - generic [ref=e89]:
+                - generic [ref=e90]:
+                  - paragraph [ref=e91]: Enforcement Events
+                  - paragraph [ref=e92]: "20"
+                - generic [ref=e93]:
+                  - paragraph [ref=e94]: Receipts Written
+                  - paragraph [ref=e95]: "0"
+                - generic [ref=e96]:
+                  - paragraph [ref=e97]: Requests (1h)
+                  - paragraph [ref=e98]: "39"
+                - generic [ref=e99]:
+                  - paragraph [ref=e100]: Avg Latency
+                  - paragraph [ref=e101]: 0.0ms
+              - paragraph [ref=e102]: just now
+          - paragraph [ref=e103]: Live API enforcement on Solana. Every policy decision creates a verifiable receipt. Status reflects real system state.
+          - paragraph [ref=e104]: "Last updated: 2026-04-15"
+        - generic [ref=e105]:
+          - generic [ref=e107]:
+            - paragraph [ref=e108]: Golden Path
+            - heading "Try ATF in Four Commands" [level=2] [ref=e109]
+            - paragraph [ref=e110]: From first trade to verified receipt. No manual config needed.
+          - generic [ref=e111]:
+            - article [ref=e113]:
+              - generic [ref=e114]:
+                - paragraph [ref=e115]: Step 1
+                - paragraph [ref=e116]: atf trade
+                - paragraph [ref=e117]: Run a protected trade. Demo mode works out of the box - no API key required.
+            - article [ref=e119]:
+              - generic [ref=e120]:
+                - paragraph [ref=e121]: Step 2
+                - paragraph [ref=e122]: atf setup
+                - paragraph [ref=e123]: Connect your API key interactively. No .env editing needed.
+            - article [ref=e125]:
+              - generic [ref=e126]:
+                - paragraph [ref=e127]: Step 3
+                - paragraph [ref=e128]: atf doctor
+                - paragraph [ref=e129]: Diagnose your environment. One command checks config, connectivity, and wallet.
+            - article [ref=e131]:
+              - generic [ref=e132]:
+                - paragraph [ref=e133]: Step 4
+                - paragraph [ref=e134]: atf verify
+                - paragraph [ref=e135]: Verify and share a receipt. Human-readable share text and bot-friendly output.
+          - generic [ref=e136]:
+            - paragraph [ref=e137]: "Open your terminal and install the CLI globally:"
+            - generic [ref=e138]: npm install -g @trucore/atf@1.5.1
+            - paragraph [ref=e139]:
+              - text: Then run each
+              - code [ref=e140]: atf
+              - text: command above directly in your terminal. No project setup required.
+            - paragraph [ref=e141]:
+              - text: Each command produces operator-friendly terminal output and bot-ready JSON with
+              - code [ref=e142]: machine_summary
+              - text: ","
+              - code [ref=e143]: suggested_action
+              - text: ", and"
+              - code [ref=e144]: suggested_command
+              - text: fields.
+        - generic [ref=e145]:
+          - generic [ref=e147]:
+            - paragraph [ref=e148]: Enforcement Model
+            - heading "What ATF Enforces" [level=2] [ref=e149]
+          - generic [ref=e150]:
+            - article [ref=e152]:
+              - generic [ref=e153]:
+                - heading "Spend Caps" [level=3] [ref=e154]
+                - paragraph [ref=e155]: Max SOL or token spend per tx and per window.
+            - article [ref=e157]:
+              - generic [ref=e158]:
+                - heading "Protocol Allowlist" [level=3] [ref=e159]
+                - paragraph [ref=e160]: Jupiter, Orca, and Raydium (swaps). Solend, Marginfi, and Kamino (lending). Perps venues feature-gated, off by default.
+            - article [ref=e162]:
+              - generic [ref=e163]:
+                - heading "Slippage Bounds" [level=3] [ref=e164]
+                - paragraph [ref=e165]: Hard max slippage and minimum-out checks.
+            - article [ref=e167]:
+              - generic [ref=e168]:
+                - heading "TTL + Nonce" [level=3] [ref=e169]
+                - paragraph [ref=e170]: Permits expire fast and cannot be replayed.
+        - generic [ref=e171]:
+          - generic [ref=e173]:
+            - paragraph [ref=e174]: Activation
+            - heading "Make Your First Protected Trade" [level=2] [ref=e175]
+            - paragraph [ref=e176]: You can test ATF safely before using real funds.
+            - paragraph [ref=e177]: No setup required for demo. No risk to try.
+          - generic [ref=e178]:
+            - paragraph [ref=e179]: "Step 1: Run a sample transaction using demo or dry-run."
+            - paragraph [ref=e180]: "Step 2: Review the decision and receipt to understand policy and output."
+            - paragraph [ref=e181]: "Step 3: Run your own protected trade with real or controlled input."
+            - paragraph [ref=e182]: You stay in control. You can start in safe mode with no real execution.
+          - link "Start Your First Protected Trade" [ref=e184] [cursor=pointer]:
+            - /url: /try
+        - generic [ref=e185]:
+          - generic [ref=e187]:
+            - paragraph [ref=e188]: How It Works
+            - heading "First Protected Trade, Step by Step" [level=2] [ref=e189]
+            - paragraph [ref=e190]: "Every trade follows the same enforced path: policy evaluated, decision made, receipt generated, result verified."
+          - generic [ref=e191]:
+            - generic [ref=e192]:
+              - generic [ref=e195]: "1"
+              - generic [ref=e196]:
+                - heading "Submit" [level=3] [ref=e197]
+                - paragraph [ref=e198]: You submit a transaction. ATF receives it with your policy rules.
+            - generic [ref=e199]:
+              - generic [ref=e202]: "2"
+              - generic [ref=e203]:
+                - heading "Evaluate" [level=3] [ref=e204]
+                - paragraph [ref=e205]: "Every policy rule is checked: spend caps, protocols, slippage, TTL."
+            - generic [ref=e206]:
+              - generic [ref=e209]: "3"
+              - generic [ref=e210]:
+                - heading "Decide" [level=3] [ref=e211]
+                - paragraph [ref=e212]: Policy decision is made deterministically. ALLOW or DENY.
+            - generic [ref=e213]:
+              - generic [ref=e216]: "4"
+              - generic [ref=e217]:
+                - heading "Enforce" [level=3] [ref=e218]
+                - paragraph [ref=e219]: "If ALLOW: transaction is executed. If DENY: blocked automatically."
+            - generic [ref=e220]:
+              - generic [ref=e223]: "5"
+              - generic [ref=e224]:
+                - heading "Verify" [level=3] [ref=e225]
+                - paragraph [ref=e226]: Cryptographic receipt proves what happened. Anyone can verify it.
+        - generic [ref=e227]:
+          - generic [ref=e229]:
+            - paragraph [ref=e230]: Intelligence
+            - heading "Policy Intelligence Layer" [level=2] [ref=e231]
+            - paragraph [ref=e232]: The Policy Intelligence Layer (PIL) transforms ATF from a transaction firewall into an intelligence system, turning every execution into signal, and every signal into better decisions.
+            - paragraph [ref=e233]: "A new primitive: systems that learn from execution without sacrificing determinism or control."
+          - generic [ref=e234]:
+            - article [ref=e236]:
+              - generic [ref=e237]:
+                - heading "Execution History" [level=3] [ref=e238]
+                - paragraph [ref=e239]: Every policy decision is recorded with full context. Receipts become queryable signal for operators.
+            - article [ref=e241]:
+              - generic [ref=e242]:
+                - heading "Actionable Intelligence" [level=3] [ref=e243]
+                - paragraph [ref=e244]: Aggregated execution data surfaces patterns, enabling operator-gated policy refinements grounded in real behavior.
+            - article [ref=e246]:
+              - generic [ref=e247]:
+                - heading "Controlled Improvement" [level=3] [ref=e248]
+                - paragraph [ref=e249]: Operators review and approve every policy change. The system suggests, humans decide. Deterministic and auditable at every step.
+            - article [ref=e251]:
+              - generic [ref=e252]:
+                - heading "Move transaction control out of the model loop." [level=3] [ref=e253]
+                - paragraph [ref=e254]: ATF enforces policy, applies execution guardrails, and verifies outcomes outside the bot's token budget. That means less wasted compute on repetitive control logic, fewer invalid transaction loops, and more model capacity for higher-value intelligence.
+        - paragraph [ref=e257]: Most systems execute transactions. TruCore systems learn from them.
+        - generic [ref=e258]:
+          - generic [ref=e260]:
+            - paragraph [ref=e261]: Ecosystem
+            - heading "Integrated with the Solana ecosystem" [level=2] [ref=e262]
+            - paragraph [ref=e263]: ATF connects to the venues where autonomous agents operate, enforcing policy before every transaction reaches the chain.
+          - generic [ref=e265]:
+            - generic [ref=e266]: Agent
+            - img [ref=e267]
+            - generic [ref=e269]: ATF
+            - img [ref=e270]
+            - generic [ref=e272]: Venue
+          - generic [ref=e273]:
+            - generic [ref=e274]:
+              - paragraph [ref=e275]: DEX
+              - generic [ref=e276]:
+                - generic [ref=e279]: Jupiter
+                - generic [ref=e282]: Orca
+                - generic [ref=e285]: Raydium
+            - generic [ref=e286]:
+              - paragraph [ref=e287]: Lending
+              - generic [ref=e288]:
+                - generic [ref=e291]: Solend
+                - generic [ref=e294]: Marginfi
+                - generic [ref=e295]:
+                  - generic [ref=e297]: Kamino
+                  - generic [ref=e298]: gated
+            - generic [ref=e299]:
+              - paragraph [ref=e300]: Perps
+              - generic [ref=e301]:
+                - generic [ref=e302]:
+                  - generic [ref=e304]: Drift v2
+                  - generic [ref=e305]: gated
+                - generic [ref=e306]:
+                  - generic [ref=e308]: Mango v4
+                  - generic [ref=e309]: gated
+                - generic [ref=e310]:
+                  - generic [ref=e312]: Hyperliquid
+                  - generic [ref=e313]: gated
+          - paragraph [ref=e314]: ATF enforces execution policies across decentralized exchanges, lending markets, and perpetual venues where autonomous agents operate.
+          - generic [ref=e315]:
+            - generic [ref=e316]: Active
+            - generic [ref=e318]: Feature-gated
+        - generic [ref=e320]:
+          - paragraph [ref=e321]: Production Readiness
+          - list [ref=e323]:
+            - listitem [ref=e324]:
+              - link "CLI + API Interface" [ref=e325] [cursor=pointer]:
+                - /url: /docs/cli
+                - generic [ref=e327]: CLI + API Interface
+            - listitem [ref=e328]:
+              - link "Tamper-Evident Receipts" [ref=e329] [cursor=pointer]:
+                - /url: /receipts
+                - generic [ref=e331]: Tamper-Evident Receipts
+            - listitem [ref=e332]:
+              - link "6 Deployable Services" [ref=e333] [cursor=pointer]:
+                - /url: /build-with-atf
+                - generic [ref=e335]: 6 Deployable Services
+            - listitem [ref=e336]:
+              - link "4 Devnet Programs" [ref=e337] [cursor=pointer]:
+                - /url: /docs/agent-discovery
+                - generic [ref=e339]: 4 Devnet Programs
+            - listitem [ref=e340]:
+              - link "Live System Status" [ref=e341] [cursor=pointer]:
+                - /url: /status
+                - generic [ref=e343]: Live System Status
+            - listitem [ref=e344]:
+              - link "Deterministic Policy Enforcement" [ref=e345] [cursor=pointer]:
+                - /url: /agent-transaction-firewall
+                - generic [ref=e347]: Deterministic Policy Enforcement
+          - paragraph [ref=e348]: Deterministic policy enforcement infrastructure for autonomous agents operating across Solana venues.
+        - generic [ref=e349]:
+          - generic [ref=e351]:
+            - paragraph [ref=e352]: Scope
+            - heading "ATF V1 Scope" [level=2] [ref=e353]
+            - paragraph [ref=e354]: V1 is intentionally focused. Production-grade enforcement across a well-defined surface area, with real adapters for every supported venue and chain. Expansion happens only after each layer is proven.
+          - generic [ref=e355]:
+            - article [ref=e356]:
+              - generic [ref=e357]:
+                - heading "Chains" [level=3] [ref=e358]
+                - list [ref=e359]:
+                  - listitem [ref=e360]:
+                    - text: Solana
+                    - generic [ref=e362]: (primary)
+                  - listitem [ref=e363]:
+                    - generic [ref=e365]: Hyperliquid feature-gated
+                  - listitem [ref=e366]:
+                    - generic [ref=e368]: Base coming soon
+            - article [ref=e369]:
+              - generic [ref=e370]:
+                - heading "Enforced Controls" [level=3] [ref=e371]
+                - list [ref=e372]:
+                  - listitem [ref=e373]: Slippage bounds
+                  - listitem [ref=e375]: Protocol allowlist
+                  - listitem [ref=e377]: Max exposure caps
+                  - listitem [ref=e379]: Transaction TTL
+                  - listitem [ref=e381]: Nonce-based replay protection
+            - article [ref=e383]:
+              - generic [ref=e384]:
+                - heading "Platform Surface" [level=3] [ref=e385]
+                - paragraph [ref=e386]: ATF is enforcement infrastructure, not just a CLI. Start with the golden path, then unlock advanced capabilities.
+                - list [ref=e387]:
+                  - listitem [ref=e388]: "Golden path: trade → setup → doctor → verify"
+                  - listitem [ref=e390]: "Dual-surface output: human-readable + bot-ready JSON"
+                  - listitem [ref=e392]: Public API with deterministic simulation
+                  - listitem [ref=e394]: 13 native agent tools across 6 contract families
+                  - listitem [ref=e396]: 8 production-ready example projects
+                  - listitem [ref=e398]: 6 deployable services
+        - generic [ref=e400]:
+          - generic [ref=e402]:
+            - paragraph [ref=e403]: Resources & Documentation
+            - heading "Explore" [level=2] [ref=e404]
+            - paragraph [ref=e405]: Everything you need to evaluate and integrate ATF.
+          - generic [ref=e406]:
+            - link [ref=e408] [cursor=pointer]:
+              - /url: /docs/first-protected-trade
+              - article [ref=e409]:
+                - generic [ref=e410]:
+                  - heading "First Protected Trade" [level=3] [ref=e411]
+                  - paragraph [ref=e412]: Run atf trade, get a receipt, verify it. One command to try - no config required. HTTP, Python, TypeScript, CLI, and OpenClaw paths also available.
+                  - generic [ref=e413]: Explore →
+            - link [ref=e415] [cursor=pointer]:
+              - /url: /details#architecture
+              - article [ref=e416]:
+                - generic [ref=e417]:
+                  - heading "Architecture & Threat Model" [level=3] [ref=e418]
+                  - paragraph [ref=e419]: Four-layer enforcement pipeline, threat vectors, and hard invariants.
+                  - generic [ref=e420]: Explore →
+            - link [ref=e422] [cursor=pointer]:
+              - /url: /details#capabilities
+              - article [ref=e423]:
+                - generic [ref=e424]:
+                  - heading "Capabilities" [level=3] [ref=e425]
+                  - paragraph [ref=e426]: Swap, lending, and perps guardrails across 10 venue integrations. Deterministic receipts for every decision.
+                  - generic [ref=e427]: Explore →
+            - link [ref=e429] [cursor=pointer]:
+              - /url: /details#trading-bots
+              - article [ref=e430]:
+                - generic [ref=e431]:
+                  - heading "Trading Bot Guardrails" [level=3] [ref=e432]
+                  - paragraph [ref=e433]: Leverage caps, market allowlists, notional limits, and fail-closed defaults.
+                  - generic [ref=e434]: Explore →
+            - link [ref=e436] [cursor=pointer]:
+              - /url: /receipts
+              - article [ref=e437]:
+                - generic [ref=e438]:
+                  - heading "Receipts" [level=3] [ref=e439]
+                  - paragraph [ref=e440]: Shareable, verifiable receipts for every policy decision. Human share text and bot-friendly structured output.
+                  - generic [ref=e441]: Explore →
+            - link [ref=e443] [cursor=pointer]:
+              - /url: /docs/cli
+              - article [ref=e444]:
+                - generic [ref=e445]:
+                  - heading "CLI Reference" [level=3] [ref=e446]
+                  - paragraph [ref=e447]: Start with trade, setup, doctor, and verify. Advanced bot and operator commands available when you need them.
+                  - generic [ref=e448]: Explore →
+            - link [ref=e450] [cursor=pointer]:
+              - /url: /docs/agent-discovery
+              - article [ref=e451]:
+                - generic [ref=e452]:
+                  - heading "Agent Tooling" [level=3] [ref=e453]
+                  - paragraph [ref=e454]: "Great UX for humans, stable contracts for bots. Dual-surface outputs: readable in terminal, reliable in automation. Native agent tools and OpenClaw plugin included."
+                  - generic [ref=e455]: Explore →
+            - link [ref=e457] [cursor=pointer]:
+              - /url: /build-with-atf
+              - article [ref=e458]:
+                - generic [ref=e459]:
+                  - heading "Build With ATF" [level=3] [ref=e460]
+                  - paragraph [ref=e461]: Integration patterns, policy examples, production-ready example projects, and deployable services.
+                  - generic [ref=e462]: Explore →
+            - link [ref=e464] [cursor=pointer]:
+              - /url: /enterprise
+              - article [ref=e465]:
+                - generic [ref=e466]:
+                  - heading "Enterprise" [level=3] [ref=e467]
+                  - paragraph [ref=e468]: Compliance alignment, procurement readiness, and security posture.
+                  - generic [ref=e469]: Explore →
+            - link [ref=e471] [cursor=pointer]:
+              - /url: /security/overview
+              - article [ref=e472]:
+                - generic [ref=e473]:
+                  - heading "Security" [level=3] [ref=e474]
+                  - paragraph [ref=e475]: Fail-closed defaults, scoped permits, immutable audit trail.
+                  - generic [ref=e476]: Explore →
+            - link [ref=e478] [cursor=pointer]:
+              - /url: /docs
+              - article [ref=e479]:
+                - generic [ref=e480]:
+                  - heading "Docs" [level=3] [ref=e481]
+                  - paragraph [ref=e482]: Quickstart, policy model, API reference, CLI guides, and changelog.
+                  - generic [ref=e483]: Explore →
+            - link [ref=e485] [cursor=pointer]:
+              - /url: /builders
+              - article [ref=e486]:
+                - generic [ref=e487]:
+                  - heading "For Bot Builders" [level=3] [ref=e488]
+                  - paragraph [ref=e489]: Integration paths, early access, and hands-on support for trading bots and AI agents.
+                  - generic [ref=e490]: Explore →
+        - generic [ref=e493]:
+          - paragraph [ref=e494]: Get Started
+          - heading "Try → Protect → Verify → Upgrade" [level=2] [ref=e495]
+          - paragraph [ref=e496]: Start free. Get receipts for every decision. Upgrade when your bot needs higher caps or real execution.
+          - generic [ref=e497]:
+            - link "Start Your First Protected Trade" [ref=e498] [cursor=pointer]:
+              - /url: /try
+            - link "Getting Started" [ref=e499] [cursor=pointer]:
+              - /url: /docs/getting-started
+            - link "Pricing" [ref=e500] [cursor=pointer]:
+              - /url: /pricing
+        - generic [ref=e502]:
+          - generic [ref=e504]:
+            - heading "Why Now" [level=2] [ref=e505]
+            - paragraph [ref=e506]: Autonomous finance is entering a phase where execution is real, adversaries are active, and risk surfaces compound quickly. The window to add hard enforcement, and intelligence that learns from it, is now.
+          - generic [ref=e507]:
+            - article [ref=e508]:
+              - generic [ref=e509]:
+                - heading "Agents are executing" [level=3] [ref=e510]
+                - paragraph [ref=e511]: Agent-driven finance has moved from experiments to production workflows. Capital is now being deployed by autonomous systems in live environments.
+            - article [ref=e512]:
+              - generic [ref=e513]:
+                - heading "MEV is adversarial by default" [level=3] [ref=e514]
+                - paragraph [ref=e515]: Execution happens in an adversarial arena where value extraction is automated. Any unbounded behavior is quickly priced and exploited.
+            - article [ref=e516]:
+              - generic [ref=e517]:
+                - heading "Trust doesn’t scale, enforcement does" [level=3] [ref=e518]
+                - paragraph [ref=e519]: Human trust checks cannot keep pace with machine-speed decisions. Deterministic enforcement is how systems stay reliable as volume rises.
+            - article [ref=e520]:
+              - generic [ref=e521]:
+                - heading "Execution must become intelligence" [level=3] [ref=e522]
+                - paragraph [ref=e523]: Protecting transactions is necessary but insufficient. Systems that learn from execution history, under operator control, make better decisions over time without sacrificing determinism.
+        - generic [ref=e525]:
+          - generic [ref=e527]:
+            - heading "Deterministic Enforcement Proof" [level=2] [ref=e528]
+            - paragraph [ref=e529]: The same input consistently produces the same policy decision and receipt hash.
+          - generic [ref=e530]:
+            - article [ref=e531]:
+              - generic [ref=e532]:
+                - paragraph [ref=e533]: Request JSON
+                - code [ref=e535]: "{ \"action\": \"swap\", \"token_in\": \"SOL\", \"token_out\": \"USDC\", \"amount\": 10, \"max_slippage_bps\": 100, \"ttl_seconds\": 60 }"
+            - article [ref=e536]:
+              - generic [ref=e537]:
+                - paragraph [ref=e538]: Result JSON
+                - code [ref=e540]: "{ \"status\": \"allowed\", \"reason\": \"Request satisfies demo policy limits.\", \"invariant_checks\": [ \"amount <= 1000: pass\", \"max_slippage_bps <= 300: pass\", \"ttl_seconds <= 300: pass\" ], \"receipt_hash\": \"9d9e34f2df6dd5ecf0988cb3af0ea4ab60431b64d7d5e3b35d0972ce4e4c986f\" }"
+          - list [ref=e541]:
+            - listitem [ref=e542]: Policy evaluated before execution.
+            - listitem [ref=e544]: Invariants checked deterministically.
+            - listitem [ref=e546]: Receipt hash generated for tamper evidence.
+            - listitem [ref=e548]: Receipts are shareable and verifiable via CLI or web.
+            - listitem [ref=e550]: Output includes both human share text and bot-friendly structured data.
+          - generic [ref=e552]:
+            - link "Run this example in the Simulator" [ref=e553] [cursor=pointer]:
+              - /url: /atf/simulator?scenario=valid-swap
+            - link "Protect your first bot trade →" [ref=e554] [cursor=pointer]:
+              - /url: /docs/first-protected-trade
+        - generic [ref=e555]:
+          - generic [ref=e557]:
+            - heading "Roadmap" [level=2] [ref=e558]
+            - paragraph [ref=e559]: A phased approach. Each stage builds on proven enforcement before expanding scope.
+          - list [ref=e562]:
+            - listitem [ref=e563]:
+              - paragraph [ref=e566]: Phase 1
+              - heading "V1 Guardrails (Solana core)" [level=3] [ref=e567]
+              - paragraph [ref=e568]: Policy engine, permit gateway, execution validator, and receipt ledger for Solana. Jupiter, Orca, Raydium (swaps), Solend, Marginfi, Kamino (lending), and feature-gated perps integrations. Comprehensive CLI, API, agent tooling, example projects, and deployable services.
+            - listitem [ref=e569]:
+              - paragraph [ref=e572]: Phase 2
+              - heading "On-chain attestation registry" [level=3] [ref=e573]
+              - paragraph [ref=e574]: Publish policy evaluations and execution receipts to an on-chain registry for transparent, verifiable audit. Solana programs deployed to devnet.
+            - listitem [ref=e575]:
+              - paragraph [ref=e578]: Phase 3
+              - heading "Vault and invariant enforcement program" [level=3] [ref=e579]
+              - paragraph [ref=e580]: On-chain program enforcing portfolio-level hard invariants with vault-scoped custody and automatic halt logic.
+            - listitem [ref=e581]:
+              - paragraph [ref=e584]: Phase 4
+              - heading "Multi-chain expansion" [level=3] [ref=e585]
+              - paragraph [ref=e586]: Hyperliquid enforcement is feature-gated today. Base support is coming soon. Additional chains and protocol integrations follow as each layer is proven.
+          - link "View full roadmap →" [ref=e588] [cursor=pointer]:
+            - /url: /atf/roadmap
+        - generic [ref=e589]:
+          - generic [ref=e590]:
+            - generic [ref=e591]:
+              - heading "Join the Waitlist" [level=2] [ref=e592]
+              - paragraph [ref=e593]: Get early-access updates, release notes, and security advisories.
+            - generic [ref=e595]:
+              - paragraph [ref=e596]: ✓ Application received
+              - paragraph [ref=e597]: "Next: book a 15-minute fit check."
+              - generic [ref=e598]:
+                - link "Book a fit check" [ref=e599] [cursor=pointer]:
+                  - /url: https://cal.com/trucore/design-partner
+                - generic [ref=e600]:
+                  - text: Didn't get the email? Check spam or contact
+                  - link "info@trucore.xyz" [ref=e601] [cursor=pointer]:
+                    - /url: https://cal.com/trucore/design-partner
+          - article [ref=e604]:
+            - generic [ref=e605]:
+              - paragraph [ref=e606]: For teams already building
+              - heading "Design Partner Program" [level=2] [ref=e607]
+              - paragraph [ref=e608]: Working with a limited cohort of early teams integrating ATF into production trading bots on Solana. This is not a waitlist - it is hands-on integration support.
+              - generic [ref=e609]:
+                - paragraph [ref=e610]: "Includes:"
+                - list [ref=e611]:
+                  - listitem [ref=e612]: • Dedicated partner API key tier
+                  - listitem [ref=e613]: • Integration guidance and policy design review
+                  - listitem [ref=e614]: • Direct access to engineering
+              - link "Apply as Design Partner" [ref=e616] [cursor=pointer]:
+                - /url: /atf/apply
+        - generic [ref=e620]:
+          - paragraph [ref=e621]: Deterministic policy evaluation
+          - paragraph [ref=e623]: Cryptographic receipt hashing
+          - paragraph [ref=e625]: Public demo policy transparency
+          - paragraph [ref=e627]: Structured release discipline
+    - contentinfo [ref=e629]:
+      - generic [ref=e632]:
+        - generic [ref=e633]:
+          - generic [ref=e634]:
+            - link "TruCore home" [ref=e635] [cursor=pointer]:
+              - /url: /
+              - img "TruCore logo" [ref=e636]
+              - generic [ref=e637]: TruCore
+            - paragraph [ref=e638]: Deterministic policy enforcement and tamper-evident receipts for autonomous finance.
+            - generic [ref=e639]:
+              - link "X" [ref=e640] [cursor=pointer]:
+                - /url: https://x.com/TruCore_AI
+              - link "GitHub" [ref=e641] [cursor=pointer]:
+                - /url: https://github.com/TruCore-AI
+              - link "Discord" [ref=e642] [cursor=pointer]:
+                - /url: https://discord.gg/hZWTn6Vr
+          - generic [ref=e643]:
+            - generic [ref=e644]:
+              - paragraph [ref=e645]: Product
+              - generic [ref=e646]:
+                - link "ATF" [ref=e647] [cursor=pointer]:
+                  - /url: /atf
+                - link "ATF Primer" [ref=e648] [cursor=pointer]:
+                  - /url: /atf/primer
+                - link "ATF Roadmap" [ref=e649] [cursor=pointer]:
+                  - /url: /atf/roadmap
+                - link "Enterprise" [ref=e650] [cursor=pointer]:
+                  - /url: /enterprise
+                - link "Pricing" [ref=e651] [cursor=pointer]:
+                  - /url: /pricing
+                - link "For Builders" [ref=e652] [cursor=pointer]:
+                  - /url: /builders
+            - generic [ref=e653]:
+              - paragraph [ref=e654]: Resources
+              - generic [ref=e655]:
+                - link "Docs" [ref=e656] [cursor=pointer]:
+                  - /url: /docs
+                - link "ATF CLI" [ref=e657] [cursor=pointer]:
+                  - /url: /docs/cli
+                - link "Verification" [ref=e658] [cursor=pointer]:
+                  - /url: /docs/verify
+                - link "API" [ref=e659] [cursor=pointer]:
+                  - /url: /docs/api
+                - link "Whitepaper" [ref=e660] [cursor=pointer]:
+                  - /url: /atf/whitepaper
+                - link "Verify Receipt" [ref=e661] [cursor=pointer]:
+                  - /url: /verify
+                - link "Receipts Explorer" [ref=e662] [cursor=pointer]:
+                  - /url: /receipts
+                - link "Demo Live" [ref=e663] [cursor=pointer]:
+                  - /url: /demo
+                - link "Blog" [ref=e664] [cursor=pointer]:
+                  - /url: /blog
+                - link "Feedback" [ref=e665] [cursor=pointer]:
+                  - /url: /feedback
+            - generic [ref=e666]:
+              - paragraph [ref=e667]: Company
+              - generic [ref=e668]:
+                - link "Status" [ref=e669] [cursor=pointer]:
+                  - /url: /status
+                - link "Changelog" [ref=e670] [cursor=pointer]:
+                  - /url: /docs/changelog
+                - link "Contact" [ref=e671] [cursor=pointer]:
+                  - /url: /contact
+                - link "Manifesto" [ref=e672] [cursor=pointer]:
+                  - /url: /manifesto
+            - generic [ref=e673]:
+              - paragraph [ref=e674]: Support
+              - generic [ref=e675]:
+                - link "Terms" [ref=e676] [cursor=pointer]:
+                  - /url: /terms
+                - link "Privacy" [ref=e677] [cursor=pointer]:
+                  - /url: /privacy
+                - link "Security" [ref=e678] [cursor=pointer]:
+                  - /url: /security
+                - link "Email" [ref=e679] [cursor=pointer]:
+                  - /url: mailto:info@trucore.xyz
+                - link "Feedback" [ref=e680] [cursor=pointer]:
+                  - /url: /feedback
+                - link "Waitlist" [ref=e681] [cursor=pointer]:
+                  - /url: /atf#updates
+        - generic [ref=e682]:
+          - generic [ref=e683]: For Automated Integrators
+          - link "Integration Runbook" [ref=e684] [cursor=pointer]:
+            - /url: /docs/agent-discovery
+          - generic [ref=e685]: "|"
+          - generic [ref=e686]: .well-known/atf.json manifest
+        - generic [ref=e687]:
+          - generic [ref=e688]:
+            - link "Permit Schema v1" [ref=e689] [cursor=pointer]:
+              - /url: /docs/permit-schema-v1
+            - generic [ref=e690]: "|"
+            - link "Build With ATF" [ref=e691] [cursor=pointer]:
+              - /url: /build-with-atf
+            - generic [ref=e692]: "|"
+            - link "How ATF is built" [ref=e693] [cursor=pointer]:
+              - /url: /process
+            - generic [ref=e694]: "|"
+            - 'button "Animations: Off" [ref=e695] [cursor=pointer]'
+          - paragraph [ref=e696]: © 2026 TruCore. Trustless enforcement for AI-driven capital.
+        - paragraph [ref=e697]: unknown · — · cli v1.5.1
+  - alert [ref=e698]
+```

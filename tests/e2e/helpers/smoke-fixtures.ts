@@ -591,6 +591,72 @@ export async function mockReceiptSummaryRoute(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// Market conditions mocks (market-aware recommendations)
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Stable — no infrastructure issues detected.  No market recs generated. */
+export const MARKET_STABLE = {
+  environment: "stable",
+  rpc_status: "ok",
+  throttled_methods: [] as string[],
+  throttle_rate_pct: 0.0,
+  recommendation: null,
+  summary: "Execution environment is stable — no infrastructure issues detected.",
+  captured_at: Math.floor(Date.now() / 1000),
+};
+
+/** Degraded — minor throttling, non-critical methods only. */
+export const MARKET_DEGRADED = {
+  environment: "degraded",
+  rpc_status: "degraded",
+  throttled_methods: ["getLatestBlockhash"],
+  throttle_rate_pct: 2.5,
+  recommendation: "increase_backoff",
+  summary:
+    "Execution environment shows minor degradation — 2.5% of requests are being throttled.",
+  captured_at: Math.floor(Date.now() / 1000),
+};
+
+/** Stressed — high throttle rate, including sendTransaction. */
+export const MARKET_STRESSED = {
+  environment: "stressed",
+  rpc_status: "throttled",
+  throttled_methods: ["getLatestBlockhash", "sendTransaction", "getBalance"],
+  throttle_rate_pct: 14.8,
+  recommendation: "upgrade_plan",
+  summary:
+    "Execution environment is under stress — getLatestBlockhash, sendTransaction, getBalance experiencing elevated throttling (14.8% error rate).",
+  captured_at: Math.floor(Date.now() / 1000),
+};
+
+export type MarketConditionsMockOpts = {
+  /** "stable", "degraded", "stressed", or a custom object. */
+  variant?: "stable" | "degraded" | "stressed" | Record<string, unknown>;
+  /** HTTP status to return (default 200). */
+  status?: number;
+};
+
+export async function mockMarketConditionsRoute(
+  page: Page,
+  opts?: MarketConditionsMockOpts,
+) {
+  const variant = opts?.variant ?? "stable";
+  const status = opts?.status ?? 200;
+  const body =
+    variant === "stable"
+      ? MARKET_STABLE
+      : variant === "degraded"
+        ? MARKET_DEGRADED
+        : variant === "stressed"
+          ? MARKET_STRESSED
+          : variant;
+
+  await page.route("**/api/customer/market-conditions*", (route: Route) =>
+    route.fulfill({ status, json: body }),
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // Telemetry / analytics — silently absorb
 // ────────────────────────────────────────────────────────────────────────────
 
