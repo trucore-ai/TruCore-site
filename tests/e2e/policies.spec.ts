@@ -8,6 +8,7 @@ import {
   mockPilRecommendationsRoute,
   mockCohortBenchmarksRoute,
   mockExternalContextRoute,
+  mockEmptyIntelRoutes,
   injectCustomerAuth,
   silenceAnalytics,
   RICH_HISTORY_SUMMARY,
@@ -1141,6 +1142,7 @@ test.describe("customer policies — market-aware recommendations (degraded)", (
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -1166,8 +1168,7 @@ test.describe("customer policies — market-aware recommendations (degraded)", (
     const marketCards = page
       .getByTestId("recommendation-cards")
       .locator("[data-testid^='recommendation-market-']");
-    const count = await marketCards.count();
-    expect(count).toBeGreaterThanOrEqual(1);
+    await expect(marketCards.first()).toBeVisible();
   });
 
   test("source label shows 'Market analysis' on market-based recommendations", async ({ page }) => {
@@ -1228,6 +1229,7 @@ test.describe("customer policies — market-aware recommendations (stressed)", (
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -1314,6 +1316,7 @@ test.describe("customer policies — all three recommendation sources coexist", 
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -1382,6 +1385,7 @@ test.describe("customer policies — market-aware graceful degradation", () => {
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -1449,6 +1453,7 @@ test.describe("customer policies — market recommendation action buttons", () =
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 

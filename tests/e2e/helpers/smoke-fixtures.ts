@@ -1024,3 +1024,19 @@ export async function silenceAnalytics(page: Page) {
     route.fulfill({ status: 200, json: { ok: true } }),
   );
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Convenience: mock all intel routes with safe empty defaults
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Mock PIL, cohort-benchmark, and external-context routes with empty responses.
+ * Call this in any describe block that does not explicitly test those sources
+ * so that unmocked routes never hit the real proxy (avoids timing noise and
+ * 404 log spam from the dev server).
+ */
+export async function mockEmptyIntelRoutes(page: Page) {
+  await mockPilRecommendationsRoute(page, { variant: "empty" });
+  await mockCohortBenchmarksRoute(page, { variant: "empty" });
+  await mockExternalContextRoute(page, { variant: "empty" });
+}
