@@ -1523,6 +1523,40 @@ const PRIORITY_STYLES: Record<RecommendationPriority, { badge: string; border: s
 };
 
 // ---------------------------------------------------------------------------
+// Source-specific detail framing for expandable recommendation details
+// ---------------------------------------------------------------------------
+
+function getSourceDetailFraming(rec: PolicyRecommendation): string | null {
+  switch (rec.source) {
+    case "Customer history":
+      return "This recommendation is based on patterns observed in your recent transaction history.";
+    case "Market analysis":
+      return "This recommendation reflects current execution-environment conditions.";
+    case "Policy Intelligence":
+      return rec.confidence != null && rec.confidence >= 0.7
+        ? "High-confidence intelligence signal based on analysis of your transaction patterns."
+        : rec.confidence != null && rec.confidence >= 0.4
+          ? "Moderate-confidence signal from policy intelligence analysis."
+          : "Low-confidence signal — consider as directional guidance.";
+    case "Cohort benchmark":
+      return "Derived from anonymized, aggregated data across similar configurations.";
+    case "External context":
+      return "Informed by real-time external network and infrastructure signals.";
+    default:
+      return null;
+  }
+}
+
+/** Whether a recommendation has enough extra detail to warrant a drill-down toggle. */
+function hasExpandableDetail(rec: PolicyRecommendation): boolean {
+  if (rec.why) return true;
+  if (rec.evidence) return true;
+  if (rec.confidence != null) return true;
+  if (getSourceDetailFraming(rec)) return true;
+  return false;
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -1538,6 +1572,7 @@ export default function CustomerPoliciesPage() {
   const [externalContext, setExternalContext] = useState<ExternalContextResponse | null>(null);
   const [refreshingSignals, setRefreshingSignals] = useState(false);
   const [signalRefreshCooldown, setSignalRefreshCooldown] = useState(false);
+  const [expandedRecs, setExpandedRecs] = useState<Set<string>>(new Set());
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -2443,6 +2478,9 @@ export default function CustomerPoliciesPage() {
                   <div className="space-y-3" data-testid="recommendation-cards">
                     {allRecs.map((rec) => {
                       const styles = PRIORITY_STYLES[rec.priority];
+                      const expandable = hasExpandableDetail(rec);
+                      const isExpanded = expandedRecs.has(rec.id);
+                      const sourceFraming = getSourceDetailFraming(rec);
                       return (
                         <div
                           key={rec.id}
@@ -2471,22 +2509,59 @@ export default function CustomerPoliciesPage() {
                           <p className="text-[10px] text-slate-400 leading-relaxed">
                             {rec.explanation}
                           </p>
-                          <p className="text-[10px] text-slate-500 leading-relaxed">
-                            <span className="font-medium text-slate-400">Why it matters:</span>{" "}
-                            {rec.why}
-                          </p>
-                          {rec.evidence && (
-                            <p className="text-[9px] text-slate-600 leading-relaxed italic">
-                              {rec.evidence}
-                            </p>
-                          )}
-                          {rec.confidence != null && (rec.source === "Policy Intelligence" || rec.source === "Cohort benchmark" || rec.source === "External context") && (
-                            <span
-                              className="inline-flex items-center gap-1 text-[9px] text-slate-600"
-                              data-testid="recommendation-confidence"
+                          {expandable && (
+                            <button
+                              type="button"
+                              onClick={() => setExpandedRecs((prev) => {
+                                const next = new Set(prev);
+                                if (next.has(rec.id)) next.delete(rec.id);
+                                else next.add(rec.id);
+                                return next;
+                              })}
+                              className="inline-flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 transition"
+                              aria-expanded={isExpanded}
+                              data-testid={`recommendation-details-toggle-${rec.id}`}
                             >
-                              Confidence: {rec.confidence >= 0.7 ? "high" : rec.confidence >= 0.4 ? "medium" : "low"}
-                            </span>
+                              <svg
+                                className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <path d="M6 4l4 4-4 4" />
+                              </svg>
+                              Why this recommendation?
+                            </button>
+                          )}
+                          {isExpanded && (
+                            <div
+                              className="ml-4 border-l border-white/5 pl-3 space-y-1.5"
+                              data-testid={`recommendation-details-${rec.id}`}
+                            >
+                              {sourceFraming && (
+                                <p className="text-[9px] text-slate-600 leading-relaxed">
+                                  {sourceFraming}
+                                </p>
+                              )}
+                              <p className="text-[10px] text-slate-500 leading-relaxed">
+                                <span className="font-medium text-slate-400">Why it matters:</span>{" "}
+                                {rec.why}
+                              </p>
+                              {rec.evidence && (
+                                <p className="text-[9px] text-slate-600 leading-relaxed italic">
+                                  {rec.evidence}
+                                </p>
+                              )}
+                              {rec.confidence != null && (rec.source === "Policy Intelligence" || rec.source === "Cohort benchmark" || rec.source === "External context") && (
+                                <span
+                                  className="inline-flex items-center gap-1 text-[9px] text-slate-600"
+                                  data-testid="recommendation-confidence"
+                                >
+                                  Confidence: {rec.confidence >= 0.7 ? "high" : rec.confidence >= 0.4 ? "medium" : "low"}
+                                </span>
+                              )}
+                            </div>
                           )}
                           {overridesEnabled && rec.fieldKey && (
                             <button

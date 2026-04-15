@@ -681,7 +681,7 @@ test.describe("customer policies — history-aware recommendations", () => {
     }
   });
 
-  test("evidence text is visible on history-based recommendation cards", async ({ page }) => {
+  test("evidence text is visible on history-based recommendation cards after expanding", async ({ page }) => {
     await page.goto("/customer/policies");
 
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
@@ -689,6 +689,10 @@ test.describe("customer policies — history-aware recommendations", () => {
     // Evidence text references receipt count and period — pick a specific card
     const slippageCard = page.getByTestId("recommendation-history-slippage-headroom");
     await expect(slippageCard).toBeVisible();
+
+    // Evidence is hidden by default; expand the card
+    await slippageCard.getByTestId("recommendation-details-toggle-history-slippage-headroom").click();
+
     await expect(
       slippageCard.getByText(`Based on ${RICH_HISTORY_SUMMARY.total_receipts} receipts`),
     ).toBeVisible();
@@ -1189,7 +1193,7 @@ test.describe("customer policies — market-aware recommendations (degraded)", (
     expect(allSources).toContain("Market analysis");
   });
 
-  test("evidence text is visible on market-based recommendation cards", async ({ page }) => {
+  test("evidence text is visible on market-based recommendation cards after expanding", async ({ page }) => {
     await page.route("**/api/customer/policy", (route) => {
       if (route.request().url().includes("/overrides")) return route.fallback();
       return route.fulfill({
@@ -1207,6 +1211,9 @@ test.describe("customer policies — market-aware recommendations (degraded)", (
 
     const simCard = page.getByTestId("recommendation-market-enable-simulation");
     await expect(simCard).toBeVisible();
+
+    // Evidence is hidden by default; expand the card
+    await simCard.getByTestId("recommendation-details-toggle-market-enable-simulation").click();
 
     // Evidence text should contain the summary from the market conditions fixture
     await expect(
@@ -1504,22 +1511,31 @@ test.describe("customer policies — PIL recommendations", () => {
     await expect(pilCard).toContainText("Policy Intelligence");
   });
 
-  test("PIL evidence text is visible on recommendation cards", async ({ page }) => {
+  test("PIL evidence text is visible on recommendation cards after expanding", async ({ page }) => {
     await mockPolicyRoutes(page, { plan: "pro" });
     await mockPilRecommendationsRoute(page, { variant: "with-recs" });
     await page.goto("/customer/policies");
 
     const pilCard = page.getByTestId("recommendation-pil-reduce-slippage");
     await expect(pilCard).toBeVisible();
+
+    // Evidence is hidden by default; expand the card
+    await pilCard.getByTestId("recommendation-details-toggle-pil-reduce-slippage").click();
+
     await expect(pilCard).toContainText("avg_slippage=95bps");
   });
 
-  test("PIL confidence indicator is shown", async ({ page }) => {
+  test("PIL confidence indicator is shown after expanding", async ({ page }) => {
     await mockPolicyRoutes(page, { plan: "pro" });
     await mockPilRecommendationsRoute(page, { variant: "with-recs" });
     await page.goto("/customer/policies");
 
-    await expect(page.getByTestId("recommendation-pil-reduce-slippage")).toBeVisible();
+    const pilCard = page.getByTestId("recommendation-pil-reduce-slippage");
+    await expect(pilCard).toBeVisible();
+
+    // Confidence is hidden by default; expand the card
+    await pilCard.getByTestId("recommendation-details-toggle-pil-reduce-slippage").click();
+
     const confidenceEls = page.getByTestId("recommendation-confidence");
     await expect(confidenceEls.first()).toBeVisible();
     await expect(confidenceEls.first()).toContainText("Confidence:");
@@ -1738,19 +1754,27 @@ test.describe("customer policies — cohort benchmark recommendations (Advanced+
     await expect(source).toHaveText("Cohort benchmark");
   });
 
-  test("evidence text is visible on cohort benchmark cards", async ({ page }) => {
+  test("evidence text is visible on cohort benchmark cards after expanding", async ({ page }) => {
     await page.goto("/customer/policies");
 
     const benchCard = page.getByTestId("recommendation-bench-cohort-slippage-loose");
     await expect(benchCard).toBeVisible();
+
+    // Evidence is hidden by default; expand the card
+    await benchCard.getByTestId("recommendation-details-toggle-bench-cohort-slippage-loose").click();
+
     await expect(benchCard).toContainText("aggregated data from 47");
   });
 
-  test("confidence indicator is shown on cohort benchmark cards", async ({ page }) => {
+  test("confidence indicator is shown on cohort benchmark cards after expanding", async ({ page }) => {
     await page.goto("/customer/policies");
 
     const benchCard = page.getByTestId("recommendation-bench-cohort-slippage-loose");
     await expect(benchCard).toBeVisible();
+
+    // Confidence is hidden by default; expand the card
+    await benchCard.getByTestId("recommendation-details-toggle-bench-cohort-slippage-loose").click();
+
     const confidence = benchCard.getByTestId("recommendation-confidence");
     await expect(confidence).toBeVisible();
     await expect(confidence).toContainText("Confidence:");
@@ -2007,19 +2031,27 @@ test.describe("customer policies — external context recommendations (Enterpris
     await expect(source).toHaveText("External context");
   });
 
-  test("evidence text is visible on external context cards", async ({ page }) => {
+  test("evidence text is visible on external context cards after expanding", async ({ page }) => {
     await page.goto("/customer/policies");
 
     const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
     await expect(extCard).toBeVisible();
+
+    // Evidence is hidden by default; expand the card
+    await extCard.getByTestId("recommendation-details-toggle-ext-ext-sustained-throttle").click();
+
     await expect(extCard).toContainText("sustained pressure for 6 consecutive");
   });
 
-  test("confidence indicator is shown on external context cards", async ({ page }) => {
+  test("confidence indicator is shown on external context cards after expanding", async ({ page }) => {
     await page.goto("/customer/policies");
 
     const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
     await expect(extCard).toBeVisible();
+
+    // Confidence is hidden by default; expand the card
+    await extCard.getByTestId("recommendation-details-toggle-ext-ext-sustained-throttle").click();
+
     const confidence = extCard.getByTestId("recommendation-confidence");
     await expect(confidence).toBeVisible();
     await expect(confidence).toContainText("Confidence:");
@@ -2562,5 +2594,124 @@ test.describe("customer policies — signal refresh UX", () => {
 
     await page.goto("/customer/policies");
     await expect(page.getByTestId("signal-freshness-row")).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Expandable recommendation details
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — expandable recommendation details", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockMarketConditionsRoute(page);
+    await mockPilRecommendationsRoute(page);
+    await mockCohortBenchmarksRoute(page);
+    await mockExternalContextRoute(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("details toggle is visible on recommendation cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const card = page.getByTestId("recommendation-history-slippage-headroom");
+    await expect(card).toBeVisible();
+    const toggle = card.getByTestId("recommendation-details-toggle-history-slippage-headroom");
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toContainText("Why this recommendation?");
+  });
+
+  test("details panel is hidden by default", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const card = page.getByTestId("recommendation-history-slippage-headroom");
+    await expect(card).toBeVisible();
+    await expect(card.getByTestId("recommendation-details-history-slippage-headroom")).not.toBeVisible();
+  });
+
+  test("clicking toggle reveals details with why-it-matters text", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const card = page.getByTestId("recommendation-history-slippage-headroom");
+    await expect(card).toBeVisible();
+
+    await card.getByTestId("recommendation-details-toggle-history-slippage-headroom").click();
+
+    const details = card.getByTestId("recommendation-details-history-slippage-headroom");
+    await expect(details).toBeVisible();
+    await expect(details).toContainText("Why it matters");
+  });
+
+  test("clicking toggle again collapses details", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const card = page.getByTestId("recommendation-history-slippage-headroom");
+    await expect(card).toBeVisible();
+
+    const toggle = card.getByTestId("recommendation-details-toggle-history-slippage-headroom");
+
+    // Expand
+    await toggle.click();
+    await expect(card.getByTestId("recommendation-details-history-slippage-headroom")).toBeVisible();
+
+    // Collapse
+    await toggle.click();
+    await expect(card.getByTestId("recommendation-details-history-slippage-headroom")).not.toBeVisible();
+  });
+
+  test("toggle has correct aria-expanded attribute", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const card = page.getByTestId("recommendation-history-slippage-headroom");
+    await expect(card).toBeVisible();
+
+    const toggle = card.getByTestId("recommendation-details-toggle-history-slippage-headroom");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  });
+
+  test("multiple cards can be expanded simultaneously", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const historyCard = page.getByTestId("recommendation-history-slippage-headroom");
+    const denialCard = page.getByTestId("recommendation-history-recent-denials");
+    await expect(historyCard).toBeVisible();
+    await expect(denialCard).toBeVisible();
+
+    await historyCard.getByTestId("recommendation-details-toggle-history-slippage-headroom").click();
+    await denialCard.getByTestId("recommendation-details-toggle-history-recent-denials").click();
+
+    await expect(historyCard.getByTestId("recommendation-details-history-slippage-headroom")).toBeVisible();
+    await expect(denialCard.getByTestId("recommendation-details-history-recent-denials")).toBeVisible();
+  });
+
+  test("source-specific framing appears for intelligence sources", async ({ page }) => {
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await page.goto("/customer/policies");
+
+    const pilCard = page.getByTestId("recommendation-pil-reduce-slippage");
+    await expect(pilCard).toBeVisible();
+
+    await pilCard.getByTestId("recommendation-details-toggle-pil-reduce-slippage").click();
+
+    const details = pilCard.getByTestId("recommendation-details-pil-reduce-slippage");
+    await expect(details).toBeVisible();
+    await expect(details).toContainText("intelligence");
+  });
+
+  test("details panel not in DOM when collapsed", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const card = page.getByTestId("recommendation-history-slippage-headroom");
+    await expect(card).toBeVisible();
+
+    // Should not exist in DOM at all
+    expect(await card.locator("[data-testid='recommendation-details-history-slippage-headroom']").count()).toBe(0);
   });
 });
