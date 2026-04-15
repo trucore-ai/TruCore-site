@@ -1030,12 +1030,17 @@ export async function silenceAnalytics(page: Page) {
 // ────────────────────────────────────────────────────────────────────────────
 
 /**
- * Mock PIL, cohort-benchmark, and external-context routes with empty responses.
+ * Mock all intel-backed routes with safe empty/stable defaults.
  * Call this in any describe block that does not explicitly test those sources
  * so that unmocked routes never hit the real proxy (avoids timing noise and
  * 404 log spam from the dev server).
+ *
+ * Covers: market-conditions (stable), PIL (empty), cohort (empty), external (empty).
+ * Blocks that explicitly test a specific source can override individual routes
+ * after calling this helper — later page.route() calls replace earlier ones.
  */
 export async function mockEmptyIntelRoutes(page: Page) {
+  await mockMarketConditionsRoute(page, { variant: "stable" });
   await mockPilRecommendationsRoute(page, { variant: "empty" });
   await mockCohortBenchmarksRoute(page, { variant: "empty" });
   await mockExternalContextRoute(page, { variant: "empty" });

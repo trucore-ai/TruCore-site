@@ -39,6 +39,7 @@ test.describe("customer policies — free plan (read-only)", () => {
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "free" });
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -80,6 +81,7 @@ test.describe("customer policies — pro plan editing", () => {
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -212,6 +214,7 @@ test.describe("customer policies — program list editors", () => {
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro_with_programs" });
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -321,6 +324,7 @@ test.describe("customer policies — validation error", () => {
       },
     });
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -353,6 +357,7 @@ test.describe("customer policies — token policy editor", () => {
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -473,6 +478,7 @@ test.describe("customer policies — effective policy preview", () => {
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -523,6 +529,7 @@ test.describe("customer policies — policy simulation", () => {
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -577,6 +584,7 @@ test.describe("customer policies — policy recommendations", () => {
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
     await mockReceiptSummaryRoute(page);
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -649,6 +657,7 @@ test.describe("customer policies — history-aware recommendations", () => {
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
     await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -790,6 +799,7 @@ test.describe("customer policies — empty history graceful degradation", () => 
     await mockAuthRoutes(page, { emailVerified: true });
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -853,6 +863,7 @@ test.describe("customer policies — mixed recommendation sources", () => {
     await mockDashboardRoutes(page);
     await mockPolicyRoutes(page, { plan: "pro" });
     await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockEmptyIntelRoutes(page);
     await injectCustomerAuth(page);
   });
 
@@ -894,6 +905,7 @@ test.describe("customer policies — recommendation action buttons", () => {
       await mockDashboardRoutes(page);
       await mockPolicyRoutes(page, { plan: "pro" });
       await mockReceiptSummaryRoute(page);
+      await mockEmptyIntelRoutes(page);
       await injectCustomerAuth(page);
     });
 
@@ -983,6 +995,7 @@ test.describe("customer policies — recommendation action buttons", () => {
       await mockDashboardRoutes(page);
       await mockPolicyRoutes(page, { plan: "pro" });
       await mockReceiptSummaryRoute(page, { variant: "rich" });
+      await mockEmptyIntelRoutes(page);
       await injectCustomerAuth(page);
     });
 
@@ -1051,6 +1064,7 @@ test.describe("customer policies — recommendation action buttons", () => {
       await mockAuthRoutes(page, { emailVerified: true });
       await mockDashboardRoutes(page);
       await mockReceiptSummaryRoute(page);
+      await mockEmptyIntelRoutes(page);
       await injectCustomerAuth(page);
     });
 
