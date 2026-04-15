@@ -2068,4 +2068,161 @@ describe("CustomerPoliciesPage", () => {
       ).toBe("Default");
     });
   });
+
+  // -----------------------------------------------------------------------
+  // Plan-aware recommendation tiering
+  // -----------------------------------------------------------------------
+
+  describe("plan-aware recommendation tiering", () => {
+    const PIL_GATED_RESPONSE = {
+      recommendations: [],
+      record_count: 42,
+      confidence_summary: "medium",
+      captured_at: Date.now() / 1000,
+      plan: "free",
+      gated: true,
+      gated_count: 3,
+    };
+
+    it("Free plan shows only Default guidance and Policy analysis sources", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_GATED_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      // Only deterministic sources visible on Free
+      for (const label of sourceLabels) {
+        expect(label === "Default guidance" || label === "Policy analysis").toBe(true);
+      }
+      // No advanced sources should appear
+      expect(sourceLabels).not.toContain("Customer history");
+      expect(sourceLabels).not.toContain("Market analysis");
+      expect(sourceLabels).not.toContain("Policy Intelligence");
+    });
+
+    it("Free plan shows upgrade teaser when gated sources have data", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_GATED_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-upgrade-teaser")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("recommendation-upgrade-teaser").textContent).toContain(
+        "Unlock deeper policy intelligence",
+      );
+      expect(screen.getByTestId("recommendation-upgrade-link")).toBeTruthy();
+    });
+
+    it("upgrade teaser mentions gated PIL count when available", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(EMPTY_HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_STABLE);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_GATED_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-upgrade-teaser")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("recommendation-upgrade-teaser").textContent).toContain(
+        "3 intelligence-backed suggestions",
+      );
+    });
+
+    it("Pro plan shows Customer history, Market analysis, and PIL recs", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchPilRecommendations.mockResolvedValue({
+        recommendations: [
+          {
+            id: "REDUCE_SLIPPAGE",
+            title: "Reduce slippage tolerance",
+            explanation: "Slippage pressure is high.",
+            parameter: "max_slippage_bps",
+            confidence: "high",
+            evidence: "avg_slippage=95bps",
+          },
+        ],
+        record_count: 42,
+        confidence_summary: "medium",
+        captured_at: Date.now() / 1000,
+        plan: "pro",
+        gated: false,
+        gated_count: 0,
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      expect(sourceLabels).toContain("Policy Intelligence");
+      // Should have at least one Customer history rec (HISTORY_SUMMARY has enough data)
+      expect(sourceLabels).toContain("Customer history");
+    });
+
+    it("Pro plan does not show upgrade teaser", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchPilRecommendations.mockResolvedValue({
+        recommendations: [
+          {
+            id: "REDUCE_SLIPPAGE",
+            title: "Reduce slippage tolerance",
+            explanation: "Slippage pressure is high.",
+            parameter: "max_slippage_bps",
+            confidence: "high",
+            evidence: "avg_slippage=95bps",
+          },
+        ],
+        record_count: 42,
+        confidence_summary: "medium",
+        captured_at: Date.now() / 1000,
+        plan: "pro",
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      expect(screen.queryByTestId("recommendation-upgrade-teaser")).toBeNull();
+    });
+
+    it("Free plan with no gated data does not show upgrade teaser", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(EMPTY_HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(null);
+      mockFetchPilRecommendations.mockResolvedValue({
+        recommendations: [],
+        record_count: 0,
+        confidence_summary: "low",
+        captured_at: Date.now() / 1000,
+        plan: "free",
+        gated: false,
+        gated_count: 0,
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      expect(screen.queryByTestId("recommendation-upgrade-teaser")).toBeNull();
+    });
+  });
 });

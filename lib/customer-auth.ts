@@ -522,6 +522,8 @@ export interface PilRecommendationsResponse {
   confidence_summary: string;
   captured_at: number;
   plan: string;
+  gated?: boolean;
+  gated_count?: number;
 }
 
 export async function fetchPilRecommendations(): Promise<PilRecommendationsResponse> {

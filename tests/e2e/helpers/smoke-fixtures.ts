@@ -692,7 +692,9 @@ export const PIL_WITH_RECS = {
   record_count: 42,
   confidence_summary: "medium",
   captured_at: Math.floor(Date.now() / 1000),
-  plan: "free",
+  plan: "pro",
+  gated: false,
+  gated_count: 0,
 };
 
 /** PIL with zero recommendations (sparse data, new customer). */
@@ -702,11 +704,24 @@ export const PIL_EMPTY = {
   confidence_summary: "low",
   captured_at: Math.floor(Date.now() / 1000),
   plan: "free",
+  gated: false,
+  gated_count: 0,
+};
+
+/** PIL gated response for Free-tier users (recommendations withheld). */
+export const PIL_GATED = {
+  recommendations: [] as unknown[],
+  record_count: 42,
+  confidence_summary: "medium",
+  captured_at: Math.floor(Date.now() / 1000),
+  plan: "free",
+  gated: true,
+  gated_count: 3,
 };
 
 export type PilRecommendationsMockOpts = {
-  /** "with-recs", "empty", or a custom object. */
-  variant?: "with-recs" | "empty" | Record<string, unknown>;
+  /** "with-recs", "empty", "gated", or a custom object. */
+  variant?: "with-recs" | "empty" | "gated" | Record<string, unknown>;
   /** HTTP status to return (default 200). */
   status?: number;
 };
@@ -720,9 +735,11 @@ export async function mockPilRecommendationsRoute(
   const body =
     variant === "with-recs"
       ? PIL_WITH_RECS
-      : variant === "empty"
-        ? PIL_EMPTY
-        : variant;
+      : variant === "gated"
+        ? PIL_GATED
+        : variant === "empty"
+          ? PIL_EMPTY
+          : variant;
 
   await page.route("**/api/customer/intel/recommendations*", (route: Route) =>
     route.fulfill({ status, json: body }),

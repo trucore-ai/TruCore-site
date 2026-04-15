@@ -2092,14 +2092,15 @@ export default function CustomerPoliciesPage() {
 
             {/* Policy Recommendations */}
             {(() => {
+              const isPro = planCode !== "free";
               const deterministicRecs = generatePolicyRecommendations(effective, overrides, overridesEnabled);
-              const historyRecs = historySummary
+              const historyRecs = isPro && historySummary
                 ? generateHistoryRecommendations(historySummary, effective)
                 : [];
-              const marketRecs = marketConditions
+              const marketRecs = isPro && marketConditions
                 ? generateMarketRecommendations(marketConditions, effective)
                 : [];
-              const pilRecs = pilRecommendations
+              const pilRecs = isPro && pilRecommendations
                 ? generatePilRecommendations(pilRecommendations)
                 : [];
               // Merge, deduplicate by id, sort by priority
@@ -2114,7 +2115,17 @@ export default function CustomerPoliciesPage() {
               const order: Record<RecommendationPriority, number> = { high: 0, medium: 1, low: 2 };
               allRecs.sort((a, b) => order[a.priority] - order[b.priority]);
 
-              if (allRecs.length === 0) return null;
+              // Count gated sources for teaser
+              const gatedSources: string[] = [];
+              if (!isPro) {
+                if (historySummary && historySummary.total_receipts > 0) gatedSources.push("Customer history");
+                if (marketConditions) gatedSources.push("Market analysis");
+                if (pilRecommendations?.gated && (pilRecommendations.gated_count ?? 0) > 0) {
+                  gatedSources.push("Policy Intelligence");
+                }
+              }
+
+              if (allRecs.length === 0 && gatedSources.length === 0) return null;
 
               const hasHistoryRecs = historyRecs.length > 0;
               const hasMarketRecs = marketRecs.length > 0;
@@ -2200,6 +2211,39 @@ export default function CustomerPoliciesPage() {
                   <p className="text-[9px] text-slate-600 text-center">
                     These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasPilRecs ? ", policy intelligence analysis of your transaction patterns" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : ""}{!hasHistoryRecs && !hasMarketRecs && !hasPilRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
                   </p>
+                  {/* Pro upgrade teaser for gated recommendation sources */}
+                  {gatedSources.length > 0 && (
+                    <div
+                      className="rounded-lg border border-primary-400/20 bg-primary-500/5 p-4 space-y-2"
+                      data-testid="recommendation-upgrade-teaser"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center rounded-full border border-primary-400/30 bg-primary-500/10 px-2 py-0.5 text-[9px] font-semibold text-primary-300">
+                          Pro
+                        </span>
+                        <span className="text-xs font-medium text-slate-200">
+                          Unlock deeper policy intelligence
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 leading-relaxed">
+                        Upgrade to Pro to access{" "}
+                        {gatedSources.length === 1
+                          ? gatedSources[0]
+                          : gatedSources.slice(0, -1).join(", ") + " and " + gatedSources[gatedSources.length - 1]}
+                        {" "}recommendations — personalized insights derived from your transaction patterns
+                        {pilRecommendations?.gated_count
+                          ? `, including ${pilRecommendations.gated_count} intelligence-backed suggestion${pilRecommendations.gated_count !== 1 ? "s" : ""} available now`
+                          : ""}.
+                      </p>
+                      <Link
+                        href="/customer/upgrades"
+                        className="inline-flex items-center gap-1 rounded-md border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-[10px] font-medium text-primary-300 transition hover:bg-primary-500/20 hover:text-primary-200"
+                        data-testid="recommendation-upgrade-link"
+                      >
+                        View Pro plans &rarr;
+                      </Link>
+                    </div>
+                  )}
                 </section>
               );
             })()}

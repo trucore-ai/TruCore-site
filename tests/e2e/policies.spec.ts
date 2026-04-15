@@ -1611,3 +1611,86 @@ test.describe("customer policies — PIL recommendations", () => {
     await expect(targetField).toHaveClass(/ring-amber-400/, { timeout: 2000 });
   });
 });
+
+// ────────────────────────────────────────────────────────────────────────────
+// Plan-aware recommendation tiering
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — plan-aware recommendation tiering", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("Free plan with gated PIL shows upgrade teaser", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    await expect(teaser).toContainText("Unlock deeper policy intelligence");
+
+    const upgradeLink = page.getByTestId("recommendation-upgrade-link");
+    await expect(upgradeLink).toBeVisible();
+    await expect(upgradeLink).toHaveAttribute("href", /\/customer\/upgrades/);
+  });
+
+  test("Free plan teaser shows gated_count from PIL", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    await expect(teaser).toContainText("3 intelligence-backed suggestions");
+  });
+
+  test("Free plan hides Customer history and Market analysis sources", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    // Wait for recommendations section
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // PIL, Customer history, and Market analysis source badges should not appear
+    await expect(page.getByText("Policy Intelligence")).not.toBeVisible();
+    await expect(page.getByTestId("recommendation-history-avg-txn-far-below-limit")).not.toBeVisible();
+    await expect(page.getByTestId("recommendation-market-tx-submission-throttled")).not.toBeVisible();
+  });
+
+  test("Pro plan shows all recommendation sources without teaser", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await page.goto("/customer/policies");
+
+    // PIL recs should render
+    await expect(page.getByTestId("recommendation-pil-reduce-slippage")).toBeVisible();
+
+    // History recs should render
+    await expect(page.getByTestId("recommendation-history-avg-txn-far-below-limit")).toBeVisible();
+
+    // Upgrade teaser should NOT be present
+    await expect(page.getByTestId("recommendation-upgrade-teaser")).not.toBeVisible();
+  });
+
+  test("Free plan with no gated data shows no teaser", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    await expect(page.getByTestId("recommendation-upgrade-teaser")).not.toBeVisible();
+  });
+});
