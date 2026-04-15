@@ -1635,6 +1635,71 @@ function compareRecommendations(a: PolicyRecommendation, b: PolicyRecommendation
 }
 
 // ---------------------------------------------------------------------------
+// Card emphasis model
+// ---------------------------------------------------------------------------
+
+/**
+ * Card emphasis level — determines visual weight for a recommendation card.
+ *
+ * "featured"   → strongest treatment: first high-priority actionable card.
+ *                Shows inline reason snippet, prominent CTA, "Recommended action" tag.
+ * "emphasized" → standard top-section treatment with inline reason snippet
+ *                for high-priority or high-confidence actionable cards.
+ * "standard"   → compact treatment for lower-priority / More suggestions cards.
+ *
+ * Future hook: this function can accept aggregated engagement metrics
+ * (e.g. click-through rates) as an optional parameter to shift emphasis
+ * without changing the rendering model.
+ */
+type CardEmphasis = "featured" | "emphasized" | "standard";
+
+interface CardDisplayMeta {
+  emphasis: CardEmphasis;
+  showInlineReason: boolean;
+  showInlineConfidence: boolean;
+}
+
+function computeCardEmphasis(
+  rec: PolicyRecommendation,
+  section: DisplaySection,
+  indexInSection: number,
+): CardDisplayMeta {
+  // More-suggestions section → always standard
+  if (section === "more") {
+    return {
+      emphasis: "standard",
+      showInlineReason: false,
+      showInlineConfidence: rec.confidence != null && rec.confidence >= 0.7,
+    };
+  }
+
+  // Featured: first card in top section that is high-priority + actionable
+  if (
+    indexInSection === 0 &&
+    rec.priority === "high" &&
+    rec.fieldKey
+  ) {
+    return {
+      emphasis: "featured",
+      showInlineReason: true,
+      showInlineConfidence: rec.confidence != null,
+    };
+  }
+
+  // Emphasized: top-section cards with inline reason when high-priority
+  // or high-confidence + actionable
+  const showReason =
+    rec.priority === "high" ||
+    (rec.fieldKey != null && rec.confidence != null && rec.confidence >= 0.7);
+
+  return {
+    emphasis: "emphasized",
+    showInlineReason: showReason,
+    showInlineConfidence: rec.confidence != null && rec.confidence >= 0.7,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -2581,12 +2646,13 @@ export default function CustomerPoliciesPage() {
                     {/* ── Top recommendations ── */}
                     {topRecs.length > 0 && (
                       <div className="space-y-3" data-testid="top-recommendations">
-                        {topRecs.map((rec) => {
+                        {topRecs.map((rec, idx) => {
                           const styles = PRIORITY_STYLES[rec.priority];
                           const expandable = hasExpandableDetail(rec);
                           const isExpanded = expandedRecs.has(rec.id);
                           const sourceFraming = getSourceDetailFraming(rec);
                           const section: DisplaySection = "top";
+                          const displayMeta = computeCardEmphasis(rec, section, idx);
                           trackRecommendationImpression({
                             recommendation_id: rec.id,
                             recommendation_source: rec.source,
@@ -2598,17 +2664,37 @@ export default function CustomerPoliciesPage() {
                             recommendation_display_section: section,
                             ...recAnalyticsCtx,
                           });
+                          const isFeatured = displayMeta.emphasis === "featured";
                           return (
                             <div
                               key={rec.id}
-                              className={`rounded-lg border ${styles.border} bg-white/[0.02] p-4 space-y-2`}
+                              className={`rounded-lg border ${isFeatured ? "border-red-500/30 bg-white/[0.03]" : `${styles.border} bg-white/[0.02]`} p-4 space-y-2`}
                               data-testid={`recommendation-${rec.id}`}
+                              data-emphasis={displayMeta.emphasis}
                             >
                               <div className="flex items-center justify-between gap-2 flex-wrap">
-                                <span className="text-xs font-semibold text-slate-200">
-                                  {rec.title}
-                                </span>
                                 <div className="flex items-center gap-2">
+                                  <span className="text-xs font-semibold text-slate-200">
+                                    {rec.title}
+                                  </span>
+                                  {isFeatured && (
+                                    <span
+                                      className="inline-flex items-center rounded-full bg-red-500/10 border border-red-500/20 px-2 py-0.5 text-[9px] font-semibold leading-none text-red-300"
+                                      data-testid="recommended-action-badge"
+                                    >
+                                      Recommended action
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {displayMeta.showInlineConfidence && rec.confidence != null && (
+                                    <span
+                                      className="inline-flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-[9px] font-medium leading-none text-slate-500"
+                                      data-testid="recommendation-inline-confidence"
+                                    >
+                                      {rec.confidence >= 0.7 ? "High" : rec.confidence >= 0.4 ? "Med" : "Low"} confidence
+                                    </span>
+                                  )}
                                   <span
                                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none ${styles.badge}`}
                                     data-testid="recommendation-priority"
@@ -2626,6 +2712,15 @@ export default function CustomerPoliciesPage() {
                               <p className="text-[10px] text-slate-400 leading-relaxed">
                                 {rec.explanation}
                               </p>
+                              {displayMeta.showInlineReason && rec.why && (
+                                <p
+                                  className="text-[10px] text-slate-500 leading-relaxed"
+                                  data-testid={`recommendation-inline-reason-${rec.id}`}
+                                >
+                                  <span className="font-medium text-slate-400">Why:</span>{" "}
+                                  {rec.why}
+                                </p>
+                              )}
                               {expandable && (
                                 <button
                                   type="button"
@@ -2667,7 +2762,7 @@ export default function CustomerPoliciesPage() {
                                   >
                                     <path d="M6 4l4 4-4 4" />
                                   </svg>
-                                  Why this recommendation?
+                                  {displayMeta.showInlineReason ? "More detail" : "Why this recommendation?"}
                                 </button>
                               )}
                               {isExpanded && (
@@ -2680,16 +2775,18 @@ export default function CustomerPoliciesPage() {
                                       {sourceFraming}
                                     </p>
                                   )}
-                                  <p className="text-[10px] text-slate-500 leading-relaxed">
-                                    <span className="font-medium text-slate-400">Why it matters:</span>{" "}
-                                    {rec.why}
-                                  </p>
+                                  {!displayMeta.showInlineReason && (
+                                    <p className="text-[10px] text-slate-500 leading-relaxed">
+                                      <span className="font-medium text-slate-400">Why it matters:</span>{" "}
+                                      {rec.why}
+                                    </p>
+                                  )}
                                   {rec.evidence && (
                                     <p className="text-[9px] text-slate-600 leading-relaxed italic">
                                       {rec.evidence}
                                     </p>
                                   )}
-                                  {rec.confidence != null && (rec.source === "Policy Intelligence" || rec.source === "Cohort benchmark" || rec.source === "External context") && (
+                                  {rec.confidence != null && !displayMeta.showInlineConfidence && (rec.source === "Policy Intelligence" || rec.source === "Cohort benchmark" || rec.source === "External context") && (
                                     <span
                                       className="inline-flex items-center gap-1 text-[9px] text-slate-600"
                                       data-testid="recommendation-confidence"
@@ -2712,7 +2809,7 @@ export default function CustomerPoliciesPage() {
                                     });
                                     enterEditMode(rec.fieldKey);
                                   }}
-                                  className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
+                                  className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-medium transition ${isFeatured ? "border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200" : "border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"}`}
                                   data-testid={`recommendation-action-${rec.id}`}
                                 >
                                   View setting &rarr;
@@ -2744,13 +2841,14 @@ export default function CustomerPoliciesPage() {
                           </svg>
                           {showMoreSuggestions ? "Hide" : "Show"} {moreRecs.length} more suggestion{moreRecs.length !== 1 ? "s" : ""}
                         </button>
-                        <div className={`mt-3 space-y-2 ${showMoreSuggestions ? "" : "hidden"}`} data-testid="more-suggestions-list">
-                            {moreRecs.map((rec) => {
+                        <div className={`mt-3 space-y-1.5 ${showMoreSuggestions ? "" : "hidden"}`} data-testid="more-suggestions-list">
+                            {moreRecs.map((rec, idx) => {
                               const styles = PRIORITY_STYLES[rec.priority];
                               const expandable = hasExpandableDetail(rec);
                               const isExpanded = expandedRecs.has(rec.id);
                               const sourceFraming = getSourceDetailFraming(rec);
                               const section: DisplaySection = "more";
+                              const displayMeta = computeCardEmphasis(rec, section, idx);
                               trackRecommendationImpression({
                                 recommendation_id: rec.id,
                                 recommendation_source: rec.source,
@@ -2765,29 +2863,38 @@ export default function CustomerPoliciesPage() {
                               return (
                                 <div
                                   key={rec.id}
-                                  className={`rounded-lg border ${styles.border} bg-white/[0.015] p-3.5 space-y-1.5 opacity-90`}
+                                  className={`rounded-lg border ${styles.border} bg-white/[0.015] px-3.5 py-2.5 space-y-1 opacity-80`}
                                   data-testid={`recommendation-${rec.id}`}
+                                  data-emphasis={displayMeta.emphasis}
                                 >
                                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                                    <span className="text-[11px] font-medium text-slate-300">
+                                    <span className="text-[11px] font-medium text-slate-400">
                                       {rec.title}
                                     </span>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1.5">
+                                      {displayMeta.showInlineConfidence && rec.confidence != null && (
+                                        <span
+                                          className="inline-flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-1.5 py-0.5 text-[9px] font-medium leading-none text-slate-600"
+                                          data-testid="recommendation-inline-confidence"
+                                        >
+                                          {rec.confidence >= 0.7 ? "High" : rec.confidence >= 0.4 ? "Med" : "Low"} conf.
+                                        </span>
+                                      )}
                                       <span
-                                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold leading-none ${styles.badge}`}
+                                        className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-semibold leading-none ${styles.badge}`}
                                         data-testid="recommendation-priority"
                                       >
-                                        {rec.priority === "high" ? "High priority" : rec.priority === "medium" ? "Medium" : "Suggestion"}
+                                        {rec.priority === "high" ? "High" : rec.priority === "medium" ? "Med" : "Low"}
                                       </span>
                                       <span
-                                        className="inline-flex items-center rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-[10px] font-medium leading-none text-slate-500"
+                                        className="inline-flex items-center rounded-full bg-white/5 border border-white/10 px-1.5 py-0.5 text-[9px] font-medium leading-none text-slate-600"
                                         data-testid="recommendation-source"
                                       >
                                         {rec.source}
                                       </span>
                                     </div>
                                   </div>
-                                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                                  <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2">
                                     {rec.explanation}
                                   </p>
                                   {expandable && (
@@ -2876,7 +2983,7 @@ export default function CustomerPoliciesPage() {
                                         });
                                         enterEditMode(rec.fieldKey);
                                       }}
-                                      className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
+                                      className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-medium text-slate-500 transition hover:bg-white/10 hover:text-slate-300"
                                       data-testid={`recommendation-action-${rec.id}`}
                                     >
                                       View setting &rarr;

@@ -1798,6 +1798,169 @@ describe("CustomerPoliciesPage", () => {
       expect(topSection.querySelector('[data-testid="recommendation-tighten-slippage"]')).toBeTruthy();
       expect(topSection.querySelector('[data-testid="recommendation-restrict-tokens"]')).toBeTruthy();
     });
+
+    it("featured card gets data-emphasis=featured and recommended-action badge", async () => {
+      // require_simulation_success=false triggers a high-priority actionable rec
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-enable-simulation")).toBeTruthy();
+      });
+
+      const card = screen.getByTestId("recommendation-enable-simulation");
+      expect(card.getAttribute("data-emphasis")).toBe("featured");
+      expect(card.querySelector('[data-testid="recommended-action-badge"]')).toBeTruthy();
+    });
+
+    it("featured card shows inline reason snippet by default", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-enable-simulation")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("recommendation-inline-reason-enable-simulation")).toBeTruthy();
+      expect(screen.getByTestId("recommendation-inline-reason-enable-simulation").textContent).toContain("Why:");
+    });
+
+    it("non-featured top cards get data-emphasis=emphasized", async () => {
+      // Two recs: enable-simulation (high, featured) + tighten-slippage (medium)
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+          max_slippage_bps: 500,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-tighten-slippage")).toBeTruthy();
+      });
+
+      const slippageCard = screen.getByTestId("recommendation-tighten-slippage");
+      expect(slippageCard.getAttribute("data-emphasis")).toBe("emphasized");
+    });
+
+    it("more-suggestions cards get data-emphasis=standard", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("more-suggestions")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByTestId("more-suggestions-toggle"));
+      const moreList = screen.getByTestId("more-suggestions-list");
+      const firstMoreCard = moreList.querySelector("[data-emphasis]");
+      expect(firstMoreCard).toBeTruthy();
+      expect(firstMoreCard!.getAttribute("data-emphasis")).toBe("standard");
+    });
+
+    it("featured card has prominent CTA button styling", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-action-enable-simulation")).toBeTruthy();
+      });
+
+      const btn = screen.getByTestId("recommendation-action-enable-simulation");
+      expect(btn.className).toContain("red");
+    });
+
+    it("featured card expand toggle says 'More detail' instead of 'Why this recommendation?'", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-details-toggle-enable-simulation")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("recommendation-details-toggle-enable-simulation").textContent).toContain("More detail");
+    });
+
+    it("inline confidence badge shown for high-confidence PIL rec in top section", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+        },
+      });
+      mockFetchPilRecommendations.mockResolvedValue({
+        recommendations: [
+          {
+            id: "REDUCE_SLIPPAGE",
+            title: "Reduce slippage tolerance",
+            explanation: "Slippage pressure is high.",
+            parameter: "max_slippage_bps",
+            confidence: "high",
+            evidence: "avg_slippage=95bps",
+          },
+        ],
+        record_count: 42,
+        confidence_summary: "medium",
+        captured_at: Date.now() / 1000,
+        plan: "pro",
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      // PIL high-confidence rec should have inline confidence in the top section
+      const pilCard = screen.getByTestId("recommendation-pil-reduce-slippage");
+      expect(pilCard.querySelector('[data-testid="recommendation-inline-confidence"]')).toBeTruthy();
+    });
+
+    it("top/more split preserved — low-priority recs still in more-suggestions", async () => {
+      mockFetchPolicy.mockResolvedValue({
+        ...PRO_POLICY,
+        effective: {
+          ...PRO_POLICY.effective,
+          require_simulation_success: false,
+        },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("more-suggestions")).toBeTruthy();
+      });
+
+      // "add-program-restrictions" is low priority → still in more
+      fireEvent.click(screen.getByTestId("more-suggestions-toggle"));
+      const moreList = screen.getByTestId("more-suggestions-list");
+      expect(moreList.querySelector('[data-testid="recommendation-add-program-restrictions"]')).toBeTruthy();
+    });
   });
 
   // -----------------------------------------------------------------------
@@ -2094,7 +2257,7 @@ describe("CustomerPoliciesPage", () => {
       expect(screen.getByText(/avg_slippage=95bps/)).toBeTruthy();
     });
 
-    it("shows confidence indicator for PIL recommendations after expanding", async () => {
+    it("shows confidence indicator for PIL recommendations", async () => {
       mockFetchPolicy.mockResolvedValue(PRO_POLICY);
       mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
       render(<CustomerPoliciesPage />);
@@ -2103,12 +2266,11 @@ describe("CustomerPoliciesPage", () => {
         expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
       });
 
-      // Confidence is hidden by default; expand the card
-      fireEvent.click(screen.getByTestId("recommendation-details-toggle-pil-reduce-slippage"));
-
-      const confidenceEl = screen.getAllByTestId("recommendation-confidence");
-      expect(confidenceEl.length).toBeGreaterThan(0);
-      expect(confidenceEl[0].textContent).toContain("Confidence:");
+      // High-confidence PIL recs show inline confidence badge (no expand needed)
+      const card = screen.getByTestId("recommendation-pil-reduce-slippage");
+      const inlineConf = card.querySelector('[data-testid="recommendation-inline-confidence"]');
+      expect(inlineConf).toBeTruthy();
+      expect(inlineConf!.textContent).toContain("confidence");
     });
 
     it("coexists with deterministic and history recommendations", async () => {
@@ -2312,7 +2474,7 @@ describe("CustomerPoliciesPage", () => {
       expect(screen.getByText(/sustained pressure for 6 consecutive/)).toBeTruthy();
     });
 
-    it("shows confidence indicator for external context recommendations after expanding", async () => {
+    it("shows confidence indicator for external context recommendations", async () => {
       mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY);
       mockFetchExternalContext.mockResolvedValue(EXTERNAL_CONTEXT_RESPONSE);
       render(<CustomerPoliciesPage />);
@@ -2321,12 +2483,11 @@ describe("CustomerPoliciesPage", () => {
         expect(screen.getByTestId("recommendation-ext-ext-sustained-throttle")).toBeTruthy();
       });
 
-      // Confidence is hidden by default; expand the card
-      fireEvent.click(screen.getByTestId("recommendation-details-toggle-ext-ext-sustained-throttle"));
-
-      const confidenceEl = screen.getAllByTestId("recommendation-confidence");
-      expect(confidenceEl.length).toBeGreaterThan(0);
-      expect(confidenceEl.some((el) => el.textContent?.includes("Confidence:"))).toBe(true);
+      // High-confidence external recs show inline confidence badge (no expand needed)
+      const card = screen.getByTestId("recommendation-ext-ext-sustained-throttle");
+      const inlineConf = card.querySelector('[data-testid="recommendation-inline-confidence"]');
+      expect(inlineConf).toBeTruthy();
+      expect(inlineConf!.textContent).toContain("confidence");
     });
 
     it("coexists with deterministic and other recommendation sources", async () => {
@@ -3015,7 +3176,7 @@ describe("CustomerPoliciesPage", () => {
   // -----------------------------------------------------------------------
 
   describe("expandable recommendation details", () => {
-    it("shows 'Why this recommendation?' toggle on recommendation cards", async () => {
+    it("shows detail toggle on recommendation cards", async () => {
       mockFetchPolicy.mockResolvedValue({
         ...PRO_POLICY,
         effective: { ...PRO_POLICY.effective, require_simulation_success: false },
@@ -3027,7 +3188,8 @@ describe("CustomerPoliciesPage", () => {
       });
 
       expect(screen.getByTestId("recommendation-details-toggle-enable-simulation")).toBeTruthy();
-      expect(screen.getByTestId("recommendation-details-toggle-enable-simulation").textContent).toContain("Why this recommendation?");
+      // Featured cards (high-priority + actionable) show "More detail" since inline reason is visible
+      expect(screen.getByTestId("recommendation-details-toggle-enable-simulation").textContent).toContain("More detail");
     });
 
     it("details panel is hidden by default", async () => {
@@ -3045,21 +3207,22 @@ describe("CustomerPoliciesPage", () => {
     });
 
     it("clicking toggle reveals details panel", async () => {
+      // Use a non-featured card (medium priority) so expanded panel includes "Why it matters"
       mockFetchPolicy.mockResolvedValue({
         ...PRO_POLICY,
-        effective: { ...PRO_POLICY.effective, require_simulation_success: false },
+        effective: { ...PRO_POLICY.effective, max_slippage_bps: 500 },
       });
       render(<CustomerPoliciesPage />);
 
       await waitFor(() => {
-        expect(screen.getByTestId("recommendation-enable-simulation")).toBeTruthy();
+        expect(screen.getByTestId("recommendation-tighten-slippage")).toBeTruthy();
       });
 
-      fireEvent.click(screen.getByTestId("recommendation-details-toggle-enable-simulation"));
+      fireEvent.click(screen.getByTestId("recommendation-details-toggle-tighten-slippage"));
 
-      expect(screen.getByTestId("recommendation-details-enable-simulation")).toBeTruthy();
-      // "Why it matters" text should now be visible
-      const details = screen.getByTestId("recommendation-details-enable-simulation");
+      expect(screen.getByTestId("recommendation-details-tighten-slippage")).toBeTruthy();
+      // "Why it matters" text should now be visible for non-featured cards
+      const details = screen.getByTestId("recommendation-details-tighten-slippage");
       expect(details.textContent).toContain("Why it matters");
     });
 
