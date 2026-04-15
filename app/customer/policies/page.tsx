@@ -11,11 +11,13 @@ import {
   fetchMarketConditions,
   fetchPilRecommendations,
   fetchCohortBenchmarks,
+  fetchExternalContext,
   type EffectivePolicyResponse,
   type ReceiptSummary,
   type MarketConditions,
   type PilRecommendationsResponse,
   type CohortBenchmarkResponse,
+  type ExternalContextResponse,
 } from "@/lib/customer-auth";
 import { PremiumSlider } from "@/components/premium-slider";
 
@@ -1383,6 +1385,47 @@ function generateCohortBenchmarkRecommendations(
 }
 
 // ---------------------------------------------------------------------------
+// External context recommendation generation
+// ---------------------------------------------------------------------------
+
+const EXTERNAL_CONFIDENCE_MAP: Record<string, number> = {
+  high: 0.85,
+  medium: 0.55,
+  low: 0.3,
+};
+
+const EXTERNAL_PRIORITY_MAP: Record<string, RecommendationPriority> = {
+  high: "high",
+  medium: "medium",
+  low: "low",
+};
+
+function generateExternalContextRecommendations(
+  ctx: ExternalContextResponse,
+): PolicyRecommendation[] {
+  if (!ctx.recommendations || ctx.recommendations.length === 0) return [];
+
+  const editableKeys = new Set([
+    "max_slippage_bps",
+    "max_notional_usd",
+    "max_value_sol",
+    "require_simulation_success",
+  ]);
+
+  return ctx.recommendations.map((r) => ({
+    id: `ext-${r.id.toLowerCase().replace(/_/g, "-")}`,
+    title: r.title,
+    explanation: r.explanation,
+    why: "This recommendation is based on real-time external infrastructure conditions — not your individual transactions or policy configuration.",
+    priority: EXTERNAL_PRIORITY_MAP[r.confidence] ?? "medium",
+    source: "External context" as RecommendationSource,
+    fieldKey: editableKeys.has(r.parameter) ? r.parameter : undefined,
+    evidence: r.evidence || undefined,
+    confidence: EXTERNAL_CONFIDENCE_MAP[r.confidence] ?? 0.3,
+  }));
+}
+
+// ---------------------------------------------------------------------------
 // Recommendation tier configuration
 // ---------------------------------------------------------------------------
 
@@ -1426,6 +1469,7 @@ const SOURCE_DESCRIPTIONS: Partial<Record<RecommendationSource, string>> = {
   "Market analysis": "real-time signals from execution infrastructure conditions",
   "Policy Intelligence": "intelligence-backed suggestions from analysis of your policy performance",
   "Cohort benchmark": "privacy-safe benchmarks comparing your policy against anonymized aggregate data",
+  "External context": "proactive recommendations based on external network and infrastructure conditions",
 };
 
 const PRIORITY_STYLES: Record<RecommendationPriority, { badge: string; border: string }> = {
@@ -1456,6 +1500,7 @@ export default function CustomerPoliciesPage() {
   const [marketConditions, setMarketConditions] = useState<MarketConditions | null>(null);
   const [pilRecommendations, setPilRecommendations] = useState<PilRecommendationsResponse | null>(null);
   const [cohortBenchmarks, setCohortBenchmarks] = useState<CohortBenchmarkResponse | null>(null);
+  const [externalContext, setExternalContext] = useState<ExternalContextResponse | null>(null);
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -1533,6 +1578,16 @@ export default function CustomerPoliciesPage() {
     }
   }, []);
 
+  const loadExternalContext = useCallback(async () => {
+    try {
+      const ctx = await fetchExternalContext();
+      setExternalContext(ctx);
+    } catch {
+      // External context is optional — degrade gracefully.
+      setExternalContext(null);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isLoggedIn()) {
       router.replace("/login");
@@ -1543,7 +1598,8 @@ export default function CustomerPoliciesPage() {
     loadMarketConditions();
     loadPilRecommendations();
     loadCohortBenchmarks();
-  }, [router, loadPolicy, loadHistorySummary, loadMarketConditions, loadPilRecommendations, loadCohortBenchmarks]);
+    loadExternalContext();
+  }, [router, loadPolicy, loadHistorySummary, loadMarketConditions, loadPilRecommendations, loadCohortBenchmarks, loadExternalContext]);
 
   // Initialize form values from current overrides when entering edit mode.
   // Scroll to and briefly highlight the target field after edit form mounts.
@@ -2196,6 +2252,7 @@ export default function CustomerPoliciesPage() {
               const canMarket = isSourceAvailable("Market analysis", planCode);
               const canPil = isSourceAvailable("Policy Intelligence", planCode);
               const canBenchmark = isSourceAvailable("Cohort benchmark", planCode);
+              const canExternal = isSourceAvailable("External context", planCode);
 
               const deterministicRecs = generatePolicyRecommendations(effective, overrides, overridesEnabled);
               const historyRecs = canHistory && historySummary
@@ -2210,10 +2267,13 @@ export default function CustomerPoliciesPage() {
               const benchmarkRecs = canBenchmark && cohortBenchmarks
                 ? generateCohortBenchmarkRecommendations(cohortBenchmarks)
                 : [];
+              const externalRecs = canExternal && externalContext
+                ? generateExternalContextRecommendations(externalContext)
+                : [];
               // Merge, deduplicate by id, sort by priority
               const seenIds = new Set<string>();
               const allRecs: PolicyRecommendation[] = [];
-              for (const rec of [...deterministicRecs, ...historyRecs, ...marketRecs, ...pilRecs, ...benchmarkRecs]) {
+              for (const rec of [...deterministicRecs, ...historyRecs, ...marketRecs, ...pilRecs, ...benchmarkRecs, ...externalRecs]) {
                 if (!seenIds.has(rec.id)) {
                   seenIds.add(rec.id);
                   allRecs.push(rec);
@@ -2237,6 +2297,9 @@ export default function CustomerPoliciesPage() {
               if (!canBenchmark && cohortBenchmarks?.gated && (cohortBenchmarks.gated_count ?? 0) > 0) {
                 gatedSources.push("Cohort benchmark");
               }
+              if (!canExternal && externalContext?.gated && (externalContext.gated_count ?? 0) > 0) {
+                gatedSources.push("External context");
+              }
 
               if (allRecs.length === 0 && gatedSources.length === 0) return null;
 
@@ -2244,6 +2307,7 @@ export default function CustomerPoliciesPage() {
               const hasMarketRecs = marketRecs.length > 0;
               const hasPilRecs = pilRecs.length > 0;
               const hasBenchmarkRecs = benchmarkRecs.length > 0;
+              const hasExternalRecs = externalRecs.length > 0;
               return (
                 <section
                   className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-4"
@@ -2258,6 +2322,7 @@ export default function CustomerPoliciesPage() {
                       {hasHistoryRecs ? ", your recent transaction history" : ""}
                       {hasPilRecs ? ", policy intelligence analysis" : ""}
                       {hasBenchmarkRecs ? ", aggregated cohort benchmarks" : ""}
+                      {hasExternalRecs ? ", external infrastructure signals" : ""}
                       {hasMarketRecs ? ", and current execution conditions" : ""}.
                     </p>
                   </div>
@@ -2301,7 +2366,7 @@ export default function CustomerPoliciesPage() {
                               {rec.evidence}
                             </p>
                           )}
-                          {rec.confidence != null && (rec.source === "Policy Intelligence" || rec.source === "Cohort benchmark") && (
+                          {rec.confidence != null && (rec.source === "Policy Intelligence" || rec.source === "Cohort benchmark" || rec.source === "External context") && (
                             <span
                               className="inline-flex items-center gap-1 text-[9px] text-slate-600"
                               data-testid="recommendation-confidence"
@@ -2324,12 +2389,13 @@ export default function CustomerPoliciesPage() {
                     })}
                   </div>
                   <p className="text-[9px] text-slate-600 text-center">
-                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasPilRecs ? ", policy intelligence analysis of your transaction patterns" : ""}{hasBenchmarkRecs ? ", anonymized cohort benchmarks" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : ""}{!hasHistoryRecs && !hasMarketRecs && !hasPilRecs && !hasBenchmarkRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
+                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasPilRecs ? ", policy intelligence analysis of your transaction patterns" : ""}{hasBenchmarkRecs ? ", anonymized cohort benchmarks" : ""}{hasExternalRecs ? ", external infrastructure signals" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : ""}{!hasHistoryRecs && !hasMarketRecs && !hasPilRecs && !hasBenchmarkRecs && !hasExternalRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
                   </p>
                   {/* Upgrade teaser for gated recommendation sources */}
                   {gatedSources.length > 0 && (() => {
+                    const hasEnterpriseGated = gatedSources.includes("External context");
                     const hasAdvancedGated = gatedSources.includes("Cohort benchmark");
-                    const tierLabel = hasAdvancedGated ? "Advanced" : "Pro";
+                    const tierLabel = hasEnterpriseGated ? "Enterprise" : hasAdvancedGated ? "Advanced" : "Pro";
                     return (
                     <div
                       className="rounded-lg border border-primary-400/20 bg-primary-500/5 p-4 space-y-3"
@@ -2354,6 +2420,9 @@ export default function CustomerPoliciesPage() {
                           : ""}
                         {cohortBenchmarks?.gated_count
                           ? `, plus ${cohortBenchmarks.gated_count} cohort benchmark${cohortBenchmarks.gated_count !== 1 ? "s" : ""}`
+                          : ""}
+                        {externalContext?.gated_count
+                          ? `, plus ${externalContext.gated_count} external context signal${externalContext.gated_count !== 1 ? "s" : ""}`
                           : ""}.
                       </p>
                       {gatedSources.length > 1 && (

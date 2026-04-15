@@ -16,6 +16,7 @@ const mockFetchReceiptSummary = vi.fn();
 const mockFetchMarketConditions = vi.fn();
 const mockFetchPilRecommendations = vi.fn();
 const mockFetchCohortBenchmarks = vi.fn();
+const mockFetchExternalContext = vi.fn();
 
 vi.mock("@/lib/customer-auth", () => {
   class ApiError extends Error {
@@ -41,6 +42,8 @@ vi.mock("@/lib/customer-auth", () => {
       mockFetchPilRecommendations(...args),
     fetchCohortBenchmarks: (...args: unknown[]) =>
       mockFetchCohortBenchmarks(...args),
+    fetchExternalContext: (...args: unknown[]) =>
+      mockFetchExternalContext(...args),
     ApiError,
   };
 });
@@ -215,6 +218,12 @@ describe("CustomerPoliciesPage", () => {
     mockFetchCohortBenchmarks.mockResolvedValue({
       benchmarks: [],
       cohort_size: 0,
+      captured_at: Date.now() / 1000,
+      plan: "free",
+    });
+    // Default: external context returns empty (no external recs).
+    mockFetchExternalContext.mockResolvedValue({
+      recommendations: [],
       captured_at: Date.now() / 1000,
       plan: "free",
     });
@@ -2080,6 +2089,175 @@ describe("CustomerPoliciesPage", () => {
   });
 
   // -----------------------------------------------------------------------
+  // External context recommendations (Enterprise)
+  // -----------------------------------------------------------------------
+
+  describe("External context recommendations", () => {
+    const EXTERNAL_CONTEXT_RESPONSE = {
+      recommendations: [
+        {
+          id: "EXT_SUSTAINED_THROTTLE",
+          title: "Sustained external network pressure detected",
+          explanation:
+            "The execution environment has been experiencing sustained throttling.",
+          parameter: "require_simulation_success",
+          confidence: "high",
+          evidence: "External infrastructure has been under sustained pressure for 6 consecutive minutes.",
+        },
+        {
+          id: "EXT_HIGH_THROTTLE_RATE",
+          title: "Elevated external infrastructure error rate",
+          explanation: "The shared execution infrastructure is experiencing an elevated error rate.",
+          parameter: "max_notional_usd",
+          confidence: "medium",
+          evidence: "External infrastructure error rate is 11.0%, above the normal operating threshold.",
+        },
+      ],
+      captured_at: Date.now() / 1000,
+      plan: "enterprise",
+      gated: false,
+      gated_count: 0,
+    };
+
+    const ENTERPRISE_POLICY = {
+      plan_code: "enterprise",
+      plan_limits: { tx_limit_per_month: 1000000, policy_overrides_enabled: true },
+      overrides: {},
+      effective: {
+        max_slippage_bps: 100,
+        max_notional_usd: 100000,
+        require_simulation_success: true,
+      },
+    };
+
+    it("renders external context recommendations with External context source label", async () => {
+      mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY);
+      mockFetchExternalContext.mockResolvedValue(EXTERNAL_CONTEXT_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-ext-ext-sustained-throttle")).toBeTruthy();
+      });
+
+      const card = screen.getByTestId("recommendation-ext-ext-sustained-throttle");
+      expect(card.textContent).toContain("External context");
+    });
+
+    it("shows evidence text for external context recommendations", async () => {
+      mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY);
+      mockFetchExternalContext.mockResolvedValue(EXTERNAL_CONTEXT_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-ext-ext-sustained-throttle")).toBeTruthy();
+      });
+
+      expect(screen.getByText(/sustained pressure for 6 consecutive/)).toBeTruthy();
+    });
+
+    it("shows confidence indicator for external context recommendations", async () => {
+      mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY);
+      mockFetchExternalContext.mockResolvedValue(EXTERNAL_CONTEXT_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-ext-ext-sustained-throttle")).toBeTruthy();
+      });
+
+      const confidenceEl = screen.getAllByTestId("recommendation-confidence");
+      expect(confidenceEl.length).toBeGreaterThan(0);
+      expect(confidenceEl.some((el) => el.textContent?.includes("Confidence:"))).toBe(true);
+    });
+
+    it("coexists with deterministic and other recommendation sources", async () => {
+      mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchExternalContext.mockResolvedValue(EXTERNAL_CONTEXT_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      expect(sourceLabels).toContain("External context");
+      expect(
+        sourceLabels.some((s) => s === "Default guidance" || s === "Policy analysis"),
+      ).toBe(true);
+    });
+
+    it("gracefully degrades when external context is unavailable", async () => {
+      mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY);
+      mockFetchExternalContext.mockRejectedValue(new Error("network"));
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      expect(sourceLabels).not.toContain("External context");
+    });
+
+    it("renders zero external recs when backend returns empty list", async () => {
+      mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY);
+      mockFetchExternalContext.mockResolvedValue({
+        recommendations: [],
+        captured_at: Date.now() / 1000,
+        plan: "enterprise",
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      expect(sourceLabels).not.toContain("External context");
+    });
+
+    it("disclaimer mentions external infrastructure when external recs present", async () => {
+      mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY);
+      mockFetchExternalContext.mockResolvedValue(EXTERNAL_CONTEXT_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-ext-ext-sustained-throttle")).toBeTruthy();
+      });
+
+      expect(screen.getAllByText(/external infrastructure signals/).length).toBeGreaterThan(0);
+    });
+
+    it("non-Enterprise plans do not see external context recommendations", async () => {
+      const ADVANCED_POLICY = {
+        plan_code: "advanced",
+        plan_limits: { tx_limit_per_month: 50000, policy_overrides_enabled: true },
+        overrides: {},
+        effective: {
+          max_slippage_bps: 100,
+          max_notional_usd: 25000,
+          require_simulation_success: true,
+        },
+      };
+      mockFetchPolicy.mockResolvedValue(ADVANCED_POLICY);
+      // Even if external context returns data, Advanced should not show it
+      mockFetchExternalContext.mockResolvedValue(EXTERNAL_CONTEXT_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      expect(sourceLabels).not.toContain("External context");
+    });
+  });
+
+  // -----------------------------------------------------------------------
   // Plan-aware recommendation tiering
   // -----------------------------------------------------------------------
 
@@ -2311,6 +2489,22 @@ describe("CustomerPoliciesPage", () => {
         gated: false,
         gated_count: 0,
       });
+      mockFetchExternalContext.mockResolvedValue({
+        recommendations: [
+          {
+            id: "EXT_SUSTAINED_THROTTLE",
+            title: "Sustained external network pressure detected",
+            explanation: "The execution environment has been experiencing sustained throttling.",
+            parameter: "require_simulation_success",
+            confidence: "high",
+            evidence: "External infrastructure has been under sustained pressure for 6 consecutive minutes.",
+          },
+        ],
+        captured_at: Date.now() / 1000,
+        plan: "enterprise",
+        gated: false,
+        gated_count: 0,
+      });
       render(<CustomerPoliciesPage />);
 
       await waitFor(() => {
@@ -2320,6 +2514,7 @@ describe("CustomerPoliciesPage", () => {
       const sources = screen.getAllByTestId("recommendation-source");
       const sourceLabels = sources.map((el) => el.textContent);
       expect(sourceLabels).toContain("Policy Intelligence");
+      expect(sourceLabels).toContain("External context");
       expect(screen.queryByTestId("recommendation-upgrade-teaser")).toBeNull();
     });
 

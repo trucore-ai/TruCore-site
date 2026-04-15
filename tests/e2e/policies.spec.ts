@@ -7,6 +7,7 @@ import {
   mockMarketConditionsRoute,
   mockPilRecommendationsRoute,
   mockCohortBenchmarksRoute,
+  mockExternalContextRoute,
   injectCustomerAuth,
   silenceAnalytics,
   RICH_HISTORY_SUMMARY,
@@ -1965,5 +1966,138 @@ test.describe("customer policies — cohort benchmarks coexist with other source
 
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
     await expect(page.getByTestId("recommendation-upgrade-teaser")).not.toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// External context recommendations — Enterprise only
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — external context recommendations (Enterprise)", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "enterprise" });
+    await mockReceiptSummaryRoute(page);
+    await mockExternalContextRoute(page, { variant: "full" });
+    await injectCustomerAuth(page);
+  });
+
+  test("Enterprise user sees external context recommendation cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
+    await expect(extCard).toBeVisible();
+    await expect(extCard).toContainText("Sustained external network pressure");
+  });
+
+  test("source label shows 'External context' on external context cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
+    await expect(extCard).toBeVisible();
+    const source = extCard.getByTestId("recommendation-source");
+    await expect(source).toHaveText("External context");
+  });
+
+  test("evidence text is visible on external context cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
+    await expect(extCard).toBeVisible();
+    await expect(extCard).toContainText("sustained pressure for 6 consecutive");
+  });
+
+  test("confidence indicator is shown on external context cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
+    await expect(extCard).toBeVisible();
+    const confidence = extCard.getByTestId("recommendation-confidence");
+    await expect(confidence).toBeVisible();
+    await expect(confidence).toContainText("Confidence:");
+  });
+
+  test("disclaimer mentions external infrastructure when external recs present", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("recommendation-ext-ext-sustained-throttle")).toBeVisible();
+    await expect(page.getByText(/external infrastructure signals/).first()).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// External context gating — Free / Pro / Advanced cannot see bodies
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — external context gating (below Enterprise)", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("Advanced user does not see external context cards", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page);
+    await mockExternalContextRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const extCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-ext-']");
+    await expect(extCards).toHaveCount(0);
+  });
+
+  test("Advanced user sees upgrade teaser when gated external context exists", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "empty" });
+    await mockExternalContextRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    await expect(teaser).toContainText("External context");
+    await expect(teaser).toContainText("2 external context signals");
+  });
+
+  test("teaser shows 'Enterprise' tier label when external context is gated", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "empty" });
+    await mockExternalContextRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    await expect(teaser).toContainText("Upgrade to Enterprise");
+    await expect(teaser).toContainText("View Enterprise plans");
+  });
+
+  test("Free user with gated PIL + gated benchmarks + gated external sees combined teaser", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "gated" });
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
+    await mockExternalContextRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    // Should mention all three gated sources
+    const details = page.getByTestId("gated-source-details");
+    await expect(details).toBeVisible();
+    await expect(details).toContainText("Policy Intelligence");
+    await expect(details).toContainText("Cohort benchmark");
+    await expect(details).toContainText("External context");
+    // Enterprise tier label because External context is the highest gated source
+    await expect(teaser).toContainText("Enterprise");
   });
 });

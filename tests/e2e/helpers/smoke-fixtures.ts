@@ -831,6 +831,83 @@ export async function mockCohortBenchmarksRoute(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// External context mocks (External context source — Enterprise only)
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Full external context response — Enterprise callers see recommendation bodies. */
+export const EXTERNAL_CONTEXT_FULL = {
+  recommendations: [
+    {
+      id: "EXT_SUSTAINED_THROTTLE",
+      title: "Sustained external network pressure detected",
+      explanation:
+        "The execution environment has been experiencing sustained throttling for multiple consecutive minutes. Consider enabling simulation requirements and tightening slippage.",
+      parameter: "require_simulation_success",
+      confidence: "high",
+      evidence: "External infrastructure has been under sustained pressure for 6 consecutive minutes.",
+    },
+    {
+      id: "EXT_HIGH_THROTTLE_RATE",
+      title: "Elevated external infrastructure error rate",
+      explanation:
+        "The shared execution infrastructure is experiencing an elevated error rate. Consider reducing transaction size limits temporarily.",
+      parameter: "max_notional_usd",
+      confidence: "medium",
+      evidence: "External infrastructure error rate is 11.0%, above the normal operating threshold.",
+    },
+  ],
+  captured_at: Math.floor(Date.now() / 1000),
+  plan: "enterprise",
+  gated: false,
+  gated_count: 0,
+};
+
+/** Empty external context response — environment is healthy, no recommendations. */
+export const EXTERNAL_CONTEXT_EMPTY = {
+  recommendations: [] as unknown[],
+  captured_at: Math.floor(Date.now() / 1000),
+  plan: "enterprise",
+  gated: false,
+  gated_count: 0,
+};
+
+/** Gated external context response — below-Enterprise callers see count but no bodies. */
+export const EXTERNAL_CONTEXT_GATED = {
+  recommendations: [] as unknown[],
+  captured_at: Math.floor(Date.now() / 1000),
+  plan: "advanced",
+  gated: true,
+  gated_count: 2,
+};
+
+export type ExternalContextMockOpts = {
+  /** "full", "empty", "gated", or a custom object. */
+  variant?: "full" | "empty" | "gated" | Record<string, unknown>;
+  /** HTTP status to return (default 200). */
+  status?: number;
+};
+
+export async function mockExternalContextRoute(
+  page: Page,
+  opts?: ExternalContextMockOpts,
+) {
+  const variant = opts?.variant ?? "empty";
+  const status = opts?.status ?? 200;
+  const body =
+    variant === "full"
+      ? EXTERNAL_CONTEXT_FULL
+      : variant === "gated"
+        ? EXTERNAL_CONTEXT_GATED
+        : variant === "empty"
+          ? EXTERNAL_CONTEXT_EMPTY
+          : variant;
+
+  await page.route("**/api/customer/intel/external-context*", (route: Route) =>
+    route.fulfill({ status, json: body }),
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // Advanced / Enterprise policy mocks (for benchmark-eligible tiers)
 // ────────────────────────────────────────────────────────────────────────────
 

@@ -29,6 +29,7 @@ const POLICY_PROXY_BASE = "/api/customer/policy";
 const MARKET_CONDITIONS_PROXY_BASE = "/api/customer/market-conditions";
 const PIL_RECOMMENDATIONS_PROXY_BASE = "/api/customer/intel/recommendations";
 const BENCHMARKS_PROXY_BASE = "/api/customer/intel/benchmarks";
+const EXTERNAL_CONTEXT_PROXY_BASE = "/api/customer/intel/external-context";
 
 const TOKEN_KEY = "atf_customer_token";
 const TENANT_KEY = "atf_customer_tenant";
@@ -595,6 +596,51 @@ export async function fetchCohortBenchmarks(): Promise<CohortBenchmarkResponse> 
     let body: Record<string, unknown> = {};
     try { body = await res.json(); } catch { /* use default */ }
     const msg = typeof body.message === "string" ? body.message : "Benchmark service unavailable.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
+  }
+
+  return res.json();
+}
+
+export interface ExternalContextRecommendation {
+  id: string;
+  title: string;
+  explanation: string;
+  parameter: string;
+  confidence: string;
+  evidence: string;
+}
+
+export interface ExternalContextResponse {
+  recommendations: ExternalContextRecommendation[];
+  captured_at: number;
+  plan: string;
+  gated?: boolean;
+  gated_count?: number;
+}
+
+export async function fetchExternalContext(): Promise<ExternalContextResponse> {
+  const token = getToken();
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
+
+  let res: Response;
+  try {
+    res = await fetch(EXTERNAL_CONTEXT_PROXY_BASE, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the external context service.");
+  }
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
+  }
+
+  if (!res.ok) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "External context service unavailable.";
     throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
   }
 
