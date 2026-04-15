@@ -2663,4 +2663,193 @@ describe("CustomerPoliciesPage", () => {
       expect(screen.queryByTestId("freshness-badge-market-analysis")).toBeNull();
     });
   });
+
+  // -----------------------------------------------------------------------
+  // Signal refresh UX
+  // -----------------------------------------------------------------------
+
+  describe("signal refresh UX", () => {
+    const ENTERPRISE_POLICY_REFRESH = {
+      plan_code: "enterprise",
+      plan_limits: { tx_limit_per_month: 1000000, policy_overrides_enabled: true },
+      overrides: {},
+      effective: {
+        max_slippage_bps: 100,
+        max_notional_usd: 100000,
+        require_simulation_success: true,
+      },
+    };
+
+    it("shows recheck button when market signal is stale", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue({
+        ...MARKET_DEGRADED,
+        signal_freshness: { status: "stale" as const, last_updated_at: Date.now() / 1000 - 600 },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("refresh-signals-btn")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("refresh-signals-btn").textContent).toContain("Recheck signals");
+    });
+
+    it("shows recheck button when external signal is unavailable", async () => {
+      mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY_REFRESH);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_STABLE);
+      mockFetchExternalContext.mockResolvedValue({
+        recommendations: [],
+        captured_at: Date.now() / 1000,
+        plan: "enterprise",
+        signal_freshness: { status: "unavailable" as const, last_updated_at: null },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("refresh-signals-btn")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("refresh-signals-btn").textContent).toContain("Recheck signals");
+    });
+
+    it("does not show recheck button when all signals are fresh", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue({
+        ...MARKET_DEGRADED,
+        signal_freshness: { status: "fresh" as const, last_updated_at: Date.now() / 1000 },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      expect(screen.queryByTestId("refresh-signals-btn")).toBeNull();
+    });
+
+    it("clicking recheck triggers re-fetch of market and external signals", async () => {
+      const staleMarket = {
+        ...MARKET_DEGRADED,
+        signal_freshness: { status: "stale" as const, last_updated_at: Date.now() / 1000 - 600 },
+      };
+      const freshMarket = {
+        ...MARKET_DEGRADED,
+        signal_freshness: { status: "fresh" as const, last_updated_at: Date.now() / 1000 },
+      };
+
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue(staleMarket);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("refresh-signals-btn")).toBeTruthy();
+      });
+
+      // Record call counts before the refresh click
+      const marketCallsBefore = mockFetchMarketConditions.mock.calls.length;
+      const externalCallsBefore = mockFetchExternalContext.mock.calls.length;
+
+      // Reset mock for the refresh call
+      mockFetchMarketConditions.mockResolvedValue(freshMarket);
+      mockFetchExternalContext.mockResolvedValue({
+        recommendations: [],
+        captured_at: Date.now() / 1000,
+        plan: "pro",
+        signal_freshness: { status: "fresh" as const, last_updated_at: Date.now() / 1000 },
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId("refresh-signals-btn"));
+      });
+
+      // Both fetch functions should have been called at least once more after refresh
+      expect(mockFetchMarketConditions.mock.calls.length).toBeGreaterThan(marketCallsBefore);
+      expect(mockFetchExternalContext.mock.calls.length).toBeGreaterThan(externalCallsBefore);
+    });
+
+    it("updates badge to fresh after successful recheck", async () => {
+      const staleMarket = {
+        ...MARKET_DEGRADED,
+        signal_freshness: { status: "stale" as const, last_updated_at: Date.now() / 1000 - 600 },
+      };
+      const freshMarket = {
+        ...MARKET_DEGRADED,
+        signal_freshness: { status: "fresh" as const, last_updated_at: Date.now() / 1000 },
+      };
+
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue(staleMarket);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("freshness-badge-market-analysis").textContent).toContain("Data may be outdated");
+      });
+
+      mockFetchMarketConditions.mockResolvedValue(freshMarket);
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId("refresh-signals-btn"));
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("freshness-badge-market-analysis").textContent).toContain("Live");
+      });
+    });
+
+    it("shows last-updated timestamp when freshness metadata is available", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue({
+        ...MARKET_DEGRADED,
+        signal_freshness: { status: "stale" as const, last_updated_at: Date.now() / 1000 - 300 },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("signal-last-updated")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("signal-last-updated").textContent).toMatch(/Updated \d+m ago/);
+    });
+
+    it("button shows disabled state after click (cooldown)", async () => {
+      const staleMarket = {
+        ...MARKET_DEGRADED,
+        signal_freshness: { status: "stale" as const, last_updated_at: Date.now() / 1000 - 600 },
+      };
+
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue(staleMarket);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("refresh-signals-btn")).toBeTruthy();
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId("refresh-signals-btn"));
+      });
+
+      // After the click resolves, button should be disabled due to cooldown
+      await waitFor(() => {
+        const btn = screen.queryByTestId("refresh-signals-btn");
+        if (btn) {
+          expect((btn as HTMLButtonElement).disabled).toBe(true);
+        }
+      });
+    });
+
+    it("signal refresh row container is present when signals are available", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue({
+        ...MARKET_DEGRADED,
+        signal_freshness: { status: "fresh" as const, last_updated_at: Date.now() / 1000 },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("signal-freshness-row")).toBeTruthy();
+      });
+    });
+  });
 });

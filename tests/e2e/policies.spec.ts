@@ -11,6 +11,7 @@ import {
   injectCustomerAuth,
   silenceAnalytics,
   RICH_HISTORY_SUMMARY,
+  MARKET_DEGRADED,
   MARKET_STRESSED,
   MARKET_STALE,
   MARKET_UNAVAILABLE,
@@ -2386,5 +2387,180 @@ test.describe("customer policies — mixed signal freshness states", () => {
 
     // Page remains coherent — recommendation section visible
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Signal refresh / recovery UX
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — signal refresh UX", () => {
+  test("recheck button appears when market signal is stale", async ({ page }) => {
+    await mockAuthRoutes(page);
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "stale" });
+    await mockPilRecommendationsRoute(page);
+    await mockCohortBenchmarksRoute(page);
+    await mockExternalContextRoute(page);
+    await injectCustomerAuth(page);
+    await silenceAnalytics(page);
+
+    await page.goto("/customer/policies");
+    const btn = page.getByTestId("refresh-signals-btn");
+    await expect(btn).toBeVisible();
+    await expect(btn).toHaveText(/Recheck signals/);
+  });
+
+  test("recheck button appears when external signal is unavailable", async ({ page }) => {
+    await mockAuthRoutes(page);
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "enterprise" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "degraded" });
+    await mockPilRecommendationsRoute(page);
+    await mockCohortBenchmarksRoute(page);
+    await mockExternalContextRoute(page, { variant: "unavailable" });
+    await injectCustomerAuth(page);
+    await silenceAnalytics(page);
+
+    await page.goto("/customer/policies");
+    const btn = page.getByTestId("refresh-signals-btn");
+    await expect(btn).toBeVisible();
+    await expect(btn).toHaveText(/Recheck signals/);
+  });
+
+  test("recheck button is hidden when all signals are fresh", async ({ page }) => {
+    await mockAuthRoutes(page);
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "degraded" });
+    await mockPilRecommendationsRoute(page);
+    await mockCohortBenchmarksRoute(page);
+    await mockExternalContextRoute(page);
+    await injectCustomerAuth(page);
+    await silenceAnalytics(page);
+
+    await page.goto("/customer/policies");
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    await expect(page.getByTestId("refresh-signals-btn")).not.toBeVisible();
+  });
+
+  test("clicking recheck shows loading state", async ({ page }) => {
+    await mockAuthRoutes(page);
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "stale" });
+    await mockPilRecommendationsRoute(page);
+    await mockCohortBenchmarksRoute(page);
+    await mockExternalContextRoute(page);
+    await injectCustomerAuth(page);
+    await silenceAnalytics(page);
+
+    await page.goto("/customer/policies");
+    const btn = page.getByTestId("refresh-signals-btn");
+    await expect(btn).toBeVisible();
+
+    // Intercept refresh fetch with a delay to observe loading state
+    await page.route("**/api/customer/market-conditions*", async (route) => {
+      await new Promise((r) => setTimeout(r, 500));
+      await route.fulfill({ status: 200, json: MARKET_DEGRADED });
+    });
+
+    await btn.click();
+    await expect(btn).toHaveText(/Rechecking/);
+  });
+
+  test("badge updates after successful recheck", async ({ page }) => {
+    await mockAuthRoutes(page);
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "stale" });
+    await mockPilRecommendationsRoute(page);
+    await mockCohortBenchmarksRoute(page);
+    await mockExternalContextRoute(page);
+    await injectCustomerAuth(page);
+    await silenceAnalytics(page);
+
+    await page.goto("/customer/policies");
+    const badge = page.getByTestId("freshness-badge-market-analysis");
+    await expect(badge).toHaveText("Data may be outdated");
+
+    // Re-mock route to return fresh data on refresh
+    await page.unroute("**/api/customer/market-conditions*");
+    await page.route("**/api/customer/market-conditions*", (route) =>
+      route.fulfill({ status: 200, json: MARKET_DEGRADED }),
+    );
+
+    await page.getByTestId("refresh-signals-btn").click();
+
+    // Badge should transition to fresh after refresh
+    await expect(badge).toHaveText("Live");
+  });
+
+  test("last-updated timestamp is visible for stale signals", async ({ page }) => {
+    await mockAuthRoutes(page);
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "stale" });
+    await mockPilRecommendationsRoute(page);
+    await mockCohortBenchmarksRoute(page);
+    await mockExternalContextRoute(page);
+    await injectCustomerAuth(page);
+    await silenceAnalytics(page);
+
+    await page.goto("/customer/policies");
+    const updated = page.getByTestId("signal-last-updated");
+    await expect(updated).toBeVisible();
+    await expect(updated).toHaveText(/Updated \d+m ago/);
+  });
+
+  test("recheck button disables after click (cooldown)", async ({ page }) => {
+    await mockAuthRoutes(page);
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "stale" });
+    await mockPilRecommendationsRoute(page);
+    await mockCohortBenchmarksRoute(page);
+    await mockExternalContextRoute(page);
+    await injectCustomerAuth(page);
+    await silenceAnalytics(page);
+
+    await page.goto("/customer/policies");
+    const btn = page.getByTestId("refresh-signals-btn");
+    await expect(btn).toBeVisible();
+
+    // Re-mock to return stale again (so button would show if not on cooldown)
+    await page.unroute("**/api/customer/market-conditions*");
+    await page.route("**/api/customer/market-conditions*", (route) =>
+      route.fulfill({ status: 200, json: MARKET_STALE }),
+    );
+
+    await btn.click();
+
+    // After refresh completes, button should be disabled due to cooldown
+    await expect(btn).toBeDisabled();
+  });
+
+  test("signal freshness row container is present", async ({ page }) => {
+    await mockAuthRoutes(page);
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "degraded" });
+    await mockPilRecommendationsRoute(page);
+    await mockCohortBenchmarksRoute(page);
+    await mockExternalContextRoute(page);
+    await injectCustomerAuth(page);
+    await silenceAnalytics(page);
+
+    await page.goto("/customer/policies");
+    await expect(page.getByTestId("signal-freshness-row")).toBeVisible();
   });
 });

@@ -1175,6 +1175,16 @@ function SignalFreshnessBadge({ freshness, source }: { freshness: SignalFreshnes
   );
 }
 
+/** Render a human-friendly relative timestamp from a unix-epoch seconds value. */
+function formatLastUpdated(epochSeconds: number | null | undefined): string | null {
+  if (epochSeconds == null) return null;
+  const diffSec = Math.floor(Date.now() / 1000) - epochSeconds;
+  if (diffSec < 60) return "just now";
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+  return `${Math.floor(diffSec / 86400)}d ago`;
+}
+
 // ---------------------------------------------------------------------------
 // Market-aware recommendations
 // ---------------------------------------------------------------------------
@@ -1526,6 +1536,8 @@ export default function CustomerPoliciesPage() {
   const [pilRecommendations, setPilRecommendations] = useState<PilRecommendationsResponse | null>(null);
   const [cohortBenchmarks, setCohortBenchmarks] = useState<CohortBenchmarkResponse | null>(null);
   const [externalContext, setExternalContext] = useState<ExternalContextResponse | null>(null);
+  const [refreshingSignals, setRefreshingSignals] = useState(false);
+  const [signalRefreshCooldown, setSignalRefreshCooldown] = useState(false);
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -1612,6 +1624,24 @@ export default function CustomerPoliciesPage() {
       setExternalContext(null);
     }
   }, []);
+
+  // Targeted refresh for signal-backed sources only (market + external).
+  const refreshSignals = useCallback(async () => {
+    if (refreshingSignals || signalRefreshCooldown) return;
+    setRefreshingSignals(true);
+    try {
+      const [mkt, ext] = await Promise.allSettled([
+        fetchMarketConditions(),
+        fetchExternalContext(),
+      ]);
+      setMarketConditions(mkt.status === "fulfilled" ? mkt.value : null);
+      setExternalContext(ext.status === "fulfilled" ? ext.value : null);
+    } finally {
+      setRefreshingSignals(false);
+      setSignalRefreshCooldown(true);
+      setTimeout(() => setSignalRefreshCooldown(false), 10_000);
+    }
+  }, [refreshingSignals, signalRefreshCooldown]);
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -2351,22 +2381,64 @@ export default function CustomerPoliciesPage() {
                       {hasMarketRecs ? ", and current execution conditions" : ""}.
                     </p>
                     {/* Signal freshness badges for market and external context */}
-                    {(canMarket || canExternal) && (
-                      <div className="flex items-center gap-3 mt-1">
-                        {canMarket && marketConditions?.signal_freshness && (
-                          <span className="inline-flex items-center gap-1.5 text-[9px] text-slate-500">
-                            Market:
-                            <SignalFreshnessBadge freshness={marketConditions.signal_freshness} source="market-analysis" />
-                          </span>
-                        )}
-                        {canExternal && externalContext?.signal_freshness && (
-                          <span className="inline-flex items-center gap-1.5 text-[9px] text-slate-500">
-                            External:
-                            <SignalFreshnessBadge freshness={externalContext.signal_freshness} source="external-context" />
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    {(canMarket || canExternal) && (() => {
+                      const mktFresh = marketConditions?.signal_freshness;
+                      const extFresh = externalContext?.signal_freshness;
+                      const anyDegraded = (canMarket && mktFresh && mktFresh.status !== "fresh") || (canExternal && extFresh && extFresh.status !== "fresh");
+                      const lastTs = [
+                        canMarket ? mktFresh?.last_updated_at : undefined,
+                        canExternal ? extFresh?.last_updated_at : undefined,
+                      ].filter((t): t is number => t != null);
+                      const oldestTs = lastTs.length > 0 ? Math.min(...lastTs) : undefined;
+                      const updatedLabel = formatLastUpdated(oldestTs);
+                      return (
+                        <div className="flex items-center gap-3 mt-1" data-testid="signal-freshness-row">
+                          {canMarket && mktFresh && (
+                            <span className="inline-flex items-center gap-1.5 text-[9px] text-slate-500">
+                              Market:
+                              <SignalFreshnessBadge freshness={mktFresh} source="market-analysis" />
+                            </span>
+                          )}
+                          {canExternal && extFresh && (
+                            <span className="inline-flex items-center gap-1.5 text-[9px] text-slate-500">
+                              External:
+                              <SignalFreshnessBadge freshness={extFresh} source="external-context" />
+                            </span>
+                          )}
+                          {updatedLabel && (
+                            <span className="text-[9px] text-slate-600" data-testid="signal-last-updated">
+                              Updated {updatedLabel}
+                            </span>
+                          )}
+                          {anyDegraded && (
+                            <button
+                              type="button"
+                              onClick={refreshSignals}
+                              disabled={refreshingSignals || signalRefreshCooldown}
+                              className="inline-flex items-center gap-1 rounded-full border border-slate-700 bg-white/[0.03] px-2 py-0.5 text-[9px] text-slate-400 transition hover:border-slate-500 hover:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                              data-testid="refresh-signals-btn"
+                            >
+                              {refreshingSignals ? (
+                                <>
+                                  <svg className="h-2.5 w-2.5 animate-spin" viewBox="0 0 16 16" fill="none">
+                                    <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="2" strokeDasharray="28" strokeDashoffset="8" />
+                                  </svg>
+                                  Rechecking…
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="h-2.5 w-2.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <path d="M2 8a6 6 0 0 1 10.47-4M14 8a6 6 0 0 1-10.47 4" />
+                                    <path d="M13 1v3.5h-3.5M3 15v-3.5h3.5" />
+                                  </svg>
+                                  Recheck signals
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="space-y-3" data-testid="recommendation-cards">
                     {allRecs.map((rec) => {
