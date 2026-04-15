@@ -1340,6 +1340,51 @@ function generatePilRecommendations(
   });
 }
 
+// ---------------------------------------------------------------------------
+// Recommendation tier configuration
+// ---------------------------------------------------------------------------
+
+/**
+ * Tier rank — higher value = more recommendation access.
+ * Unknown tiers default to 0 (Free).
+ */
+const TIER_RANKS: Record<string, number> = {
+  free: 0,
+  pro: 1,
+  advanced: 2,
+  enterprise: 3,
+};
+
+/**
+ * Minimum tier rank required for each recommendation source.
+ * Deterministic sources (Default guidance / Policy analysis) are available to all.
+ * Richer intelligence sources require Pro or above.
+ */
+const SOURCE_MIN_TIER: Record<RecommendationSource, number> = {
+  "Default guidance": TIER_RANKS.free,
+  "Policy analysis": TIER_RANKS.free,
+  "Customer history": TIER_RANKS.pro,
+  "Market analysis": TIER_RANKS.pro,
+  "Policy Intelligence": TIER_RANKS.pro,
+  "Cohort benchmark": TIER_RANKS.advanced,
+  "External context": TIER_RANKS.enterprise,
+};
+
+function planRank(plan: string): number {
+  return TIER_RANKS[plan] ?? 0;
+}
+
+function isSourceAvailable(source: RecommendationSource, plan: string): boolean {
+  return planRank(plan) >= (SOURCE_MIN_TIER[source] ?? 0);
+}
+
+/** User-facing label describing what a gated source provides. */
+const SOURCE_DESCRIPTIONS: Partial<Record<RecommendationSource, string>> = {
+  "Customer history": "recommendations based on your transaction history patterns",
+  "Market analysis": "real-time signals from execution infrastructure conditions",
+  "Policy Intelligence": "intelligence-backed suggestions from analysis of your policy performance",
+};
+
 const PRIORITY_STYLES: Record<RecommendationPriority, { badge: string; border: string }> = {
   high: {
     badge: "bg-red-500/15 text-red-300 border border-red-500/20",
@@ -2092,15 +2137,18 @@ export default function CustomerPoliciesPage() {
 
             {/* Policy Recommendations */}
             {(() => {
-              const isPro = planCode !== "free";
+              const canHistory = isSourceAvailable("Customer history", planCode);
+              const canMarket = isSourceAvailable("Market analysis", planCode);
+              const canPil = isSourceAvailable("Policy Intelligence", planCode);
+
               const deterministicRecs = generatePolicyRecommendations(effective, overrides, overridesEnabled);
-              const historyRecs = isPro && historySummary
+              const historyRecs = canHistory && historySummary
                 ? generateHistoryRecommendations(historySummary, effective)
                 : [];
-              const marketRecs = isPro && marketConditions
+              const marketRecs = canMarket && marketConditions
                 ? generateMarketRecommendations(marketConditions, effective)
                 : [];
-              const pilRecs = isPro && pilRecommendations
+              const pilRecs = canPil && pilRecommendations
                 ? generatePilRecommendations(pilRecommendations)
                 : [];
               // Merge, deduplicate by id, sort by priority
@@ -2115,14 +2163,17 @@ export default function CustomerPoliciesPage() {
               const order: Record<RecommendationPriority, number> = { high: 0, medium: 1, low: 2 };
               allRecs.sort((a, b) => order[a.priority] - order[b.priority]);
 
-              // Count gated sources for teaser
-              const gatedSources: string[] = [];
-              if (!isPro) {
-                if (historySummary && historySummary.total_receipts > 0) gatedSources.push("Customer history");
-                if (marketConditions) gatedSources.push("Market analysis");
-                if (pilRecommendations?.gated && (pilRecommendations.gated_count ?? 0) > 0) {
-                  gatedSources.push("Policy Intelligence");
-                }
+              // Count gated sources for teaser — sources that have data but
+              // are not available at the caller's plan tier.
+              const gatedSources: RecommendationSource[] = [];
+              if (!canHistory && historySummary && historySummary.total_receipts > 0) {
+                gatedSources.push("Customer history");
+              }
+              if (!canMarket && marketConditions) {
+                gatedSources.push("Market analysis");
+              }
+              if (!canPil && pilRecommendations?.gated && (pilRecommendations.gated_count ?? 0) > 0) {
+                gatedSources.push("Policy Intelligence");
               }
 
               if (allRecs.length === 0 && gatedSources.length === 0) return null;
@@ -2214,7 +2265,7 @@ export default function CustomerPoliciesPage() {
                   {/* Pro upgrade teaser for gated recommendation sources */}
                   {gatedSources.length > 0 && (
                     <div
-                      className="rounded-lg border border-primary-400/20 bg-primary-500/5 p-4 space-y-2"
+                      className="rounded-lg border border-primary-400/20 bg-primary-500/5 p-4 space-y-3"
                       data-testid="recommendation-upgrade-teaser"
                     >
                       <div className="flex items-center gap-2">
@@ -2235,6 +2286,19 @@ export default function CustomerPoliciesPage() {
                           ? `, including ${pilRecommendations.gated_count} intelligence-backed suggestion${pilRecommendations.gated_count !== 1 ? "s" : ""} available now`
                           : ""}.
                       </p>
+                      {gatedSources.length > 1 && (
+                        <ul className="space-y-1 pl-1" data-testid="gated-source-details">
+                          {gatedSources.map((src) => (
+                            <li key={src} className="flex items-start gap-1.5 text-[10px] text-slate-500">
+                              <span className="mt-0.5 block h-1 w-1 shrink-0 rounded-full bg-primary-400/50" />
+                              <span>
+                                <span className="font-medium text-slate-400">{src}</span>
+                                {SOURCE_DESCRIPTIONS[src] ? ` — ${SOURCE_DESCRIPTIONS[src]}` : ""}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <Link
                         href="/customer/upgrades"
                         className="inline-flex items-center gap-1 rounded-md border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-[10px] font-medium text-primary-300 transition hover:bg-primary-500/20 hover:text-primary-200"

@@ -2224,5 +2224,126 @@ describe("CustomerPoliciesPage", () => {
 
       expect(screen.queryByTestId("recommendation-upgrade-teaser")).toBeNull();
     });
+
+    it("Advanced plan shows all recommendation sources like Pro", async () => {
+      const ADVANCED_POLICY = {
+        plan_code: "advanced",
+        plan_limits: { tx_limit_per_month: 50000, policy_overrides_enabled: true },
+        overrides: {},
+        effective: {
+          max_slippage_bps: 100,
+          max_notional_usd: 25000,
+          require_simulation_success: true,
+        },
+      };
+      mockFetchPolicy.mockResolvedValue(ADVANCED_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchPilRecommendations.mockResolvedValue({
+        recommendations: [
+          {
+            id: "REDUCE_SLIPPAGE",
+            title: "Reduce slippage tolerance",
+            explanation: "Slippage pressure is high.",
+            parameter: "max_slippage_bps",
+            confidence: "high",
+            evidence: "avg_slippage=95bps",
+          },
+        ],
+        record_count: 42,
+        confidence_summary: "medium",
+        captured_at: Date.now() / 1000,
+        plan: "advanced",
+        gated: false,
+        gated_count: 0,
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      expect(sourceLabels).toContain("Policy Intelligence");
+      expect(sourceLabels).toContain("Customer history");
+      expect(screen.queryByTestId("recommendation-upgrade-teaser")).toBeNull();
+    });
+
+    it("Enterprise plan shows all recommendation sources", async () => {
+      const ENTERPRISE_POLICY = {
+        plan_code: "enterprise",
+        plan_limits: { tx_limit_per_month: 1000000, policy_overrides_enabled: true },
+        overrides: {},
+        effective: {
+          max_slippage_bps: 100,
+          max_notional_usd: 100000,
+          require_simulation_success: true,
+        },
+      };
+      mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchPilRecommendations.mockResolvedValue({
+        recommendations: [
+          {
+            id: "REDUCE_SLIPPAGE",
+            title: "Reduce slippage tolerance",
+            explanation: "Slippage pressure is high.",
+            parameter: "max_slippage_bps",
+            confidence: "high",
+            evidence: "avg_slippage=95bps",
+          },
+        ],
+        record_count: 42,
+        confidence_summary: "medium",
+        captured_at: Date.now() / 1000,
+        plan: "enterprise",
+        gated: false,
+        gated_count: 0,
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      expect(sourceLabels).toContain("Policy Intelligence");
+      expect(screen.queryByTestId("recommendation-upgrade-teaser")).toBeNull();
+    });
+
+    it("upgrade teaser lists source descriptions when multiple sources are gated", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_GATED_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-upgrade-teaser")).toBeTruthy();
+      });
+
+      const details = screen.getByTestId("gated-source-details");
+      expect(details).toBeTruthy();
+      // Should list each gated source with description
+      expect(details.textContent).toContain("Customer history");
+      expect(details.textContent).toContain("Market analysis");
+      expect(details.textContent).toContain("Policy Intelligence");
+    });
+
+    it("upgrade teaser omits source detail list when only one source is gated", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(EMPTY_HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(null);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_GATED_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-upgrade-teaser")).toBeTruthy();
+      });
+
+      expect(screen.queryByTestId("gated-source-details")).toBeNull();
+    });
   });
 });
