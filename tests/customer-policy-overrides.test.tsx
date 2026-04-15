@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({
 const mockFetchPolicy = vi.fn();
 const mockUpdatePolicyOverrides = vi.fn();
 const mockFetchReceiptSummary = vi.fn();
+const mockFetchMarketConditions = vi.fn();
 
 vi.mock("@/lib/customer-auth", () => {
   class ApiError extends Error {
@@ -32,6 +33,8 @@ vi.mock("@/lib/customer-auth", () => {
       mockUpdatePolicyOverrides(...args),
     fetchReceiptSummary: (...args: unknown[]) =>
       mockFetchReceiptSummary(...args),
+    fetchMarketConditions: (...args: unknown[]) =>
+      mockFetchMarketConditions(...args),
     ApiError,
   };
 });
@@ -149,6 +152,39 @@ const EMPTY_HISTORY_SUMMARY = {
   simulation_total: 0,
 };
 
+/** Market conditions — stable (healthy). */
+const MARKET_STABLE = {
+  environment: "stable" as const,
+  rpc_status: "ok",
+  throttled_methods: [],
+  throttle_rate_pct: 0.0,
+  recommendation: null,
+  summary: "Execution environment is stable — no infrastructure issues detected.",
+  captured_at: Date.now() / 1000,
+};
+
+/** Market conditions — degraded. */
+const MARKET_DEGRADED = {
+  environment: "degraded" as const,
+  rpc_status: "degraded",
+  throttled_methods: ["getLatestBlockhash"],
+  throttle_rate_pct: 2.5,
+  recommendation: "increase_backoff",
+  summary: "Execution environment shows minor degradation — 2.5% of requests are being throttled.",
+  captured_at: Date.now() / 1000,
+};
+
+/** Market conditions — stressed. */
+const MARKET_STRESSED = {
+  environment: "stressed" as const,
+  rpc_status: "throttled",
+  throttled_methods: ["getLatestBlockhash", "sendTransaction", "getBalance"],
+  throttle_rate_pct: 14.8,
+  recommendation: "upgrade_plan",
+  summary: "Execution environment is under stress — getLatestBlockhash, sendTransaction, getBalance experiencing elevated throttling (14.8% error rate).",
+  captured_at: Date.now() / 1000,
+};
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -159,6 +195,8 @@ describe("CustomerPoliciesPage", () => {
     // Default: history summary returns empty (no history).  Tests that need
     // history data will override this.
     mockFetchReceiptSummary.mockResolvedValue(EMPTY_HISTORY_SUMMARY);
+    // Default: market conditions returns stable (no market recs).
+    mockFetchMarketConditions.mockResolvedValue(MARKET_STABLE);
   });
 
   // -----------------------------------------------------------------------
@@ -1583,6 +1621,238 @@ describe("CustomerPoliciesPage", () => {
         // Both should be in the recommendation cards container
         const cards = screen.getByTestId("recommendation-cards");
         expect(cards.children.length).toBeGreaterThanOrEqual(2);
+      });
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Source badges in effective policy grid
+  // -----------------------------------------------------------------------
+
+  describe("source badges on effective policy values", () => {
+    it("shows Override badge for overridden fields", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_OVERRIDES);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("source-badge-max_slippage_bps")).toBeTruthy();
+      });
+
+      expect(
+        screen.getByTestId("source-badge-max_slippage_bps").textContent,
+      ).toBe("Override");
+    });
+
+    it("shows Default badge for non-overridden fields", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_OVERRIDES);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("source-badge-require_simulation_success"),
+        ).toBeTruthy();
+      });
+
+      expect(
+        screen.getByTestId("source-badge-require_simulation_success").textContent,
+      ).toBe("Default");
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Market-aware recommendations
+  // -----------------------------------------------------------------------
+
+  describe("market-aware recommendations", () => {
+    describe("market-aware recommendation rendering", () => {
+      it("shows market simulation recommendation when degraded and simulation not required", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, require_simulation_success: false },
+        });
+        mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-market-enable-simulation")).toBeTruthy();
+        });
+      });
+
+      it("shows market slippage recommendation when stressed and slippage > 100", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, max_slippage_bps: 300 },
+        });
+        mockFetchMarketConditions.mockResolvedValue(MARKET_STRESSED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-market-tighten-slippage")).toBeTruthy();
+        });
+      });
+
+      it("shows market limits recommendation when stressed and high USD limit", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, max_notional_usd: 100000 },
+        });
+        mockFetchMarketConditions.mockResolvedValue(MARKET_STRESSED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-market-review-limits")).toBeTruthy();
+        });
+      });
+
+      it("shows transaction throttle recommendation when sendTransaction is throttled", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, require_simulation_success: false },
+        });
+        mockFetchMarketConditions.mockResolvedValue(MARKET_STRESSED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-market-tx-submission-throttled")).toBeTruthy();
+        });
+      });
+    });
+
+    describe("market source labeling", () => {
+      it("displays 'Market analysis' source label on market recommendations", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, require_simulation_success: false },
+        });
+        mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-market-enable-simulation")).toBeTruthy();
+        });
+
+        const rec = screen.getByTestId("recommendation-market-enable-simulation");
+        const sources = rec.querySelectorAll("[data-testid='recommendation-source']");
+        const sourceTexts = Array.from(sources).map((s) => s.textContent);
+        expect(sourceTexts).toContain("Market analysis");
+      });
+
+      it("shows evidence text from market conditions summary", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, require_simulation_success: false },
+        });
+        mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-market-enable-simulation")).toBeTruthy();
+        });
+
+        expect(screen.getByText(/minor degradation/)).toBeTruthy();
+      });
+    });
+
+    describe("coexistence with deterministic and history recs", () => {
+      it("market recs appear alongside deterministic recs", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, require_simulation_success: false },
+        });
+        mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          // Deterministic rec for simulation
+          expect(screen.getByTestId("recommendation-enable-simulation")).toBeTruthy();
+          // Market rec for simulation
+          expect(screen.getByTestId("recommendation-market-enable-simulation")).toBeTruthy();
+        });
+      });
+
+      it("market recs appear alongside history recs", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, require_simulation_success: false },
+        });
+        mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+        mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-market-enable-simulation")).toBeTruthy();
+          expect(screen.getByTestId("recommendation-history-simulation-failures")).toBeTruthy();
+        });
+      });
+    });
+
+    describe("graceful degradation when market signals absent", () => {
+      it("shows no market recs when conditions are stable", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, require_simulation_success: false },
+        });
+        mockFetchMarketConditions.mockResolvedValue(MARKET_STABLE);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          // Deterministic recs should appear (simulation not required)
+          expect(screen.getByTestId("recommendation-enable-simulation")).toBeTruthy();
+        });
+        // No market-* recs
+        expect(screen.queryByTestId("recommendation-market-enable-simulation")).toBeNull();
+        expect(screen.queryByTestId("recommendation-market-tighten-slippage")).toBeNull();
+      });
+
+      it("shows no market recs when fetch fails", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, require_simulation_success: false },
+        });
+        mockFetchMarketConditions.mockRejectedValue(new Error("network error"));
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-enable-simulation")).toBeTruthy();
+        });
+        expect(screen.queryByTestId("recommendation-market-enable-simulation")).toBeNull();
+      });
+
+      it("does not show market simulation rec when simulation already required", async () => {
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY); // simulation=true
+        mockFetchMarketConditions.mockResolvedValue(MARKET_STRESSED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+        });
+        expect(screen.queryByTestId("recommendation-market-enable-simulation")).toBeNull();
+        expect(screen.queryByTestId("recommendation-market-tx-submission-throttled")).toBeNull();
+      });
+
+      it("does not show market slippage rec when slippage is tight", async () => {
+        mockFetchPolicy.mockResolvedValue(PRO_POLICY); // slippage=100
+        mockFetchMarketConditions.mockResolvedValue(MARKET_STRESSED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+        });
+        expect(screen.queryByTestId("recommendation-market-tighten-slippage")).toBeNull();
+      });
+
+      it("description mentions execution conditions when market recs present", async () => {
+        mockFetchPolicy.mockResolvedValue({
+          ...PRO_POLICY,
+          effective: { ...PRO_POLICY.effective, require_simulation_success: false },
+        });
+        mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+        render(<CustomerPoliciesPage />);
+
+        await waitFor(() => {
+          expect(screen.getByTestId("recommendation-market-enable-simulation")).toBeTruthy();
+        });
+        expect(screen.getByText(/current execution conditions/)).toBeTruthy();
       });
     });
   });

@@ -8,8 +8,10 @@ import {
   fetchPolicy,
   updatePolicyOverrides,
   fetchReceiptSummary,
+  fetchMarketConditions,
   type EffectivePolicyResponse,
   type ReceiptSummary,
+  type MarketConditions,
 } from "@/lib/customer-auth";
 import { PremiumSlider } from "@/components/premium-slider";
 
@@ -789,11 +791,11 @@ type RecommendationPriority = "high" | "medium" | "low";
  *   - "Default guidance"   — generic best-practice recommendations
  *   - "Policy analysis"    — derived from the customer's current policy values
  *   - "Customer history"   — derived from the customer's own receipt history
+ *   - "Market analysis"    — real-time execution environment health signals
  *
  * Future sources (defined in the type for forward-compatibility, not shown in
  * the UI until actually wired):
  *   - "Policy Intelligence" — PIL-backed backend signals
- *   - "Market analysis"     — real-time market probe data
  *   - "Cohort benchmark"    — anonymized cross-cohort comparisons
  *   - "External context"    — third-party data feeds
  */
@@ -1142,6 +1144,125 @@ function generateHistoryRecommendations(
   return recs;
 }
 
+// ---------------------------------------------------------------------------
+// Market-aware recommendations
+// ---------------------------------------------------------------------------
+
+/**
+ * Generate recommendations informed by real-time execution environment
+ * conditions from the RPC/market monitoring layer.
+ *
+ * All recommendations are grounded in actual infrastructure telemetry
+ * (RPC health, throttle rates).  Each is labeled with source
+ * "Market analysis" and includes the environment summary as evidence.
+ *
+ * Returns an empty array when conditions are stable or when no market
+ * data is available — degrades gracefully.
+ */
+function generateMarketRecommendations(
+  market: MarketConditions,
+  effective: Record<string, unknown>,
+): PolicyRecommendation[] {
+  const recs: PolicyRecommendation[] = [];
+
+  // Only generate recommendations when there is a real signal
+  if (market.environment === "stable") return recs;
+
+  const isDegraded = market.environment === "degraded";
+  const isStressed = market.environment === "stressed";
+
+  // 1. Recommend enabling simulation when execution environment is degraded/stressed
+  if (
+    (isDegraded || isStressed) &&
+    effective.require_simulation_success !== true
+  ) {
+    recs.push({
+      id: "market-enable-simulation",
+      title: "Enable simulation — execution conditions are elevated",
+      explanation:
+        `Current execution environment is ${market.environment}. ` +
+        "Enabling simulation requirement helps catch failed transactions before they consume gas.",
+      why:
+        "When RPC infrastructure is stressed, transactions are more likely to revert. " +
+        "Simulation pre-checks prevent wasted gas and unexpected losses.",
+      priority: isStressed ? "high" : "medium",
+      source: "Market analysis",
+      fieldKey: "require_simulation_success",
+      evidence: market.summary,
+    });
+  }
+
+  // 2. Recommend tightening slippage when stressed
+  const policySlippage = effective.max_slippage_bps;
+  if (
+    isStressed &&
+    typeof policySlippage === "number" &&
+    policySlippage > 100
+  ) {
+    recs.push({
+      id: "market-tighten-slippage",
+      title: "Consider tightening slippage — market conditions are stressed",
+      explanation:
+        `Your slippage cap is ${policySlippage} bps. During stressed execution conditions, ` +
+        "wider slippage tolerances increase the risk of unfavorable fills.",
+      why:
+        "Tighter slippage limits provide a safety net when execution quality is reduced.",
+      priority: "medium",
+      source: "Market analysis",
+      fieldKey: "max_slippage_bps",
+      evidence: market.summary,
+    });
+  }
+
+  // 3. Recommend caution on transaction limits when stressed
+  const policyMaxUsd = effective.max_notional_usd;
+  if (
+    isStressed &&
+    typeof policyMaxUsd === "number" &&
+    policyMaxUsd > 50_000
+  ) {
+    recs.push({
+      id: "market-review-limits",
+      title: "Review transaction limits — elevated execution risk",
+      explanation:
+        `Your USD limit is $${policyMaxUsd.toLocaleString()}. During stressed conditions, ` +
+        "large transactions carry higher execution risk.",
+      why:
+        "Temporarily lowering limits reduces exposure while infrastructure conditions are elevated.",
+      priority: "low",
+      source: "Market analysis",
+      fieldKey: "max_notional_usd",
+      evidence: market.summary,
+    });
+  }
+
+  // 4. Warn about specific method throttling affecting transaction submission
+  if (
+    market.throttled_methods.length > 0 &&
+    market.throttled_methods.some((m) =>
+      m.toLowerCase().includes("sendtransaction") || m.toLowerCase().includes("send_transaction"),
+    ) &&
+    effective.require_simulation_success !== true
+  ) {
+    recs.push({
+      id: "market-tx-submission-throttled",
+      title: "Transaction submission is being throttled",
+      explanation:
+        "The transaction submission method is currently experiencing throttling. " +
+        "Requiring simulation success ensures only viable transactions are submitted.",
+      why:
+        "When submission is throttled, each attempt is more costly. " +
+        "Simulation filters out transactions likely to fail.",
+      priority: "high",
+      source: "Market analysis",
+      fieldKey: "require_simulation_success",
+      evidence: market.summary,
+    });
+  }
+
+  return recs;
+}
+
 const PRIORITY_STYLES: Record<RecommendationPriority, { badge: string; border: string }> = {
   high: {
     badge: "bg-red-500/15 text-red-300 border border-red-500/20",
@@ -1167,6 +1288,7 @@ export default function CustomerPoliciesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [historySummary, setHistorySummary] = useState<ReceiptSummary | null>(null);
+  const [marketConditions, setMarketConditions] = useState<MarketConditions | null>(null);
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -1212,6 +1334,17 @@ export default function CustomerPoliciesPage() {
     }
   }, []);
 
+  // Fetch market conditions for market-aware recommendations (non-blocking).
+  const loadMarketConditions = useCallback(async () => {
+    try {
+      const conditions = await fetchMarketConditions();
+      setMarketConditions(conditions);
+    } catch {
+      // Market conditions are optional — degrade gracefully.
+      setMarketConditions(null);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isLoggedIn()) {
       router.replace("/login");
@@ -1219,7 +1352,8 @@ export default function CustomerPoliciesPage() {
     }
     loadPolicy();
     loadHistorySummary();
-  }, [router, loadPolicy, loadHistorySummary]);
+    loadMarketConditions();
+  }, [router, loadPolicy, loadHistorySummary, loadMarketConditions]);
 
   // Initialize form values from current overrides when entering edit mode.
   // Scroll to and briefly highlight the target field after edit form mounts.
@@ -1872,10 +2006,13 @@ export default function CustomerPoliciesPage() {
               const historyRecs = historySummary
                 ? generateHistoryRecommendations(historySummary, effective)
                 : [];
+              const marketRecs = marketConditions
+                ? generateMarketRecommendations(marketConditions, effective)
+                : [];
               // Merge, deduplicate by id, sort by priority
               const seenIds = new Set<string>();
               const allRecs: PolicyRecommendation[] = [];
-              for (const rec of [...deterministicRecs, ...historyRecs]) {
+              for (const rec of [...deterministicRecs, ...historyRecs, ...marketRecs]) {
                 if (!seenIds.has(rec.id)) {
                   seenIds.add(rec.id);
                   allRecs.push(rec);
@@ -1887,6 +2024,7 @@ export default function CustomerPoliciesPage() {
               if (allRecs.length === 0) return null;
 
               const hasHistoryRecs = historyRecs.length > 0;
+              const hasMarketRecs = marketRecs.length > 0;
               return (
                 <section
                   className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-4"
@@ -1898,7 +2036,8 @@ export default function CustomerPoliciesPage() {
                     </h2>
                     <p className="mt-1 text-[10px] text-slate-500">
                       Suggestions to strengthen your policy based on your current configuration
-                      {hasHistoryRecs ? " and your recent transaction history" : ""}.
+                      {hasHistoryRecs ? " and your recent transaction history" : ""}
+                      {hasMarketRecs ? " and current execution conditions" : ""}.
                     </p>
                   </div>
                   <div className="space-y-3" data-testid="recommendation-cards">
@@ -1956,7 +2095,7 @@ export default function CustomerPoliciesPage() {
                     })}
                   </div>
                   <p className="text-[9px] text-slate-600 text-center">
-                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? " and your own recent transaction history" : ""}, not from live market data or cross-customer analysis.
+                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : hasHistoryRecs ? "" : ""}{!hasHistoryRecs && !hasMarketRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
                   </p>
                 </section>
               );

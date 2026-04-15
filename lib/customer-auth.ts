@@ -26,6 +26,7 @@ const RECEIPTS_PROXY_BASE = "/api/customer/receipts";
 const KEYS_PROXY_BASE = "/api/customer/keys";
 const UPGRADES_PROXY_BASE = "/api/customer/upgrades";
 const POLICY_PROXY_BASE = "/api/customer/policy";
+const MARKET_CONDITIONS_PROXY_BASE = "/api/customer/market-conditions";
 
 const TOKEN_KEY = "atf_customer_token";
 const TENANT_KEY = "atf_customer_tenant";
@@ -461,6 +462,44 @@ export async function fetchReceiptSummary(
     let body: Record<string, unknown> = {};
     try { body = await res.json(); } catch { /* use default */ }
     const msg = typeof body.message === "string" ? body.message : "We couldn't load your receipt summary.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
+  }
+
+  return res.json();
+}
+
+export interface MarketConditions {
+  environment: "stable" | "degraded" | "stressed";
+  rpc_status: string;
+  throttled_methods: string[];
+  throttle_rate_pct: number;
+  recommendation: string | null;
+  summary: string;
+  captured_at: number;
+}
+
+export async function fetchMarketConditions(): Promise<MarketConditions> {
+  const token = getToken();
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
+
+  let res: Response;
+  try {
+    res = await fetch(MARKET_CONDITIONS_PROXY_BASE, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the market conditions service.");
+  }
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
+  }
+
+  if (!res.ok) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "Market conditions unavailable.";
     throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
   }
 
