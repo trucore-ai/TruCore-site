@@ -30,6 +30,15 @@ const ALLOWED_EVENTS = new Set([
   // Proof bundle export
   "proof_bundle_exported",
   "proof_share_card_opened",
+  // Policy recommendation engagement
+  "policy_recommendation_impression",
+  "policy_recommendation_expand",
+  "policy_recommendation_collapse",
+  "policy_recommendation_view_setting",
+  "policy_signal_refresh_click",
+  "policy_signal_refresh_complete",
+  "policy_upgrade_teaser_view",
+  "policy_upgrade_teaser_click",
 ]);
 
 type TrackPayload = {

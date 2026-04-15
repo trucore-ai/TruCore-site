@@ -21,6 +21,17 @@ import {
   type SignalFreshness,
 } from "@/lib/customer-auth";
 import { PremiumSlider } from "@/components/premium-slider";
+import {
+  trackRecommendationImpression,
+  trackRecommendationExpand,
+  trackRecommendationCollapse,
+  trackRecommendationViewSetting,
+  trackSignalRefreshClick,
+  trackSignalRefreshComplete,
+  trackUpgradeTeaserView,
+  trackUpgradeTeaserClick,
+  resetImpressionTracking,
+} from "@/lib/client/policy-recommendation-analytics";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1663,20 +1674,29 @@ export default function CustomerPoliciesPage() {
   // Targeted refresh for signal-backed sources only (market + external).
   const refreshSignals = useCallback(async () => {
     if (refreshingSignals || signalRefreshCooldown) return;
+    const tier = policy?.plan_code ?? "free";
+    trackSignalRefreshClick({ plan_tier: tier });
     setRefreshingSignals(true);
     try {
       const [mkt, ext] = await Promise.allSettled([
         fetchMarketConditions(),
         fetchExternalContext(),
       ]);
-      setMarketConditions(mkt.status === "fulfilled" ? mkt.value : null);
-      setExternalContext(ext.status === "fulfilled" ? ext.value : null);
+      const mktVal = mkt.status === "fulfilled" ? mkt.value : null;
+      const extVal = ext.status === "fulfilled" ? ext.value : null;
+      setMarketConditions(mktVal);
+      setExternalContext(extVal);
+      trackSignalRefreshComplete({
+        plan_tier: tier,
+        market_status: mktVal?.signal_freshness?.status,
+        external_status: extVal?.signal_freshness?.status,
+      });
     } finally {
       setRefreshingSignals(false);
       setSignalRefreshCooldown(true);
       setTimeout(() => setSignalRefreshCooldown(false), 10_000);
     }
-  }, [refreshingSignals, signalRefreshCooldown]);
+  }, [refreshingSignals, signalRefreshCooldown, policy?.plan_code]);
 
   useEffect(() => {
     if (!isLoggedIn()) {
@@ -2393,6 +2413,17 @@ export default function CustomerPoliciesPage() {
 
               if (allRecs.length === 0 && gatedSources.length === 0) return null;
 
+              // Analytics: aggregate context for events
+              const uniqueSources = new Set(allRecs.map((r) => r.source));
+              const recAnalyticsCtx = {
+                total_visible_count: allRecs.length,
+                visible_sources_count: uniqueSources.size,
+                has_gated_sources: gatedSources.length > 0,
+              };
+
+              // Reset impression deduplication each render cycle
+              resetImpressionTracking();
+
               const hasHistoryRecs = historyRecs.length > 0;
               const hasMarketRecs = marketRecs.length > 0;
               const hasPilRecs = pilRecs.length > 0;
@@ -2481,6 +2512,17 @@ export default function CustomerPoliciesPage() {
                       const expandable = hasExpandableDetail(rec);
                       const isExpanded = expandedRecs.has(rec.id);
                       const sourceFraming = getSourceDetailFraming(rec);
+                      // Analytics: card impression (deduplicated per render cycle)
+                      trackRecommendationImpression({
+                        recommendation_id: rec.id,
+                        recommendation_source: rec.source,
+                        recommendation_priority: rec.priority,
+                        plan_tier: planCode,
+                        had_confidence: rec.confidence != null,
+                        had_evidence: !!rec.evidence,
+                        field_key_present: !!rec.fieldKey,
+                        ...recAnalyticsCtx,
+                      });
                       return (
                         <div
                           key={rec.id}
@@ -2512,12 +2554,31 @@ export default function CustomerPoliciesPage() {
                           {expandable && (
                             <button
                               type="button"
-                              onClick={() => setExpandedRecs((prev) => {
-                                const next = new Set(prev);
-                                if (next.has(rec.id)) next.delete(rec.id);
-                                else next.add(rec.id);
-                                return next;
-                              })}
+                              onClick={() => {
+                                const wasExpanded = expandedRecs.has(rec.id);
+                                if (wasExpanded) {
+                                  trackRecommendationCollapse({
+                                    recommendation_id: rec.id,
+                                    recommendation_source: rec.source,
+                                    plan_tier: planCode,
+                                  });
+                                } else {
+                                  trackRecommendationExpand({
+                                    recommendation_id: rec.id,
+                                    recommendation_source: rec.source,
+                                    recommendation_priority: rec.priority,
+                                    plan_tier: planCode,
+                                    had_confidence: rec.confidence != null,
+                                    had_evidence: !!rec.evidence,
+                                  });
+                                }
+                                setExpandedRecs((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(rec.id)) next.delete(rec.id);
+                                  else next.add(rec.id);
+                                  return next;
+                                });
+                              }}
                               className="inline-flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 transition"
                               aria-expanded={isExpanded}
                               data-testid={`recommendation-details-toggle-${rec.id}`}
@@ -2566,7 +2627,16 @@ export default function CustomerPoliciesPage() {
                           {overridesEnabled && rec.fieldKey && (
                             <button
                               type="button"
-                              onClick={() => enterEditMode(rec.fieldKey)}
+                              onClick={() => {
+                                trackRecommendationViewSetting({
+                                  recommendation_id: rec.id,
+                                  recommendation_source: rec.source,
+                                  recommendation_priority: rec.priority,
+                                  plan_tier: planCode,
+                                  field_key_present: true,
+                                });
+                                enterEditMode(rec.fieldKey);
+                              }}
                               className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
                               data-testid={`recommendation-action-${rec.id}`}
                             >
@@ -2585,6 +2655,12 @@ export default function CustomerPoliciesPage() {
                     const hasEnterpriseGated = gatedSources.includes("External context");
                     const hasAdvancedGated = gatedSources.includes("Cohort benchmark");
                     const tierLabel = hasEnterpriseGated ? "Enterprise" : hasAdvancedGated ? "Advanced" : "Pro";
+                    // Analytics: teaser impression (deduplicated per render cycle)
+                    trackUpgradeTeaserView({
+                      plan_tier: planCode,
+                      gated_source_count: gatedSources.length,
+                      gated_sources_present: gatedSources.join(","),
+                    });
                     return (
                     <div
                       className="rounded-lg border border-primary-400/20 bg-primary-500/5 p-4 space-y-3"
@@ -2629,6 +2705,11 @@ export default function CustomerPoliciesPage() {
                       )}
                       <Link
                         href="/customer/upgrades"
+                        onClick={() => trackUpgradeTeaserClick({
+                          plan_tier: planCode,
+                          gated_source_count: gatedSources.length,
+                          target_tier: tierLabel,
+                        })}
                         className="inline-flex items-center gap-1 rounded-md border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-[10px] font-medium text-primary-300 transition hover:bg-primary-500/20 hover:text-primary-200"
                         data-testid="recommendation-upgrade-link"
                       >
