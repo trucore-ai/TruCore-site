@@ -636,9 +636,27 @@ export const MARKET_STRESSED = {
   signal_freshness: { status: "fresh", last_updated_at: Math.floor(Date.now() / 1000) },
 };
 
+/** Stale market conditions — data exists but signal is outdated. */
+export const MARKET_STALE = {
+  ...MARKET_DEGRADED,
+  signal_freshness: { status: "stale", last_updated_at: Math.floor(Date.now() / 1000) - 600 },
+};
+
+/** Unavailable market conditions — no signal data ever recorded. */
+export const MARKET_UNAVAILABLE = {
+  environment: "unknown",
+  rpc_status: "unknown",
+  throttled_methods: [] as string[],
+  throttle_rate_pct: 0.0,
+  recommendation: null,
+  summary: "Signal data is unavailable.",
+  captured_at: null,
+  signal_freshness: { status: "unavailable", last_updated_at: null },
+};
+
 export type MarketConditionsMockOpts = {
-  /** "stable", "degraded", "stressed", or a custom object. */
-  variant?: "stable" | "degraded" | "stressed" | Record<string, unknown>;
+  /** "stable", "degraded", "stressed", "stale", "unavailable", or a custom object. */
+  variant?: "stable" | "degraded" | "stressed" | "stale" | "unavailable" | Record<string, unknown>;
   /** HTTP status to return (default 200). */
   status?: number;
 };
@@ -656,7 +674,11 @@ export async function mockMarketConditionsRoute(
         ? MARKET_DEGRADED
         : variant === "stressed"
           ? MARKET_STRESSED
-          : variant;
+          : variant === "stale"
+            ? MARKET_STALE
+            : variant === "unavailable"
+              ? MARKET_UNAVAILABLE
+              : variant;
 
   await page.route("**/api/customer/market-conditions*", (route: Route) =>
     route.fulfill({ status, json: body }),
@@ -886,9 +908,29 @@ export const EXTERNAL_CONTEXT_GATED = {
   signal_freshness: { status: "fresh", last_updated_at: Math.floor(Date.now() / 1000) },
 };
 
+/** Stale external context — signal data is outdated, recommendations withheld (empty). */
+export const EXTERNAL_CONTEXT_STALE = {
+  recommendations: [] as unknown[],
+  captured_at: Math.floor(Date.now() / 1000) - 600,
+  plan: "enterprise",
+  gated: false,
+  gated_count: 0,
+  signal_freshness: { status: "stale", last_updated_at: Math.floor(Date.now() / 1000) - 600 },
+};
+
+/** Unavailable external context — no signal data ever recorded. */
+export const EXTERNAL_CONTEXT_UNAVAILABLE = {
+  recommendations: [] as unknown[],
+  captured_at: null,
+  plan: "enterprise",
+  gated: false,
+  gated_count: 0,
+  signal_freshness: { status: "unavailable", last_updated_at: null },
+};
+
 export type ExternalContextMockOpts = {
-  /** "full", "empty", "gated", or a custom object. */
-  variant?: "full" | "empty" | "gated" | Record<string, unknown>;
+  /** "full", "empty", "gated", "stale", "unavailable", or a custom object. */
+  variant?: "full" | "empty" | "gated" | "stale" | "unavailable" | Record<string, unknown>;
   /** HTTP status to return (default 200). */
   status?: number;
 };
@@ -906,7 +948,11 @@ export async function mockExternalContextRoute(
         ? EXTERNAL_CONTEXT_GATED
         : variant === "empty"
           ? EXTERNAL_CONTEXT_EMPTY
-          : variant;
+          : variant === "stale"
+            ? EXTERNAL_CONTEXT_STALE
+            : variant === "unavailable"
+              ? EXTERNAL_CONTEXT_UNAVAILABLE
+              : variant;
 
   await page.route("**/api/customer/intel/external-context*", (route: Route) =>
     route.fulfill({ status, json: body }),

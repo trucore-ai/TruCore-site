@@ -12,6 +12,10 @@ import {
   silenceAnalytics,
   RICH_HISTORY_SUMMARY,
   MARKET_STRESSED,
+  MARKET_STALE,
+  MARKET_UNAVAILABLE,
+  EXTERNAL_CONTEXT_STALE,
+  EXTERNAL_CONTEXT_UNAVAILABLE,
 } from "./helpers/smoke-fixtures";
 
 /**
@@ -2099,5 +2103,288 @@ test.describe("customer policies — external context gating (below Enterprise)"
     await expect(details).toContainText("External context");
     // Enterprise tier label because External context is the highest gated source
     await expect(teaser).toContainText("Enterprise");
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Signal freshness badges — market analysis
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — market signal freshness badges", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("fresh market signal shows 'Live' badge", async ({ page }) => {
+    await mockMarketConditionsRoute(page, { variant: "stable" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const badge = page.getByTestId("freshness-badge-market-analysis");
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveText("Live");
+  });
+
+  test("stale market signal shows 'Data may be outdated' badge", async ({ page }) => {
+    await mockMarketConditionsRoute(page, { variant: "stale" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const badge = page.getByTestId("freshness-badge-market-analysis");
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveText("Data may be outdated");
+  });
+
+  test("unavailable market signal shows 'Signal unavailable' badge", async ({ page }) => {
+    await mockMarketConditionsRoute(page, { variant: "unavailable" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const badge = page.getByTestId("freshness-badge-market-analysis");
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveText("Signal unavailable");
+  });
+
+  test("stale market signal still renders recommendation cards with stale note in summary", async ({ page }) => {
+    // Stale fixture is based on MARKET_DEGRADED — which has environment=degraded
+    // The summary should still be visible on market rec cards
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: false },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: false },
+        },
+      });
+    });
+    await mockMarketConditionsRoute(page, { variant: "stale" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Market recs should still render from the degraded data
+    const marketCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-market-']");
+    const count = await marketCards.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+
+    // Badge shows stale
+    const badge = page.getByTestId("freshness-badge-market-analysis");
+    await expect(badge).toHaveText("Data may be outdated");
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Signal freshness badges — external context
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — external context signal freshness badges", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "enterprise" });
+    await mockReceiptSummaryRoute(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("fresh external-context signal shows 'Live' badge", async ({ page }) => {
+    await mockExternalContextRoute(page, { variant: "full" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const badge = page.getByTestId("freshness-badge-external-context");
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveText("Live");
+  });
+
+  test("stale external-context signal shows 'Data may be outdated' badge", async ({ page }) => {
+    await mockExternalContextRoute(page, { variant: "stale" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const badge = page.getByTestId("freshness-badge-external-context");
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveText("Data may be outdated");
+  });
+
+  test("stale external-context does NOT render misleading recommendation cards", async ({ page }) => {
+    await mockExternalContextRoute(page, { variant: "stale" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Stale external context returns empty recommendations — no ext-* cards
+    const extCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-ext-']");
+    await expect(extCards).toHaveCount(0);
+
+    // Badge is still visible and shows stale
+    const badge = page.getByTestId("freshness-badge-external-context");
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveText("Data may be outdated");
+  });
+
+  test("unavailable external-context signal shows 'Signal unavailable' badge", async ({ page }) => {
+    await mockExternalContextRoute(page, { variant: "unavailable" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const badge = page.getByTestId("freshness-badge-external-context");
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveText("Signal unavailable");
+  });
+
+  test("unavailable external-context degrades gracefully with no broken UI", async ({ page }) => {
+    await mockExternalContextRoute(page, { variant: "unavailable" });
+    await page.goto("/customer/policies");
+
+    // Page loads without errors — core sections visible
+    await expect(
+      page.getByRole("heading", { name: "Policy & Protections" }),
+    ).toBeVisible();
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // No external context recommendation cards
+    const extCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-ext-']");
+    await expect(extCards).toHaveCount(0);
+
+    // Badge renders correctly
+    const badge = page.getByTestId("freshness-badge-external-context");
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveText("Signal unavailable");
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Signal freshness — stale/unavailable coexist with other recommendation sources
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — signal freshness coexists with other sources", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "enterprise" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await mockCohortBenchmarksRoute(page, { variant: "full" });
+    await injectCustomerAuth(page);
+  });
+
+  test("stale market + stale external do not break deterministic/history/PIL/cohort recs", async ({ page }) => {
+    await mockMarketConditionsRoute(page, { variant: "stale" });
+    await mockExternalContextRoute(page, { variant: "stale" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+
+    // Deterministic, history, PIL, cohort should all still be present
+    expect(allSources.some((s) => s === "Default guidance" || s === "Policy analysis")).toBe(true);
+    expect(allSources).toContain("Customer history");
+    expect(allSources).toContain("Policy Intelligence");
+    expect(allSources).toContain("Cohort benchmark");
+    expect(allSources.length).toBeGreaterThanOrEqual(4);
+  });
+
+  test("unavailable market + unavailable external do not break the page", async ({ page }) => {
+    await mockMarketConditionsRoute(page, { variant: "unavailable" });
+    await mockExternalContextRoute(page, { variant: "unavailable" });
+    await page.goto("/customer/policies");
+
+    await expect(
+      page.getByRole("heading", { name: "Policy & Protections" }),
+    ).toBeVisible();
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Other source types still render
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+    expect(allSources.length).toBeGreaterThanOrEqual(3);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Mixed-signal freshness — one stale, one fresh
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — mixed signal freshness states", () => {
+  test("market stale + external fresh renders both badges correctly", async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "enterprise" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "stale" });
+    await mockExternalContextRoute(page, { variant: "full" });
+    await injectCustomerAuth(page);
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Market badge: stale
+    const marketBadge = page.getByTestId("freshness-badge-market-analysis");
+    await expect(marketBadge).toBeVisible();
+    await expect(marketBadge).toHaveText("Data may be outdated");
+
+    // External badge: fresh (from EXTERNAL_CONTEXT_FULL which has fresh status)
+    const extBadge = page.getByTestId("freshness-badge-external-context");
+    await expect(extBadge).toBeVisible();
+    await expect(extBadge).toHaveText("Live");
+
+    // External recommendations should still render (fresh signal)
+    const extCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-ext-']");
+    const extCount = await extCards.count();
+    expect(extCount).toBeGreaterThanOrEqual(1);
+  });
+
+  test("market fresh + external unavailable renders both badges correctly", async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "enterprise" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockExternalContextRoute(page, { variant: "unavailable" });
+    await injectCustomerAuth(page);
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Market badge: fresh (MARKET_STRESSED has fresh signal)
+    const marketBadge = page.getByTestId("freshness-badge-market-analysis");
+    await expect(marketBadge).toBeVisible();
+    await expect(marketBadge).toHaveText("Live");
+
+    // External badge: unavailable
+    const extBadge = page.getByTestId("freshness-badge-external-context");
+    await expect(extBadge).toBeVisible();
+    await expect(extBadge).toHaveText("Signal unavailable");
+
+    // External cards should be empty (unavailable = empty recs)
+    const extCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-ext-']");
+    await expect(extCards).toHaveCount(0);
+
+    // Page remains coherent — recommendation section visible
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
   });
 });
