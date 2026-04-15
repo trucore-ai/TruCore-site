@@ -20,6 +20,22 @@ import {
   EXTERNAL_CONTEXT_STALE,
   EXTERNAL_CONTEXT_UNAVAILABLE,
 } from "./helpers/smoke-fixtures";
+import type { Page } from "@playwright/test";
+
+/**
+ * Expand the "More suggestions" collapsed section so that cards in the
+ * lower-priority display bucket become visible.
+ */
+async function expandMoreSuggestions(page: Page) {
+  const toggle = page.getByTestId("more-suggestions-toggle");
+  // Wait for toggle to appear (page may still be loading)
+  await expect(toggle).toBeVisible({ timeout: 10000 });
+  const expanded = await toggle.getAttribute("aria-expanded");
+  if (expanded !== "true") {
+    await toggle.click();
+    await expect(page.getByTestId("more-suggestions-list")).toBeVisible();
+  }
+}
 
 /**
  * Customer policy editing E2E tests.
@@ -602,6 +618,9 @@ test.describe("customer policies — policy recommendations", () => {
 
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
+    // Lower-priority cards are in the collapsed "More suggestions" section
+    await expandMoreSuggestions(page);
+
     const priorities = page.getByTestId("recommendation-priority");
     await expect(priorities.first()).toBeVisible();
     const count = await priorities.count();
@@ -697,6 +716,9 @@ test.describe("customer policies — history-aware recommendations", () => {
 
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
+    // History-slippage-headroom is low priority → "More suggestions"
+    await expandMoreSuggestions(page);
+
     // Evidence text references receipt count and period — pick a specific card
     const slippageCard = page.getByTestId("recommendation-history-slippage-headroom");
     await expect(slippageCard).toBeVisible();
@@ -714,6 +736,9 @@ test.describe("customer policies — history-aware recommendations", () => {
     // 200 > 55 * 3 = 165 → triggers slippage headroom
     await page.goto("/customer/policies");
 
+    // Low priority → collapsed "More suggestions"
+    await expandMoreSuggestions(page);
+
     const slippageCard = page.getByTestId("recommendation-history-slippage-headroom");
     await expect(slippageCard).toBeVisible();
     await expect(slippageCard).toContainText("slippage cap is wider");
@@ -723,6 +748,9 @@ test.describe("customer policies — history-aware recommendations", () => {
   test("narrow-token recommendation appears when token usage is narrow and unrestricted", async ({ page }) => {
     // PRO policy has no token_policy (unrestricted), rich summary has 3 tokens
     await page.goto("/customer/policies");
+
+    // Low priority → collapsed "More suggestions"
+    await expandMoreSuggestions(page);
 
     const tokenCard = page.getByTestId("recommendation-history-narrow-tokens");
     await expect(tokenCard).toBeVisible();
@@ -772,6 +800,9 @@ test.describe("customer policies — history-aware recommendations", () => {
 
   test("denial recommendation appears when denials are present in history", async ({ page }) => {
     await page.goto("/customer/policies");
+
+    // Low priority → collapsed "More suggestions"
+    await expandMoreSuggestions(page);
 
     const denialCard = page.getByTestId("recommendation-history-recent-denials");
     await expect(denialCard).toBeVisible();
@@ -847,6 +878,9 @@ test.describe("customer policies — empty history graceful degradation", () => 
 
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
+    // Deterministic recs are low priority → "More suggestions"
+    await expandMoreSuggestions(page);
+
     // Deterministic recs present
     const sources = page.getByTestId("recommendation-source");
     await expect(sources.first()).toBeVisible();
@@ -916,6 +950,9 @@ test.describe("customer policies — recommendation action buttons", () => {
       // Wait for recommendations to render
       await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
+      // add-program-restrictions is low priority → "More suggestions"
+      await expandMoreSuggestions(page);
+
       // add-program-restrictions is the deterministic rec with fieldKey for PRO_POLICY
       const actionBtn = page.getByTestId("recommendation-action-add-program-restrictions");
       await expect(actionBtn).toBeVisible();
@@ -937,6 +974,9 @@ test.describe("customer policies — recommendation action buttons", () => {
 
       await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
+      // Low priority → "More suggestions"
+      await expandMoreSuggestions(page);
+
       // add-program-restrictions targets allowed_programs
       const actionBtn = page.getByTestId("recommendation-action-add-program-restrictions");
       await actionBtn.click();
@@ -952,6 +992,9 @@ test.describe("customer policies — recommendation action buttons", () => {
       await page.goto("/customer/policies");
 
       await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // Low priority → "More suggestions"
+      await expandMoreSuggestions(page);
 
       // add-program-restrictions targets allowed_programs
       const actionBtn = page.getByTestId("recommendation-action-add-program-restrictions");
@@ -1005,6 +1048,9 @@ test.describe("customer policies — recommendation action buttons", () => {
 
       await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
+      // Low priority history recs → "More suggestions"
+      await expandMoreSuggestions(page);
+
       // Pick a history recommendation with fieldKey — e.g., history-slippage-headroom
       const actionBtn = page.getByTestId("recommendation-action-history-slippage-headroom");
       await expect(actionBtn).toBeVisible();
@@ -1020,6 +1066,9 @@ test.describe("customer policies — recommendation action buttons", () => {
 
       await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
+      // Low priority → "More suggestions"
+      await expandMoreSuggestions(page);
+
       // history-slippage-headroom targets max_slippage_bps
       const actionBtn = page.getByTestId("recommendation-action-history-slippage-headroom");
       await actionBtn.click();
@@ -1033,6 +1082,9 @@ test.describe("customer policies — recommendation action buttons", () => {
       await page.goto("/customer/policies");
 
       await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // Low priority → "More suggestions"
+      await expandMoreSuggestions(page);
 
       // history-narrow-tokens targets token_policy
       const actionBtn = page.getByTestId("recommendation-action-history-narrow-tokens");
@@ -1048,6 +1100,9 @@ test.describe("customer policies — recommendation action buttons", () => {
       await page.goto("/customer/policies");
 
       await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // Low priority → "More suggestions"
+      await expandMoreSuggestions(page);
 
       const denialCard = page.getByTestId("recommendation-history-recent-denials");
       await expect(denialCard).toBeVisible();
@@ -1132,6 +1187,9 @@ test.describe("customer policies — recommendation action buttons", () => {
       await page.goto("/customer/policies");
 
       await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+      // Low priority → "More suggestions"
+      await expandMoreSuggestions(page);
 
       const actionBtn = page.getByTestId("recommendation-action-add-program-restrictions");
       await actionBtn.click();
@@ -1446,6 +1504,9 @@ test.describe("customer policies — market-aware graceful degradation", () => {
 
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
+    // Deterministic recs are low priority → "More suggestions"
+    await expandMoreSuggestions(page);
+
     // Deterministic recs present
     const sources = page.getByTestId("recommendation-source");
     await expect(sources.first()).toBeVisible();
@@ -1720,10 +1781,12 @@ test.describe("customer policies — plan-aware recommendation tiering", () => {
     await mockCohortBenchmarksRoute(page, { variant: "empty" });
     await page.goto("/customer/policies");
 
-    // PIL recs should render
+    // PIL recs should render (high confidence → "top")
     await expect(page.getByTestId("recommendation-pil-reduce-slippage")).toBeVisible();
 
-    // History recs should render
+    // History recs are low priority → "More suggestions"
+    await expandMoreSuggestions(page);
+
     await expect(page.getByTestId("recommendation-history-limit-headroom")).toBeVisible();
 
     // Upgrade teaser should NOT be present
@@ -2618,6 +2681,161 @@ test.describe("customer policies — signal refresh UX", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────────
+// Recommendation prioritization display model
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — recommendation prioritization display model", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "enterprise" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await mockCohortBenchmarksRoute(page, { variant: "full" });
+    await mockExternalContextRoute(page, { variant: "full" });
+    await injectCustomerAuth(page);
+  });
+
+  test("high-priority actionable recs appear in top-recommendations section", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const topSection = page.getByTestId("top-recommendations");
+    await expect(topSection).toBeVisible();
+
+    // pil-reduce-slippage is high confidence + fieldKey → top
+    await expect(topSection.getByTestId("recommendation-pil-reduce-slippage")).toBeVisible();
+
+    // ext-ext-sustained-throttle is high confidence + fieldKey → top
+    await expect(topSection.getByTestId("recommendation-ext-ext-sustained-throttle")).toBeVisible();
+  });
+
+  test("lower-priority recs are initially hidden in collapsed more-suggestions", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // more-suggestions section exists
+    await expect(page.getByTestId("more-suggestions")).toBeVisible();
+
+    // List is hidden by default
+    const list = page.getByTestId("more-suggestions-list");
+    await expect(list).not.toBeVisible();
+
+    // Low priority cards are in DOM but not visible
+    const historyCard = page.getByTestId("recommendation-history-slippage-headroom");
+    await expect(historyCard).not.toBeVisible();
+  });
+
+  test("more-suggestions-toggle expands and collapses correctly", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const toggle = page.getByTestId("more-suggestions-toggle");
+    await expect(toggle).toBeVisible();
+
+    // Initially collapsed
+    const list = page.getByTestId("more-suggestions-list");
+    await expect(list).not.toBeVisible();
+
+    // Expand
+    await toggle.click();
+    await expect(list).toBeVisible();
+
+    // Collapse again
+    await toggle.click();
+    await expect(list).not.toBeVisible();
+  });
+
+  test("aria-expanded updates correctly on toggle", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const toggle = page.getByTestId("more-suggestions-toggle");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("View setting actions work from both top and expanded-more sections", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Action on a top-section card
+    const topAction = page.getByTestId("recommendation-action-tighten-slippage");
+    await expect(topAction).toBeVisible();
+    await topAction.click();
+
+    // Edit mode activates
+    await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+    await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+
+    // Cancel back
+    await page.getByRole("button", { name: "Cancel" }).click();
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Action on a more-section card
+    await expandMoreSuggestions(page);
+    const moreAction = page.getByTestId("recommendation-action-history-slippage-headroom");
+    await expect(moreAction).toBeVisible();
+    await moreAction.click();
+
+    await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+    await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+  });
+
+  test("mixed-source cards render coherently under display model", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Top section has high/medium+fieldKey cards from multiple sources
+    const topSection = page.getByTestId("top-recommendations");
+    const topSources = await topSection.getByTestId("recommendation-source").allTextContents();
+    expect(topSources.length).toBeGreaterThanOrEqual(2);
+
+    // Expand more to see low-priority cards
+    await expandMoreSuggestions(page);
+
+    const moreSection = page.getByTestId("more-suggestions-list");
+    const moreSources = await moreSection.getByTestId("recommendation-source").allTextContents();
+    expect(moreSources.length).toBeGreaterThanOrEqual(1);
+
+    // Sources in both sections should be real source labels
+    const validSources = ["Default guidance", "Policy analysis", "Customer history", "Market analysis", "Policy Intelligence", "Cohort benchmark", "External context"];
+    for (const src of [...topSources, ...moreSources]) {
+      expect(validSources).toContain(src);
+    }
+  });
+
+  test("no upgrade teaser or freshness badge regressions in display model", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Enterprise user: no upgrade teaser
+    await expect(page.getByTestId("recommendation-upgrade-teaser")).not.toBeVisible();
+
+    // Freshness badges still render
+    await expect(page.getByTestId("freshness-badge-market-analysis")).toBeVisible();
+    await expect(page.getByTestId("freshness-badge-external-context")).toBeVisible();
+
+    // Advisory disclaimer still visible
+    await expect(page.getByText("recommendations are advisory")).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
 // Expandable recommendation details
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -2638,6 +2856,9 @@ test.describe("customer policies — expandable recommendation details", () => {
   test("details toggle is visible on recommendation cards", async ({ page }) => {
     await page.goto("/customer/policies");
 
+    // history-slippage-headroom is low priority → "More suggestions"
+    await expandMoreSuggestions(page);
+
     const card = page.getByTestId("recommendation-history-slippage-headroom");
     await expect(card).toBeVisible();
     const toggle = card.getByTestId("recommendation-details-toggle-history-slippage-headroom");
@@ -2648,6 +2869,8 @@ test.describe("customer policies — expandable recommendation details", () => {
   test("details panel is hidden by default", async ({ page }) => {
     await page.goto("/customer/policies");
 
+    await expandMoreSuggestions(page);
+
     const card = page.getByTestId("recommendation-history-slippage-headroom");
     await expect(card).toBeVisible();
     await expect(card.getByTestId("recommendation-details-history-slippage-headroom")).not.toBeVisible();
@@ -2655,6 +2878,8 @@ test.describe("customer policies — expandable recommendation details", () => {
 
   test("clicking toggle reveals details with why-it-matters text", async ({ page }) => {
     await page.goto("/customer/policies");
+
+    await expandMoreSuggestions(page);
 
     const card = page.getByTestId("recommendation-history-slippage-headroom");
     await expect(card).toBeVisible();
@@ -2668,6 +2893,8 @@ test.describe("customer policies — expandable recommendation details", () => {
 
   test("clicking toggle again collapses details", async ({ page }) => {
     await page.goto("/customer/policies");
+
+    await expandMoreSuggestions(page);
 
     const card = page.getByTestId("recommendation-history-slippage-headroom");
     await expect(card).toBeVisible();
@@ -2686,6 +2913,8 @@ test.describe("customer policies — expandable recommendation details", () => {
   test("toggle has correct aria-expanded attribute", async ({ page }) => {
     await page.goto("/customer/policies");
 
+    await expandMoreSuggestions(page);
+
     const card = page.getByTestId("recommendation-history-slippage-headroom");
     await expect(card).toBeVisible();
 
@@ -2698,6 +2927,8 @@ test.describe("customer policies — expandable recommendation details", () => {
 
   test("multiple cards can be expanded simultaneously", async ({ page }) => {
     await page.goto("/customer/policies");
+
+    await expandMoreSuggestions(page);
 
     const historyCard = page.getByTestId("recommendation-history-slippage-headroom");
     const denialCard = page.getByTestId("recommendation-history-recent-denials");
@@ -2727,6 +2958,8 @@ test.describe("customer policies — expandable recommendation details", () => {
 
   test("details panel not in DOM when collapsed", async ({ page }) => {
     await page.goto("/customer/policies");
+
+    await expandMoreSuggestions(page);
 
     const card = page.getByTestId("recommendation-history-slippage-headroom");
     await expect(card).toBeVisible();
@@ -2872,6 +3105,9 @@ test.describe("customer policies — all-source coexistence (Enterprise)", () =>
     const totalCards = await page.getByTestId("recommendation-source").count();
     expect(totalCards).toBeGreaterThanOrEqual(7);
 
+    // history-slippage-headroom is low priority → "More suggestions"
+    await expandMoreSuggestions(page);
+
     // Click a 'View setting' button on a history rec
     const actionBtn = page.getByTestId("recommendation-action-history-slippage-headroom");
     await expect(actionBtn).toBeVisible();
@@ -2920,6 +3156,9 @@ test.describe("customer policies — all-source coexistence (Enterprise)", () =>
 
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
+    // history-slippage-headroom is low priority → "More suggestions"
+    await expandMoreSuggestions(page);
+
     // Expand a history card
     const historyCard = page.getByTestId("recommendation-history-slippage-headroom");
     const historyToggle = historyCard.getByTestId("recommendation-details-toggle-history-slippage-headroom");
@@ -2928,7 +3167,7 @@ test.describe("customer policies — all-source coexistence (Enterprise)", () =>
     await expect(historyToggle).toHaveAttribute("aria-expanded", "true");
     await expect(historyCard.getByTestId("recommendation-details-history-slippage-headroom")).toBeVisible();
 
-    // Expand an external context card
+    // Expand an external context card (high confidence → "top", already visible)
     const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
     const extToggle = extCard.getByTestId("recommendation-details-toggle-ext-ext-sustained-throttle");
     await expect(extToggle).toHaveAttribute("aria-expanded", "false");
