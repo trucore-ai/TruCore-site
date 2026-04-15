@@ -657,6 +657,79 @@ export async function mockMarketConditionsRoute(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// PIL recommendations mocks (Policy Intelligence source)
+// ────────────────────────────────────────────────────────────────────────────
+
+/** PIL with actionable recommendations (stable confidence). */
+export const PIL_WITH_RECS = {
+  recommendations: [
+    {
+      id: "REDUCE_SLIPPAGE",
+      title: "Reduce slippage tolerance",
+      explanation:
+        "Slippage pressure is high — many transactions are near the configured threshold.",
+      parameter: "max_slippage_bps",
+      confidence: "high",
+      evidence: "avg_slippage=95bps, near_threshold=8/42",
+    },
+    {
+      id: "HIGH_FRICTION",
+      title: "Policy friction is elevated",
+      explanation: "Denial rate is 12/42. Review policy rules.",
+      parameter: "max_notional_usd",
+      confidence: "medium",
+      evidence: "denial_rate=28.6%, near_boundary=4",
+    },
+    {
+      id: "GENERAL_HEALTH",
+      title: "System health is acceptable",
+      explanation: "Overall pulse score is 0.72 (stable). No urgent changes needed.",
+      parameter: "none",
+      confidence: "high",
+      evidence: "overall_label=stable",
+    },
+  ],
+  record_count: 42,
+  confidence_summary: "medium",
+  captured_at: Math.floor(Date.now() / 1000),
+  plan: "free",
+};
+
+/** PIL with zero recommendations (sparse data, new customer). */
+export const PIL_EMPTY = {
+  recommendations: [] as unknown[],
+  record_count: 0,
+  confidence_summary: "low",
+  captured_at: Math.floor(Date.now() / 1000),
+  plan: "free",
+};
+
+export type PilRecommendationsMockOpts = {
+  /** "with-recs", "empty", or a custom object. */
+  variant?: "with-recs" | "empty" | Record<string, unknown>;
+  /** HTTP status to return (default 200). */
+  status?: number;
+};
+
+export async function mockPilRecommendationsRoute(
+  page: Page,
+  opts?: PilRecommendationsMockOpts,
+) {
+  const variant = opts?.variant ?? "empty";
+  const status = opts?.status ?? 200;
+  const body =
+    variant === "with-recs"
+      ? PIL_WITH_RECS
+      : variant === "empty"
+        ? PIL_EMPTY
+        : variant;
+
+  await page.route("**/api/customer/intel/recommendations*", (route: Route) =>
+    route.fulfill({ status, json: body }),
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // Telemetry / analytics — silently absorb
 // ────────────────────────────────────────────────────────────────────────────
 

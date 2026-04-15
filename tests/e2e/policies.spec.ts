@@ -5,6 +5,7 @@ import {
   mockPolicyRoutes,
   mockReceiptSummaryRoute,
   mockMarketConditionsRoute,
+  mockPilRecommendationsRoute,
   injectCustomerAuth,
   silenceAnalytics,
   RICH_HISTORY_SUMMARY,
@@ -1466,6 +1467,146 @@ test.describe("customer policies — market recommendation action buttons", () =
 
     // require_simulation_success field should be highlighted
     const targetField = page.locator('[data-field-key="require_simulation_success"]').first();
+    await expect(targetField).toBeVisible();
+    await expect(targetField).toHaveClass(/ring-amber-400/, { timeout: 2000 });
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Policy Intelligence (PIL) recommendations
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — PIL recommendations", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("PIL recommendation cards appear with Policy Intelligence source label", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const pilCard = page.getByTestId("recommendation-pil-reduce-slippage");
+    await expect(pilCard).toBeVisible();
+    await expect(pilCard).toContainText("Policy Intelligence");
+  });
+
+  test("PIL evidence text is visible on recommendation cards", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await page.goto("/customer/policies");
+
+    const pilCard = page.getByTestId("recommendation-pil-reduce-slippage");
+    await expect(pilCard).toBeVisible();
+    await expect(pilCard).toContainText("avg_slippage=95bps");
+  });
+
+  test("PIL confidence indicator is shown", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("recommendation-pil-reduce-slippage")).toBeVisible();
+    const confidenceEls = page.getByTestId("recommendation-confidence");
+    await expect(confidenceEls.first()).toBeVisible();
+    await expect(confidenceEls.first()).toContainText("Confidence:");
+  });
+
+  test("PIL recs coexist with deterministic and market recommendations", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Should have Default guidance / Policy analysis AND Policy Intelligence AND Market analysis
+    const sources = page.getByTestId("recommendation-source");
+    const texts = await sources.allTextContents();
+    expect(texts).toContain("Policy Intelligence");
+    expect(texts.some((t) => t === "Market analysis")).toBe(true);
+  });
+
+  test("empty PIL response shows zero PIL cards", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    // No PIL cards
+    const sources = page.getByTestId("recommendation-source");
+    const texts = await sources.allTextContents();
+    expect(texts).not.toContain("Policy Intelligence");
+  });
+
+  test("failed PIL fetch degrades gracefully (no crash, no PIL cards)", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockPilRecommendationsRoute(page, { status: 502 });
+    await page.goto("/customer/policies");
+
+    // Page should still load and show deterministic recs
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const sources = page.getByTestId("recommendation-source");
+    const texts = await sources.allTextContents();
+    expect(texts).not.toContain("Policy Intelligence");
+  });
+
+  test("missing PIL mock (no route) still shows deterministic recs", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    // Intentionally NOT mocking PIL route
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    // Deterministic recs should be present
+    const sources = page.getByTestId("recommendation-source");
+    const texts = await sources.allTextContents();
+    expect(texts.length).toBeGreaterThan(0);
+    expect(texts).not.toContain("Policy Intelligence");
+  });
+
+  test("disclaimer mentions policy intelligence when PIL recs present", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("recommendation-pil-reduce-slippage")).toBeVisible();
+    await expect(page.getByText(/policy intelligence analysis/).first()).toBeVisible();
+  });
+
+  test("View setting button on PIL rec with fieldKey enters edit mode", async ({ page }) => {
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "pro",
+          plan_limits: { tx_limit_per_month: 5000, policy_overrides_enabled: true, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 500, require_simulation_success: true },
+          overrides: { max_slippage_bps: 200 },
+          effective: { tx_limit_per_month: 5000, max_notional_usd: 25000, max_value_sol: 1000, max_slippage_bps: 200, require_simulation_success: true },
+        },
+      });
+    });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("recommendation-pil-reduce-slippage")).toBeVisible();
+    const actionBtn = page.getByTestId("recommendation-action-pil-reduce-slippage");
+    await expect(actionBtn).toBeVisible();
+    await expect(actionBtn).toContainText("View setting");
+    await actionBtn.click();
+
+    // Edit mode should be active
+    await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+    await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+
+    // max_slippage_bps field should be highlighted
+    const targetField = page.locator('[data-field-key="max_slippage_bps"]').first();
     await expect(targetField).toBeVisible();
     await expect(targetField).toHaveClass(/ring-amber-400/, { timeout: 2000 });
   });

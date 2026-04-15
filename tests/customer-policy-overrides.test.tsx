@@ -14,6 +14,7 @@ const mockFetchPolicy = vi.fn();
 const mockUpdatePolicyOverrides = vi.fn();
 const mockFetchReceiptSummary = vi.fn();
 const mockFetchMarketConditions = vi.fn();
+const mockFetchPilRecommendations = vi.fn();
 
 vi.mock("@/lib/customer-auth", () => {
   class ApiError extends Error {
@@ -35,6 +36,8 @@ vi.mock("@/lib/customer-auth", () => {
       mockFetchReceiptSummary(...args),
     fetchMarketConditions: (...args: unknown[]) =>
       mockFetchMarketConditions(...args),
+    fetchPilRecommendations: (...args: unknown[]) =>
+      mockFetchPilRecommendations(...args),
     ApiError,
   };
 });
@@ -197,6 +200,14 @@ describe("CustomerPoliciesPage", () => {
     mockFetchReceiptSummary.mockResolvedValue(EMPTY_HISTORY_SUMMARY);
     // Default: market conditions returns stable (no market recs).
     mockFetchMarketConditions.mockResolvedValue(MARKET_STABLE);
+    // Default: PIL returns empty (no intelligence recs).
+    mockFetchPilRecommendations.mockResolvedValue({
+      recommendations: [],
+      record_count: 0,
+      confidence_summary: "low",
+      captured_at: Date.now() / 1000,
+      plan: "free",
+    });
   });
 
   // -----------------------------------------------------------------------
@@ -1854,6 +1865,173 @@ describe("CustomerPoliciesPage", () => {
         });
         expect(screen.getByText(/current execution conditions/)).toBeTruthy();
       });
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Policy Intelligence (PIL) recommendations
+  // -----------------------------------------------------------------------
+
+  describe("PIL recommendations", () => {
+    const PIL_RESPONSE = {
+      recommendations: [
+        {
+          id: "REDUCE_SLIPPAGE",
+          title: "Reduce slippage tolerance",
+          explanation: "Slippage pressure is high — many transactions are near the threshold.",
+          parameter: "max_slippage_bps",
+          confidence: "high",
+          evidence: "avg_slippage=95bps, near_threshold=8/42",
+        },
+        {
+          id: "HIGH_FRICTION",
+          title: "Policy friction is elevated",
+          explanation: "Denial rate is 12/42.  Review policy rules.",
+          parameter: "max_notional_usd",
+          confidence: "medium",
+          evidence: "denial_rate=28.6%",
+        },
+      ],
+      record_count: 42,
+      confidence_summary: "medium",
+      captured_at: Date.now() / 1000,
+      plan: "free",
+    };
+
+    it("renders PIL recommendations with Policy Intelligence source label", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      // Source label should say "Policy Intelligence"
+      const card = screen.getByTestId("recommendation-pil-reduce-slippage");
+      expect(card.textContent).toContain("Policy Intelligence");
+    });
+
+    it("shows evidence text for PIL recommendations", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      expect(screen.getByText(/avg_slippage=95bps/)).toBeTruthy();
+    });
+
+    it("shows confidence indicator for PIL recommendations", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      const confidenceEl = screen.getAllByTestId("recommendation-confidence");
+      expect(confidenceEl.length).toBeGreaterThan(0);
+      expect(confidenceEl[0].textContent).toContain("Confidence:");
+    });
+
+    it("coexists with deterministic and history recommendations", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      // Should have recs from both deterministic and PIL sources
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      expect(sourceLabels).toContain("Policy Intelligence");
+      // Deterministic recs should still be present
+      expect(
+        sourceLabels.some((s) => s === "Default guidance" || s === "Policy analysis"),
+      ).toBe(true);
+    });
+
+    it("gracefully degrades when PIL is unavailable", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockRejectedValue(new Error("network"));
+      render(<CustomerPoliciesPage />);
+
+      // Should still show deterministic recs
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      // No PIL recs should appear
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      expect(sourceLabels).not.toContain("Policy Intelligence");
+    });
+
+    it("renders zero PIL recs when backend returns empty list", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue({
+        recommendations: [],
+        record_count: 0,
+        confidence_summary: "low",
+        captured_at: Date.now() / 1000,
+        plan: "free",
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      // No PIL-sourced recs
+      const sources = screen.getAllByTestId("recommendation-source");
+      const sourceLabels = sources.map((el) => el.textContent);
+      expect(sourceLabels).not.toContain("Policy Intelligence");
+    });
+
+    it("PIL recs use correct priority mapping from confidence", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      // REDUCE_SLIPPAGE has confidence "high" → should map to "high" priority
+      const card = screen.getByTestId("recommendation-pil-reduce-slippage");
+      expect(card.textContent).toContain("High priority");
+    });
+
+    it("disclaimer mentions policy intelligence when PIL recs present", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      expect(screen.getAllByText(/policy intelligence analysis/).length).toBeGreaterThan(0);
+    });
+
+    it("PIL rec with fieldKey shows View setting button", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      // REDUCE_SLIPPAGE maps to max_slippage_bps → should have action button
+      expect(screen.getByTestId("recommendation-action-pil-reduce-slippage")).toBeTruthy();
     });
   });
 

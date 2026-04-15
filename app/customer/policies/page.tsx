@@ -9,9 +9,11 @@ import {
   updatePolicyOverrides,
   fetchReceiptSummary,
   fetchMarketConditions,
+  fetchPilRecommendations,
   type EffectivePolicyResponse,
   type ReceiptSummary,
   type MarketConditions,
+  type PilRecommendationsResponse,
 } from "@/lib/customer-auth";
 import { PremiumSlider } from "@/components/premium-slider";
 
@@ -1263,6 +1265,81 @@ function generateMarketRecommendations(
   return recs;
 }
 
+// ---------------------------------------------------------------------------
+// Policy Intelligence–backed recommendations
+// ---------------------------------------------------------------------------
+
+const PIL_CONFIDENCE_MAP: Record<string, number> = {
+  low: 0.3,
+  medium: 0.6,
+  high: 0.9,
+};
+
+const PIL_PRIORITY_MAP: Record<string, RecommendationPriority> = {
+  high: "high",
+  medium: "medium",
+  low: "low",
+};
+
+const PIL_WHY: Record<string, string> = {
+  REDUCE_SLIPPAGE:
+    "Consistently high slippage wastes value on every trade. Tightening the tolerance protects execution quality.",
+  SLIPPAGE_HEADROOM:
+    "Your slippage tolerance is much higher than what your transactions actually need. Tightening it reduces worst-case exposure.",
+  RELAX_LIMIT:
+    "Repeated near-boundary denials suggest your limits are slightly too tight for your actual usage pattern.",
+  HIGH_FRICTION:
+    "A high denial rate means your policy may be blocking legitimate transactions. Review which rules are triggering.",
+  TIGHTEN_RISK:
+    "Elevated blocked risk events suggest your policy could benefit from tighter value or token restrictions.",
+  REVIEW_LATENCY:
+    "Unstable execution latency can indicate infrastructure issues or overly aggressive timeout settings.",
+  CONFIRMATION_BOTTLENECK:
+    "Slow confirmations may indicate network congestion. This is informational — not a policy change.",
+  HEALTHY_CONFIRMATION:
+    "Confirmation latency is within normal bounds. No action needed.",
+  IMPROVE_EXECUTION:
+    "A gap between approved and executed transactions suggests post-approval failures worth investigating.",
+  SPARSE_DATA:
+    "With limited transaction history, recommendations have lower confidence. Continue transacting to improve signal quality.",
+  COLLECT_MORE_DATA:
+    "More transaction data will improve the accuracy of future intelligence-backed recommendations.",
+  GENERAL_HEALTH:
+    "Overall system health is acceptable. Continue monitoring for changes.",
+  MAINTAIN_PARAMETERS:
+    "Your current configuration is performing well. No changes recommended at this time.",
+};
+
+function generatePilRecommendations(
+  pil: PilRecommendationsResponse,
+): PolicyRecommendation[] {
+  if (!pil.recommendations || pil.recommendations.length === 0) return [];
+
+  return pil.recommendations.map((rec) => {
+    const editableKeys = new Set([
+      "max_slippage_bps",
+      "max_notional_usd",
+      "max_value_sol",
+      "require_simulation_success",
+      "allowed_programs",
+      "denied_programs",
+    ]);
+    const fieldKey = editableKeys.has(rec.parameter) ? rec.parameter : undefined;
+
+    return {
+      id: `pil-${rec.id.toLowerCase().replace(/_/g, "-")}`,
+      title: rec.title,
+      explanation: rec.explanation,
+      why: PIL_WHY[rec.id] ?? "This recommendation is based on analysis of your recent transaction patterns.",
+      priority: PIL_PRIORITY_MAP[rec.confidence] ?? "low",
+      source: "Policy Intelligence" as RecommendationSource,
+      fieldKey,
+      evidence: rec.evidence || undefined,
+      confidence: PIL_CONFIDENCE_MAP[rec.confidence] ?? 0.3,
+    };
+  });
+}
+
 const PRIORITY_STYLES: Record<RecommendationPriority, { badge: string; border: string }> = {
   high: {
     badge: "bg-red-500/15 text-red-300 border border-red-500/20",
@@ -1289,6 +1366,7 @@ export default function CustomerPoliciesPage() {
   const [error, setError] = useState("");
   const [historySummary, setHistorySummary] = useState<ReceiptSummary | null>(null);
   const [marketConditions, setMarketConditions] = useState<MarketConditions | null>(null);
+  const [pilRecommendations, setPilRecommendations] = useState<PilRecommendationsResponse | null>(null);
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -1345,6 +1423,17 @@ export default function CustomerPoliciesPage() {
     }
   }, []);
 
+  // Fetch PIL recommendations for Policy Intelligence source (non-blocking).
+  const loadPilRecommendations = useCallback(async () => {
+    try {
+      const pil = await fetchPilRecommendations();
+      setPilRecommendations(pil);
+    } catch {
+      // PIL is optional — degrade gracefully.
+      setPilRecommendations(null);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isLoggedIn()) {
       router.replace("/login");
@@ -1353,7 +1442,8 @@ export default function CustomerPoliciesPage() {
     loadPolicy();
     loadHistorySummary();
     loadMarketConditions();
-  }, [router, loadPolicy, loadHistorySummary, loadMarketConditions]);
+    loadPilRecommendations();
+  }, [router, loadPolicy, loadHistorySummary, loadMarketConditions, loadPilRecommendations]);
 
   // Initialize form values from current overrides when entering edit mode.
   // Scroll to and briefly highlight the target field after edit form mounts.
@@ -2009,10 +2099,13 @@ export default function CustomerPoliciesPage() {
               const marketRecs = marketConditions
                 ? generateMarketRecommendations(marketConditions, effective)
                 : [];
+              const pilRecs = pilRecommendations
+                ? generatePilRecommendations(pilRecommendations)
+                : [];
               // Merge, deduplicate by id, sort by priority
               const seenIds = new Set<string>();
               const allRecs: PolicyRecommendation[] = [];
-              for (const rec of [...deterministicRecs, ...historyRecs, ...marketRecs]) {
+              for (const rec of [...deterministicRecs, ...historyRecs, ...marketRecs, ...pilRecs]) {
                 if (!seenIds.has(rec.id)) {
                   seenIds.add(rec.id);
                   allRecs.push(rec);
@@ -2025,6 +2118,7 @@ export default function CustomerPoliciesPage() {
 
               const hasHistoryRecs = historyRecs.length > 0;
               const hasMarketRecs = marketRecs.length > 0;
+              const hasPilRecs = pilRecs.length > 0;
               return (
                 <section
                   className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-4"
@@ -2036,8 +2130,9 @@ export default function CustomerPoliciesPage() {
                     </h2>
                     <p className="mt-1 text-[10px] text-slate-500">
                       Suggestions to strengthen your policy based on your current configuration
-                      {hasHistoryRecs ? " and your recent transaction history" : ""}
-                      {hasMarketRecs ? " and current execution conditions" : ""}.
+                      {hasHistoryRecs ? ", your recent transaction history" : ""}
+                      {hasPilRecs ? ", policy intelligence analysis" : ""}
+                      {hasMarketRecs ? ", and current execution conditions" : ""}.
                     </p>
                   </div>
                   <div className="space-y-3" data-testid="recommendation-cards">
@@ -2080,6 +2175,14 @@ export default function CustomerPoliciesPage() {
                               {rec.evidence}
                             </p>
                           )}
+                          {rec.confidence != null && rec.source === "Policy Intelligence" && (
+                            <span
+                              className="inline-flex items-center gap-1 text-[9px] text-slate-600"
+                              data-testid="recommendation-confidence"
+                            >
+                              Confidence: {rec.confidence >= 0.7 ? "high" : rec.confidence >= 0.4 ? "medium" : "low"}
+                            </span>
+                          )}
                           {overridesEnabled && rec.fieldKey && (
                             <button
                               type="button"
@@ -2095,7 +2198,7 @@ export default function CustomerPoliciesPage() {
                     })}
                   </div>
                   <p className="text-[9px] text-slate-600 text-center">
-                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : hasHistoryRecs ? "" : ""}{!hasHistoryRecs && !hasMarketRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
+                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasPilRecs ? ", policy intelligence analysis of your transaction patterns" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : ""}{!hasHistoryRecs && !hasMarketRecs && !hasPilRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
                   </p>
                 </section>
               );
