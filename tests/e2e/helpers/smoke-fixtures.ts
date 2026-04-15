@@ -477,7 +477,7 @@ const PRO_POLICY_WITH_TOKEN_POLICY = {
 };
 
 export type PolicyMockOpts = {
-  plan?: "free" | "pro" | "pro_with_programs" | "pro_with_token_policy";
+  plan?: PolicyMockPlan;
   patchStatus?: number;
   patchBody?: Record<string, unknown>;
 };
@@ -492,7 +492,11 @@ export async function mockPolicyRoutes(page: Page, opts?: PolicyMockOpts) {
         ? PRO_POLICY_WITH_PROGRAMS
         : plan === "pro_with_token_policy"
           ? PRO_POLICY_WITH_TOKEN_POLICY
-          : PRO_POLICY;
+          : plan === "advanced"
+            ? ADVANCED_POLICY
+            : plan === "enterprise"
+              ? ENTERPRISE_POLICY
+              : PRO_POLICY;
 
   // Intercept GET /api/customer/policy (same-origin proxy)
   let currentPolicy = { ...policyData };
@@ -745,6 +749,142 @@ export async function mockPilRecommendationsRoute(
     route.fulfill({ status, json: body }),
   );
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Cohort benchmark mocks (Cohort benchmark source)
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Full benchmark response — Advanced+ callers see benchmark bodies. */
+export const COHORT_BENCHMARKS_FULL = {
+  benchmarks: [
+    {
+      id: "COHORT_SLIPPAGE_LOOSE",
+      title: "Slippage tolerance is wider than most",
+      explanation:
+        "Your slippage cap is notably higher than what similar configurations typically use. Consider tightening it to reduce unfavorable execution risk.",
+      parameter: "max_slippage_bps",
+      confidence: "medium",
+      evidence: "Based on aggregated data from 47 similar recent configurations.",
+    },
+    {
+      id: "COHORT_USD_LIMIT_HIGH",
+      title: "Transaction limit is higher than typical",
+      explanation:
+        "Your per-transaction USD limit is significantly higher than what comparable configurations use. Review whether this headroom is intentional.",
+      parameter: "max_notional_usd",
+      confidence: "medium",
+      evidence: "Based on aggregated data from 47 similar recent configurations.",
+    },
+  ],
+  cohort_size: 47,
+  captured_at: Math.floor(Date.now() / 1000),
+  plan: "advanced",
+  gated: false,
+  gated_count: 0,
+};
+
+/** Empty benchmark response — no benchmarks produced (cohort too small or values match). */
+export const COHORT_BENCHMARKS_EMPTY = {
+  benchmarks: [] as unknown[],
+  cohort_size: 3,
+  captured_at: Math.floor(Date.now() / 1000),
+  plan: "advanced",
+  gated: false,
+  gated_count: 0,
+};
+
+/** Gated benchmark response — Free/Pro callers see count but no bodies. */
+export const COHORT_BENCHMARKS_GATED = {
+  benchmarks: [] as unknown[],
+  cohort_size: 47,
+  captured_at: Math.floor(Date.now() / 1000),
+  plan: "free",
+  gated: true,
+  gated_count: 2,
+};
+
+export type CohortBenchmarksMockOpts = {
+  /** "full", "empty", "gated", or a custom object. */
+  variant?: "full" | "empty" | "gated" | Record<string, unknown>;
+  /** HTTP status to return (default 200). */
+  status?: number;
+};
+
+export async function mockCohortBenchmarksRoute(
+  page: Page,
+  opts?: CohortBenchmarksMockOpts,
+) {
+  const variant = opts?.variant ?? "empty";
+  const status = opts?.status ?? 200;
+  const body =
+    variant === "full"
+      ? COHORT_BENCHMARKS_FULL
+      : variant === "gated"
+        ? COHORT_BENCHMARKS_GATED
+        : variant === "empty"
+          ? COHORT_BENCHMARKS_EMPTY
+          : variant;
+
+  await page.route("**/api/customer/intel/benchmarks*", (route: Route) =>
+    route.fulfill({ status, json: body }),
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Advanced / Enterprise policy mocks (for benchmark-eligible tiers)
+// ────────────────────────────────────────────────────────────────────────────
+
+const ADVANCED_POLICY = {
+  plan_code: "advanced",
+  plan_limits: {
+    tx_limit_per_month: 25000,
+    policy_overrides_enabled: true,
+    max_notional_usd: 100000,
+    max_value_sol: 5000,
+    max_slippage_bps: 1000,
+    require_simulation_success: true,
+  },
+  overrides: {
+    max_slippage_bps: 300,
+  },
+  effective: {
+    tx_limit_per_month: 25000,
+    max_notional_usd: 100000,
+    max_value_sol: 5000,
+    max_slippage_bps: 300,
+    require_simulation_success: true,
+  },
+};
+
+const ENTERPRISE_POLICY = {
+  plan_code: "enterprise",
+  plan_limits: {
+    tx_limit_per_month: 100000,
+    policy_overrides_enabled: true,
+    max_notional_usd: 500000,
+    max_value_sol: 25000,
+    max_slippage_bps: 2000,
+    require_simulation_success: true,
+  },
+  overrides: {
+    max_slippage_bps: 500,
+  },
+  effective: {
+    tx_limit_per_month: 100000,
+    max_notional_usd: 500000,
+    max_value_sol: 25000,
+    max_slippage_bps: 500,
+    require_simulation_success: true,
+  },
+};
+
+export type PolicyMockPlan =
+  | "free"
+  | "pro"
+  | "pro_with_programs"
+  | "pro_with_token_policy"
+  | "advanced"
+  | "enterprise";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Telemetry / analytics — silently absorb

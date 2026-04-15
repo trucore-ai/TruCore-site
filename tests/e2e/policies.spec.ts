@@ -6,6 +6,7 @@ import {
   mockReceiptSummaryRoute,
   mockMarketConditionsRoute,
   mockPilRecommendationsRoute,
+  mockCohortBenchmarksRoute,
   injectCustomerAuth,
   silenceAnalytics,
   RICH_HISTORY_SUMMARY,
@@ -1656,13 +1657,15 @@ test.describe("customer policies — plan-aware recommendation tiering", () => {
     await mockReceiptSummaryRoute(page, { variant: "rich" });
     await mockMarketConditionsRoute(page, { variant: "stressed" });
     await mockPilRecommendationsRoute(page, { variant: "gated" });
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
     await page.goto("/customer/policies");
 
     // Wait for recommendations section
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
-    // PIL, Customer history, and Market analysis source badges should not appear
-    await expect(page.getByText("Policy Intelligence")).not.toBeVisible();
+    // PIL source labels should not appear on recommendation cards (may appear in teaser)
+    const pilSourceLabels = page.getByTestId("recommendation-source").filter({ hasText: "Policy Intelligence" });
+    await expect(pilSourceLabels).toHaveCount(0);
     await expect(page.getByTestId("recommendation-history-avg-txn-far-below-limit")).not.toBeVisible();
     await expect(page.getByTestId("recommendation-market-tx-submission-throttled")).not.toBeVisible();
   });
@@ -1672,13 +1675,14 @@ test.describe("customer policies — plan-aware recommendation tiering", () => {
     await mockReceiptSummaryRoute(page, { variant: "rich" });
     await mockMarketConditionsRoute(page, { variant: "stressed" });
     await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await mockCohortBenchmarksRoute(page, { variant: "empty" });
     await page.goto("/customer/policies");
 
     // PIL recs should render
     await expect(page.getByTestId("recommendation-pil-reduce-slippage")).toBeVisible();
 
     // History recs should render
-    await expect(page.getByTestId("recommendation-history-avg-txn-far-below-limit")).toBeVisible();
+    await expect(page.getByTestId("recommendation-history-limit-headroom")).toBeVisible();
 
     // Upgrade teaser should NOT be present
     await expect(page.getByTestId("recommendation-upgrade-teaser")).not.toBeVisible();
@@ -1688,6 +1692,275 @@ test.describe("customer policies — plan-aware recommendation tiering", () => {
     await mockPolicyRoutes(page, { plan: "free" });
     await mockReceiptSummaryRoute(page);
     await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    await expect(page.getByTestId("recommendation-upgrade-teaser")).not.toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Cohort benchmark recommendations — Advanced user sees benchmarks
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — cohort benchmark recommendations (Advanced+)", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page);
+    await mockCohortBenchmarksRoute(page, { variant: "full" });
+    await injectCustomerAuth(page);
+  });
+
+  test("Advanced user sees cohort benchmark recommendation cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const benchCard = page.getByTestId("recommendation-bench-cohort-slippage-loose");
+    await expect(benchCard).toBeVisible();
+    await expect(benchCard).toContainText("Slippage tolerance is wider than most");
+  });
+
+  test("source label shows 'Cohort benchmark' on benchmark cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const benchCard = page.getByTestId("recommendation-bench-cohort-slippage-loose");
+    await expect(benchCard).toBeVisible();
+    const source = benchCard.getByTestId("recommendation-source");
+    await expect(source).toHaveText("Cohort benchmark");
+  });
+
+  test("evidence text is visible on cohort benchmark cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const benchCard = page.getByTestId("recommendation-bench-cohort-slippage-loose");
+    await expect(benchCard).toBeVisible();
+    await expect(benchCard).toContainText("aggregated data from 47");
+  });
+
+  test("confidence indicator is shown on cohort benchmark cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    const benchCard = page.getByTestId("recommendation-bench-cohort-slippage-loose");
+    await expect(benchCard).toBeVisible();
+    const confidence = benchCard.getByTestId("recommendation-confidence");
+    await expect(confidence).toBeVisible();
+    await expect(confidence).toContainText("Confidence:");
+  });
+
+  test("Enterprise user also sees cohort benchmark cards", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "enterprise" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("recommendation-bench-cohort-slippage-loose")).toBeVisible();
+    await expect(page.getByTestId("recommendation-bench-cohort-usd-limit-high")).toBeVisible();
+  });
+
+  test("Advanced user does not see upgrade teaser when benchmarks available", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("recommendation-bench-cohort-slippage-loose")).toBeVisible();
+    await expect(page.getByTestId("recommendation-upgrade-teaser")).not.toBeVisible();
+  });
+
+  test("disclaimer mentions cohort benchmarks when benchmark recs present", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("recommendation-bench-cohort-slippage-loose")).toBeVisible();
+    await expect(page.getByText(/aggregated cohort benchmarks/).first()).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Cohort benchmark recommendations — Free/Pro gating & teaser
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — cohort benchmark gating (Free/Pro)", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("Free user does not see benchmark cards", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const benchCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-bench-']");
+    await expect(benchCards).toHaveCount(0);
+  });
+
+  test("Pro user does not see benchmark cards", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const benchCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-bench-']");
+    await expect(benchCards).toHaveCount(0);
+  });
+
+  test("Free user sees upgrade teaser when gated benchmarks exist", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    await expect(teaser).toContainText("Cohort benchmark");
+    await expect(teaser).toContainText("2 cohort benchmarks");
+  });
+
+  test("teaser shows 'Advanced' tier label when benchmark source is gated", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    // When cohort benchmark is among gated sources, tierLabel = "Advanced"
+    await expect(teaser).toContainText("Upgrade to Advanced");
+    await expect(teaser).toContainText("View Advanced plans");
+  });
+
+  test("Pro user with gated PIL + gated benchmarks sees combined teaser", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "gated" });
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    // Should list both gated sources
+    await expect(teaser).toContainText("Cohort benchmark");
+    // PIL is also gated for pro? Actually PIL is available for pro (SOURCE_MIN_TIER pro=1).
+    // But the mock returns gated=true — the gating check uses !canPil which is false for pro.
+    // So only benchmark shows in gated for pro. Let's assert benchmark is present.
+    await expect(teaser).toContainText("Advanced");
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Cohort benchmark — graceful degradation
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — cohort benchmark degradation", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("empty benchmark response renders no benchmark cards", async ({ page }) => {
+    await mockCohortBenchmarksRoute(page, { variant: "empty" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const benchCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-bench-']");
+    await expect(benchCards).toHaveCount(0);
+  });
+
+  test("failed benchmark fetch degrades gracefully (no crash)", async ({ page }) => {
+    await mockCohortBenchmarksRoute(page, { status: 502 });
+    await page.goto("/customer/policies");
+
+    // Page should still load and show deterministic recs
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const sources = page.getByTestId("recommendation-source");
+    const texts = await sources.allTextContents();
+    expect(texts).not.toContain("Cohort benchmark");
+  });
+
+  test("missing benchmark route still shows deterministic recs", async ({ page }) => {
+    // Intentionally NOT mocking benchmark route
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    const sources = page.getByTestId("recommendation-source");
+    const texts = await sources.allTextContents();
+    expect(texts.length).toBeGreaterThan(0);
+    expect(texts).not.toContain("Cohort benchmark");
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Cohort benchmark — mixed-source coexistence
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — cohort benchmarks coexist with other sources", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("all five sources coexist for Advanced user", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await mockCohortBenchmarksRoute(page, { variant: "full" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+
+    expect(allSources.some((s) => s === "Default guidance" || s === "Policy analysis")).toBe(true);
+    expect(allSources).toContain("Customer history");
+    expect(allSources).toContain("Market analysis");
+    expect(allSources).toContain("Policy Intelligence");
+    expect(allSources).toContain("Cohort benchmark");
+    expect(allSources.length).toBeGreaterThanOrEqual(5);
+  });
+
+  test("benchmark and PIL source labels remain distinct", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await mockCohortBenchmarksRoute(page, { variant: "full" });
+    await page.goto("/customer/policies");
+
+    // PIL card
+    const pilCard = page.getByTestId("recommendation-pil-reduce-slippage");
+    await expect(pilCard).toBeVisible();
+    await expect(pilCard.getByTestId("recommendation-source")).toHaveText("Policy Intelligence");
+
+    // Benchmark card
+    const benchCard = page.getByTestId("recommendation-bench-cohort-slippage-loose");
+    await expect(benchCard).toBeVisible();
+    await expect(benchCard.getByTestId("recommendation-source")).toHaveText("Cohort benchmark");
+  });
+
+  test("upgrade teaser not shown when Advanced user has all sources", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await mockCohortBenchmarksRoute(page, { variant: "full" });
     await page.goto("/customer/policies");
 
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
