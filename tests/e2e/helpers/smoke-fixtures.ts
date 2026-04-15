@@ -1045,3 +1045,17 @@ export async function mockEmptyIntelRoutes(page: Page) {
   await mockCohortBenchmarksRoute(page, { variant: "empty" });
   await mockExternalContextRoute(page, { variant: "empty" });
 }
+
+/**
+ * Mock all intel-backed routes with "fully loaded" data-producing variants.
+ * Use in coexistence tests to light up all recommendation sources at once.
+ *
+ * Covers: rich history, stressed market, PIL with-recs, full cohort, full external.
+ */
+export async function mockAllIntelSourcesLoaded(page: Page) {
+  await mockReceiptSummaryRoute(page, { variant: "rich" });
+  await mockMarketConditionsRoute(page, { variant: "stressed" });
+  await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+  await mockCohortBenchmarksRoute(page, { variant: "full" });
+  await mockExternalContextRoute(page, { variant: "full" });
+}

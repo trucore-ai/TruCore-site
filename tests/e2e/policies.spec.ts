@@ -9,6 +9,7 @@ import {
   mockCohortBenchmarksRoute,
   mockExternalContextRoute,
   mockEmptyIntelRoutes,
+  mockAllIntelSourcesLoaded,
   injectCustomerAuth,
   silenceAnalytics,
   RICH_HISTORY_SUMMARY,
@@ -2732,5 +2733,255 @@ test.describe("customer policies — expandable recommendation details", () => {
 
     // Should not exist in DOM at all
     expect(await card.locator("[data-testid='recommendation-details-history-slippage-headroom']").count()).toBe(0);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Full all-source coexistence — Enterprise with maximal recommendation load
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — all-source coexistence (Enterprise)", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    // Enterprise policy with simulation NOT required — maximizes market recs
+    await page.route("**/api/customer/policy", (route) => {
+      if (route.request().url().includes("/overrides")) return route.fallback();
+      return route.fulfill({
+        status: 200,
+        json: {
+          plan_code: "enterprise",
+          plan_limits: {
+            tx_limit_per_month: 100000,
+            policy_overrides_enabled: true,
+            max_notional_usd: 500000,
+            max_value_sol: 25000,
+            max_slippage_bps: 2000,
+            require_simulation_success: false,
+          },
+          overrides: { max_slippage_bps: 500 },
+          effective: {
+            tx_limit_per_month: 100000,
+            max_notional_usd: 500000,
+            max_value_sol: 25000,
+            max_slippage_bps: 500,
+            require_simulation_success: false,
+          },
+        },
+      });
+    });
+    await page.route("**/api/customer/policy/overrides", (route) =>
+      route.fulfill({
+        status: 200,
+        json: { overrides: {}, message: "Policy overrides updated." },
+      }),
+    );
+    await mockAllIntelSourcesLoaded(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("Enterprise user sees recommendation cards from all sources at once", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+
+    // Deterministic sources (at least one of these should appear)
+    expect(allSources.some((s) => s === "Default guidance" || s === "Policy analysis")).toBe(true);
+
+    // All five intel sources should be represented
+    expect(allSources).toContain("Customer history");
+    expect(allSources).toContain("Market analysis");
+    expect(allSources).toContain("Policy Intelligence");
+    expect(allSources).toContain("Cohort benchmark");
+    expect(allSources).toContain("External context");
+
+    // Total card count should reflect contributions from all sources
+    expect(allSources.length).toBeGreaterThanOrEqual(7);
+  });
+
+  test("source labels remain distinct and accurate across all card types", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Verify specific card → source label pairs across sources
+    const pilCard = page.getByTestId("recommendation-pil-reduce-slippage");
+    await expect(pilCard.getByTestId("recommendation-source")).toHaveText("Policy Intelligence");
+
+    const benchCard = page.getByTestId("recommendation-bench-cohort-slippage-loose");
+    await expect(benchCard.getByTestId("recommendation-source")).toHaveText("Cohort benchmark");
+
+    const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
+    await expect(extCard.getByTestId("recommendation-source")).toHaveText("External context");
+
+    const historyCard = page.getByTestId("recommendation-history-slippage-headroom");
+    await expect(historyCard.getByTestId("recommendation-source")).toHaveText("Customer history");
+
+    // Market card should have "Market analysis" label
+    const marketCards = page
+      .getByTestId("recommendation-cards")
+      .locator("[data-testid^='recommendation-market-']");
+    await expect(marketCards.first()).toBeVisible();
+    await expect(marketCards.first().getByTestId("recommendation-source")).toHaveText("Market analysis");
+  });
+
+  test("evidence and confidence remain accessible across mixed-source expanded cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Expand cards from three different intel sources simultaneously
+    const pilCard = page.getByTestId("recommendation-pil-reduce-slippage");
+    await pilCard.getByTestId("recommendation-details-toggle-pil-reduce-slippage").click();
+    await expect(pilCard.getByTestId("recommendation-details-pil-reduce-slippage")).toBeVisible();
+    await expect(pilCard).toContainText("avg_slippage=95bps");
+
+    const benchCard = page.getByTestId("recommendation-bench-cohort-slippage-loose");
+    await benchCard.getByTestId("recommendation-details-toggle-bench-cohort-slippage-loose").click();
+    await expect(benchCard.getByTestId("recommendation-details-bench-cohort-slippage-loose")).toBeVisible();
+    await expect(benchCard).toContainText("aggregated data from 47");
+
+    const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
+    await extCard.getByTestId("recommendation-details-toggle-ext-ext-sustained-throttle").click();
+    await expect(extCard.getByTestId("recommendation-details-ext-ext-sustained-throttle")).toBeVisible();
+    await expect(extCard).toContainText("sustained pressure for 6 consecutive");
+
+    // All three detail panels should remain open simultaneously
+    await expect(pilCard.getByTestId("recommendation-details-pil-reduce-slippage")).toBeVisible();
+    await expect(benchCard.getByTestId("recommendation-details-bench-cohort-slippage-loose")).toBeVisible();
+    await expect(extCard.getByTestId("recommendation-details-ext-ext-sustained-throttle")).toBeVisible();
+  });
+
+  test("no upgrade teaser when Enterprise user is fully entitled", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    await expect(page.getByTestId("recommendation-upgrade-teaser")).not.toBeVisible();
+  });
+
+  test("recommendation action buttons work under maximal card load", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Verify many cards are present
+    const totalCards = await page.getByTestId("recommendation-source").count();
+    expect(totalCards).toBeGreaterThanOrEqual(7);
+
+    // Click a 'View setting' button on a history rec
+    const actionBtn = page.getByTestId("recommendation-action-history-slippage-headroom");
+    await expect(actionBtn).toBeVisible();
+    await actionBtn.click();
+
+    // Edit mode should activate
+    await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+    await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
+
+    // Target field should be highlighted
+    const targetField = page.locator('[data-field-key="max_slippage_bps"]').first();
+    await expect(targetField).toBeVisible();
+    await expect(targetField).toHaveClass(/ring-amber-400/, { timeout: 2000 });
+  });
+
+  test("page remains stable and readable under maximal recommendation load", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    // Core page structure remains intact
+    await expect(
+      page.getByRole("heading", { name: "Policy & Protections" }),
+    ).toBeVisible();
+
+    // Plan badge shows Enterprise
+    await expect(
+      page.locator("span.capitalize").filter({ hasText: /^Enterprise$/ }),
+    ).toBeVisible();
+
+    // Policy sections are present
+    await expect(page.getByTestId("policy-preview")).toBeVisible();
+    await expect(page.getByTestId("policy-simulation")).toBeVisible();
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Freshness badges render for both signal sources
+    await expect(page.getByTestId("freshness-badge-market-analysis")).toBeVisible();
+    await expect(page.getByTestId("freshness-badge-external-context")).toBeVisible();
+
+    // Advisory disclaimer is visible
+    await expect(
+      page.getByText("recommendations are advisory"),
+    ).toBeVisible();
+  });
+
+  test("expandable details work correctly on cards from different sources", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Expand a history card
+    const historyCard = page.getByTestId("recommendation-history-slippage-headroom");
+    const historyToggle = historyCard.getByTestId("recommendation-details-toggle-history-slippage-headroom");
+    await expect(historyToggle).toHaveAttribute("aria-expanded", "false");
+    await historyToggle.click();
+    await expect(historyToggle).toHaveAttribute("aria-expanded", "true");
+    await expect(historyCard.getByTestId("recommendation-details-history-slippage-headroom")).toBeVisible();
+
+    // Expand an external context card
+    const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
+    const extToggle = extCard.getByTestId("recommendation-details-toggle-ext-ext-sustained-throttle");
+    await expect(extToggle).toHaveAttribute("aria-expanded", "false");
+    await extToggle.click();
+    await expect(extToggle).toHaveAttribute("aria-expanded", "true");
+    await expect(extCard.getByTestId("recommendation-details-ext-ext-sustained-throttle")).toBeVisible();
+
+    // Collapse the history card — external should remain open
+    await historyToggle.click();
+    await expect(historyToggle).toHaveAttribute("aria-expanded", "false");
+    await expect(historyCard.getByTestId("recommendation-details-history-slippage-headroom")).not.toBeVisible();
+    await expect(extCard.getByTestId("recommendation-details-ext-ext-sustained-throttle")).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Mixed available and gated sources — Advanced with Enterprise-gated content
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — mixed available and gated sources (Advanced)", () => {
+  test("Advanced user sees available sources and coherent gating for Enterprise-only sources", async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await mockCohortBenchmarksRoute(page, { variant: "full" });
+    await mockExternalContextRoute(page, { variant: "gated" });
+    await injectCustomerAuth(page);
+
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+
+    // Available sources should render
+    expect(allSources.some((s) => s === "Default guidance" || s === "Policy analysis")).toBe(true);
+    expect(allSources).toContain("Customer history");
+    expect(allSources).toContain("Market analysis");
+    expect(allSources).toContain("Policy Intelligence");
+    expect(allSources).toContain("Cohort benchmark");
+
+    // External context should NOT render (gated for Advanced)
+    expect(allSources).not.toContain("External context");
+
+    // Upgrade teaser should appear for gated external context
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    await expect(teaser).toContainText("External context");
+    await expect(teaser).toContainText("Enterprise");
   });
 });
