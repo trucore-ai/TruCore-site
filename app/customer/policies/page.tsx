@@ -18,6 +18,7 @@ import {
   type PilRecommendationsResponse,
   type CohortBenchmarkResponse,
   type ExternalContextResponse,
+  type SignalFreshness,
 } from "@/lib/customer-auth";
 import { PremiumSlider } from "@/components/premium-slider";
 
@@ -1148,6 +1149,30 @@ function generateHistoryRecommendations(
   }
 
   return recs;
+}
+
+// ---------------------------------------------------------------------------
+// Signal freshness badge
+// ---------------------------------------------------------------------------
+
+const FRESHNESS_STYLES: Record<string, { text: string; dot: string; label: string }> = {
+  fresh: { text: "text-emerald-400", dot: "bg-emerald-400", label: "Live" },
+  stale: { text: "text-amber-400", dot: "bg-amber-400", label: "Data may be outdated" },
+  unavailable: { text: "text-slate-500", dot: "bg-slate-500", label: "Signal unavailable" },
+};
+
+function SignalFreshnessBadge({ freshness, source }: { freshness: SignalFreshness | undefined; source: string }) {
+  if (!freshness) return null;
+  const style = FRESHNESS_STYLES[freshness.status] ?? FRESHNESS_STYLES.unavailable;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 text-[9px] ${style.text}`}
+      data-testid={`freshness-badge-${source.toLowerCase().replace(/\s+/g, "-")}`}
+    >
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${style.dot}`} />
+      {style.label}
+    </span>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -2325,6 +2350,23 @@ export default function CustomerPoliciesPage() {
                       {hasExternalRecs ? ", external infrastructure signals" : ""}
                       {hasMarketRecs ? ", and current execution conditions" : ""}.
                     </p>
+                    {/* Signal freshness badges for market and external context */}
+                    {(canMarket || canExternal) && (
+                      <div className="flex items-center gap-3 mt-1">
+                        {canMarket && marketConditions?.signal_freshness && (
+                          <span className="inline-flex items-center gap-1.5 text-[9px] text-slate-500">
+                            Market:
+                            <SignalFreshnessBadge freshness={marketConditions.signal_freshness} source="market-analysis" />
+                          </span>
+                        )}
+                        {canExternal && externalContext?.signal_freshness && (
+                          <span className="inline-flex items-center gap-1.5 text-[9px] text-slate-500">
+                            External:
+                            <SignalFreshnessBadge freshness={externalContext.signal_freshness} source="external-context" />
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-3" data-testid="recommendation-cards">
                     {allRecs.map((rec) => {

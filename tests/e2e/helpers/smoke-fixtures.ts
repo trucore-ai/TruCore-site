@@ -607,6 +607,7 @@ export const MARKET_STABLE = {
   recommendation: null,
   summary: "Execution environment is stable — no infrastructure issues detected.",
   captured_at: Math.floor(Date.now() / 1000),
+  signal_freshness: { status: "fresh", last_updated_at: Math.floor(Date.now() / 1000) },
 };
 
 /** Degraded — minor throttling, non-critical methods only. */
@@ -619,6 +620,7 @@ export const MARKET_DEGRADED = {
   summary:
     "Execution environment shows minor degradation — 2.5% of requests are being throttled.",
   captured_at: Math.floor(Date.now() / 1000),
+  signal_freshness: { status: "fresh", last_updated_at: Math.floor(Date.now() / 1000) },
 };
 
 /** Stressed — high throttle rate, including sendTransaction. */
@@ -631,6 +633,7 @@ export const MARKET_STRESSED = {
   summary:
     "Execution environment is under stress — getLatestBlockhash, sendTransaction, getBalance experiencing elevated throttling (14.8% error rate).",
   captured_at: Math.floor(Date.now() / 1000),
+  signal_freshness: { status: "fresh", last_updated_at: Math.floor(Date.now() / 1000) },
 };
 
 export type MarketConditionsMockOpts = {
@@ -860,6 +863,7 @@ export const EXTERNAL_CONTEXT_FULL = {
   plan: "enterprise",
   gated: false,
   gated_count: 0,
+  signal_freshness: { status: "fresh", last_updated_at: Math.floor(Date.now() / 1000) },
 };
 
 /** Empty external context response — environment is healthy, no recommendations. */
@@ -869,6 +873,7 @@ export const EXTERNAL_CONTEXT_EMPTY = {
   plan: "enterprise",
   gated: false,
   gated_count: 0,
+  signal_freshness: { status: "fresh", last_updated_at: Math.floor(Date.now() / 1000) },
 };
 
 /** Gated external context response — below-Enterprise callers see count but no bodies. */
@@ -878,6 +883,7 @@ export const EXTERNAL_CONTEXT_GATED = {
   plan: "advanced",
   gated: true,
   gated_count: 2,
+  signal_freshness: { status: "fresh", last_updated_at: Math.floor(Date.now() / 1000) },
 };
 
 export type ExternalContextMockOpts = {

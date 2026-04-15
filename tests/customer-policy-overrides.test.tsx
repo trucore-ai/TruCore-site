@@ -170,6 +170,7 @@ const MARKET_STABLE = {
   recommendation: null,
   summary: "Execution environment is stable — no infrastructure issues detected.",
   captured_at: Date.now() / 1000,
+  signal_freshness: { status: "fresh" as const, last_updated_at: Date.now() / 1000 },
 };
 
 /** Market conditions — degraded. */
@@ -181,6 +182,7 @@ const MARKET_DEGRADED = {
   recommendation: "increase_backoff",
   summary: "Execution environment shows minor degradation — 2.5% of requests are being throttled.",
   captured_at: Date.now() / 1000,
+  signal_freshness: { status: "fresh" as const, last_updated_at: Date.now() / 1000 },
 };
 
 /** Market conditions — stressed. */
@@ -192,6 +194,7 @@ const MARKET_STRESSED = {
   recommendation: "upgrade_plan",
   summary: "Execution environment is under stress — getLatestBlockhash, sendTransaction, getBalance experiencing elevated throttling (14.8% error rate).",
   captured_at: Date.now() / 1000,
+  signal_freshness: { status: "fresh" as const, last_updated_at: Date.now() / 1000 },
 };
 
 // ---------------------------------------------------------------------------
@@ -2549,6 +2552,115 @@ describe("CustomerPoliciesPage", () => {
       });
 
       expect(screen.queryByTestId("gated-source-details")).toBeNull();
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Signal freshness badges
+  // -----------------------------------------------------------------------
+
+  describe("Signal freshness badges", () => {
+    const PRO_POLICY = {
+      plan_code: "pro",
+      plan_limits: { tx_limit_per_month: 10000, policy_overrides_enabled: true },
+      overrides: {},
+      effective: {
+        max_slippage_bps: 100,
+        max_notional_usd: 100000,
+        require_simulation_success: false,
+      },
+    };
+
+    it("shows 'Live' freshness badge when market signal is fresh", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("freshness-badge-market-analysis")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("freshness-badge-market-analysis").textContent).toContain("Live");
+    });
+
+    it("shows stale badge when market signal is stale", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue({
+        ...MARKET_DEGRADED,
+        signal_freshness: { status: "stale" as const, last_updated_at: Date.now() / 1000 - 600 },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("freshness-badge-market-analysis")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("freshness-badge-market-analysis").textContent).toContain("Data may be outdated");
+    });
+
+    it("shows unavailable badge when market signal is unavailable", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue({
+        ...MARKET_STABLE,
+        signal_freshness: { status: "unavailable" as const, last_updated_at: null },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("freshness-badge-market-analysis")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("freshness-badge-market-analysis").textContent).toContain("Signal unavailable");
+    });
+
+    it("shows external context freshness badge for enterprise users", async () => {
+      const ENTERPRISE_POLICY = {
+        plan_code: "enterprise",
+        plan_limits: { tx_limit_per_month: 1000000, policy_overrides_enabled: true },
+        overrides: {},
+        effective: {
+          max_slippage_bps: 100,
+          max_notional_usd: 100000,
+          require_simulation_success: true,
+        },
+      };
+      mockFetchPolicy.mockResolvedValue(ENTERPRISE_POLICY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchExternalContext.mockResolvedValue({
+        recommendations: [{
+          id: "EXT_SUSTAINED_THROTTLE",
+          title: "Sustained external network pressure detected",
+          explanation: "Throttling detected.",
+          parameter: "require_simulation_success",
+          confidence: "high",
+          evidence: "6 consecutive minutes.",
+        }],
+        captured_at: Date.now() / 1000,
+        plan: "enterprise",
+        signal_freshness: { status: "fresh" as const, last_updated_at: Date.now() / 1000 },
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("freshness-badge-external-context")).toBeTruthy();
+      });
+
+      expect(screen.getByTestId("freshness-badge-external-context").textContent).toContain("Live");
+    });
+
+    it("does not render freshness badge when signal_freshness is absent", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchMarketConditions.mockResolvedValue({
+        ...MARKET_DEGRADED,
+        signal_freshness: undefined,
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-recommendations")).toBeTruthy();
+      });
+
+      expect(screen.queryByTestId("freshness-badge-market-analysis")).toBeNull();
     });
   });
 });

@@ -471,6 +471,11 @@ export async function fetchReceiptSummary(
   return res.json();
 }
 
+export interface SignalFreshness {
+  status: "fresh" | "stale" | "unavailable";
+  last_updated_at: number | null;
+}
+
 export interface MarketConditions {
   environment: "stable" | "degraded" | "stressed";
   rpc_status: string;
@@ -479,6 +484,7 @@ export interface MarketConditions {
   recommendation: string | null;
   summary: string;
   captured_at: number;
+  signal_freshness?: SignalFreshness;
 }
 
 export async function fetchMarketConditions(): Promise<MarketConditions> {
@@ -617,6 +623,7 @@ export interface ExternalContextResponse {
   plan: string;
   gated?: boolean;
   gated_count?: number;
+  signal_freshness?: SignalFreshness;
 }
 
 export async function fetchExternalContext(): Promise<ExternalContextResponse> {
