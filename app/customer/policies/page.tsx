@@ -10,10 +10,12 @@ import {
   fetchReceiptSummary,
   fetchMarketConditions,
   fetchPilRecommendations,
+  fetchCohortBenchmarks,
   type EffectivePolicyResponse,
   type ReceiptSummary,
   type MarketConditions,
   type PilRecommendationsResponse,
+  type CohortBenchmarkResponse,
 } from "@/lib/customer-auth";
 import { PremiumSlider } from "@/components/premium-slider";
 
@@ -1341,6 +1343,46 @@ function generatePilRecommendations(
 }
 
 // ---------------------------------------------------------------------------
+// Cohort benchmark → PolicyRecommendation mapping
+// ---------------------------------------------------------------------------
+
+const BENCHMARK_PRIORITY_MAP: Record<string, RecommendationPriority> = {
+  high: "high",
+  medium: "medium",
+  low: "low",
+};
+
+const BENCHMARK_CONFIDENCE_MAP: Record<string, number> = {
+  high: 0.8,
+  medium: 0.5,
+  low: 0.3,
+};
+
+function generateCohortBenchmarkRecommendations(
+  benchmarks: CohortBenchmarkResponse,
+): PolicyRecommendation[] {
+  if (!benchmarks.benchmarks || benchmarks.benchmarks.length === 0) return [];
+
+  const editableKeys = new Set([
+    "max_slippage_bps",
+    "max_notional_usd",
+    "require_simulation_success",
+  ]);
+
+  return benchmarks.benchmarks.map((b) => ({
+    id: `bench-${b.id.toLowerCase().replace(/_/g, "-")}`,
+    title: b.title,
+    explanation: b.explanation,
+    why: "This observation is derived from anonymized, aggregated data across similar configurations — no individual tenant data is used.",
+    priority: BENCHMARK_PRIORITY_MAP[b.confidence] ?? "low",
+    source: "Cohort benchmark" as RecommendationSource,
+    fieldKey: editableKeys.has(b.parameter) ? b.parameter : undefined,
+    evidence: b.evidence || undefined,
+    confidence: BENCHMARK_CONFIDENCE_MAP[b.confidence] ?? 0.3,
+  }));
+}
+
+// ---------------------------------------------------------------------------
 // Recommendation tier configuration
 // ---------------------------------------------------------------------------
 
@@ -1383,6 +1425,7 @@ const SOURCE_DESCRIPTIONS: Partial<Record<RecommendationSource, string>> = {
   "Customer history": "recommendations based on your transaction history patterns",
   "Market analysis": "real-time signals from execution infrastructure conditions",
   "Policy Intelligence": "intelligence-backed suggestions from analysis of your policy performance",
+  "Cohort benchmark": "privacy-safe benchmarks comparing your policy against anonymized aggregate data",
 };
 
 const PRIORITY_STYLES: Record<RecommendationPriority, { badge: string; border: string }> = {
@@ -1412,6 +1455,7 @@ export default function CustomerPoliciesPage() {
   const [historySummary, setHistorySummary] = useState<ReceiptSummary | null>(null);
   const [marketConditions, setMarketConditions] = useState<MarketConditions | null>(null);
   const [pilRecommendations, setPilRecommendations] = useState<PilRecommendationsResponse | null>(null);
+  const [cohortBenchmarks, setCohortBenchmarks] = useState<CohortBenchmarkResponse | null>(null);
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -1479,6 +1523,16 @@ export default function CustomerPoliciesPage() {
     }
   }, []);
 
+  const loadCohortBenchmarks = useCallback(async () => {
+    try {
+      const bench = await fetchCohortBenchmarks();
+      setCohortBenchmarks(bench);
+    } catch {
+      // Benchmarks are optional — degrade gracefully.
+      setCohortBenchmarks(null);
+    }
+  }, []);
+
   useEffect(() => {
     if (!isLoggedIn()) {
       router.replace("/login");
@@ -1488,7 +1542,8 @@ export default function CustomerPoliciesPage() {
     loadHistorySummary();
     loadMarketConditions();
     loadPilRecommendations();
-  }, [router, loadPolicy, loadHistorySummary, loadMarketConditions, loadPilRecommendations]);
+    loadCohortBenchmarks();
+  }, [router, loadPolicy, loadHistorySummary, loadMarketConditions, loadPilRecommendations, loadCohortBenchmarks]);
 
   // Initialize form values from current overrides when entering edit mode.
   // Scroll to and briefly highlight the target field after edit form mounts.
@@ -2140,6 +2195,7 @@ export default function CustomerPoliciesPage() {
               const canHistory = isSourceAvailable("Customer history", planCode);
               const canMarket = isSourceAvailable("Market analysis", planCode);
               const canPil = isSourceAvailable("Policy Intelligence", planCode);
+              const canBenchmark = isSourceAvailable("Cohort benchmark", planCode);
 
               const deterministicRecs = generatePolicyRecommendations(effective, overrides, overridesEnabled);
               const historyRecs = canHistory && historySummary
@@ -2151,10 +2207,13 @@ export default function CustomerPoliciesPage() {
               const pilRecs = canPil && pilRecommendations
                 ? generatePilRecommendations(pilRecommendations)
                 : [];
+              const benchmarkRecs = canBenchmark && cohortBenchmarks
+                ? generateCohortBenchmarkRecommendations(cohortBenchmarks)
+                : [];
               // Merge, deduplicate by id, sort by priority
               const seenIds = new Set<string>();
               const allRecs: PolicyRecommendation[] = [];
-              for (const rec of [...deterministicRecs, ...historyRecs, ...marketRecs, ...pilRecs]) {
+              for (const rec of [...deterministicRecs, ...historyRecs, ...marketRecs, ...pilRecs, ...benchmarkRecs]) {
                 if (!seenIds.has(rec.id)) {
                   seenIds.add(rec.id);
                   allRecs.push(rec);
@@ -2175,12 +2234,16 @@ export default function CustomerPoliciesPage() {
               if (!canPil && pilRecommendations?.gated && (pilRecommendations.gated_count ?? 0) > 0) {
                 gatedSources.push("Policy Intelligence");
               }
+              if (!canBenchmark && cohortBenchmarks?.gated && (cohortBenchmarks.gated_count ?? 0) > 0) {
+                gatedSources.push("Cohort benchmark");
+              }
 
               if (allRecs.length === 0 && gatedSources.length === 0) return null;
 
               const hasHistoryRecs = historyRecs.length > 0;
               const hasMarketRecs = marketRecs.length > 0;
               const hasPilRecs = pilRecs.length > 0;
+              const hasBenchmarkRecs = benchmarkRecs.length > 0;
               return (
                 <section
                   className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-4"
@@ -2194,6 +2257,7 @@ export default function CustomerPoliciesPage() {
                       Suggestions to strengthen your policy based on your current configuration
                       {hasHistoryRecs ? ", your recent transaction history" : ""}
                       {hasPilRecs ? ", policy intelligence analysis" : ""}
+                      {hasBenchmarkRecs ? ", aggregated cohort benchmarks" : ""}
                       {hasMarketRecs ? ", and current execution conditions" : ""}.
                     </p>
                   </div>
@@ -2237,7 +2301,7 @@ export default function CustomerPoliciesPage() {
                               {rec.evidence}
                             </p>
                           )}
-                          {rec.confidence != null && rec.source === "Policy Intelligence" && (
+                          {rec.confidence != null && (rec.source === "Policy Intelligence" || rec.source === "Cohort benchmark") && (
                             <span
                               className="inline-flex items-center gap-1 text-[9px] text-slate-600"
                               data-testid="recommendation-confidence"
@@ -2260,30 +2324,36 @@ export default function CustomerPoliciesPage() {
                     })}
                   </div>
                   <p className="text-[9px] text-slate-600 text-center">
-                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasPilRecs ? ", policy intelligence analysis of your transaction patterns" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : ""}{!hasHistoryRecs && !hasMarketRecs && !hasPilRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
+                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasPilRecs ? ", policy intelligence analysis of your transaction patterns" : ""}{hasBenchmarkRecs ? ", anonymized cohort benchmarks" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : ""}{!hasHistoryRecs && !hasMarketRecs && !hasPilRecs && !hasBenchmarkRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
                   </p>
-                  {/* Pro upgrade teaser for gated recommendation sources */}
-                  {gatedSources.length > 0 && (
+                  {/* Upgrade teaser for gated recommendation sources */}
+                  {gatedSources.length > 0 && (() => {
+                    const hasAdvancedGated = gatedSources.includes("Cohort benchmark");
+                    const tierLabel = hasAdvancedGated ? "Advanced" : "Pro";
+                    return (
                     <div
                       className="rounded-lg border border-primary-400/20 bg-primary-500/5 p-4 space-y-3"
                       data-testid="recommendation-upgrade-teaser"
                     >
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center rounded-full border border-primary-400/30 bg-primary-500/10 px-2 py-0.5 text-[9px] font-semibold text-primary-300">
-                          Pro
+                          {tierLabel}
                         </span>
                         <span className="text-xs font-medium text-slate-200">
                           Unlock deeper policy intelligence
                         </span>
                       </div>
                       <p className="text-[10px] text-slate-500 leading-relaxed">
-                        Upgrade to Pro to access{" "}
+                        Upgrade to {tierLabel} to access{" "}
                         {gatedSources.length === 1
                           ? gatedSources[0]
                           : gatedSources.slice(0, -1).join(", ") + " and " + gatedSources[gatedSources.length - 1]}
                         {" "}recommendations — personalized insights derived from your transaction patterns
                         {pilRecommendations?.gated_count
                           ? `, including ${pilRecommendations.gated_count} intelligence-backed suggestion${pilRecommendations.gated_count !== 1 ? "s" : ""} available now`
+                          : ""}
+                        {cohortBenchmarks?.gated_count
+                          ? `, plus ${cohortBenchmarks.gated_count} cohort benchmark${cohortBenchmarks.gated_count !== 1 ? "s" : ""}`
                           : ""}.
                       </p>
                       {gatedSources.length > 1 && (
@@ -2304,10 +2374,11 @@ export default function CustomerPoliciesPage() {
                         className="inline-flex items-center gap-1 rounded-md border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-[10px] font-medium text-primary-300 transition hover:bg-primary-500/20 hover:text-primary-200"
                         data-testid="recommendation-upgrade-link"
                       >
-                        View Pro plans &rarr;
+                        View {tierLabel} plans &rarr;
                       </Link>
                     </div>
-                  )}
+                    );
+                  })()}
                 </section>
               );
             })()}

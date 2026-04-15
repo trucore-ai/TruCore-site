@@ -15,6 +15,7 @@ const mockUpdatePolicyOverrides = vi.fn();
 const mockFetchReceiptSummary = vi.fn();
 const mockFetchMarketConditions = vi.fn();
 const mockFetchPilRecommendations = vi.fn();
+const mockFetchCohortBenchmarks = vi.fn();
 
 vi.mock("@/lib/customer-auth", () => {
   class ApiError extends Error {
@@ -38,6 +39,8 @@ vi.mock("@/lib/customer-auth", () => {
       mockFetchMarketConditions(...args),
     fetchPilRecommendations: (...args: unknown[]) =>
       mockFetchPilRecommendations(...args),
+    fetchCohortBenchmarks: (...args: unknown[]) =>
+      mockFetchCohortBenchmarks(...args),
     ApiError,
   };
 });
@@ -205,6 +208,13 @@ describe("CustomerPoliciesPage", () => {
       recommendations: [],
       record_count: 0,
       confidence_summary: "low",
+      captured_at: Date.now() / 1000,
+      plan: "free",
+    });
+    // Default: benchmarks returns empty (no cohort recs).
+    mockFetchCohortBenchmarks.mockResolvedValue({
+      benchmarks: [],
+      cohort_size: 0,
       captured_at: Date.now() / 1000,
       plan: "free",
     });
