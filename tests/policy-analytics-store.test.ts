@@ -291,4 +291,158 @@ describe("policy-analytics-store", () => {
     expect(s.total_events).toBeLessThan(50_001);
     expect(s.total_events).toBeGreaterThan(0);
   });
+
+  // ── Teaser performance breakdowns ─────────────────────────────────────────
+
+  describe("teaser_performance", () => {
+    function teaserViewMeta(
+      overrides: Record<string, string | number | boolean> = {},
+    ) {
+      return {
+        plan_tier: "Free",
+        gated_source_count: 2,
+        dominant_gated_source: "Policy Intelligence",
+        highest_gated_tier: "Pro",
+        ...overrides,
+      };
+    }
+
+    function teaserClickMeta(
+      overrides: Record<string, string | number | boolean> = {},
+    ) {
+      return {
+        plan_tier: "Free",
+        gated_source_count: 1,
+        target_tier: "Pro",
+        dominant_gated_source: "Policy Intelligence",
+        highest_gated_tier: "Pro",
+        gated_source_mix: "single",
+        ...overrides,
+      };
+    }
+
+    it("returns empty teaser_performance when no teaser events recorded", () => {
+      recordPolicyEvent("policy_recommendation_impression", meta());
+      const s = summarise();
+      expect(s.teaser_performance.views_by_dominant_source).toEqual({});
+      expect(s.teaser_performance.clicks_by_dominant_source).toEqual({});
+      expect(s.teaser_performance.views_by_tier).toEqual({});
+      expect(s.teaser_performance.clicks_by_tier).toEqual({});
+      expect(s.teaser_performance.clicks_by_mix).toEqual({});
+    });
+
+    it("counts views by dominant gated source", () => {
+      recordPolicyEvent(
+        "policy_upgrade_teaser_view",
+        teaserViewMeta({ dominant_gated_source: "Policy Intelligence" }),
+      );
+      recordPolicyEvent(
+        "policy_upgrade_teaser_view",
+        teaserViewMeta({ dominant_gated_source: "Policy Intelligence" }),
+      );
+      recordPolicyEvent(
+        "policy_upgrade_teaser_view",
+        teaserViewMeta({ dominant_gated_source: "External context" }),
+      );
+      const tp = summarise().teaser_performance;
+      expect(tp.views_by_dominant_source["Policy Intelligence"].total).toBe(2);
+      expect(tp.views_by_dominant_source["External context"].total).toBe(1);
+    });
+
+    it("counts clicks by dominant gated source", () => {
+      recordPolicyEvent(
+        "policy_upgrade_teaser_click",
+        teaserClickMeta({ dominant_gated_source: "Cohort benchmark" }),
+      );
+      const tp = summarise().teaser_performance;
+      expect(tp.clicks_by_dominant_source["Cohort benchmark"].total).toBe(1);
+    });
+
+    it("counts views by target tier", () => {
+      recordPolicyEvent(
+        "policy_upgrade_teaser_view",
+        teaserViewMeta({ highest_gated_tier: "Pro" }),
+      );
+      recordPolicyEvent(
+        "policy_upgrade_teaser_view",
+        teaserViewMeta({ highest_gated_tier: "Enterprise" }),
+      );
+      recordPolicyEvent(
+        "policy_upgrade_teaser_view",
+        teaserViewMeta({ highest_gated_tier: "Pro" }),
+      );
+      const tp = summarise().teaser_performance;
+      expect(tp.views_by_tier["Pro"].total).toBe(2);
+      expect(tp.views_by_tier["Enterprise"].total).toBe(1);
+    });
+
+    it("counts clicks by target tier", () => {
+      recordPolicyEvent(
+        "policy_upgrade_teaser_click",
+        teaserClickMeta({ highest_gated_tier: "Advanced" }),
+      );
+      const tp = summarise().teaser_performance;
+      expect(tp.clicks_by_tier["Advanced"].total).toBe(1);
+    });
+
+    it("counts clicks by source mix", () => {
+      recordPolicyEvent(
+        "policy_upgrade_teaser_click",
+        teaserClickMeta({ gated_source_mix: "single" }),
+      );
+      recordPolicyEvent(
+        "policy_upgrade_teaser_click",
+        teaserClickMeta({ gated_source_mix: "few" }),
+      );
+      recordPolicyEvent(
+        "policy_upgrade_teaser_click",
+        teaserClickMeta({ gated_source_mix: "few" }),
+      );
+      const tp = summarise().teaser_performance;
+      expect(tp.clicks_by_mix["single"].total).toBe(1);
+      expect(tp.clicks_by_mix["few"].total).toBe(2);
+      expect(tp.clicks_by_mix["many"]).toBeUndefined();
+    });
+
+    it("does not populate teaser fields for non-teaser events", () => {
+      recordPolicyEvent("policy_recommendation_impression", meta());
+      const tp = summarise().teaser_performance;
+      // Non-teaser events must not bleed into teaser breakdowns
+      expect(Object.keys(tp.views_by_dominant_source)).toHaveLength(0);
+      expect(Object.keys(tp.clicks_by_dominant_source)).toHaveLength(0);
+    });
+
+    it("does not populate clicks_by_mix for view events", () => {
+      recordPolicyEvent("policy_upgrade_teaser_view", teaserViewMeta());
+      const tp = summarise().teaser_performance;
+      expect(Object.keys(tp.clicks_by_mix)).toHaveLength(0);
+    });
+
+    it("ignores dominant_gated_source when empty string", () => {
+      recordPolicyEvent("policy_upgrade_teaser_view", {
+        plan_tier: "Free",
+        gated_source_count: 0,
+        // no dominant_gated_source
+      });
+      const tp = summarise().teaser_performance;
+      expect(Object.keys(tp.views_by_dominant_source)).toHaveLength(0);
+    });
+
+    it("respects time windows for teaser breakdowns", () => {
+      const old = Date.now() - 10 * 24 * 60 * 60 * 1000; // 10 days ago
+      recordPolicyEvent("policy_upgrade_teaser_view", {
+        ...teaserViewMeta(),
+        ts: old,
+      });
+      recordPolicyEvent("policy_upgrade_teaser_view", {
+        ...teaserViewMeta(),
+        ts: recentTs(),
+      });
+      const tp = summarise().teaser_performance;
+      const bucket = tp.views_by_dominant_source["Policy Intelligence"];
+      expect(bucket.total).toBe(2);
+      expect(bucket.last_7d).toBe(1);
+      expect(bucket.last_30d).toBe(2);
+    });
+  });
 });

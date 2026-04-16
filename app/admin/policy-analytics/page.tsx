@@ -53,6 +53,78 @@ function MetricCard({
   );
 }
 
+/* ── teaser performance table ─────────────────────────────────────── */
+
+/**
+ * Side-by-side views / clicks / CTR table for a given dimension.
+ * Both maps share the same key space (e.g. dominant gated source name).
+ */
+function TeaserCompareTable({
+  title,
+  viewsMap,
+  clicksMap,
+}: {
+  title: string;
+  viewsMap: Record<string, BucketCounts>;
+  clicksMap: Record<string, BucketCounts>;
+}) {
+  // Union of all keys, sorted by views descending then clicks descending
+  const keys = Array.from(
+    new Set([...Object.keys(viewsMap), ...Object.keys(clicksMap)]),
+  ).sort((a, b) => {
+    const vDiff = (viewsMap[b]?.total ?? 0) - (viewsMap[a]?.total ?? 0);
+    return vDiff !== 0
+      ? vDiff
+      : (clicksMap[b]?.total ?? 0) - (clicksMap[a]?.total ?? 0);
+  });
+
+  if (keys.length === 0) {
+    return (
+      <div className="mb-4">
+        <h4 className="text-xs font-semibold text-slate-400 mb-1.5">{title}</h4>
+        <p className="text-xs text-slate-500 italic">No data yet.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-4 overflow-x-auto">
+      <h4 className="text-xs font-semibold text-slate-400 mb-1.5">{title}</h4>
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-slate-500 border-b border-white/10">
+            <th className="text-left py-1.5 pr-4 font-medium">Key</th>
+            <th className="text-right py-1.5 px-3 font-medium">Views</th>
+            <th className="text-right py-1.5 px-3 font-medium">Clicks</th>
+            <th className="text-right py-1.5 pl-3 font-medium">CTR</th>
+          </tr>
+        </thead>
+        <tbody>
+          {keys.map((k) => {
+            const v = viewsMap[k]?.total ?? 0;
+            const c = clicksMap[k]?.total ?? 0;
+            const ctr = v > 0 ? pct(c / v) : "—";
+            return (
+              <tr key={k} className="border-b border-white/5 hover:bg-white/5">
+                <td className="py-1.5 pr-4 text-slate-300 font-mono">{k}</td>
+                <td className="py-1.5 px-3 text-right tabular-nums">
+                  {num(v)}
+                </td>
+                <td className="py-1.5 px-3 text-right tabular-nums">
+                  {num(c)}
+                </td>
+                <td className="py-1.5 pl-3 text-right tabular-nums text-slate-300 font-semibold">
+                  {ctr}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /* ── bucket table ─────────────────────────────────────────────────── */
 
 function BucketTable({
@@ -269,6 +341,32 @@ export default async function PolicyAnalyticsPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* teaser performance */}
+          <div className="mb-8 rounded-lg border border-white/10 bg-white/5 px-5 py-4">
+            <h2 className="text-sm font-semibold text-slate-200 mb-4">
+              Gated-Source Teaser Performance
+            </h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              <TeaserCompareTable
+                title="By Dominant Gated Source — Views / Clicks / CTR"
+                viewsMap={summary.teaser_performance.views_by_dominant_source}
+                clicksMap={summary.teaser_performance.clicks_by_dominant_source}
+              />
+              <TeaserCompareTable
+                title="By Target Upgrade Tier — Views / Clicks / CTR"
+                viewsMap={summary.teaser_performance.views_by_tier}
+                clicksMap={summary.teaser_performance.clicks_by_tier}
+              />
+            </div>
+            <BucketTable
+              title="Clicks by Source Mix (single · few · many)"
+              data={summary.teaser_performance.clicks_by_mix}
+            />
+            <p className="text-xs text-slate-600 mt-1">
+              Source mix is captured on click only. Single = 1 gated source · Few = 2–3 · Many = 4+.
+            </p>
           </div>
 
           {/* aggregate tables */}

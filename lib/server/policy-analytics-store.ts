@@ -40,6 +40,12 @@ interface StoredEvent {
   source: string;
   priority: string;
   display_section: string;
+  /** Populated only for policy_upgrade_teaser_* events; "" otherwise. */
+  dominant_gated_source: string;
+  /** Populated only for policy_upgrade_teaser_* events; "" otherwise. */
+  highest_gated_tier: string;
+  /** Populated only for policy_upgrade_teaser_click events; "" otherwise. */
+  gated_source_mix: string;
   ts: number;
 }
 
@@ -56,11 +62,25 @@ export function recordPolicyEvent(
 ): void {
   if (!POLICY_EVENT_NAMES.has(name)) return;
 
+  const isTeaserEvent =
+    name === "policy_upgrade_teaser_view" ||
+    name === "policy_upgrade_teaser_click";
+  const isTeaserClick = name === "policy_upgrade_teaser_click";
+
   const entry: StoredEvent = {
     name,
     source: String(meta.recommendation_source ?? "unknown"),
     priority: String(meta.recommendation_priority ?? "unknown"),
     display_section: String(meta.recommendation_display_section ?? "unknown"),
+    dominant_gated_source: isTeaserEvent
+      ? String(meta.dominant_gated_source ?? "")
+      : "",
+    highest_gated_tier: isTeaserEvent
+      ? String(meta.highest_gated_tier ?? "")
+      : "",
+    gated_source_mix: isTeaserClick
+      ? String(meta.gated_source_mix ?? "")
+      : "",
     ts: typeof meta.ts === "number" ? meta.ts : Date.now(),
   };
 
@@ -92,6 +112,28 @@ export interface PolicyAnalyticsSummary {
    * the page display model.
    */
   by_source_and_section: Record<string, BucketCounts>;
+
+  /**
+   * Teaser-performance breakdowns — only populated from
+   * policy_upgrade_teaser_view and policy_upgrade_teaser_click events.
+   *
+   * - views_by_dominant_source / clicks_by_dominant_source:
+   *     which gated source most frequently triggers the teaser and drives
+   *     clicks (keyed by dominant_gated_source, e.g. "External context").
+   * - views_by_tier / clicks_by_tier:
+   *     which upgrade tier is most often promoted (keyed by
+   *     highest_gated_tier, e.g. "Pro", "Advanced", "Enterprise").
+   * - clicks_by_mix:
+   *     how single / few / many gated-source mixes convert (click-only;
+   *     gated_source_mix is emitted only on click events).
+   */
+  teaser_performance: {
+    views_by_dominant_source: Record<string, BucketCounts>;
+    clicks_by_dominant_source: Record<string, BucketCounts>;
+    views_by_tier: Record<string, BucketCounts>;
+    clicks_by_tier: Record<string, BucketCounts>;
+    clicks_by_mix: Record<string, BucketCounts>;
+  };
 
   derived: {
     expand_rate: number | null;
@@ -130,6 +172,13 @@ export function summarise(): PolicyAnalyticsSummary {
   const byPriority: Record<string, BucketCounts> = {};
   const bySection: Record<string, BucketCounts> = {};
   const bySourceAndSection: Record<string, BucketCounts> = {};
+
+  // Teaser performance breakdowns
+  const tpViewsBySource: Record<string, BucketCounts> = {};
+  const tpClicksBySource: Record<string, BucketCounts> = {};
+  const tpViewsByTier: Record<string, BucketCounts> = {};
+  const tpClicksByTier: Record<string, BucketCounts> = {};
+  const tpClicksByMix: Record<string, BucketCounts> = {};
 
   // Derived counters
   const featuredImpressions = zeroBucket();
@@ -174,6 +223,38 @@ export function summarise(): PolicyAnalyticsSummary {
     if (ev.display_section === "more") {
       increment(moreEngagement, ev.ts, now, d7, d30);
     }
+
+    // teaser performance breakdowns
+    if (ev.name === "policy_upgrade_teaser_view") {
+      if (ev.dominant_gated_source) {
+        if (!tpViewsBySource[ev.dominant_gated_source])
+          tpViewsBySource[ev.dominant_gated_source] = zeroBucket();
+        increment(tpViewsBySource[ev.dominant_gated_source], ev.ts, now, d7, d30);
+      }
+      if (ev.highest_gated_tier) {
+        if (!tpViewsByTier[ev.highest_gated_tier])
+          tpViewsByTier[ev.highest_gated_tier] = zeroBucket();
+        increment(tpViewsByTier[ev.highest_gated_tier], ev.ts, now, d7, d30);
+      }
+    }
+
+    if (ev.name === "policy_upgrade_teaser_click") {
+      if (ev.dominant_gated_source) {
+        if (!tpClicksBySource[ev.dominant_gated_source])
+          tpClicksBySource[ev.dominant_gated_source] = zeroBucket();
+        increment(tpClicksBySource[ev.dominant_gated_source], ev.ts, now, d7, d30);
+      }
+      if (ev.highest_gated_tier) {
+        if (!tpClicksByTier[ev.highest_gated_tier])
+          tpClicksByTier[ev.highest_gated_tier] = zeroBucket();
+        increment(tpClicksByTier[ev.highest_gated_tier], ev.ts, now, d7, d30);
+      }
+      if (ev.gated_source_mix) {
+        if (!tpClicksByMix[ev.gated_source_mix])
+          tpClicksByMix[ev.gated_source_mix] = zeroBucket();
+        increment(tpClicksByMix[ev.gated_source_mix], ev.ts, now, d7, d30);
+      }
+    }
   }
 
   // Derived rates (null if denominator is 0)
@@ -194,6 +275,14 @@ export function summarise(): PolicyAnalyticsSummary {
     by_priority: byPriority,
     by_display_section: bySection,
     by_source_and_section: bySourceAndSection,
+
+    teaser_performance: {
+      views_by_dominant_source: tpViewsBySource,
+      clicks_by_dominant_source: tpClicksBySource,
+      views_by_tier: tpViewsByTier,
+      clicks_by_tier: tpClicksByTier,
+      clicks_by_mix: tpClicksByMix,
+    },
 
     derived: {
       expand_rate: impressions > 0 ? expands / impressions : null,

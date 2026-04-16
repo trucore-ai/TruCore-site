@@ -38,6 +38,29 @@ function makeSummary(overrides: Record<string, unknown> = {}) {
       "Policy Intelligence::featured": { total: 15, last_7d: 5, last_30d: 12 },
       "Compliance Scan::more": { total: 10, last_7d: 3, last_30d: 8 },
     },
+    teaser_performance: {
+      views_by_dominant_source: {
+        "Policy Intelligence": { total: 40, last_7d: 15, last_30d: 35 },
+        "External context": { total: 20, last_7d: 8, last_30d: 18 },
+      },
+      clicks_by_dominant_source: {
+        "Policy Intelligence": { total: 10, last_7d: 4, last_30d: 9 },
+        "External context": { total: 4, last_7d: 2, last_30d: 4 },
+      },
+      views_by_tier: {
+        Pro: { total: 50, last_7d: 18, last_30d: 42 },
+        Enterprise: { total: 10, last_7d: 5, last_30d: 8 },
+      },
+      clicks_by_tier: {
+        Pro: { total: 12, last_7d: 5, last_30d: 11 },
+        Enterprise: { total: 2, last_7d: 1, last_30d: 2 },
+      },
+      clicks_by_mix: {
+        single: { total: 8, last_7d: 3, last_30d: 7 },
+        few: { total: 5, last_7d: 2, last_30d: 4 },
+        many: { total: 1, last_7d: 0, last_30d: 1 },
+      },
+    },
     derived: {
       expand_rate: 0.4,
       view_setting_click_rate: 0.15,
@@ -146,6 +169,50 @@ describe("PolicyAnalyticsPage", () => {
 
     // em-dash for null rates
     expect(html).toContain("—");
+  });
+
+  it("renders the teaser performance panel with source, tier, and mix data", async () => {
+    mockSummarise.mockReturnValue(makeSummary());
+    const node = await PolicyAnalyticsPage();
+    const html = renderToString(node);
+
+    expect(html).toContain("Gated-Source Teaser Performance");
+    // dominant source breakdown
+    expect(html).toContain("By Dominant Gated Source");
+    expect(html).toContain("Policy Intelligence");
+    expect(html).toContain("External context");
+    // tier breakdown
+    expect(html).toContain("By Target Upgrade Tier");
+    expect(html).toContain("Pro");
+    expect(html).toContain("Enterprise");
+    // mix breakdown
+    expect(html).toContain("Clicks by Source Mix");
+    expect(html).toContain("single");
+    expect(html).toContain("few");
+    expect(html).toContain("many");
+    // mix legend note
+    expect(html).toContain("Source mix is captured on click only");
+  });
+
+  it("shows empty-data state in teaser panel when no teaser events", async () => {
+    mockSummarise.mockReturnValue(
+      makeSummary({
+        teaser_performance: {
+          views_by_dominant_source: {},
+          clicks_by_dominant_source: {},
+          views_by_tier: {},
+          clicks_by_tier: {},
+          clicks_by_mix: {},
+        },
+      }),
+    );
+    const node = await PolicyAnalyticsPage();
+    const html = renderToString(node);
+
+    // Panel heading still present
+    expect(html).toContain("Gated-Source Teaser Performance");
+    // No-data fallback text for the compare tables
+    expect(html).toContain("No data yet.");
   });
 });
 
