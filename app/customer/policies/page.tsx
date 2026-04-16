@@ -56,6 +56,15 @@ function formatLimit(v: number): string {
   return v.toLocaleString();
 }
 
+/** Returns a user-facing tooltip for the Undo button describing what will be restored. */
+function undoTitle(mutationKey: string): string {
+  const titles: Record<string, string> = {
+    require_simulation_success: "Undo will restore your previous simulation requirement setting.",
+    max_slippage_bps: "Undo will restore your previous slippage cap.",
+  };
+  return titles[mutationKey] ?? "Undo will restore the previous setting.";
+}
+
 function tierLabel(code: string): string {
   const labels: Record<string, string> = {
     free: "Free",
@@ -1082,6 +1091,9 @@ function generateHistoryRecommendations(
     policySlippage > summary.avg_slippage_bps * 3
   ) {
     const avgBps = Math.round(summary.avg_slippage_bps);
+    // Conservative deterministic target: 2× actual average, floored at 50 bps.
+    // Always tighter than current cap because the trigger requires cap > avg * 3.
+    const targetBps = Math.max(50, Math.round(summary.avg_slippage_bps * 2));
     recs.push({
       id: "history-slippage-headroom",
       title: "Your slippage cap is wider than recent usage",
@@ -1093,6 +1105,11 @@ function generateHistoryRecommendations(
       source: "Customer history",
       fieldKey: "max_slippage_bps",
       evidence: `Based on ${summary.total_receipts} receipts over the last ${summary.period_days} days.`,
+      applyable: true,
+      applyConfirmText:
+        `This will lower your slippage cap from ${policySlippage} bps to ${targetBps} bps ` +
+        `(2× your recent average of ${avgBps} bps).`,
+      applyMutation: { key: "max_slippage_bps", value: targetBps },
     });
   }
 
@@ -3241,7 +3258,7 @@ export default function CustomerPoliciesPage() {
                                           onClick={() => handleUndoRecommendation(rec.id)}
                                           className="inline-flex items-center rounded-md border border-slate-500/20 bg-white/5 px-2.5 py-1 text-[10px] text-slate-400 transition hover:text-slate-200 hover:bg-white/10 disabled:opacity-50"
                                           data-testid={`undo-btn-${rec.id}`}
-                                          title="Undo will restore your previous simulation requirement setting."
+                                          title={undoTitle(applyUndoStates[rec.id].key)}
                                         >
                                           {undoingRecId === rec.id ? "Undoing…" : "Undo"}
                                         </button>
@@ -3517,7 +3534,7 @@ export default function CustomerPoliciesPage() {
                                               onClick={() => handleUndoRecommendation(rec.id)}
                                               className="inline-flex items-center rounded-md border border-slate-500/20 bg-white/5 px-2 py-0.5 text-[9px] text-slate-400 transition hover:text-slate-200 hover:bg-white/10 disabled:opacity-50"
                                               data-testid={`undo-btn-${rec.id}`}
-                                              title="Undo will restore your previous simulation requirement setting."
+                                              title={undoTitle(applyUndoStates[rec.id].key)}
                                             >
                                               {undoingRecId === rec.id ? "Undoing…" : "Undo"}
                                             </button>

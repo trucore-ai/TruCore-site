@@ -171,6 +171,50 @@ function marketTxThrottledRec(
   };
 }
 
+/**
+ * Inline mirror of the history-slippage-headroom rec logic from page.tsx.
+ * Must be kept in sync with generateHistoryRecommendations.
+ *
+ * Target value: Math.max(50, Math.round(avg_slippage_bps * 2))
+ * Only produced when policySlippage > avg_slippage_bps * 3.
+ */
+function historySlippageHeadroomRec(
+  summary: ReceiptSummary,
+  effective: Record<string, unknown>,
+): PolicyRecommendation | null {
+  if (summary.total_receipts < 3) return null;
+  if (summary.avg_slippage_bps === null) return null;
+
+  const policySlippage = effective.max_slippage_bps;
+  if (
+    typeof policySlippage !== "number" ||
+    policySlippage <= 0 ||
+    summary.avg_slippage_bps <= 0 ||
+    policySlippage <= summary.avg_slippage_bps * 3
+  ) return null;
+
+  const avgBps = Math.round(summary.avg_slippage_bps);
+  const targetBps = Math.max(50, Math.round(summary.avg_slippage_bps * 2));
+
+  return {
+    id: "history-slippage-headroom",
+    title: "Your slippage cap is wider than recent usage",
+    explanation:
+      `Your recent trades averaged ${avgBps} bps slippage, but your policy allows up to ${policySlippage} bps.`,
+    why:
+      "A tighter slippage cap reduces the risk of unfavorable execution prices without impacting your typical trades.",
+    priority: "low",
+    source: "Customer history",
+    fieldKey: "max_slippage_bps",
+    evidence: `Based on ${summary.total_receipts} receipts over the last ${summary.period_days} days.`,
+    applyable: true,
+    applyConfirmText:
+      `This will lower your slippage cap from ${policySlippage} bps to ${targetBps} bps ` +
+      `(2× your recent average of ${avgBps} bps).`,
+    applyMutation: { key: "max_slippage_bps", value: targetBps },
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
@@ -682,7 +726,10 @@ describe("undo state model — removing introduced key (hadKey=false)", () => {
 
 describe("undo scope is limited to simulation apply path", () => {
   it("only applyable recs have the mutation key that undo supports", () => {
-    const UNDO_SAFE_MUTATION_KEY = "require_simulation_success";
+    const UNDO_SAFE_MUTATION_KEYS = new Set([
+      "require_simulation_success",
+      "max_slippage_bps",
+    ]);
     const applyableRecs = [
       simulationRec(makeEffective({ require_simulation_success: false })),
       historySimulationFailuresRec(
@@ -700,7 +747,7 @@ describe("undo scope is limited to simulation apply path", () => {
     ].filter((r): r is PolicyRecommendation => r !== null);
 
     for (const rec of applyableRecs) {
-      expect(rec.applyMutation?.key).toBe(UNDO_SAFE_MUTATION_KEY);
+      expect(UNDO_SAFE_MUTATION_KEYS.has(rec.applyMutation?.key ?? "")).toBe(true);
     }
   });
 
@@ -736,5 +783,227 @@ describe("undo scope is limited to simulation apply path", () => {
     // produce the rec again if conditions still warrant it.
     const rec = simulationRec(makeEffective({ require_simulation_success: false }));
     expect(rec).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Fixtures for slippage tests
+// ---------------------------------------------------------------------------
+
+/** Summary where avg slippage is 60 bps and policy is 300 bps (exactly 5× avg). */
+const SUMMARY_HIGH_SLIPPAGE_HEADROOM: ReceiptSummary = {
+  period_days: 30,
+  total_receipts: 15,
+  decisions: { allow: 15, deny: 0 },
+  dry_run_count: 0,
+  intent_types: {},
+  denial_reasons: [],
+  recent_tokens: [],
+  recent_programs: [],
+  avg_notional_usd: 5000,
+  max_notional_usd: 20000,
+  avg_slippage_bps: 60,
+  simulation_failures: 0,
+  simulation_total: 15,
+};
+
+/** Effective policy with 300 bps slippage cap — 5× the 60 bps average. */
+const EFF_SLIPPAGE_300 = makeEffective({ max_slippage_bps: 300 });
+
+// ---------------------------------------------------------------------------
+// Tests: history-slippage-headroom recommendation (applyable — prompt #193)
+// ---------------------------------------------------------------------------
+
+describe("history-slippage-headroom recommendation", () => {
+  it("is applyable when policy slippage > 3× avg slippage", () => {
+    const rec = historySlippageHeadroomRec(SUMMARY_HIGH_SLIPPAGE_HEADROOM, EFF_SLIPPAGE_300);
+    expect(rec).not.toBeNull();
+    expect(rec!.applyable).toBe(true);
+  });
+
+  it("mutation key is max_slippage_bps", () => {
+    const rec = historySlippageHeadroomRec(SUMMARY_HIGH_SLIPPAGE_HEADROOM, EFF_SLIPPAGE_300);
+    expect(rec!.applyMutation?.key).toBe("max_slippage_bps");
+  });
+
+  it("target value is 2× avg rounded, floored at 50", () => {
+    const rec = historySlippageHeadroomRec(SUMMARY_HIGH_SLIPPAGE_HEADROOM, EFF_SLIPPAGE_300);
+    // avg=60 → target = Math.max(50, Math.round(60 * 2)) = 120
+    expect(rec!.applyMutation?.value).toBe(120);
+  });
+
+  it("floor at 50 applies when avg is very small", () => {
+    const tinyAvgSummary: ReceiptSummary = {
+      ...SUMMARY_HIGH_SLIPPAGE_HEADROOM,
+      avg_slippage_bps: 10, // 2× = 20, floored to 50
+    };
+    // policy must be > 10*3 = 30, so 300 qualifies
+    const rec = historySlippageHeadroomRec(tinyAvgSummary, EFF_SLIPPAGE_300);
+    expect(rec!.applyMutation?.value).toBe(50);
+  });
+
+  it("target value is strictly less than current policy cap", () => {
+    const rec = historySlippageHeadroomRec(SUMMARY_HIGH_SLIPPAGE_HEADROOM, EFF_SLIPPAGE_300);
+    expect(rec!.applyMutation!.value as number).toBeLessThan(300);
+  });
+
+  it("applyConfirmText mentions the current cap, target cap, and average", () => {
+    const rec = historySlippageHeadroomRec(SUMMARY_HIGH_SLIPPAGE_HEADROOM, EFF_SLIPPAGE_300);
+    const text = rec!.applyConfirmText ?? "";
+    expect(text).toContain("300 bps");   // from cap
+    expect(text).toContain("120 bps");   // to target
+    expect(text).toContain("60 bps");    // avg
+  });
+
+  it("has a non-empty applyConfirmText", () => {
+    const rec = historySlippageHeadroomRec(SUMMARY_HIGH_SLIPPAGE_HEADROOM, EFF_SLIPPAGE_300);
+    expect((rec!.applyConfirmText ?? "").length).toBeGreaterThan(20);
+  });
+
+  it("is NOT generated when policy slippage is exactly 3× avg (boundary)", () => {
+    // 60 * 3 = 180 — not strictly greater, so no rec
+    const eff = makeEffective({ max_slippage_bps: 180 });
+    const rec = historySlippageHeadroomRec(SUMMARY_HIGH_SLIPPAGE_HEADROOM, eff);
+    expect(rec).toBeNull();
+  });
+
+  it("is NOT generated when policy slippage is below 3× avg", () => {
+    const eff = makeEffective({ max_slippage_bps: 150 }); // 150 < 180
+    const rec = historySlippageHeadroomRec(SUMMARY_HIGH_SLIPPAGE_HEADROOM, eff);
+    expect(rec).toBeNull();
+  });
+
+  it("is NOT generated with fewer than 3 receipts", () => {
+    const sparse: ReceiptSummary = { ...SUMMARY_HIGH_SLIPPAGE_HEADROOM, total_receipts: 2 };
+    const rec = historySlippageHeadroomRec(sparse, EFF_SLIPPAGE_300);
+    expect(rec).toBeNull();
+  });
+
+  it("is NOT generated when avg_slippage_bps is 0", () => {
+    const zeroAvg: ReceiptSummary = { ...SUMMARY_HIGH_SLIPPAGE_HEADROOM, avg_slippage_bps: 0 };
+    const rec = historySlippageHeadroomRec(zeroAvg, EFF_SLIPPAGE_300);
+    expect(rec).toBeNull();
+  });
+
+  it("is NOT generated when avg_slippage_bps is null", () => {
+    const nullAvg = { ...SUMMARY_HIGH_SLIPPAGE_HEADROOM, avg_slippage_bps: null } as unknown as ReceiptSummary;
+    const rec = historySlippageHeadroomRec(nullAvg, EFF_SLIPPAGE_300);
+    expect(rec).toBeNull();
+  });
+
+  it("has source: Customer history", () => {
+    const rec = historySlippageHeadroomRec(SUMMARY_HIGH_SLIPPAGE_HEADROOM, EFF_SLIPPAGE_300);
+    expect(rec!.source).toBe("Customer history");
+  });
+
+  it("has fieldKey: max_slippage_bps", () => {
+    const rec = historySlippageHeadroomRec(SUMMARY_HIGH_SLIPPAGE_HEADROOM, EFF_SLIPPAGE_300);
+    expect(rec!.fieldKey).toBe("max_slippage_bps");
+  });
+
+  it("undo can restore a prior explicit slippage cap (hadKey=true)", () => {
+    const priorOverrides = { max_slippage_bps: 300, require_simulation_success: true };
+    const undoState = captureUndoState(priorOverrides, "max_slippage_bps");
+    const postApplyOverrides = { ...priorOverrides, max_slippage_bps: 120 };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(restored.max_slippage_bps).toBe(300);
+    expect(restored.require_simulation_success).toBe(true); // unrelated key preserved
+  });
+
+  it("undo removes slippage key if it was absent before apply (hadKey=false)", () => {
+    const priorOverrides: Record<string, unknown> = { require_simulation_success: true };
+    const undoState = captureUndoState(priorOverrides, "max_slippage_bps");
+    const postApplyOverrides: Record<string, unknown> = {
+      ...priorOverrides,
+      max_slippage_bps: 120,
+    };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(Object.prototype.hasOwnProperty.call(restored, "max_slippage_bps")).toBe(false);
+    expect(restored.require_simulation_success).toBe(true); // unrelated preserved
+  });
+
+  it("preserves unrelated override keys after slippage apply undo", () => {
+    const priorOverrides = {
+      max_slippage_bps: 300,
+      max_notional_usd: 50000,
+      require_simulation_success: true,
+    };
+    const undoState = captureUndoState(priorOverrides, "max_slippage_bps");
+    const postApplyOverrides = { ...priorOverrides, max_slippage_bps: 120 };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(restored.max_notional_usd).toBe(50000);
+    expect(restored.require_simulation_success).toBe(true);
+    expect(Object.keys(restored).length).toBe(3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests: unsupported slippage recs remain manual-only
+// ---------------------------------------------------------------------------
+
+describe("unsupported slippage recommendations remain manual-only", () => {
+  /** Mirrors the tighten-slippage rec from generatePolicyRecommendations. */
+  function tightenSlippageRec(effective: Record<string, unknown>): PolicyRecommendation | null {
+    const slippage = effective.max_slippage_bps;
+    if (typeof slippage !== "number" || slippage <= 300) return null;
+    return {
+      id: "tighten-slippage",
+      title: "Tighten slippage tolerance",
+      explanation: `Your slippage cap is set to ${slippage} bps. This is higher than most users configure.`,
+      why: "High slippage tolerance increases the risk of unfavorable execution prices.",
+      priority: "medium",
+      source: "Default guidance",
+      fieldKey: "max_slippage_bps",
+    };
+  }
+
+  /** Mirrors the market-tighten-slippage rec from generateMarketRecommendations. */
+  function marketTightenSlippageRec(
+    market: MarketConditions,
+    effective: Record<string, unknown>,
+  ): PolicyRecommendation | null {
+    if (market.environment !== "stressed") return null;
+    const policySlippage = effective.max_slippage_bps;
+    if (typeof policySlippage !== "number" || policySlippage <= 100) return null;
+    return {
+      id: "market-tighten-slippage",
+      title: "Consider tightening slippage — market conditions are stressed",
+      explanation: `Your slippage cap is ${policySlippage} bps. During stressed conditions wider tolerances increase risk.`,
+      why: "Tighter slippage limits provide a safety net when execution quality is reduced.",
+      priority: "medium",
+      source: "Market analysis",
+      fieldKey: "max_slippage_bps",
+      evidence: market.summary,
+    };
+  }
+
+  it("tighten-slippage (default guidance) has no applyable flag", () => {
+    const rec = tightenSlippageRec(makeEffective({ max_slippage_bps: 500 }));
+    expect(rec).not.toBeNull();
+    expect(rec!.applyable).toBeUndefined();
+    expect(rec!.applyMutation).toBeUndefined();
+  });
+
+  it("tighten-slippage fires only when slippage > 300", () => {
+    expect(tightenSlippageRec(makeEffective({ max_slippage_bps: 300 }))).toBeNull();
+    expect(tightenSlippageRec(makeEffective({ max_slippage_bps: 301 }))).not.toBeNull();
+  });
+
+  it("market-tighten-slippage has no applyable flag", () => {
+    const rec = marketTightenSlippageRec(
+      { ...MARKET_STRESSED_THROTTLED, environment: "stressed" },
+      makeEffective({ max_slippage_bps: 300 }),
+    );
+    expect(rec).not.toBeNull();
+    expect(rec!.applyable).toBeUndefined();
+    expect(rec!.applyMutation).toBeUndefined();
+  });
+
+  it("market-tighten-slippage requires stressed environment", () => {
+    const rec = marketTightenSlippageRec(MARKET_DEGRADED, makeEffective({ max_slippage_bps: 300 }));
+    expect(rec).toBeNull(); // degraded, not stressed
   });
 });
