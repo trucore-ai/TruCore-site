@@ -32,6 +32,14 @@ import {
   trackUpgradeTeaserClick,
   resetImpressionTracking,
 } from "@/lib/client/policy-recommendation-analytics";
+import {
+  deriveReceiptTrendSignals,
+  getMarketConditionCue,
+  loadRecSnapshot,
+  saveRecSnapshot,
+  TREND_STATUS_DOT,
+  TREND_STATUS_TEXT,
+} from "@/lib/customer-policy-trend";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1837,6 +1845,8 @@ export default function CustomerPoliciesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [historySummary, setHistorySummary] = useState<ReceiptSummary | null>(null);
+  // Short window (7-day) used alongside the 30-day baseline to derive trend signals.
+  const [historySummaryShort, setHistorySummaryShort] = useState<ReceiptSummary | null>(null);
   const [marketConditions, setMarketConditions] = useState<MarketConditions | null>(null);
   const [pilRecommendations, setPilRecommendations] = useState<PilRecommendationsResponse | null>(null);
   const [cohortBenchmarks, setCohortBenchmarks] = useState<CohortBenchmarkResponse | null>(null);
@@ -1845,6 +1855,10 @@ export default function CustomerPoliciesPage() {
   const [signalRefreshCooldown, setSignalRefreshCooldown] = useState(false);
   const [expandedRecs, setExpandedRecs] = useState<Set<string>>(new Set());
   const [showMoreSuggestions, setShowMoreSuggestions] = useState(false);
+  // Previous recommendation IDs loaded from localStorage — enables "New" badges.
+  const [prevRecSnapshot, setPrevRecSnapshot] = useState<Set<string>>(new Set());
+  // Ref to avoid saving the same snapshot multiple times per render cycle.
+  const snapshotSavedRef = useRef<string>("");
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -1887,6 +1901,17 @@ export default function CustomerPoliciesPage() {
     } catch {
       // History summary is optional — degrade gracefully.
       setHistorySummary(null);
+    }
+  }, []);
+
+  // Fetch short-window receipt summary (7-day) for trend comparison (non-blocking).
+  const loadHistorySummaryShort = useCallback(async () => {
+    try {
+      const summary = await fetchReceiptSummary(7);
+      setHistorySummaryShort(summary);
+    } catch {
+      // Short-window summary is optional — degrade gracefully.
+      setHistorySummaryShort(null);
     }
   }, []);
 
@@ -1966,11 +1991,14 @@ export default function CustomerPoliciesPage() {
     }
     loadPolicy();
     loadHistorySummary();
+    loadHistorySummaryShort();
     loadMarketConditions();
     loadPilRecommendations();
     loadCohortBenchmarks();
     loadExternalContext();
-  }, [router, loadPolicy, loadHistorySummary, loadMarketConditions, loadPilRecommendations, loadCohortBenchmarks, loadExternalContext]);
+    // Load the previous recommendation snapshot for "New" badge detection.
+    setPrevRecSnapshot(loadRecSnapshot());
+  }, [router, loadPolicy, loadHistorySummary, loadHistorySummaryShort, loadMarketConditions, loadPilRecommendations, loadCohortBenchmarks, loadExternalContext]);
 
   // Initialize form values from current overrides when entering edit mode.
   // Scroll to and briefly highlight the target field after edit form mounts.
@@ -2617,6 +2645,57 @@ export default function CustomerPoliciesPage() {
               );
             })()}
 
+            {/* Recent Policy Signals — lightweight trend surface */}
+            {(() => {
+              const receiptSignals = deriveReceiptTrendSignals(historySummaryShort, historySummary);
+              const marketCue = getMarketConditionCue(marketConditions);
+              const allTrendSignals = [
+                ...receiptSignals,
+                ...(marketCue ? [marketCue] : []),
+              ];
+              if (allTrendSignals.length === 0) return null;
+              return (
+                <section
+                  className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4"
+                  data-testid="policy-trend-surface"
+                >
+                  <div>
+                    <h2 className="text-sm font-medium text-slate-200">
+                      What&rsquo;s Shifted Recently
+                    </h2>
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Directional cues from your last 7 days compared to your 30-day baseline.
+                    </p>
+                  </div>
+                  <div className="space-y-2.5" data-testid="trend-signal-list">
+                    {allTrendSignals.map((signal) => (
+                      <div
+                        key={signal.key}
+                        className="flex items-start gap-2.5"
+                        data-testid={`trend-signal-${signal.key}`}
+                      >
+                        <span
+                          className={`mt-1.5 shrink-0 h-1.5 w-1.5 rounded-full ${TREND_STATUS_DOT[signal.status]}`}
+                          aria-hidden="true"
+                        />
+                        <div className="flex flex-wrap items-baseline gap-x-1.5">
+                          <span className={`text-[11px] font-medium ${TREND_STATUS_TEXT[signal.status]}`}>
+                            {signal.label}
+                          </span>
+                          <span className="text-[10px] text-slate-500 leading-relaxed">
+                            {signal.detail}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-slate-600">
+                    Comparisons are directional, not predictive. Based on your own transaction activity.
+                  </p>
+                </section>
+              );
+            })()}
+
             {/* Policy Recommendations */}
             {(() => {
               const canHistory = isSourceAvailable("Customer history", planCode);
@@ -2651,6 +2730,21 @@ export default function CustomerPoliciesPage() {
                 }
               }
               allRecs.sort(compareRecommendations);
+
+              // Save the current recommendation IDs for "New" badge detection on
+              // the next page load.  Only save when the set meaningfully changes.
+              const currentIdSignature = allRecs.map((r) => r.id).sort().join("|");
+              if (snapshotSavedRef.current !== currentIdSignature && allRecs.length > 0) {
+                snapshotSavedRef.current = currentIdSignature;
+                saveRecSnapshot(allRecs.map((r) => r.id));
+              }
+
+              // Compute the set of newly-appearing recommendation IDs.
+              // Only active when a prior snapshot exists (size > 0), so first-ever
+              // page loads don't incorrectly badge everything as "New".
+              const hasPriorSnapshot = prevRecSnapshot.size > 0;
+              const isNewRec = (id: string): boolean =>
+                hasPriorSnapshot && !prevRecSnapshot.has(id);
 
               // Split into display sections
               const topRecs = allRecs.filter((r) => classifyDisplaySection(r) === "top");
@@ -2805,6 +2899,14 @@ export default function CustomerPoliciesPage() {
                                   <span className="text-xs font-semibold text-slate-200">
                                     {rec.title}
                                   </span>
+                                  {isNewRec(rec.id) && (
+                                    <span
+                                      className="inline-flex items-center rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold leading-none text-emerald-300"
+                                      data-testid={`rec-new-badge-${rec.id}`}
+                                    >
+                                      New
+                                    </span>
+                                  )}
                                   {isFeatured && (
                                     <span
                                       className="inline-flex items-center rounded-full bg-red-500/10 border border-red-500/20 px-2 py-0.5 text-[9px] font-semibold leading-none text-red-300"
@@ -2998,9 +3100,19 @@ export default function CustomerPoliciesPage() {
                                   data-emphasis={displayMeta.emphasis}
                                 >
                                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                                    <span className="text-[11px] font-medium text-slate-400">
-                                      {rec.title}
-                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[11px] font-medium text-slate-400">
+                                        {rec.title}
+                                      </span>
+                                      {isNewRec(rec.id) && (
+                                        <span
+                                          className="inline-flex items-center rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[9px] font-semibold leading-none text-emerald-300"
+                                          data-testid={`rec-new-badge-${rec.id}`}
+                                        >
+                                          New
+                                        </span>
+                                      )}
+                                    </div>
                                     <div className="flex items-center gap-1.5">
                                       {displayMeta.showInlineConfidence && rec.confidence != null && (
                                         <span
