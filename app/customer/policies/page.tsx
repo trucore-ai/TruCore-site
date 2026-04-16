@@ -2681,6 +2681,8 @@ export default function CustomerPoliciesPage() {
                                     <span
                                       className="inline-flex items-center rounded-full bg-red-500/10 border border-red-500/20 px-2 py-0.5 text-[9px] font-semibold leading-none text-red-300"
                                       data-testid="recommended-action-badge"
+                                      role="status"
+                                      aria-label="Recommended action"
                                     >
                                       Recommended action
                                     </span>

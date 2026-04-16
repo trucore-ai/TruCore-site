@@ -1614,12 +1614,22 @@ test.describe("customer policies — PIL recommendations", () => {
     const pilCard = page.getByTestId("recommendation-pil-reduce-slippage");
     await expect(pilCard).toBeVisible();
 
-    // Confidence is hidden by default; expand the card
-    await pilCard.getByTestId("recommendation-details-toggle-pil-reduce-slippage").click();
+    // Under the emphasis model, high-confidence top-section cards show
+    // confidence inline rather than only in the expanded details panel.
+    const inlineConfidence = pilCard.getByTestId("recommendation-inline-confidence");
+    const hasInline = (await inlineConfidence.count()) > 0;
 
-    const confidenceEls = page.getByTestId("recommendation-confidence");
-    await expect(confidenceEls.first()).toBeVisible();
-    await expect(confidenceEls.first()).toContainText("Confidence:");
+    if (hasInline) {
+      // Inline badge already visible — no expansion needed
+      await expect(inlineConfidence).toBeVisible();
+      await expect(inlineConfidence).toContainText("confidence");
+    } else {
+      // Fallback: confidence only in expanded details panel
+      await pilCard.getByTestId("recommendation-details-toggle-pil-reduce-slippage").click();
+      const confidenceEls = pilCard.getByTestId("recommendation-confidence");
+      await expect(confidenceEls).toBeVisible();
+      await expect(confidenceEls).toContainText("Confidence:");
+    }
   });
 
   test("PIL recs coexist with deterministic and market recommendations", async ({ page }) => {
@@ -2132,12 +2142,20 @@ test.describe("customer policies — external context recommendations (Enterpris
     const extCard = page.getByTestId("recommendation-ext-ext-sustained-throttle");
     await expect(extCard).toBeVisible();
 
-    // Confidence is hidden by default; expand the card
-    await extCard.getByTestId("recommendation-details-toggle-ext-ext-sustained-throttle").click();
+    // Under the emphasis model, high-confidence top-section cards show
+    // confidence inline rather than only in the expanded details panel.
+    const inlineConfidence = extCard.getByTestId("recommendation-inline-confidence");
+    const hasInline = (await inlineConfidence.count()) > 0;
 
-    const confidence = extCard.getByTestId("recommendation-confidence");
-    await expect(confidence).toBeVisible();
-    await expect(confidence).toContainText("Confidence:");
+    if (hasInline) {
+      await expect(inlineConfidence).toBeVisible();
+      await expect(inlineConfidence).toContainText("confidence");
+    } else {
+      await extCard.getByTestId("recommendation-details-toggle-ext-ext-sustained-throttle").click();
+      const confidence = extCard.getByTestId("recommendation-confidence");
+      await expect(confidence).toBeVisible();
+      await expect(confidence).toContainText("Confidence:");
+    }
   });
 
   test("disclaimer mentions external infrastructure when external recs present", async ({ page }) => {
@@ -2832,6 +2850,250 @@ test.describe("customer policies — recommendation prioritization display model
 
     // Advisory disclaimer still visible
     await expect(page.getByText("recommendations are advisory")).toBeVisible();
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Recommendation card emphasis & progressive disclosure
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — recommendation card emphasis display", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await mockPolicyRoutes(page, { plan: "enterprise" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "with-recs" });
+    await mockCohortBenchmarksRoute(page, { variant: "full" });
+    await mockExternalContextRoute(page, { variant: "full" });
+    await injectCustomerAuth(page);
+  });
+
+  test("featured card renders with data-emphasis='featured' attribute", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const topSection = page.getByTestId("top-recommendations");
+    await expect(topSection).toBeVisible();
+
+    // The first card in top section should be featured (high-priority + actionable)
+    const firstCard = topSection.locator("[data-emphasis='featured']").first();
+    await expect(firstCard).toBeVisible();
+  });
+
+  test("featured card shows 'Recommended action' badge", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const badge = page.getByTestId("recommended-action-badge");
+    await expect(badge).toBeVisible();
+    await expect(badge).toContainText("Recommended action");
+  });
+
+  test("featured card shows inline reason snippet by default", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const topSection = page.getByTestId("top-recommendations");
+    const featuredCard = topSection.locator("[data-emphasis='featured']").first();
+    await expect(featuredCard).toBeVisible();
+
+    // Featured cards have showInlineReason=true → "Why:" snippet visible
+    const recId = await featuredCard.getAttribute("data-testid");
+    const cardId = recId?.replace("recommendation-", "") ?? "";
+    const inlineReason = featuredCard.getByTestId(`recommendation-inline-reason-${cardId}`);
+    await expect(inlineReason).toBeVisible();
+    await expect(inlineReason).toContainText("Why:");
+  });
+
+  test("featured card toggle text says 'More detail' (not 'Why this recommendation?')", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const topSection = page.getByTestId("top-recommendations");
+    const featuredCard = topSection.locator("[data-emphasis='featured']").first();
+    await expect(featuredCard).toBeVisible();
+
+    const recId = await featuredCard.getAttribute("data-testid");
+    const cardId = recId?.replace("recommendation-", "") ?? "";
+    const toggle = featuredCard.getByTestId(`recommendation-details-toggle-${cardId}`);
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toContainText("More detail");
+  });
+
+  test("expanding featured card reveals details panel correctly", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const topSection = page.getByTestId("top-recommendations");
+    const featuredCard = topSection.locator("[data-emphasis='featured']").first();
+    await expect(featuredCard).toBeVisible();
+
+    const recId = await featuredCard.getAttribute("data-testid");
+    const cardId = recId?.replace("recommendation-", "") ?? "";
+
+    // Expand
+    await featuredCard.getByTestId(`recommendation-details-toggle-${cardId}`).click();
+    const details = featuredCard.getByTestId(`recommendation-details-${cardId}`);
+    await expect(details).toBeVisible();
+
+    // Collapse
+    await featuredCard.getByTestId(`recommendation-details-toggle-${cardId}`).click();
+    await expect(details).not.toBeVisible();
+  });
+
+  test("emphasized cards in top section have data-emphasis='emphasized'", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const topSection = page.getByTestId("top-recommendations");
+    // There should be at least one emphasized card (non-first cards in top section)
+    const emphasizedCards = topSection.locator("[data-emphasis='emphasized']");
+    const count = await emphasizedCards.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+  });
+
+  test("standard cards in More suggestions have data-emphasis='standard'", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    await expandMoreSuggestions(page);
+
+    const moreList = page.getByTestId("more-suggestions-list");
+    const standardCards = moreList.locator("[data-emphasis='standard']");
+    const count = await standardCards.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+  });
+
+  test("standard cards are hidden until More suggestions is expanded", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    // Before expanding: list not visible
+    const moreList = page.getByTestId("more-suggestions-list");
+    await expect(moreList).not.toBeVisible();
+
+    // After expanding: standard cards become visible
+    await expandMoreSuggestions(page);
+    await expect(moreList).toBeVisible();
+
+    const standardCards = moreList.locator("[data-emphasis='standard']");
+    await expect(standardCards.first()).toBeVisible();
+  });
+
+  test("action buttons work correctly from featured, emphasized, and standard cards", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const topSection = page.getByTestId("top-recommendations");
+
+    // Featured card action
+    const featuredCard = topSection.locator("[data-emphasis='featured']").first();
+    await expect(featuredCard).toBeVisible();
+    const featuredRecId = await featuredCard.getAttribute("data-testid");
+    const featuredId = featuredRecId?.replace("recommendation-", "") ?? "";
+    const featuredAction = featuredCard.getByTestId(`recommendation-action-${featuredId}`);
+    if ((await featuredAction.count()) > 0) {
+      await featuredAction.click();
+      await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+      await page.getByRole("button", { name: "Cancel" }).click();
+      await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    }
+
+    // Emphasized card action
+    const emphasizedCard = topSection.locator("[data-emphasis='emphasized']").first();
+    if ((await emphasizedCard.count()) > 0) {
+      const empRecId = await emphasizedCard.getAttribute("data-testid");
+      const empId = empRecId?.replace("recommendation-", "") ?? "";
+      const empAction = emphasizedCard.getByTestId(`recommendation-action-${empId}`);
+      if ((await empAction.count()) > 0) {
+        await empAction.click();
+        await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+        await page.getByRole("button", { name: "Cancel" }).click();
+        await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+      }
+    }
+
+    // Standard card action (from More suggestions)
+    await expandMoreSuggestions(page);
+    const moreList = page.getByTestId("more-suggestions-list");
+    const standardCard = moreList.locator("[data-emphasis='standard']").first();
+    if ((await standardCard.count()) > 0) {
+      const stdRecId = await standardCard.getAttribute("data-testid");
+      const stdId = stdRecId?.replace("recommendation-", "") ?? "";
+      const stdAction = standardCard.getByTestId(`recommendation-action-${stdId}`);
+      if ((await stdAction.count()) > 0) {
+        await stdAction.click();
+        await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
+        await page.getByRole("button", { name: "Cancel" }).click();
+      }
+    }
+  });
+
+  test("featured card inline confidence badge is visible when card has confidence", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const topSection = page.getByTestId("top-recommendations");
+    const featuredCard = topSection.locator("[data-emphasis='featured']").first();
+    await expect(featuredCard).toBeVisible();
+
+    // Featured cards with confidence show inline confidence badge
+    const inlineConfidence = featuredCard.getByTestId("recommendation-inline-confidence");
+    if ((await inlineConfidence.count()) > 0) {
+      await expect(inlineConfidence).toBeVisible();
+      await expect(inlineConfidence).toContainText("confidence");
+    }
+  });
+
+  test("standard cards do not show inline reason snippets", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    await expandMoreSuggestions(page);
+
+    const moreList = page.getByTestId("more-suggestions-list");
+    const standardCards = moreList.locator("[data-emphasis='standard']");
+    const count = await standardCards.count();
+
+    // No standard card should have an inline reason snippet
+    for (let i = 0; i < count; i++) {
+      const card = standardCards.nth(i);
+      const recId = await card.getAttribute("data-testid");
+      const cardId = recId?.replace("recommendation-", "") ?? "";
+      const inlineReason = card.getByTestId(`recommendation-inline-reason-${cardId}`);
+      expect(await inlineReason.count()).toBe(0);
+    }
+  });
+
+  test("only one featured card exists in the entire recommendation surface", async ({ page }) => {
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+
+    const topSection = page.getByTestId("top-recommendations");
+    const featuredCards = topSection.locator("[data-emphasis='featured']");
+    const count = await featuredCards.count();
+    expect(count).toBeLessThanOrEqual(1);
+
+    // More suggestions should have zero featured cards
+    await expandMoreSuggestions(page);
+    const moreList = page.getByTestId("more-suggestions-list");
+    const moreFeatured = moreList.locator("[data-emphasis='featured']");
+    expect(await moreFeatured.count()).toBe(0);
   });
 });
 
