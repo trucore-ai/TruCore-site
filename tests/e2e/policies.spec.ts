@@ -1946,7 +1946,8 @@ test.describe("customer policies — cohort benchmark gating (Free/Pro)", () => 
 
     const teaser = page.getByTestId("recommendation-upgrade-teaser");
     await expect(teaser).toBeVisible();
-    await expect(teaser).toContainText("Cohort benchmark");
+    // Headline is source-specific; verify it references the benchmark source
+    await expect(teaser).toContainText("peer-comparison benchmarks");
     await expect(teaser).toContainText("2 cohort benchmarks");
   });
 
@@ -1961,7 +1962,7 @@ test.describe("customer policies — cohort benchmark gating (Free/Pro)", () => 
     await expect(teaser).toBeVisible();
     // When cohort benchmark is among gated sources, tierLabel = "Advanced"
     await expect(teaser).toContainText("Upgrade to Advanced");
-    await expect(teaser).toContainText("View Advanced plans");
+    await expect(teaser).toContainText("Explore Advanced for peer benchmarks");
   });
 
   test("Pro user with gated PIL + gated benchmarks sees combined teaser", async ({ page }) => {
@@ -1973,11 +1974,9 @@ test.describe("customer policies — cohort benchmark gating (Free/Pro)", () => 
 
     const teaser = page.getByTestId("recommendation-upgrade-teaser");
     await expect(teaser).toBeVisible();
-    // Should list both gated sources
-    await expect(teaser).toContainText("Cohort benchmark");
-    // PIL is also gated for pro? Actually PIL is available for pro (SOURCE_MIN_TIER pro=1).
-    // But the mock returns gated=true — the gating check uses !canPil which is false for pro.
-    // So only benchmark shows in gated for pro. Let's assert benchmark is present.
+    // PIL is available for pro (SOURCE_MIN_TIER pro), so only benchmark is gated.
+    // Headline uses source-specific copy rather than literal source name.
+    await expect(teaser).toContainText("peer-comparison benchmarks");
     await expect(teaser).toContainText("Advanced");
   });
 });
@@ -2204,7 +2203,8 @@ test.describe("customer policies — external context gating (below Enterprise)"
 
     const teaser = page.getByTestId("recommendation-upgrade-teaser");
     await expect(teaser).toBeVisible();
-    await expect(teaser).toContainText("External context");
+    // Headline is source-specific; verify it references the external source
+    await expect(teaser).toContainText("enterprise-grade external signals");
     await expect(teaser).toContainText("2 external context signals");
   });
 
@@ -2219,7 +2219,7 @@ test.describe("customer policies — external context gating (below Enterprise)"
     const teaser = page.getByTestId("recommendation-upgrade-teaser");
     await expect(teaser).toBeVisible();
     await expect(teaser).toContainText("Upgrade to Enterprise");
-    await expect(teaser).toContainText("View Enterprise plans");
+    await expect(teaser).toContainText("Explore Enterprise for enterprise signals");
   });
 
   test("Free user with gated PIL + gated benchmarks + gated external sees combined teaser", async ({ page }) => {
@@ -2307,7 +2307,10 @@ test.describe("customer policies — market signal freshness badges", () => {
 
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
-    // Market recs should still render from the degraded data
+    // Market recs should still render from the degraded data.
+    // Wait for the specific market card to appear (async data loading).
+    const marketCard = page.getByTestId("recommendation-market-enable-simulation");
+    await expect(marketCard).toBeVisible({ timeout: 10000 });
     const marketCards = page
       .getByTestId("recommendation-cards")
       .locator("[data-testid^='recommendation-market-']");
@@ -3485,7 +3488,181 @@ test.describe("customer policies — mixed available and gated sources (Advanced
     // Upgrade teaser should appear for gated external context
     const teaser = page.getByTestId("recommendation-upgrade-teaser");
     await expect(teaser).toBeVisible();
-    await expect(teaser).toContainText("External context");
+    // Headline is source-specific; verify it references the external source
+    await expect(teaser).toContainText("enterprise-grade external signals");
     await expect(teaser).toContainText("Enterprise");
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// Refined teaser copy and CTA — source-specific, value-ranked, tier-aware
+// ────────────────────────────────────────────────────────────────────────────
+
+test.describe("customer policies — refined teaser copy and CTA", () => {
+  test.beforeEach(async ({ page }) => {
+    await silenceAnalytics(page);
+    await mockAuthRoutes(page, { emailVerified: true });
+    await mockDashboardRoutes(page);
+    await injectCustomerAuth(page);
+  });
+
+  test("source-specific headline renders for gated history source", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    // Return market as a fetch failure so only history is gated
+    await mockMarketConditionsRoute(page, { status: 500 });
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "empty" });
+    await mockExternalContextRoute(page, { variant: "empty" });
+    await page.goto("/customer/policies");
+
+    const headline = page.getByTestId("teaser-headline");
+    await expect(headline).toBeVisible();
+    await expect(headline).toHaveText("Unlock recommendations tailored to your history");
+  });
+
+  test("source-specific headline renders for gated market source", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "empty" });
+    await mockExternalContextRoute(page, { variant: "empty" });
+    await page.goto("/customer/policies");
+
+    const headline = page.getByTestId("teaser-headline");
+    await expect(headline).toBeVisible();
+    await expect(headline).toHaveText("Unlock market-aware policy recommendations");
+  });
+
+  test("source-specific headline renders for gated PIL source", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const headline = page.getByTestId("teaser-headline");
+    await expect(headline).toBeVisible();
+    await expect(headline).toHaveText("Unlock intelligence-backed policy suggestions");
+  });
+
+  test("CTA wording reflects dominant gated source — cohort benchmark", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const cta = page.getByTestId("recommendation-upgrade-link");
+    await expect(cta).toBeVisible();
+    await expect(cta).toContainText("Explore Advanced for peer benchmarks");
+  });
+
+  test("CTA wording reflects dominant gated source — external context", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "empty" });
+    await mockExternalContextRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const cta = page.getByTestId("recommendation-upgrade-link");
+    await expect(cta).toBeVisible();
+    await expect(cta).toContainText("Explore Enterprise for enterprise signals");
+  });
+
+  test("CTA wording reflects dominant gated source — PIL (deeper intelligence)", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "gated" });
+    await mockCohortBenchmarksRoute(page, { variant: "empty" });
+    await page.goto("/customer/policies");
+
+    const cta = page.getByTestId("recommendation-upgrade-link");
+    await expect(cta).toBeVisible();
+    // PIL is the only gated source; dominant source = PIL; tier = Pro
+    await expect(cta).toContainText("Explore Pro for deeper intelligence");
+  });
+
+  test("multi-source teaser renders gated source detail list in value-ranked order", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page, { variant: "rich" });
+    await mockMarketConditionsRoute(page, { variant: "stressed" });
+    await mockPilRecommendationsRoute(page, { variant: "gated" });
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
+    await mockExternalContextRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const details = page.getByTestId("gated-source-details");
+    await expect(details).toBeVisible();
+
+    // Value rank: External(5) > Cohort(4) > PIL(3) > Market(2) > History(1)
+    const items = details.locator("li");
+    const texts = await items.allTextContents();
+    expect(texts.length).toBeGreaterThanOrEqual(3);
+    // Highest-value source should be listed first
+    expect(texts[0]).toContain("External context");
+    expect(texts[1]).toContain("Cohort benchmark");
+    expect(texts[2]).toContain("Policy Intelligence");
+  });
+
+  test("Advanced vs Enterprise target-tier wording is correct", async ({ page }) => {
+    // Enterprise tier label when external context is gated
+    await mockPolicyRoutes(page, { plan: "advanced" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "empty" });
+    await mockExternalContextRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    await expect(teaser).toContainText("Upgrade to Enterprise");
+    // CTA references Enterprise
+    const cta = page.getByTestId("recommendation-upgrade-link");
+    await expect(cta).toContainText("Enterprise");
+  });
+
+  test("Advanced tier label when cohort benchmark is highest gated", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "pro" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    const teaser = page.getByTestId("recommendation-upgrade-teaser");
+    await expect(teaser).toBeVisible();
+    await expect(teaser).toContainText("Upgrade to Advanced");
+    const cta = page.getByTestId("recommendation-upgrade-link");
+    await expect(cta).toContainText("Explore Advanced for peer benchmarks");
+  });
+
+  test("teaser is hidden when no gated sources have data", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "empty" });
+    await mockCohortBenchmarksRoute(page, { variant: "empty" });
+    await mockExternalContextRoute(page, { variant: "empty" });
+    await page.goto("/customer/policies");
+
+    await expect(page.getByTestId("policy-recommendations")).toBeVisible();
+    await expect(page.getByTestId("recommendation-upgrade-teaser")).not.toBeVisible();
+  });
+
+  test("no regression — recommendation cards still render alongside teaser", async ({ page }) => {
+    await mockPolicyRoutes(page, { plan: "free" });
+    await mockReceiptSummaryRoute(page);
+    await mockPilRecommendationsRoute(page, { variant: "gated" });
+    await mockCohortBenchmarksRoute(page, { variant: "gated" });
+    await page.goto("/customer/policies");
+
+    // Deterministic recs should still be visible
+    await expect(page.getByTestId("recommendation-cards")).toBeVisible();
+    const sources = page.getByTestId("recommendation-source");
+    const allSources = await sources.allTextContents();
+    expect(allSources.some((s) => s === "Default guidance" || s === "Policy analysis")).toBe(true);
+
+    // Teaser should also be present
+    await expect(page.getByTestId("recommendation-upgrade-teaser")).toBeVisible();
   });
 });
