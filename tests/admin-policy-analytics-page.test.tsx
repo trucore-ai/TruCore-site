@@ -60,6 +60,11 @@ function makeSummary(overrides: Record<string, unknown> = {}) {
         few: { total: 5, last_7d: 2, last_30d: 4 },
         many: { total: 1, last_7d: 0, last_30d: 1 },
       },
+      views_by_mix: {
+        single: { total: 20, last_7d: 8, last_30d: 18 },
+        few: { total: 35, last_7d: 12, last_30d: 30 },
+        many: { total: 5, last_7d: 1, last_30d: 4 },
+      },
     },
     derived: {
       expand_rate: 0.4,
@@ -191,7 +196,7 @@ describe("PolicyAnalyticsPage", () => {
     expect(html).toContain("few");
     expect(html).toContain("many");
     // mix legend note
-    expect(html).toContain("Source mix is captured on click only");
+    expect(html).toContain("Source mix is now captured on both view and click events");
   });
 
   it("shows empty-data state in teaser panel when no teaser events", async () => {
@@ -203,6 +208,7 @@ describe("PolicyAnalyticsPage", () => {
           views_by_tier: {},
           clicks_by_tier: {},
           clicks_by_mix: {},
+          views_by_mix: {},
         },
       }),
     );

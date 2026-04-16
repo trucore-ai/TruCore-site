@@ -364,8 +364,13 @@ export default async function PolicyAnalyticsPage() {
               title="Clicks by Source Mix (single · few · many)"
               data={summary.teaser_performance.clicks_by_mix}
             />
+            <TeaserCompareTable
+              title="Views by Source Mix vs Clicks by Source Mix — CTR"
+              viewsMap={summary.teaser_performance.views_by_mix}
+              clicksMap={summary.teaser_performance.clicks_by_mix}
+            />
             <p className="text-xs text-slate-600 mt-1">
-              Source mix is captured on click only. Single = 1 gated source · Few = 2–3 · Many = 4+.
+              Source mix is now captured on both view and click events. Single = 1 gated source · Few = 2–3 · Many = 4+.
             </p>
           </div>
 

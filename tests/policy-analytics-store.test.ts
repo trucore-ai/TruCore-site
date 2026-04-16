@@ -303,6 +303,7 @@ describe("policy-analytics-store", () => {
         gated_source_count: 2,
         dominant_gated_source: "Policy Intelligence",
         highest_gated_tier: "Pro",
+        gated_source_mix: "few",
         ...overrides,
       };
     }
@@ -329,6 +330,7 @@ describe("policy-analytics-store", () => {
       expect(s.teaser_performance.views_by_tier).toEqual({});
       expect(s.teaser_performance.clicks_by_tier).toEqual({});
       expect(s.teaser_performance.clicks_by_mix).toEqual({});
+      expect(s.teaser_performance.views_by_mix).toEqual({});
     });
 
     it("counts views by dominant gated source", () => {
@@ -413,9 +415,31 @@ describe("policy-analytics-store", () => {
     });
 
     it("does not populate clicks_by_mix for view events", () => {
-      recordPolicyEvent("policy_upgrade_teaser_view", teaserViewMeta());
+      recordPolicyEvent("policy_upgrade_teaser_view", teaserViewMeta({ gated_source_mix: "few" }));
       const tp = summarise().teaser_performance;
+      // clicks_by_mix is click-only
       expect(Object.keys(tp.clicks_by_mix)).toHaveLength(0);
+      // views_by_mix is now populated from view events
+      expect(tp.views_by_mix["few"].total).toBe(1);
+    });
+
+    it("counts views by source mix", () => {
+      recordPolicyEvent(
+        "policy_upgrade_teaser_view",
+        teaserViewMeta({ gated_source_mix: "single" }),
+      );
+      recordPolicyEvent(
+        "policy_upgrade_teaser_view",
+        teaserViewMeta({ gated_source_mix: "few" }),
+      );
+      recordPolicyEvent(
+        "policy_upgrade_teaser_view",
+        teaserViewMeta({ gated_source_mix: "few" }),
+      );
+      const tp = summarise().teaser_performance;
+      expect(tp.views_by_mix["single"].total).toBe(1);
+      expect(tp.views_by_mix["few"].total).toBe(2);
+      expect(tp.views_by_mix["many"]).toBeUndefined();
     });
 
     it("ignores dominant_gated_source when empty string", () => {

@@ -167,11 +167,13 @@ describe("policy-recommendation-analytics", () => {
       gated_sources_present: "Policy Intelligence,Cohort benchmark",
       dominant_gated_source: "Cohort benchmark",
       highest_gated_tier: "Advanced",
+      gated_source_mix: "few",
     });
     const call = (internalTrack as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(call[1]).toMatchObject({
       dominant_gated_source: "Cohort benchmark",
       highest_gated_tier: "Advanced",
+      gated_source_mix: "few",
     });
   });
 

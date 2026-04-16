@@ -1528,15 +1528,24 @@ const SOURCE_TEASER_HEADLINES: Partial<Record<RecommendationSource, string>> = {
 };
 
 /**
- * Rank gated sources by monetisation value so the highest-value source
- * is emphasised first in the teaser.  Higher number = more valuable.
+ * Rank gated sources by conversion-weighted value so the most compelling
+ * and accessible missing signal dominates the teaser headline and CTA.
+ * Higher number = appears first as dominant source.
+ *
+ * Analytics-informed ordering (teaser-performance panel insight):
+ *   Policy Intelligence ranks highest — it is based on the user's own
+ *   transaction patterns, is the most universally compelling signal, and
+ *   requires only a Pro upgrade (lowest barrier to conversion).
+ *   External context is high-value but Enterprise-only (high barrier),
+ *   so it is ranked below Policy Intelligence even though it is a
+ *   higher-tier feature.  The bullet list still surfaces it prominently.
  */
 const SOURCE_VALUE_RANK: Partial<Record<RecommendationSource, number>> = {
   "Customer history": 1,
   "Market analysis": 2,
-  "Policy Intelligence": 3,
-  "Cohort benchmark": 4,
-  "External context": 5,
+  "Cohort benchmark": 3,
+  "External context": 4,
+  "Policy Intelligence": 5,
 };
 
 /** Return gated sources sorted by descending monetisation value. */
@@ -1548,10 +1557,38 @@ function sortGatedByValue(sources: RecommendationSource[]): RecommendationSource
 
 /** Tier-specific CTA label — more specific than generic "View plans". */
 function teaserCtaLabel(tierLabel: string, dominantSource: RecommendationSource | null): string {
+  if (dominantSource === "Policy Intelligence") return `Explore ${tierLabel} for deeper intelligence`;
   if (dominantSource === "External context") return `Explore ${tierLabel} for enterprise signals`;
   if (dominantSource === "Cohort benchmark") return `Explore ${tierLabel} for peer benchmarks`;
-  if (dominantSource === "Policy Intelligence") return `Explore ${tierLabel} for deeper intelligence`;
+  if (dominantSource === "Customer history") return `Explore ${tierLabel} for personalised insights`;
+  if (dominantSource === "Market analysis") return `Explore ${tierLabel} for market signals`;
   return `Explore ${tierLabel} plans`;
+}
+
+/**
+ * Mix-aware body lead text for the upgrade teaser.
+ * Returns a short, readable phrase that describes what the user gains.
+ *
+ *  single  (1 source): specific source description
+ *  few    (2–3 sources): lead with the dominant source description
+ *  many   (4+ sources): emphasise breadth
+ */
+function teaserLeadText(
+  gatedSources: RecommendationSource[],
+  dominantSource: RecommendationSource | null,
+): string {
+  const n = gatedSources.length;
+  if (n <= 0) return "additional intelligence";
+  if (n === 1) {
+    return (dominantSource && SOURCE_DESCRIPTIONS[dominantSource]) ?? (dominantSource ?? "additional intelligence");
+  }
+  if (n <= 3) {
+    const desc = dominantSource && SOURCE_DESCRIPTIONS[dominantSource];
+    return desc
+      ? `${n} intelligence sources — led by ${desc}`
+      : `${n} intelligence sources`;
+  }
+  return `the full intelligence suite (${n} sources)`;
 }
 
 const PRIORITY_STYLES: Record<RecommendationPriority, { badge: string; border: string }> = {
@@ -3094,6 +3131,7 @@ export default function CustomerPoliciesPage() {
                     const tierLabel = hasEnterpriseGated ? "Enterprise" : hasAdvancedGated ? "Advanced" : "Pro";
                     const rankedGated = sortGatedByValue(gatedSources);
                     const dominantSource = rankedGated[0] ?? null;
+                    const sourceMix = gatedSources.length <= 1 ? "single" : gatedSources.length <= 3 ? "few" : "many";
                     // Analytics: teaser impression (deduplicated per render cycle)
                     trackUpgradeTeaserView({
                       plan_tier: planCode,
@@ -3101,6 +3139,7 @@ export default function CustomerPoliciesPage() {
                       gated_sources_present: gatedSources.join(","),
                       dominant_gated_source: dominantSource ?? "none",
                       highest_gated_tier: tierLabel,
+                      gated_source_mix: sourceMix,
                     });
                     const headline = dominantSource && SOURCE_TEASER_HEADLINES[dominantSource]
                       ? SOURCE_TEASER_HEADLINES[dominantSource]
@@ -3120,9 +3159,7 @@ export default function CustomerPoliciesPage() {
                       </div>
                       <p className="text-[10px] text-slate-500 leading-relaxed">
                         Upgrade to {tierLabel} to access{" "}
-                        {gatedSources.length === 1
-                          ? SOURCE_DESCRIPTIONS[gatedSources[0]] ?? gatedSources[0]
-                          : `${gatedSources.length} additional intelligence sources`}
+                        {teaserLeadText(gatedSources, dominantSource)}
                         {pilRecommendations?.gated_count
                           ? `, including ${pilRecommendations.gated_count} intelligence-backed suggestion${pilRecommendations.gated_count !== 1 ? "s" : ""} available now`
                           : ""}
@@ -3154,7 +3191,7 @@ export default function CustomerPoliciesPage() {
                           target_tier: tierLabel,
                           dominant_gated_source: dominantSource ?? "none",
                           highest_gated_tier: tierLabel,
-                          gated_source_mix: gatedSources.length <= 1 ? "single" : gatedSources.length <= 3 ? "few" : "many",
+                          gated_source_mix: sourceMix,
                         })}
                         className="inline-flex items-center gap-1 rounded-md border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-[10px] font-medium text-primary-300 transition hover:bg-primary-500/20 hover:text-primary-200"
                         data-testid="recommendation-upgrade-link"

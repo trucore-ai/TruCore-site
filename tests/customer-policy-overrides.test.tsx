@@ -2680,9 +2680,9 @@ describe("CustomerPoliciesPage", () => {
       const items = screen.getByTestId("gated-source-details").querySelectorAll("li");
       // Multiple gated sources should appear
       expect(items.length).toBeGreaterThanOrEqual(2);
-      // First item should be the highest-value source
+      // Policy Intelligence has highest SOURCE_VALUE_RANK (5) — should be first
       const firstText = items[0].textContent ?? "";
-      expect(firstText).toMatch(/Policy Intelligence|Market analysis|Customer history/);
+      expect(firstText).toContain("Policy Intelligence");
     });
 
     it("Pro plan shows Customer history, Market analysis, and PIL recs", async () => {
@@ -2892,6 +2892,67 @@ describe("CustomerPoliciesPage", () => {
       expect(details.textContent).toContain("Customer history");
       expect(details.textContent).toContain("Market analysis");
       expect(details.textContent).toContain("Policy Intelligence");
+    });
+
+    it("multi-source teaser body uses mix-aware copy for few gated sources", async () => {
+      // free plan + HISTORY_SUMMARY (Customer history) + MARKET_DEGRADED (Market analysis)
+      // + PIL gated = 3 gated sources → "few" mix
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_GATED_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-upgrade-teaser")).toBeTruthy();
+      });
+
+      const teaserText = screen.getByTestId("recommendation-upgrade-teaser").textContent ?? "";
+      // "few" mix body should say "N intelligence sources — led by ..."
+      expect(teaserText).toMatch(/\d+ intelligence sources\s*[—-]\s*led by/i);
+    });
+
+    it("single-source teaser body uses specific source description", async () => {
+      // free plan + no history + no market + only PIL gated = 1 gated source → "single" mix
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(EMPTY_HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(null);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_GATED_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-upgrade-teaser")).toBeTruthy();
+      });
+
+      const teaserText = screen.getByTestId("recommendation-upgrade-teaser").textContent ?? "";
+      // single body should include the specific source description, not generic count phrase
+      expect(teaserText).toContain("higher-confidence intelligence-backed suggestions");
+      expect(teaserText).not.toMatch(/\d+ intelligence sources/i);
+    });
+
+    it("teaser CTA uses source-specific wording for Customer history dominant source", async () => {
+      // Free plan, only HISTORY_SUMMARY data (Customer history gated), no market or PIL data
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(null);
+      mockFetchPilRecommendations.mockResolvedValue({
+        recommendations: [],
+        record_count: 0,
+        confidence_summary: "low",
+        captured_at: Date.now() / 1000,
+        plan: "free",
+        gated: false,
+        gated_count: 0,
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-upgrade-link")).toBeTruthy();
+      });
+
+      const ctaText = screen.getByTestId("recommendation-upgrade-link").textContent ?? "";
+      // Customer history dominant → "personalised insights"
+      expect(ctaText).toMatch(/personalised insights/i);
     });
 
     it("upgrade teaser omits source detail list when only one source is gated", async () => {

@@ -151,6 +151,7 @@ export function trackUpgradeTeaserView(opts: {
   gated_sources_present: string;
   dominant_gated_source?: string;
   highest_gated_tier?: string;
+  gated_source_mix?: string;
 }): void {
   if (_teaserFired) return;
   _teaserFired = true;
