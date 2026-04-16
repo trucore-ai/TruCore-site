@@ -138,6 +138,8 @@ describe("policy-recommendation-analytics", () => {
       plan_tier: "free",
       gated_source_count: 3,
       gated_sources_present: "Customer history,Cohort benchmark,External context",
+      dominant_gated_source: "External context",
+      highest_gated_tier: "Enterprise",
     } as const;
     trackUpgradeTeaserView(opts);
     trackUpgradeTeaserView(opts); // duplicate
@@ -149,10 +151,45 @@ describe("policy-recommendation-analytics", () => {
       plan_tier: "free",
       gated_source_count: 2,
       target_tier: "Enterprise",
+      dominant_gated_source: "External context",
+      highest_gated_tier: "Enterprise",
+      gated_source_mix: "few",
     } as const;
     trackUpgradeTeaserClick(opts);
     trackUpgradeTeaserClick(opts);
     expect(internalTrack).toHaveBeenCalledTimes(2);
+  });
+
+  it("teaser_view includes dominant_gated_source and highest_gated_tier fields", () => {
+    trackUpgradeTeaserView({
+      plan_tier: "free",
+      gated_source_count: 2,
+      gated_sources_present: "Policy Intelligence,Cohort benchmark",
+      dominant_gated_source: "Cohort benchmark",
+      highest_gated_tier: "Advanced",
+    });
+    const call = (internalTrack as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(call[1]).toMatchObject({
+      dominant_gated_source: "Cohort benchmark",
+      highest_gated_tier: "Advanced",
+    });
+  });
+
+  it("teaser_click includes dominant_gated_source, highest_gated_tier, and gated_source_mix", () => {
+    trackUpgradeTeaserClick({
+      plan_tier: "free",
+      gated_source_count: 4,
+      target_tier: "Enterprise",
+      dominant_gated_source: "External context",
+      highest_gated_tier: "Enterprise",
+      gated_source_mix: "many",
+    });
+    const call = (internalTrack as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(call[1]).toMatchObject({
+      dominant_gated_source: "External context",
+      highest_gated_tier: "Enterprise",
+      gated_source_mix: "many",
+    });
   });
 
   // ── Dual tracking ────────────────────────────────────────────────────

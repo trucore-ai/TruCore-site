@@ -149,6 +149,8 @@ export function trackUpgradeTeaserView(opts: {
   plan_tier: string;
   gated_source_count: number;
   gated_sources_present: string;
+  dominant_gated_source?: string;
+  highest_gated_tier?: string;
 }): void {
   if (_teaserFired) return;
   _teaserFired = true;
@@ -162,6 +164,9 @@ export function trackUpgradeTeaserClick(opts: {
   plan_tier: string;
   gated_source_count: number;
   target_tier: string;
+  dominant_gated_source?: string;
+  highest_gated_tier?: string;
+  gated_source_mix?: string;
 }): void {
   fire("policy_upgrade_teaser_click", {
     page: "customer_policies",

@@ -2627,9 +2627,10 @@ describe("CustomerPoliciesPage", () => {
         expect(screen.getByTestId("recommendation-upgrade-teaser")).toBeTruthy();
       });
 
-      expect(screen.getByTestId("recommendation-upgrade-teaser").textContent).toContain(
-        "Unlock deeper policy intelligence",
-      );
+      // Headline is now source-specific based on dominant gated source
+      const headline = screen.getByTestId("teaser-headline");
+      expect(headline).toBeTruthy();
+      expect(headline.textContent).toMatch(/Unlock .+ policy|Unlock .+ suggestions|Unlock .+ benchmarks|Unlock .+ signals|Unlock .+ history/);
       expect(screen.getByTestId("recommendation-upgrade-link")).toBeTruthy();
     });
 
@@ -2647,6 +2648,41 @@ describe("CustomerPoliciesPage", () => {
       expect(screen.getByTestId("recommendation-upgrade-teaser").textContent).toContain(
         "3 intelligence-backed suggestions",
       );
+    });
+
+    it("teaser CTA uses source-specific wording", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_GATED_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-upgrade-link")).toBeTruthy();
+      });
+
+      const ctaText = screen.getByTestId("recommendation-upgrade-link").textContent ?? "";
+      // CTA should mention Explore and the tier, not generic "View plans"
+      expect(ctaText).toMatch(/Explore\s+Pro/i);
+    });
+
+    it("multi-source teaser shows gated source details with value-ranked order", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_GATED_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("gated-source-details")).toBeTruthy();
+      });
+
+      const items = screen.getByTestId("gated-source-details").querySelectorAll("li");
+      // Multiple gated sources should appear
+      expect(items.length).toBeGreaterThanOrEqual(2);
+      // First item should be the highest-value source
+      const firstText = items[0].textContent ?? "";
+      expect(firstText).toMatch(/Policy Intelligence|Market analysis|Customer history/);
     });
 
     it("Pro plan shows Customer history, Market analysis, and PIL recs", async () => {

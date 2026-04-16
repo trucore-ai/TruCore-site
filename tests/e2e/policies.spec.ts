@@ -1747,7 +1747,10 @@ test.describe("customer policies — plan-aware recommendation tiering", () => {
 
     const teaser = page.getByTestId("recommendation-upgrade-teaser");
     await expect(teaser).toBeVisible();
-    await expect(teaser).toContainText("Unlock deeper policy intelligence");
+    // Headline is now source-specific; verify teaser-headline exists with Unlock prefix
+    const headline = page.getByTestId("teaser-headline");
+    await expect(headline).toBeVisible();
+    await expect(headline).toContainText("Unlock");
 
     const upgradeLink = page.getByTestId("recommendation-upgrade-link");
     await expect(upgradeLink).toBeVisible();

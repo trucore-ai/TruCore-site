@@ -1511,12 +1511,48 @@ function isSourceAvailable(source: RecommendationSource, plan: string): boolean 
 
 /** User-facing label describing what a gated source provides. */
 const SOURCE_DESCRIPTIONS: Partial<Record<RecommendationSource, string>> = {
-  "Customer history": "recommendations based on your transaction history patterns",
-  "Market analysis": "real-time signals from execution infrastructure conditions",
-  "Policy Intelligence": "intelligence-backed suggestions from analysis of your policy performance",
-  "Cohort benchmark": "privacy-safe benchmarks comparing your policy against anonymized aggregate data",
-  "External context": "proactive recommendations based on external network and infrastructure conditions",
+  "Customer history": "recommendations based on your transaction patterns",
+  "Market analysis": "recommendations informed by recent execution conditions",
+  "Policy Intelligence": "higher-confidence intelligence-backed suggestions",
+  "Cohort benchmark": "comparison to similar aggregated policy patterns",
+  "External context": "broader context signals for enterprise-grade policy decisions",
 };
+
+/** Short, value-focused headline for a single dominant gated source. */
+const SOURCE_TEASER_HEADLINES: Partial<Record<RecommendationSource, string>> = {
+  "Customer history": "Unlock recommendations tailored to your history",
+  "Market analysis": "Unlock market-aware policy recommendations",
+  "Policy Intelligence": "Unlock intelligence-backed policy suggestions",
+  "Cohort benchmark": "Unlock peer-comparison benchmarks",
+  "External context": "Unlock enterprise-grade external signals",
+};
+
+/**
+ * Rank gated sources by monetisation value so the highest-value source
+ * is emphasised first in the teaser.  Higher number = more valuable.
+ */
+const SOURCE_VALUE_RANK: Partial<Record<RecommendationSource, number>> = {
+  "Customer history": 1,
+  "Market analysis": 2,
+  "Policy Intelligence": 3,
+  "Cohort benchmark": 4,
+  "External context": 5,
+};
+
+/** Return gated sources sorted by descending monetisation value. */
+function sortGatedByValue(sources: RecommendationSource[]): RecommendationSource[] {
+  return [...sources].sort(
+    (a, b) => (SOURCE_VALUE_RANK[b] ?? 0) - (SOURCE_VALUE_RANK[a] ?? 0),
+  );
+}
+
+/** Tier-specific CTA label — more specific than generic "View plans". */
+function teaserCtaLabel(tierLabel: string, dominantSource: RecommendationSource | null): string {
+  if (dominantSource === "External context") return `Explore ${tierLabel} for enterprise signals`;
+  if (dominantSource === "Cohort benchmark") return `Explore ${tierLabel} for peer benchmarks`;
+  if (dominantSource === "Policy Intelligence") return `Explore ${tierLabel} for deeper intelligence`;
+  return `Explore ${tierLabel} plans`;
+}
 
 const PRIORITY_STYLES: Record<RecommendationPriority, { badge: string; border: string }> = {
   high: {
@@ -3056,12 +3092,19 @@ export default function CustomerPoliciesPage() {
                     const hasEnterpriseGated = gatedSources.includes("External context");
                     const hasAdvancedGated = gatedSources.includes("Cohort benchmark");
                     const tierLabel = hasEnterpriseGated ? "Enterprise" : hasAdvancedGated ? "Advanced" : "Pro";
+                    const rankedGated = sortGatedByValue(gatedSources);
+                    const dominantSource = rankedGated[0] ?? null;
                     // Analytics: teaser impression (deduplicated per render cycle)
                     trackUpgradeTeaserView({
                       plan_tier: planCode,
                       gated_source_count: gatedSources.length,
                       gated_sources_present: gatedSources.join(","),
+                      dominant_gated_source: dominantSource ?? "none",
+                      highest_gated_tier: tierLabel,
                     });
+                    const headline = dominantSource && SOURCE_TEASER_HEADLINES[dominantSource]
+                      ? SOURCE_TEASER_HEADLINES[dominantSource]
+                      : "Unlock deeper policy intelligence";
                     return (
                     <div
                       className="rounded-lg border border-primary-400/20 bg-primary-500/5 p-4 space-y-3"
@@ -3071,16 +3114,15 @@ export default function CustomerPoliciesPage() {
                         <span className="inline-flex items-center rounded-full border border-primary-400/30 bg-primary-500/10 px-2 py-0.5 text-[9px] font-semibold text-primary-300">
                           {tierLabel}
                         </span>
-                        <span className="text-xs font-medium text-slate-200">
-                          Unlock deeper policy intelligence
+                        <span className="text-xs font-medium text-slate-200" data-testid="teaser-headline">
+                          {headline}
                         </span>
                       </div>
                       <p className="text-[10px] text-slate-500 leading-relaxed">
                         Upgrade to {tierLabel} to access{" "}
                         {gatedSources.length === 1
-                          ? gatedSources[0]
-                          : gatedSources.slice(0, -1).join(", ") + " and " + gatedSources[gatedSources.length - 1]}
-                        {" "}recommendations — personalized insights derived from your transaction patterns
+                          ? SOURCE_DESCRIPTIONS[gatedSources[0]] ?? gatedSources[0]
+                          : `${gatedSources.length} additional intelligence sources`}
                         {pilRecommendations?.gated_count
                           ? `, including ${pilRecommendations.gated_count} intelligence-backed suggestion${pilRecommendations.gated_count !== 1 ? "s" : ""} available now`
                           : ""}
@@ -3092,12 +3134,12 @@ export default function CustomerPoliciesPage() {
                           : ""}.
                       </p>
                       {gatedSources.length > 1 && (
-                        <ul className="space-y-1 pl-1" data-testid="gated-source-details">
-                          {gatedSources.map((src) => (
-                            <li key={src} className="flex items-start gap-1.5 text-[10px] text-slate-500">
-                              <span className="mt-0.5 block h-1 w-1 shrink-0 rounded-full bg-primary-400/50" />
+                        <ul className="space-y-1.5 pl-1" data-testid="gated-source-details">
+                          {rankedGated.map((src, idx) => (
+                            <li key={src} className={`flex items-start gap-1.5 text-[10px] ${idx === 0 ? "text-slate-400" : "text-slate-500"}`}>
+                              <span className={`mt-0.5 block h-1 w-1 shrink-0 rounded-full ${idx === 0 ? "bg-primary-400" : "bg-primary-400/50"}`} />
                               <span>
-                                <span className="font-medium text-slate-400">{src}</span>
+                                <span className={`font-medium ${idx === 0 ? "text-slate-300" : "text-slate-400"}`}>{src}</span>
                                 {SOURCE_DESCRIPTIONS[src] ? ` — ${SOURCE_DESCRIPTIONS[src]}` : ""}
                               </span>
                             </li>
@@ -3110,11 +3152,14 @@ export default function CustomerPoliciesPage() {
                           plan_tier: planCode,
                           gated_source_count: gatedSources.length,
                           target_tier: tierLabel,
+                          dominant_gated_source: dominantSource ?? "none",
+                          highest_gated_tier: tierLabel,
+                          gated_source_mix: gatedSources.length <= 1 ? "single" : gatedSources.length <= 3 ? "few" : "many",
                         })}
                         className="inline-flex items-center gap-1 rounded-md border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-[10px] font-medium text-primary-300 transition hover:bg-primary-500/20 hover:text-primary-200"
                         data-testid="recommendation-upgrade-link"
                       >
-                        View {tierLabel} plans &rarr;
+                        {teaserCtaLabel(tierLabel, dominantSource)} &rarr;
                       </Link>
                     </div>
                     );
