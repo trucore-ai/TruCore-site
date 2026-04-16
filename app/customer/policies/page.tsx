@@ -31,6 +31,9 @@ import {
   trackUpgradeTeaserView,
   trackUpgradeTeaserClick,
   resetImpressionTracking,
+  trackRecommendationApplyClick,
+  trackRecommendationApplySuccess,
+  trackRecommendationApplyError,
 } from "@/lib/client/policy-recommendation-analytics";
 import {
   deriveReceiptTrendSignals,
@@ -847,6 +850,25 @@ interface PolicyRecommendation {
   evidence?: string;
   /** Optional confidence score 0–1 (for future PIL/ML sources) */
   confidence?: number;
+  /**
+   * When true, this recommendation supports a direct one-click apply flow.
+   * Only set for recommendations that map to a single, safe, reversible
+   * policy mutation.  All others remain manual-only via "View setting".
+   */
+  applyable?: boolean;
+  /**
+   * Human-readable plain-English description of exactly what will change
+   * when the user confirms the apply.  Shown inline before confirmation.
+   * Required when applyable is true.
+   */
+  applyConfirmText?: string;
+  /**
+   * The single override mutation performed by the apply flow.
+   * key: the policy override field name (e.g. "require_simulation_success")
+   * value: the exact value to write (e.g. true)
+   * Required when applyable is true.
+   */
+  applyMutation?: { key: string; value: unknown };
 }
 
 function generatePolicyRecommendations(
@@ -867,6 +889,10 @@ function generatePolicyRecommendations(
       priority: "high",
       source: "Default guidance",
       fieldKey: "require_simulation_success",
+      applyable: true,
+      applyConfirmText:
+        "This will turn on simulation requirement. Transactions must pass simulation before executing.",
+      applyMutation: { key: "require_simulation_success", value: true },
     });
   }
 
@@ -1086,6 +1112,10 @@ function generateHistoryRecommendations(
       source: "Customer history",
       fieldKey: "require_simulation_success",
       evidence: `${summary.simulation_failures} failures in the last ${summary.period_days} days.`,
+      applyable: true,
+      applyConfirmText:
+        "This will turn on simulation requirement, blocking transactions that fail pre-execution checks.",
+      applyMutation: { key: "require_simulation_success", value: true },
     });
   }
 
@@ -1249,6 +1279,10 @@ function generateMarketRecommendations(
       source: "Market analysis",
       fieldKey: "require_simulation_success",
       evidence: market.summary,
+      applyable: true,
+      applyConfirmText:
+        "This will turn on simulation requirement. Transactions that fail simulation will be blocked before executing.",
+      applyMutation: { key: "require_simulation_success", value: true },
     });
   }
 
@@ -1317,6 +1351,10 @@ function generateMarketRecommendations(
       source: "Market analysis",
       fieldKey: "require_simulation_success",
       evidence: market.summary,
+      applyable: true,
+      applyConfirmText:
+        "This will turn on simulation requirement. Only transactions that pass simulation will be submitted.",
+      applyMutation: { key: "require_simulation_success", value: true },
     });
   }
 
@@ -1860,6 +1898,14 @@ export default function CustomerPoliciesPage() {
   // Ref to avoid saving the same snapshot multiple times per render cycle.
   const snapshotSavedRef = useRef<string>("");
 
+  // ── Apply recommendation flow ──────────────────────────────────────────────
+  // Which rec is showing its confirmation panel (before the user confirms).
+  const [applyConfirmingRecId, setApplyConfirmingRecId] = useState<string | null>(null);
+  // Which rec is actively being applied (API call in-flight).
+  const [applyingRecId, setApplyingRecId] = useState<string | null>(null);
+  // Per-rec result: "success" | "error" (cleared on cancel or re-apply).
+  const [applyResults, setApplyResults] = useState<Record<string, "success" | "error">>({});
+
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const [editing, setEditing] = useState(false);
@@ -2077,6 +2123,54 @@ export default function CustomerPoliciesPage() {
     setListValues({});
     setTokenPolicy({ ...DEFAULT_TOKEN_POLICY });
     setTokenMintInput("");
+  }
+
+  /**
+   * Apply a single safe recommendation override directly, without entering
+   * the full edit form.  Merges the mutation key into the current overrides
+   * and calls updatePolicyOverrides.  On success, refreshes policy state.
+   *
+   * Only called for recommendations where applyable === true.
+   */
+  async function handleApplyRecommendation(rec: PolicyRecommendation) {
+    if (!rec.applyMutation) return;
+    const currentPlanCode = policy?.plan_code ?? "free";
+    setApplyingRecId(rec.id);
+    trackRecommendationApplyClick({
+      recommendation_id: rec.id,
+      recommendation_source: rec.source,
+      recommendation_priority: rec.priority,
+      plan_tier: currentPlanCode,
+      mutation_key: rec.applyMutation.key,
+    });
+    try {
+      // Merge mutation into current overrides — preserves all existing overrides.
+      const newOverrides: Record<string, unknown> = {
+        ...(policy?.overrides ?? {}),
+        [rec.applyMutation.key]: rec.applyMutation.value,
+      };
+      await updatePolicyOverrides(newOverrides);
+      // Refresh policy so effective values update immediately.
+      await loadPolicy();
+      setApplyConfirmingRecId(null);
+      setApplyResults((prev) => ({ ...prev, [rec.id]: "success" }));
+      trackRecommendationApplySuccess({
+        recommendation_id: rec.id,
+        recommendation_source: rec.source,
+        plan_tier: currentPlanCode,
+        mutation_key: rec.applyMutation.key,
+      });
+    } catch {
+      setApplyResults((prev) => ({ ...prev, [rec.id]: "error" }));
+      trackRecommendationApplyError({
+        recommendation_id: rec.id,
+        recommendation_source: rec.source,
+        plan_tier: currentPlanCode,
+        mutation_key: rec.applyMutation.key,
+      });
+    } finally {
+      setApplyingRecId(null);
+    }
   }
 
   function applyPreset(preset: Preset) {
@@ -3028,24 +3122,95 @@ export default function CustomerPoliciesPage() {
                                   )}
                                 </div>
                               )}
-                              {overridesEnabled && rec.fieldKey && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    trackRecommendationViewSetting({
-                                      recommendation_id: rec.id,
-                                      recommendation_source: rec.source,
-                                      recommendation_priority: rec.priority,
-                                      plan_tier: planCode,
-                                      field_key_present: true,
-                                    });
-                                    enterEditMode(rec.fieldKey);
-                                  }}
-                                  className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-medium transition ${isFeatured ? "border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200" : "border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"}`}
-                                  data-testid={`recommendation-action-${rec.id}`}
+                              {overridesEnabled && (rec.applyable || rec.fieldKey) && (
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {/* Apply button — only for applyable recs, hidden during confirm/success */}
+                                  {rec.applyable && rec.applyMutation && applyResults[rec.id] !== "success" && applyConfirmingRecId !== rec.id && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setApplyConfirmingRecId(rec.id)}
+                                      className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-medium transition ${isFeatured ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20" : "border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"}`}
+                                      data-testid={`apply-btn-${rec.id}`}
+                                    >
+                                      Apply &rarr;
+                                    </button>
+                                  )}
+                                  {/* Applied success indicator */}
+                                  {applyResults[rec.id] === "success" && (
+                                    <span
+                                      className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400"
+                                      data-testid={`apply-success-${rec.id}`}
+                                    >
+                                      &#10003; Applied
+                                    </span>
+                                  )}
+                                  {/* View setting — hidden during confirm/success */}
+                                  {rec.fieldKey && applyConfirmingRecId !== rec.id && applyResults[rec.id] !== "success" && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        trackRecommendationViewSetting({
+                                          recommendation_id: rec.id,
+                                          recommendation_source: rec.source,
+                                          recommendation_priority: rec.priority,
+                                          plan_tier: planCode,
+                                          field_key_present: true,
+                                        });
+                                        enterEditMode(rec.fieldKey);
+                                      }}
+                                      className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-medium transition ${isFeatured ? "border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200" : "border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"}`}
+                                      data-testid={`recommendation-action-${rec.id}`}
+                                    >
+                                      View setting &rarr;
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                              {/* Inline confirmation panel for apply flow */}
+                              {applyConfirmingRecId === rec.id && rec.applyConfirmText && (
+                                <div
+                                  className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 space-y-2"
+                                  data-testid={`apply-confirm-panel-${rec.id}`}
                                 >
-                                  View setting &rarr;
-                                </button>
+                                  <p className="text-[10px] text-amber-200 leading-relaxed">
+                                    {rec.applyConfirmText}
+                                  </p>
+                                  {applyResults[rec.id] === "error" && (
+                                    <p
+                                      className="text-[10px] text-red-300"
+                                      data-testid={`apply-error-${rec.id}`}
+                                    >
+                                      Could not apply. Please try again or edit the setting manually.
+                                    </p>
+                                  )}
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      disabled={applyingRecId === rec.id}
+                                      onClick={() => handleApplyRecommendation(rec)}
+                                      className="inline-flex items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-medium text-amber-200 transition hover:bg-amber-500/20 disabled:opacity-50"
+                                      data-testid={`apply-confirm-btn-${rec.id}`}
+                                    >
+                                      {applyingRecId === rec.id ? "Applying…" : "Confirm"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={applyingRecId === rec.id}
+                                      onClick={() => {
+                                        setApplyConfirmingRecId(null);
+                                        setApplyResults((prev) => {
+                                          const next = { ...prev };
+                                          delete next[rec.id];
+                                          return next;
+                                        });
+                                      }}
+                                      className="inline-flex items-center rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] text-slate-400 transition hover:text-slate-300 disabled:opacity-50"
+                                      data-testid={`apply-cancel-btn-${rec.id}`}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
                               )}
                             </div>
                           );
@@ -3212,24 +3377,92 @@ export default function CustomerPoliciesPage() {
                                       )}
                                     </div>
                                   )}
-                                  {overridesEnabled && rec.fieldKey && (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        trackRecommendationViewSetting({
-                                          recommendation_id: rec.id,
-                                          recommendation_source: rec.source,
-                                          recommendation_priority: rec.priority,
-                                          plan_tier: planCode,
-                                          field_key_present: true,
-                                        });
-                                        enterEditMode(rec.fieldKey);
-                                      }}
-                                      className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-medium text-slate-500 transition hover:bg-white/10 hover:text-slate-300"
-                                      data-testid={`recommendation-action-${rec.id}`}
+                                  {overridesEnabled && (rec.applyable || rec.fieldKey) && (
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                      {/* Apply button — compact for more-section cards */}
+                                      {rec.applyable && rec.applyMutation && applyResults[rec.id] !== "success" && applyConfirmingRecId !== rec.id && (
+                                        <button
+                                          type="button"
+                                          onClick={() => setApplyConfirmingRecId(rec.id)}
+                                          className="inline-flex items-center gap-1 rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 text-[9px] font-medium text-emerald-400 transition hover:bg-emerald-500/10 hover:text-emerald-300"
+                                          data-testid={`apply-btn-${rec.id}`}
+                                        >
+                                          Apply &rarr;
+                                        </button>
+                                      )}
+                                      {applyResults[rec.id] === "success" && (
+                                        <span
+                                          className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-400"
+                                          data-testid={`apply-success-${rec.id}`}
+                                        >
+                                          &#10003; Applied
+                                        </span>
+                                      )}
+                                      {rec.fieldKey && applyConfirmingRecId !== rec.id && applyResults[rec.id] !== "success" && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            trackRecommendationViewSetting({
+                                              recommendation_id: rec.id,
+                                              recommendation_source: rec.source,
+                                              recommendation_priority: rec.priority,
+                                              plan_tier: planCode,
+                                              field_key_present: true,
+                                            });
+                                            enterEditMode(rec.fieldKey);
+                                          }}
+                                          className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-medium text-slate-500 transition hover:bg-white/10 hover:text-slate-300"
+                                          data-testid={`recommendation-action-${rec.id}`}
+                                        >
+                                          View setting &rarr;
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+                                  {applyConfirmingRecId === rec.id && rec.applyConfirmText && (
+                                    <div
+                                      className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-2.5 space-y-1.5"
+                                      data-testid={`apply-confirm-panel-${rec.id}`}
                                     >
-                                      View setting &rarr;
-                                    </button>
+                                      <p className="text-[9px] text-amber-200 leading-relaxed">
+                                        {rec.applyConfirmText}
+                                      </p>
+                                      {applyResults[rec.id] === "error" && (
+                                        <p
+                                          className="text-[9px] text-red-300"
+                                          data-testid={`apply-error-${rec.id}`}
+                                        >
+                                          Could not apply. Please try again or edit the setting manually.
+                                        </p>
+                                      )}
+                                      <div className="flex items-center gap-1.5">
+                                        <button
+                                          type="button"
+                                          disabled={applyingRecId === rec.id}
+                                          onClick={() => handleApplyRecommendation(rec)}
+                                          className="inline-flex items-center rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[9px] font-medium text-amber-200 transition hover:bg-amber-500/20 disabled:opacity-50"
+                                          data-testid={`apply-confirm-btn-${rec.id}`}
+                                        >
+                                          {applyingRecId === rec.id ? "Applying…" : "Confirm"}
+                                        </button>
+                                        <button
+                                          type="button"
+                                          disabled={applyingRecId === rec.id}
+                                          onClick={() => {
+                                            setApplyConfirmingRecId(null);
+                                            setApplyResults((prev) => {
+                                              const next = { ...prev };
+                                              delete next[rec.id];
+                                              return next;
+                                            });
+                                          }}
+                                          className="inline-flex items-center rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] text-slate-400 transition hover:text-slate-300 disabled:opacity-50"
+                                          data-testid={`apply-cancel-btn-${rec.id}`}
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
                                   )}
                                 </div>
                               );

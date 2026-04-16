@@ -27,6 +27,9 @@ export type PolicyAnalyticsEvent =
   | "policy_recommendation_expand"
   | "policy_recommendation_collapse"
   | "policy_recommendation_view_setting"
+  | "policy_recommendation_apply_click"
+  | "policy_recommendation_apply_success"
+  | "policy_recommendation_apply_error"
   | "policy_signal_refresh_click"
   | "policy_signal_refresh_complete"
   | "policy_upgrade_teaser_view"
@@ -176,6 +179,54 @@ export function trackUpgradeTeaserClick(opts: {
   dominant_source_rank_bucket?: "high" | "standard";
 }): void {
   fire("policy_upgrade_teaser_click", {
+    page: "customer_policies",
+    ...opts,
+  });
+}
+
+/**
+ * Fired when the user clicks "Apply" on a recommendation card (before confirming).
+ * Does NOT include the target policy value — only structural metadata.
+ */
+export function trackRecommendationApplyClick(opts: {
+  recommendation_id: string;
+  recommendation_source: string;
+  recommendation_priority: string;
+  plan_tier: string;
+  /** The override key that will be mutated — never its value. */
+  mutation_key: string;
+}): void {
+  fire("policy_recommendation_apply_click", {
+    page: "customer_policies",
+    ...opts,
+  });
+}
+
+/**
+ * Fired after a recommendation apply succeeds and policy is refreshed.
+ */
+export function trackRecommendationApplySuccess(opts: {
+  recommendation_id: string;
+  recommendation_source: string;
+  plan_tier: string;
+  mutation_key: string;
+}): void {
+  fire("policy_recommendation_apply_success", {
+    page: "customer_policies",
+    ...opts,
+  });
+}
+
+/**
+ * Fired when a recommendation apply attempt fails (network/validation error).
+ */
+export function trackRecommendationApplyError(opts: {
+  recommendation_id: string;
+  recommendation_source: string;
+  plan_tier: string;
+  mutation_key: string;
+}): void {
+  fire("policy_recommendation_apply_error", {
     page: "customer_policies",
     ...opts,
   });
