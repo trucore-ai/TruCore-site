@@ -1572,25 +1572,62 @@ function hasExpandableDetail(rec: PolicyRecommendation): boolean {
 // ---------------------------------------------------------------------------
 
 /**
+ * Source engagement tiers — informed by internal analytics patterns.
+ *
+ * Analytics insight: signal-backed sources (Policy Intelligence, Market
+ * analysis, External context, Cohort benchmark) consistently drive higher
+ * expand rates and "View setting" click rates than static sources (Default
+ * guidance, Policy analysis).  Customer history sits in between — it is
+ * personalised and drives moderate engagement.
+ *
+ * Tier 0 = highest observed engagement, Tier 2 = lowest.
+ * These tiers are used as a stable sort tiebreaker, NOT as an opaque score.
+ * Update the tiers when the analytics summary reveals meaningful shifts.
+ */
+const SOURCE_ENGAGEMENT_TIER: Record<RecommendationSource, number> = {
+  "Policy Intelligence": 0,
+  "External context":    0,
+  "Market analysis":     0,
+  "Cohort benchmark":    1,
+  "Customer history":    1,
+  "Policy analysis":     2,
+  "Default guidance":    2,
+};
+
+/** Whether a source belongs to the signal-backed (high-engagement) tier. */
+function isSignalBackedSource(source: RecommendationSource): boolean {
+  return SOURCE_ENGAGEMENT_TIER[source] <= 1;
+}
+
+/**
  * Display section classification — determines which visual group a
  * recommendation appears in.
  *
  * "top"   → shown prominently at the top of the list (always visible)
  * "more"  → shown in a collapsed "More suggestions" section
  *
- * Classification rules (intentionally simple and explainable):
+ * Classification rules (explainable, analytics-informed):
  *   1. High priority → always "top"
  *   2. Medium priority + actionable (has fieldKey) → "top"
- *   3. Everything else → "more"
- *
- * Future hook: this function can incorporate aggregated engagement data
- * (e.g. click-through rates by source) without changing the rendering model.
+ *   3. Medium priority + high-confidence (≥ 0.7) signal-backed source → "top"
+ *      (analytics show these drive meaningful action despite lacking a
+ *       direct fieldKey link)
+ *   4. Everything else → "more"
  */
 type DisplaySection = "top" | "more";
 
 function classifyDisplaySection(rec: PolicyRecommendation): DisplaySection {
   if (rec.priority === "high") return "top";
   if (rec.priority === "medium" && rec.fieldKey) return "top";
+  // Promote high-confidence signal-backed medium-priority recs
+  if (
+    rec.priority === "medium" &&
+    rec.confidence != null &&
+    rec.confidence >= 0.7 &&
+    isSignalBackedSource(rec.source)
+  ) {
+    return "top";
+  }
   return "more";
 }
 
@@ -1598,15 +1635,14 @@ function classifyDisplaySection(rec: PolicyRecommendation): DisplaySection {
  * Recommendation sort comparator — multi-dimensional, explainable ordering.
  *
  * Sort dimensions (in order of precedence):
- *   1. Priority:     high (0) → medium (1) → low (2)
- *   2. Actionability: has fieldKey (0) → no fieldKey (1)
- *   3. Source trust:  signal-backed sources with confidence (0) → other (1)
- *   4. Confidence:    higher first (descending), null last
+ *   1. Priority:           high (0) → medium (1) → low (2)
+ *   2. Actionability:      has fieldKey (0) → no fieldKey (1)
+ *   3. Source engagement:  tier 0 (highest engagement) → tier 2 (lowest)
+ *      (informed by internal analytics — see SOURCE_ENGAGEMENT_TIER)
+ *   4. Source trust:       signal-backed with confidence (0) → other (1)
+ *   5. Confidence:         higher first (descending), null last
  *
  * This comparator is shared by both the "top" and "more" sections.
- *
- * Future hook: an additional `engagementWeight` parameter could be
- * injected here from aggregated analytics without rewriting the sort.
  */
 const PRIORITY_RANK: Record<RecommendationPriority, number> = { high: 0, medium: 1, low: 2 };
 
@@ -1621,12 +1657,17 @@ function compareRecommendations(a: PolicyRecommendation, b: PolicyRecommendation
   const ab = b.fieldKey ? 0 : 1;
   if (aa !== ab) return aa - ab;
 
-  // 3. Source trust — signal-backed with confidence sorts first
+  // 3. Source engagement tier (analytics-informed)
+  const ea = SOURCE_ENGAGEMENT_TIER[a.source] ?? 2;
+  const eb = SOURCE_ENGAGEMENT_TIER[b.source] ?? 2;
+  if (ea !== eb) return ea - eb;
+
+  // 4. Source trust — signal-backed with confidence sorts first
   const sa = a.confidence != null ? 0 : 1;
   const sb = b.confidence != null ? 0 : 1;
   if (sa !== sb) return sa - sb;
 
-  // 4. Confidence descending (null treated as -1)
+  // 5. Confidence descending (null treated as -1)
   const ca = a.confidence ?? -1;
   const cb = b.confidence ?? -1;
   if (ca !== cb) return cb - ca;
@@ -1641,15 +1682,15 @@ function compareRecommendations(a: PolicyRecommendation, b: PolicyRecommendation
 /**
  * Card emphasis level — determines visual weight for a recommendation card.
  *
- * "featured"   → strongest treatment: first high-priority actionable card.
+ * "featured"   → strongest treatment: first high-priority card that is
+ *                actionable OR high-confidence signal-backed.
  *                Shows inline reason snippet, prominent CTA, "Recommended action" tag.
  * "emphasized" → standard top-section treatment with inline reason snippet
  *                for high-priority or high-confidence actionable cards.
  * "standard"   → compact treatment for lower-priority / More suggestions cards.
- *
- * Future hook: this function can accept aggregated engagement metrics
- * (e.g. click-through rates) as an optional parameter to shift emphasis
- * without changing the rendering model.
+ *                Analytics-informed: high-confidence signal-backed cards in the
+ *                "more" section now show inline reason to improve engagement
+ *                with buried-but-valuable intelligence.
  */
 type CardEmphasis = "featured" | "emphasized" | "standard";
 
@@ -1664,20 +1705,29 @@ function computeCardEmphasis(
   section: DisplaySection,
   indexInSection: number,
 ): CardDisplayMeta {
-  // More-suggestions section → always standard
+  // More-suggestions section → standard, but show inline reason for
+  // high-confidence signal-backed cards (analytics: these are valuable
+  // but under-engaged when stripped down)
   if (section === "more") {
+    const highConfSignal =
+      rec.confidence != null &&
+      rec.confidence >= 0.7 &&
+      isSignalBackedSource(rec.source);
     return {
       emphasis: "standard",
-      showInlineReason: false,
-      showInlineConfidence: rec.confidence != null && rec.confidence >= 0.7,
+      showInlineReason: highConfSignal,
+      showInlineConfidence: rec.confidence != null && rec.confidence >= 0.5,
     };
   }
 
-  // Featured: first card in top section that is high-priority + actionable
+  // Featured: first card in top section that is high-priority AND either
+  // actionable (has fieldKey) or high-confidence signal-backed.
+  // Broadened from fieldKey-only based on analytics showing signal-backed
+  // high-priority cards drive strong expand + action rates.
   if (
     indexInSection === 0 &&
     rec.priority === "high" &&
-    rec.fieldKey
+    (rec.fieldKey || (rec.confidence != null && rec.confidence >= 0.7 && isSignalBackedSource(rec.source)))
   ) {
     return {
       emphasis: "featured",

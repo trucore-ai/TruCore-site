@@ -249,6 +249,36 @@ describe("policy-analytics-store", () => {
     expect(typeof s.total_events).toBe("number");
   });
 
+  // ── Source × section cross-tabulation ─────────────────────────────────────
+
+  it("populates by_source_and_section cross-tab", () => {
+    recordPolicyEvent(
+      "policy_recommendation_impression",
+      meta({
+        recommendation_source: "Policy Intelligence",
+        recommendation_display_section: "featured",
+      }),
+    );
+    recordPolicyEvent(
+      "policy_recommendation_expand",
+      meta({
+        recommendation_source: "Policy Intelligence",
+        recommendation_display_section: "featured",
+      }),
+    );
+    recordPolicyEvent(
+      "policy_recommendation_impression",
+      meta({
+        recommendation_source: "Market analysis",
+        recommendation_display_section: "more",
+      }),
+    );
+    const s = summarise();
+    expect(s.by_source_and_section["Policy Intelligence::featured"].total).toBe(2);
+    expect(s.by_source_and_section["Market analysis::more"].total).toBe(1);
+    expect(s.by_source_and_section["Policy Intelligence::more"]).toBeUndefined();
+  });
+
   // ── Ring-buffer eviction ──────────────────────────────────────────────────
 
   it("evicts old events when buffer exceeds cap", () => {

@@ -84,6 +84,15 @@ export interface PolicyAnalyticsSummary {
   by_priority: Record<string, BucketCounts>;
   by_display_section: Record<string, BucketCounts>;
 
+  /**
+   * Cross-tabulation: source × display section.
+   * Keys are "source::section" (e.g. "Policy Intelligence::featured").
+   * Enables comparing engagement rates per source within each display
+   * section — the primary input for tuning SOURCE_ENGAGEMENT_TIER in
+   * the page display model.
+   */
+  by_source_and_section: Record<string, BucketCounts>;
+
   derived: {
     expand_rate: number | null;
     view_setting_click_rate: number | null;
@@ -120,6 +129,7 @@ export function summarise(): PolicyAnalyticsSummary {
   const bySource: Record<string, BucketCounts> = {};
   const byPriority: Record<string, BucketCounts> = {};
   const bySection: Record<string, BucketCounts> = {};
+  const bySourceAndSection: Record<string, BucketCounts> = {};
 
   // Derived counters
   const featuredImpressions = zeroBucket();
@@ -144,6 +154,11 @@ export function summarise(): PolicyAnalyticsSummary {
     if (!bySection[ev.display_section])
       bySection[ev.display_section] = zeroBucket();
     increment(bySection[ev.display_section], ev.ts, now, d7, d30);
+
+    // source × section cross-tab
+    const ssKey = `${ev.source}::${ev.display_section}`;
+    if (!bySourceAndSection[ssKey]) bySourceAndSection[ssKey] = zeroBucket();
+    increment(bySourceAndSection[ssKey], ev.ts, now, d7, d30);
 
     // featured card analytics
     if (ev.display_section === "featured") {
@@ -178,6 +193,7 @@ export function summarise(): PolicyAnalyticsSummary {
     by_source: bySource,
     by_priority: byPriority,
     by_display_section: bySection,
+    by_source_and_section: bySourceAndSection,
 
     derived: {
       expand_rate: impressions > 0 ? expands / impressions : null,
