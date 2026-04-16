@@ -447,6 +447,57 @@ export async function getLatestTwoAnalyticsSnapshots(): Promise<AnalyticsSnapsho
   return rows as AnalyticsSnapshotRow[];
 }
 
+/**
+ * Return the most recent snapshot captured after `since`, or null.
+ * Used by the daily automation route to detect duplicate captures
+ * within a short window (e.g. if cron fires twice due to a retry).
+ */
+export async function getSnapshotCapturedAfter(
+  since: Date,
+): Promise<AnalyticsSnapshotRow | null> {
+  await ensureAnalyticsSnapshotTable();
+  const sql = getSQL();
+
+  const rows = await sql`
+    SELECT id, created_at, summary_version, snapshot
+    FROM policy_analytics_snapshots
+    WHERE created_at > ${since.toISOString()}
+    ORDER BY created_at DESC
+    LIMIT 1;
+  `;
+
+  return (rows[0] ?? null) as AnalyticsSnapshotRow | null;
+}
+
+/**
+ * Delete snapshots older than `retentionDays` days.
+ * Always keeps the two most recent snapshots regardless of age, so the
+ * trend diff comparison always has data to work with.
+ * Returns the number of rows deleted.
+ */
+export async function deleteSnapshotsOlderThan(
+  retentionDays: number,
+): Promise<number> {
+  await ensureAnalyticsSnapshotTable();
+  const sql = getSQL();
+
+  // Resolve the cutoff timestamp and the IDs of the two newest snapshots
+  // so they are unconditionally preserved.
+  const rows = await sql`
+    DELETE FROM policy_analytics_snapshots
+    WHERE created_at < now() - ${`${retentionDays} days`}::INTERVAL
+      AND id NOT IN (
+        SELECT id
+        FROM policy_analytics_snapshots
+        ORDER BY created_at DESC
+        LIMIT 2
+      )
+    RETURNING id;
+  `;
+
+  return rows.length;
+}
+
 export async function listPartnerKeysAndUsage(
   ownerEmail: string,
 ): Promise<PartnerKeyUsageRow[]> {

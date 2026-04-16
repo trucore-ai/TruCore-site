@@ -458,6 +458,16 @@ export default async function PolicyAnalyticsPage() {
         </a>
       </div>
 
+      {/* daily auto-capture note */}
+      <div
+        className="rounded border border-emerald-500/20 bg-emerald-500/5 px-4 py-2 text-xs text-emerald-400/80 mb-4"
+        data-testid="daily-auto-capture-note"
+      >
+        <strong>Daily snapshots enabled.</strong>{" "}
+        Auto-captured daily at 01:00 UTC via Vercel cron &nbsp;·&nbsp; 90-day retention
+        &nbsp;·&nbsp; Manual capture still available above.
+      </div>
+
       {/* trend / diff panel */}
       {diff ? <TrendDiffPanel diff={diff} /> : <TrendDiffEmptyState />}
 

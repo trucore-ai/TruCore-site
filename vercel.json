@@ -3,6 +3,10 @@
     {
       "path": "/api/internal/health-monitor",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/internal/policy-analytics-daily-snapshot",
+      "schedule": "0 1 * * *"
     }
   ],
   "redirects": [
