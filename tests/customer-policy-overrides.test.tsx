@@ -2685,6 +2685,54 @@ describe("CustomerPoliciesPage", () => {
       expect(firstText).toContain("Policy Intelligence");
     });
 
+    it("multi-source teaser bullet list marks the dominant source with a primary badge", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_GATED_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("gated-source-details")).toBeTruthy();
+      });
+
+      // First item should carry the "primary" badge
+      expect(screen.getByTestId("teaser-primary-source-badge")).toBeTruthy();
+      expect(screen.getByTestId("teaser-primary-source-badge").textContent).toBe("primary");
+      // The badge belongs to the first list item (Policy Intelligence in this scenario)
+      const firstItem = screen.getByTestId("gated-source-details").querySelectorAll("li")[0];
+      expect(firstItem.contains(screen.getByTestId("teaser-primary-source-badge"))).toBe(true);
+    });
+
+    it("Customer history ranks above Market analysis when PIL is not gated", async () => {
+      // Scenario: Customer history + Market analysis gated, no PIL.
+      // Customer history rank (3) > Market analysis rank (2) → Customer history dominates.
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);
+      mockFetchMarketConditions.mockResolvedValue(MARKET_DEGRADED);
+      mockFetchPilRecommendations.mockResolvedValue({
+        recommendations: [],
+        record_count: 0,
+        confidence_summary: "low",
+        captured_at: Date.now() / 1000,
+        plan: "free",
+        gated: false,
+        gated_count: 0,
+      });
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("gated-source-details")).toBeTruthy();
+      });
+
+      const items = screen.getByTestId("gated-source-details").querySelectorAll("li");
+      // Customer history should be first — ranked higher than Market analysis
+      expect(items[0].textContent).toContain("Customer history");
+      // Headline should reflect the Customer history dominant source
+      const headline = screen.getByTestId("teaser-headline");
+      expect(headline.textContent).toContain("history");
+    });
+
     it("Pro plan shows Customer history, Market analysis, and PIL recs", async () => {
       mockFetchPolicy.mockResolvedValue(PRO_POLICY);
       mockFetchReceiptSummary.mockResolvedValue(HISTORY_SUMMARY);

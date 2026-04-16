@@ -152,6 +152,9 @@ export function trackUpgradeTeaserView(opts: {
   dominant_gated_source?: string;
   highest_gated_tier?: string;
   gated_source_mix?: string;
+  /** "high" ≥ rank 4 (Policy Intelligence, Cohort benchmark, External context);
+   *  "standard" < rank 4 (Customer history, Market analysis). */
+  dominant_source_rank_bucket?: "high" | "standard";
 }): void {
   if (_teaserFired) return;
   _teaserFired = true;
@@ -168,6 +171,9 @@ export function trackUpgradeTeaserClick(opts: {
   dominant_gated_source?: string;
   highest_gated_tier?: string;
   gated_source_mix?: string;
+  /** "high" ≥ rank 4 (Policy Intelligence, Cohort benchmark, External context);
+   *  "standard" < rank 4 (Customer history, Market analysis). */
+  dominant_source_rank_bucket?: "high" | "standard";
 }): void {
   fire("policy_upgrade_teaser_click", {
     page: "customer_policies",

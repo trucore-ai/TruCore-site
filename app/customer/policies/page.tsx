@@ -1536,14 +1536,19 @@ const SOURCE_TEASER_HEADLINES: Partial<Record<RecommendationSource, string>> = {
  *   Policy Intelligence ranks highest — it is based on the user's own
  *   transaction patterns, is the most universally compelling signal, and
  *   requires only a Pro upgrade (lowest barrier to conversion).
- *   External context is high-value but Enterprise-only (high barrier),
- *   so it is ranked below Policy Intelligence even though it is a
- *   higher-tier feature.  The bullet list still surfaces it prominently.
+ *   Customer history ranks 3 — personalised signals consistently outperform
+ *   generic market-condition signals for conversion: a "your history shows X"
+ *   teaser is more compelling than an abstract "market conditions suggest Y"
+ *   teaser, and Customer history is also Pro-accessible.
+ *   Cohort benchmark and External context share rank 4 — both are high-value
+ *   but gated at Advanced/Enterprise tier (higher friction); they don't
+ *   overtake Policy Intelligence or Customer history.
+ *   Market analysis stays at 2 — useful but abstract and impersonal.
  */
 const SOURCE_VALUE_RANK: Partial<Record<RecommendationSource, number>> = {
-  "Customer history": 1,
   "Market analysis": 2,
-  "Cohort benchmark": 3,
+  "Customer history": 3,
+  "Cohort benchmark": 4,
   "External context": 4,
   "Policy Intelligence": 5,
 };
@@ -3132,6 +3137,12 @@ export default function CustomerPoliciesPage() {
                     const rankedGated = sortGatedByValue(gatedSources);
                     const dominantSource = rankedGated[0] ?? null;
                     const sourceMix = gatedSources.length <= 1 ? "single" : gatedSources.length <= 3 ? "few" : "many";
+                    // Rank bucket: "high" = Policy Intelligence / Cohort benchmark / External context
+                    // (rank ≥ 4); "standard" = Customer history / Market analysis (rank < 4).
+                    // Used in analytics to distinguish whether high-value dominant sources
+                    // convert better than standard-value ones across the teaser-performance panel.
+                    const dominantRank = dominantSource ? (SOURCE_VALUE_RANK[dominantSource] ?? 0) : 0;
+                    const dominantSourceRankBucket: "high" | "standard" = dominantRank >= 4 ? "high" : "standard";
                     // Analytics: teaser impression (deduplicated per render cycle)
                     trackUpgradeTeaserView({
                       plan_tier: planCode,
@@ -3140,6 +3151,7 @@ export default function CustomerPoliciesPage() {
                       dominant_gated_source: dominantSource ?? "none",
                       highest_gated_tier: tierLabel,
                       gated_source_mix: sourceMix,
+                      dominant_source_rank_bucket: dominantSourceRankBucket,
                     });
                     const headline = dominantSource && SOURCE_TEASER_HEADLINES[dominantSource]
                       ? SOURCE_TEASER_HEADLINES[dominantSource]
@@ -3177,6 +3189,14 @@ export default function CustomerPoliciesPage() {
                               <span className={`mt-0.5 block h-1 w-1 shrink-0 rounded-full ${idx === 0 ? "bg-primary-400" : "bg-primary-400/50"}`} />
                               <span>
                                 <span className={`font-medium ${idx === 0 ? "text-slate-300" : "text-slate-400"}`}>{src}</span>
+                                {idx === 0 && (
+                                  <span
+                                    className="ml-1.5 inline-flex items-center rounded-full border border-primary-400/20 bg-primary-500/10 px-1.5 py-0 text-[8px] font-semibold leading-4 text-primary-400/70"
+                                    data-testid="teaser-primary-source-badge"
+                                  >
+                                    primary
+                                  </span>
+                                )}
                                 {SOURCE_DESCRIPTIONS[src] ? ` — ${SOURCE_DESCRIPTIONS[src]}` : ""}
                               </span>
                             </li>
@@ -3192,6 +3212,7 @@ export default function CustomerPoliciesPage() {
                           dominant_gated_source: dominantSource ?? "none",
                           highest_gated_tier: tierLabel,
                           gated_source_mix: sourceMix,
+                          dominant_source_rank_bucket: dominantSourceRankBucket,
                         })}
                         className="inline-flex items-center gap-1 rounded-md border border-primary-400/30 bg-primary-500/10 px-3 py-1.5 text-[10px] font-medium text-primary-300 transition hover:bg-primary-500/20 hover:text-primary-200"
                         data-testid="recommendation-upgrade-link"

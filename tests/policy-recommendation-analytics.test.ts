@@ -177,6 +177,22 @@ describe("policy-recommendation-analytics", () => {
     });
   });
 
+  it("teaser_view includes dominant_source_rank_bucket when provided", () => {
+    trackUpgradeTeaserView({
+      plan_tier: "free",
+      gated_source_count: 1,
+      gated_sources_present: "Policy Intelligence",
+      dominant_gated_source: "Policy Intelligence",
+      highest_gated_tier: "Pro",
+      gated_source_mix: "single",
+      dominant_source_rank_bucket: "high",
+    });
+    const call = (internalTrack as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(call[1]).toMatchObject({
+      dominant_source_rank_bucket: "high",
+    });
+  });
+
   it("teaser_click includes dominant_gated_source, highest_gated_tier, and gated_source_mix", () => {
     trackUpgradeTeaserClick({
       plan_tier: "free",
@@ -191,6 +207,22 @@ describe("policy-recommendation-analytics", () => {
       dominant_gated_source: "External context",
       highest_gated_tier: "Enterprise",
       gated_source_mix: "many",
+    });
+  });
+
+  it("teaser_click includes dominant_source_rank_bucket when provided", () => {
+    trackUpgradeTeaserClick({
+      plan_tier: "free",
+      gated_source_count: 1,
+      target_tier: "Pro",
+      dominant_gated_source: "Customer history",
+      highest_gated_tier: "Pro",
+      gated_source_mix: "single",
+      dominant_source_rank_bucket: "standard",
+    });
+    const call = (internalTrack as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(call[1]).toMatchObject({
+      dominant_source_rank_bucket: "standard",
     });
   });
 
