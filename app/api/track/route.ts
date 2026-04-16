@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  POLICY_EVENT_NAMES,
+  recordPolicyEvent,
+} from "@/lib/server/policy-analytics-store";
 
 /**
  * Internal funnel event ingest.
  *
  * Accepts only allowlisted event names.
  * Logs to console (server-side) for Vercel log drain / grep visibility.
+ * Policy events are also accumulated in-memory for the ops summary endpoint.
  * No storage, no PII, no cookies.
  */
 
@@ -84,6 +89,11 @@ export async function POST(req: NextRequest) {
       ts: ts ?? Date.now(),
     }),
   );
+
+  // Accumulate policy events in-memory for the ops summary endpoint
+  if (POLICY_EVENT_NAMES.has(name)) {
+    recordPolicyEvent(name, safeMeta);
+  }
 
   return NextResponse.json({ ok: true });
 }
