@@ -34,6 +34,9 @@ import {
   trackRecommendationApplyClick,
   trackRecommendationApplySuccess,
   trackRecommendationApplyError,
+  trackRecommendationUndoClick,
+  trackRecommendationUndoSuccess,
+  trackRecommendationUndoError,
 } from "@/lib/client/policy-recommendation-analytics";
 import {
   deriveReceiptTrendSignals,
@@ -1905,6 +1908,15 @@ export default function CustomerPoliciesPage() {
   const [applyingRecId, setApplyingRecId] = useState<string | null>(null);
   // Per-rec result: "success" | "error" (cleared on cancel or re-apply).
   const [applyResults, setApplyResults] = useState<Record<string, "success" | "error">>({});
+  // Prior override snapshot captured at apply time — enables safe undo.
+  // Only populated for simulation-path recs where prior state is safely known.
+  const [applyUndoStates, setApplyUndoStates] = useState<
+    Record<string, { key: string; hadKey: boolean; prevValue: unknown }>
+  >({});
+  // Which rec has an undo API call in-flight.
+  const [undoingRecId, setUndoingRecId] = useState<string | null>(null);
+  // Per-rec undo error flag — set on undo failure, cleared on successful undo.
+  const [undoErrors, setUndoErrors] = useState<Record<string, boolean>>({});
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -2143,6 +2155,11 @@ export default function CustomerPoliciesPage() {
       plan_tier: currentPlanCode,
       mutation_key: rec.applyMutation.key,
     });
+    // Capture prior override state before mutating — needed for safe undo.
+    const priorOverrides = policy?.overrides ?? {};
+    const undoKey = rec.applyMutation.key;
+    const hadKey = Object.prototype.hasOwnProperty.call(priorOverrides, undoKey);
+    const prevValue = priorOverrides[undoKey as keyof typeof priorOverrides];
     try {
       // Merge mutation into current overrides — preserves all existing overrides.
       const newOverrides: Record<string, unknown> = {
@@ -2154,6 +2171,11 @@ export default function CustomerPoliciesPage() {
       await loadPolicy();
       setApplyConfirmingRecId(null);
       setApplyResults((prev) => ({ ...prev, [rec.id]: "success" }));
+      // Store prior state so undo can safely restore it.
+      setApplyUndoStates((prev) => ({
+        ...prev,
+        [rec.id]: { key: undoKey, hadKey, prevValue },
+      }));
       trackRecommendationApplySuccess({
         recommendation_id: rec.id,
         recommendation_source: rec.source,
@@ -2170,6 +2192,74 @@ export default function CustomerPoliciesPage() {
       });
     } finally {
       setApplyingRecId(null);
+    }
+  }
+
+  /**
+   * Reverts a successfully-applied simulation recommendation by restoring the
+   * prior override state captured at apply time.
+   *
+   * Undo behavior:
+   *   - If the key existed before apply: restores the prior explicit value.
+   *   - If the key was absent before apply: removes it from overrides entirely.
+   * All unrelated override keys are preserved.
+   */
+  async function handleUndoRecommendation(recId: string) {
+    const undoState = applyUndoStates[recId];
+    if (!undoState) return;
+    const currentPlanCode = policy?.plan_code ?? "free";
+    setUndoingRecId(recId);
+    trackRecommendationUndoClick({
+      recommendation_id: recId,
+      plan_tier: currentPlanCode,
+      mutation_key: undoState.key,
+    });
+    try {
+      const currentOverrides: Record<string, unknown> = { ...(policy?.overrides ?? {}) };
+      let restoredOverrides: Record<string, unknown>;
+      if (undoState.hadKey) {
+        // Restore the override key to its prior explicit value.
+        restoredOverrides = { ...currentOverrides, [undoState.key]: undoState.prevValue };
+      } else {
+        // The apply introduced this key — remove it entirely.
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [undoState.key as keyof typeof currentOverrides]: _removed, ...rest } =
+          currentOverrides;
+        restoredOverrides = rest;
+      }
+      await updatePolicyOverrides(restoredOverrides);
+      await loadPolicy();
+      // Clear apply result and undo state — the recommendation will naturally
+      // reappear in the list if policy conditions still warrant it.
+      setApplyResults((prev) => {
+        const next = { ...prev };
+        delete next[recId];
+        return next;
+      });
+      setApplyUndoStates((prev) => {
+        const next = { ...prev };
+        delete next[recId];
+        return next;
+      });
+      setUndoErrors((prev) => {
+        const next = { ...prev };
+        delete next[recId];
+        return next;
+      });
+      trackRecommendationUndoSuccess({
+        recommendation_id: recId,
+        plan_tier: currentPlanCode,
+        mutation_key: undoState.key,
+      });
+    } catch {
+      setUndoErrors((prev) => ({ ...prev, [recId]: true }));
+      trackRecommendationUndoError({
+        recommendation_id: recId,
+        plan_tier: currentPlanCode,
+        mutation_key: undoState.key,
+      });
+    } finally {
+      setUndoingRecId(null);
     }
   }
 
@@ -3135,14 +3225,36 @@ export default function CustomerPoliciesPage() {
                                       Apply &rarr;
                                     </button>
                                   )}
-                                  {/* Applied success indicator */}
+                                  {/* Applied success indicator + Undo action */}
                                   {applyResults[rec.id] === "success" && (
-                                    <span
-                                      className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400"
-                                      data-testid={`apply-success-${rec.id}`}
-                                    >
-                                      &#10003; Applied
-                                    </span>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <span
+                                        className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400"
+                                        data-testid={`apply-success-${rec.id}`}
+                                      >
+                                        &#10003; Applied
+                                      </span>
+                                      {applyUndoStates[rec.id] && (
+                                        <button
+                                          type="button"
+                                          disabled={undoingRecId === rec.id}
+                                          onClick={() => handleUndoRecommendation(rec.id)}
+                                          className="inline-flex items-center rounded-md border border-slate-500/20 bg-white/5 px-2.5 py-1 text-[10px] text-slate-400 transition hover:text-slate-200 hover:bg-white/10 disabled:opacity-50"
+                                          data-testid={`undo-btn-${rec.id}`}
+                                          title="Undo will restore your previous simulation requirement setting."
+                                        >
+                                          {undoingRecId === rec.id ? "Undoing…" : "Undo"}
+                                        </button>
+                                      )}
+                                      {undoErrors[rec.id] && (
+                                        <span
+                                          className="text-[10px] text-red-400"
+                                          data-testid={`undo-error-${rec.id}`}
+                                        >
+                                          Could not undo. Edit the setting manually.
+                                        </span>
+                                      )}
+                                    </div>
                                   )}
                                   {/* View setting — hidden during confirm/success */}
                                   {rec.fieldKey && applyConfirmingRecId !== rec.id && applyResults[rec.id] !== "success" && (
@@ -3391,12 +3503,34 @@ export default function CustomerPoliciesPage() {
                                         </button>
                                       )}
                                       {applyResults[rec.id] === "success" && (
-                                        <span
-                                          className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-400"
-                                          data-testid={`apply-success-${rec.id}`}
-                                        >
-                                          &#10003; Applied
-                                        </span>
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                          <span
+                                            className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-400"
+                                            data-testid={`apply-success-${rec.id}`}
+                                          >
+                                            &#10003; Applied
+                                          </span>
+                                          {applyUndoStates[rec.id] && (
+                                            <button
+                                              type="button"
+                                              disabled={undoingRecId === rec.id}
+                                              onClick={() => handleUndoRecommendation(rec.id)}
+                                              className="inline-flex items-center rounded-md border border-slate-500/20 bg-white/5 px-2 py-0.5 text-[9px] text-slate-400 transition hover:text-slate-200 hover:bg-white/10 disabled:opacity-50"
+                                              data-testid={`undo-btn-${rec.id}`}
+                                              title="Undo will restore your previous simulation requirement setting."
+                                            >
+                                              {undoingRecId === rec.id ? "Undoing…" : "Undo"}
+                                            </button>
+                                          )}
+                                          {undoErrors[rec.id] && (
+                                            <span
+                                              className="text-[9px] text-red-400"
+                                              data-testid={`undo-error-${rec.id}`}
+                                            >
+                                              Could not undo. Edit manually.
+                                            </span>
+                                          )}
+                                        </div>
                                       )}
                                       {rec.fieldKey && applyConfirmingRecId !== rec.id && applyResults[rec.id] !== "success" && (
                                         <button

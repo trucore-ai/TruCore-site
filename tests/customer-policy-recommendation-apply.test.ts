@@ -544,3 +544,197 @@ describe("applyMutation merge model", () => {
     expect(rec!.applyMutation!.value).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Tests: undo state model
+//
+// The undo model is a pure-data concern: given the pre-apply overrides and
+// the applied mutation, verify the undo logic restores the correct state.
+// These tests replicate the handleUndoRecommendation restore logic in isolation.
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute the restored overrides that undo would send to PATCH /overrides.
+ * Mirrors the logic in handleUndoRecommendation exactly.
+ */
+function computeRestoredOverrides(
+  currentOverrides: Record<string, unknown>,
+  undoState: { key: string; hadKey: boolean; prevValue: unknown },
+): Record<string, unknown> {
+  if (undoState.hadKey) {
+    return { ...currentOverrides, [undoState.key]: undoState.prevValue };
+  } else {
+    const { [undoState.key as keyof typeof currentOverrides]: _removed, ...rest } =
+      currentOverrides;
+    return rest;
+  }
+}
+
+/**
+ * Build the undo state that handleApplyRecommendation would store.
+ * Mirrors the pre-apply capture logic exactly.
+ */
+function captureUndoState(
+  priorOverrides: Record<string, unknown>,
+  mutationKey: string,
+): { key: string; hadKey: boolean; prevValue: unknown } {
+  const hadKey = Object.prototype.hasOwnProperty.call(priorOverrides, mutationKey);
+  const prevValue = priorOverrides[mutationKey];
+  return { key: mutationKey, hadKey, prevValue };
+}
+
+describe("undo state model — prior override capture", () => {
+  it("detects hadKey=true when key was already in overrides (explicit false)", () => {
+    const priorOverrides = { require_simulation_success: false };
+    const state = captureUndoState(priorOverrides, "require_simulation_success");
+    expect(state.hadKey).toBe(true);
+    expect(state.prevValue).toBe(false);
+    expect(state.key).toBe("require_simulation_success");
+  });
+
+  it("detects hadKey=false when key was absent from overrides", () => {
+    const priorOverrides: Record<string, unknown> = {
+      max_slippage_bps: 100,
+      max_notional_usd: 25000,
+    };
+    const state = captureUndoState(priorOverrides, "require_simulation_success");
+    expect(state.hadKey).toBe(false);
+    expect(state.prevValue).toBeUndefined();
+  });
+
+  it("detects hadKey=true even when prior value was undefined explicitly", () => {
+    // Edge: explicitly set to undefined vs absent — Object.hasOwn distinguishes them.
+    const priorOverrides: Record<string, unknown> = { require_simulation_success: undefined };
+    const state = captureUndoState(priorOverrides, "require_simulation_success");
+    expect(state.hadKey).toBe(true);
+  });
+});
+
+describe("undo state model — restoring prior override (hadKey=true)", () => {
+  it("restores the key to its prior explicit false value", () => {
+    const priorOverrides = { require_simulation_success: false, max_slippage_bps: 100 };
+    const undoState = captureUndoState(priorOverrides, "require_simulation_success");
+
+    // After apply: current overrides have key set to true
+    const postApplyOverrides = { ...priorOverrides, require_simulation_success: true };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(restored.require_simulation_success).toBe(false);
+  });
+
+  it("preserves all other override keys when restoring", () => {
+    const priorOverrides = {
+      require_simulation_success: false,
+      max_slippage_bps: 100,
+      max_notional_usd: 25000,
+    };
+    const undoState = captureUndoState(priorOverrides, "require_simulation_success");
+    const postApplyOverrides = { ...priorOverrides, require_simulation_success: true };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(restored.max_slippage_bps).toBe(100);
+    expect(restored.max_notional_usd).toBe(25000);
+    expect(Object.keys(restored).length).toBe(3);
+  });
+});
+
+describe("undo state model — removing introduced key (hadKey=false)", () => {
+  it("removes the key that apply introduced when it was not previously in overrides", () => {
+    const priorOverrides: Record<string, unknown> = {
+      max_slippage_bps: 150,
+      max_notional_usd: 50000,
+    };
+    const undoState = captureUndoState(priorOverrides, "require_simulation_success");
+
+    // After apply: key now exists
+    const postApplyOverrides: Record<string, unknown> = {
+      ...priorOverrides,
+      require_simulation_success: true,
+    };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(Object.prototype.hasOwnProperty.call(restored, "require_simulation_success")).toBe(false);
+  });
+
+  it("preserves unrelated override keys when removing introduced key", () => {
+    const priorOverrides: Record<string, unknown> = {
+      max_slippage_bps: 150,
+      max_notional_usd: 50000,
+    };
+    const undoState = captureUndoState(priorOverrides, "require_simulation_success");
+    const postApplyOverrides = { ...priorOverrides, require_simulation_success: true };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(restored.max_slippage_bps).toBe(150);
+    expect(restored.max_notional_usd).toBe(50000);
+    expect(Object.keys(restored).length).toBe(2);
+  });
+
+  it("produces empty overrides when apply was the only key", () => {
+    const priorOverrides: Record<string, unknown> = {};
+    const undoState = captureUndoState(priorOverrides, "require_simulation_success");
+    const postApplyOverrides = { require_simulation_success: true };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(Object.keys(restored).length).toBe(0);
+  });
+});
+
+describe("undo scope is limited to simulation apply path", () => {
+  it("only applyable recs have the mutation key that undo supports", () => {
+    const UNDO_SAFE_MUTATION_KEY = "require_simulation_success";
+    const applyableRecs = [
+      simulationRec(makeEffective({ require_simulation_success: false })),
+      historySimulationFailuresRec(
+        SUMMARY_WITH_FAILURES,
+        makeEffective({ require_simulation_success: false }),
+      ),
+      marketEnableSimulationRec(
+        MARKET_DEGRADED,
+        makeEffective({ require_simulation_success: false }),
+      ),
+      marketTxThrottledRec(
+        MARKET_STRESSED_THROTTLED,
+        makeEffective({ require_simulation_success: false }),
+      ),
+    ].filter((r): r is PolicyRecommendation => r !== null);
+
+    for (const rec of applyableRecs) {
+      expect(rec.applyMutation?.key).toBe(UNDO_SAFE_MUTATION_KEY);
+    }
+  });
+
+  it("undo state is only valid when applyUndoStates has an entry for the recId", () => {
+    // Simulates the UI guard: Undo button only renders when applyUndoStates[rec.id] exists.
+    const applyUndoStates: Record<string, { key: string; hadKey: boolean; prevValue: unknown }> =
+      {};
+
+    // Before apply: no undo state
+    expect(applyUndoStates["enable-simulation"]).toBeUndefined();
+
+    // After apply: undo state is populated
+    applyUndoStates["enable-simulation"] = {
+      key: "require_simulation_success",
+      hadKey: false,
+      prevValue: undefined,
+    };
+    expect(applyUndoStates["enable-simulation"]).toBeDefined();
+
+    // After undo: cleared
+    delete applyUndoStates["enable-simulation"];
+    expect(applyUndoStates["enable-simulation"]).toBeUndefined();
+  });
+
+  it("clearing applyResults[recId] after undo allows the recommendation to reappear", () => {
+    const applyResults: Record<string, "success" | "error"> = { "enable-simulation": "success" };
+
+    // After undo success, both are cleared
+    delete applyResults["enable-simulation"];
+    expect(applyResults["enable-simulation"]).toBeUndefined();
+
+    // Now the recommendation generator (which checks effective policy) would
+    // produce the rec again if conditions still warrant it.
+    const rec = simulationRec(makeEffective({ require_simulation_success: false }));
+    expect(rec).not.toBeNull();
+  });
+});

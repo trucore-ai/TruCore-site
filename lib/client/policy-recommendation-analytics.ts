@@ -30,6 +30,9 @@ export type PolicyAnalyticsEvent =
   | "policy_recommendation_apply_click"
   | "policy_recommendation_apply_success"
   | "policy_recommendation_apply_error"
+  | "policy_recommendation_undo_click"
+  | "policy_recommendation_undo_success"
+  | "policy_recommendation_undo_error"
   | "policy_signal_refresh_click"
   | "policy_signal_refresh_complete"
   | "policy_upgrade_teaser_view"
@@ -227,6 +230,50 @@ export function trackRecommendationApplyError(opts: {
   mutation_key: string;
 }): void {
   fire("policy_recommendation_apply_error", {
+    page: "customer_policies",
+    ...opts,
+  });
+}
+
+/**
+ * Fired when the user clicks "Undo" on a successfully-applied recommendation.
+ * Does NOT include policy values — only structural metadata.
+ */
+export function trackRecommendationUndoClick(opts: {
+  recommendation_id: string;
+  plan_tier: string;
+  /** The override key that will be reverted — never its value. */
+  mutation_key: string;
+}): void {
+  fire("policy_recommendation_undo_click", {
+    page: "customer_policies",
+    ...opts,
+  });
+}
+
+/**
+ * Fired after a recommendation undo succeeds and policy is refreshed.
+ */
+export function trackRecommendationUndoSuccess(opts: {
+  recommendation_id: string;
+  plan_tier: string;
+  mutation_key: string;
+}): void {
+  fire("policy_recommendation_undo_success", {
+    page: "customer_policies",
+    ...opts,
+  });
+}
+
+/**
+ * Fired when a recommendation undo attempt fails (network/validation error).
+ */
+export function trackRecommendationUndoError(opts: {
+  recommendation_id: string;
+  plan_tier: string;
+  mutation_key: string;
+}): void {
+  fire("policy_recommendation_undo_error", {
     page: "customer_policies",
     ...opts,
   });
