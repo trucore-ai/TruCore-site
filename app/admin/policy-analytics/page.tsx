@@ -1,4 +1,4 @@
-import { summarise, type PolicyAnalyticsSummary } from "@/lib/server/policy-analytics-store";
+import { summarise, type PolicyAnalyticsSummary, getLatestSnapshotMeta } from "@/lib/server/policy-analytics-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -222,6 +222,14 @@ export default async function PolicyAnalyticsPage() {
   const summary: PolicyAnalyticsSummary = summarise();
   const isEmpty = summary.total_events === 0;
 
+  // Fetch latest persisted snapshot metadata (null if none yet / DB unavailable).
+  let snapshotMeta: { id: string; captured_at: string; summary_version: string } | null = null;
+  try {
+    snapshotMeta = await getLatestSnapshotMeta();
+  } catch {
+    // DB unavailable or not configured — degrade gracefully
+  }
+
   return (
     <div className="min-h-screen bg-neutral-950 text-slate-100 p-6 md:p-10">
       {/* header */}
@@ -254,10 +262,27 @@ export default async function PolicyAnalyticsPage() {
       </div>
 
       {/* instance note */}
-      <div className="rounded border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-300/90 mb-6">
+      <div className="rounded border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-300/90 mb-4">
         <strong>Instance-local snapshot.</strong> Counts are in-memory for this
         serverless instance only and may reset on deployment or cold start.
         Not suitable for billing or compliance.
+      </div>
+
+      {/* durable snapshot status */}
+      <div className="rounded border border-sky-500/30 bg-sky-500/10 px-4 py-2.5 text-xs text-sky-300/90 mb-6 flex items-center justify-between gap-4">
+        <span>
+          <strong>Durable snapshot:</strong>{" "}
+          {snapshotMeta
+            ? <>Last persisted <span className="font-mono">{fmtIso(snapshotMeta.captured_at)}</span> UTC &nbsp;·&nbsp; v{snapshotMeta.summary_version}</>
+            : "No snapshot persisted yet — use the export link to capture one."}
+        </span>
+        <a
+          href="/api/internal/policy-analytics-snapshot"
+          className="rounded bg-sky-500/20 border border-sky-500/40 px-3 py-1 text-xs font-medium text-sky-200 hover:bg-sky-500/30 transition whitespace-nowrap"
+          data-testid="snapshot-export-link"
+        >
+          Export snapshot ↗
+        </a>
       </div>
 
       {isEmpty ? (

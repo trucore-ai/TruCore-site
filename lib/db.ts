@@ -349,6 +349,85 @@ export async function listLatestActivePortalTokensForOwners(
   return rows as Array<Pick<PartnerPortalTokenRow, "id" | "owner_email" | "expires_at" | "created_at">>;
 }
 
+/* ---------- policy analytics snapshots table (Prompt 187) ---------- */
+
+let analyticsSnapshotTableEnsured = false;
+
+/**
+ * Ensure the policy_analytics_snapshots table exists.
+ * Safe to call on every request; uses IF NOT EXISTS and
+ * skips DDL after the first successful run per process.
+ *
+ * Stores aggregated-only, privacy-safe snapshot JSON — no raw event
+ * payloads, no PII.  Intended for ops/admin trend review across cold
+ * starts and multi-instance deployments.
+ */
+export async function ensureAnalyticsSnapshotTable() {
+  if (analyticsSnapshotTableEnsured) return;
+  const sql = getSQL();
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS policy_analytics_snapshots (
+      id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+      summary_version TEXT NOT NULL DEFAULT '1',
+      snapshot        JSONB NOT NULL
+    );
+  `;
+
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_policy_analytics_snapshots_created_at
+    ON policy_analytics_snapshots(created_at DESC);
+  `;
+
+  analyticsSnapshotTableEnsured = true;
+}
+
+export interface AnalyticsSnapshotRow {
+  id: string;
+  created_at: string;
+  summary_version: string;
+  snapshot: unknown;
+}
+
+/**
+ * Persist an aggregated analytics snapshot to the DB.
+ * `snapshot` must be a privacy-safe, aggregated-only object — the
+ * caller is responsible for ensuring no raw event payloads are included.
+ */
+export async function writeAnalyticsSnapshot(
+  summaryVersion: string,
+  snapshot: unknown,
+): Promise<{ id: string; created_at: string }> {
+  await ensureAnalyticsSnapshotTable();
+  const sql = getSQL();
+
+  const rows = await sql`
+    INSERT INTO policy_analytics_snapshots (summary_version, snapshot)
+    VALUES (${summaryVersion}, ${JSON.stringify(snapshot)})
+    RETURNING id, created_at;
+  `;
+
+  return rows[0] as { id: string; created_at: string };
+}
+
+/**
+ * Return the most recently persisted analytics snapshot row, or null.
+ */
+export async function getLatestAnalyticsSnapshot(): Promise<AnalyticsSnapshotRow | null> {
+  await ensureAnalyticsSnapshotTable();
+  const sql = getSQL();
+
+  const rows = await sql`
+    SELECT id, created_at, summary_version, snapshot
+    FROM policy_analytics_snapshots
+    ORDER BY created_at DESC
+    LIMIT 1;
+  `;
+
+  return (rows[0] ?? null) as AnalyticsSnapshotRow | null;
+}
+
 export async function listPartnerKeysAndUsage(
   ownerEmail: string,
 ): Promise<PartnerKeyUsageRow[]> {

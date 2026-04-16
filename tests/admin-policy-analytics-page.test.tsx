@@ -3,8 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 /* ── mock the analytics store ──────────────────────────────────────── */
 
 const mockSummarise = vi.fn();
+const mockGetLatestSnapshotMeta = vi.fn();
 vi.mock("@/lib/server/policy-analytics-store", () => ({
   summarise: (...args: unknown[]) => mockSummarise(...args),
+  getLatestSnapshotMeta: (...args: unknown[]) => mockGetLatestSnapshotMeta(...args),
 }));
 
 import PolicyAnalyticsPage from "@/app/admin/policy-analytics/page";
@@ -82,6 +84,8 @@ function makeSummary(overrides: Record<string, unknown> = {}) {
 describe("PolicyAnalyticsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: no persisted snapshot
+    mockGetLatestSnapshotMeta.mockResolvedValue(null);
   });
 
   it("renders headline metrics when data is present", async () => {
@@ -153,6 +157,44 @@ describe("PolicyAnalyticsPage", () => {
 
     expect(html).toContain("Instance-local snapshot");
     expect(html).toContain("may reset on deployment");
+  });
+
+  it("shows durable snapshot status banner with no-snapshot message when none persisted", async () => {
+    mockSummarise.mockReturnValue(makeSummary());
+    mockGetLatestSnapshotMeta.mockResolvedValue(null);
+    const node = await PolicyAnalyticsPage();
+    const html = renderToString(node);
+
+    expect(html).toContain("Durable snapshot:");
+    expect(html).toContain("No snapshot persisted yet");
+    expect(html).toContain("Export snapshot");
+  });
+
+  it("shows durable snapshot timestamp when a snapshot exists", async () => {
+    mockSummarise.mockReturnValue(makeSummary());
+    mockGetLatestSnapshotMeta.mockResolvedValue({
+      id: "abc-123",
+      captured_at: "2026-04-16T12:00:00.000Z",
+      summary_version: "1",
+    });
+    const node = await PolicyAnalyticsPage();
+    const html = renderToString(node);
+
+    expect(html).toContain("Durable snapshot:");
+    expect(html).toContain("Last persisted");
+    expect(html).toContain("v1");
+  });
+
+  it("degrades gracefully when getLatestSnapshotMeta throws", async () => {
+    mockSummarise.mockReturnValue(makeSummary());
+    mockGetLatestSnapshotMeta.mockRejectedValue(new Error("DB unavailable"));
+    const node = await PolicyAnalyticsPage();
+    const html = renderToString(node);
+
+    // Page still renders; snapshot banner shows no-snapshot fallback
+    expect(html).toContain("Policy Analytics Summary");
+    expect(html).toContain("Durable snapshot:");
+    expect(html).toContain("No snapshot persisted yet");
   });
 
   it("renders null rates as em-dash", async () => {

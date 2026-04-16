@@ -307,6 +307,59 @@ export function summarise(): PolicyAnalyticsSummary {
   };
 }
 
+// ── Durable snapshot export ──────────────────────────────────────────────────
+
+/** Bumped when the snapshot shape changes in a non-backward-compatible way. */
+export const SNAPSHOT_VERSION = "1";
+
+/** Aggregated snapshot shape written to the DB and returned via export API. */
+export interface SnapshotPayload {
+  captured_at: string;
+  summary_version: string;
+  summary: PolicyAnalyticsSummary;
+}
+
+/** Lightweight metadata describing the most recently persisted snapshot. */
+export interface SnapshotMeta {
+  id: string;
+  captured_at: string;
+  summary_version: string;
+}
+
+/**
+ * Capture the current in-memory summary and persist it as an aggregated
+ * snapshot in the DB.  The payload is aggregated-only and contains no raw
+ * event payloads or PII.
+ *
+ * Returns the full snapshot payload so callers can stream/return it as JSON.
+ */
+export async function persistSnapshot(): Promise<SnapshotPayload> {
+  const { writeAnalyticsSnapshot } = await import("@/lib/db");
+  const summary = summarise();
+  const payload: SnapshotPayload = {
+    captured_at: summary.generated_at,
+    summary_version: SNAPSHOT_VERSION,
+    summary,
+  };
+  await writeAnalyticsSnapshot(SNAPSHOT_VERSION, payload);
+  return payload;
+}
+
+/**
+ * Return the most recently persisted snapshot's metadata, or null if none
+ * has been written yet.  Used by the admin surface to show snapshot status.
+ */
+export async function getLatestSnapshotMeta(): Promise<SnapshotMeta | null> {
+  const { getLatestAnalyticsSnapshot } = await import("@/lib/db");
+  const row = await getLatestAnalyticsSnapshot();
+  if (!row) return null;
+  return {
+    id: row.id,
+    captured_at: row.created_at,
+    summary_version: row.summary_version,
+  };
+}
+
 // ── Test helper — reset all state ───────────────────────────────────────────
 
 export function _resetForTesting(): void {
