@@ -360,6 +360,175 @@ export async function getLatestSnapshotMeta(): Promise<SnapshotMeta | null> {
   };
 }
 
+// ── Snapshot comparison / diff ───────────────────────────────────────────────
+
+/** The shape stored as the `snapshot` JSONB in the DB row. */
+export interface SnapshotPayloadStored {
+  captured_at: string;
+  summary_version: string;
+  summary: PolicyAnalyticsSummary;
+}
+
+/** A latest + previous snapshot pair for the comparison view. */
+export interface SnapshotPair {
+  latest: SnapshotPayloadStored & { row_id: string } | null;
+  previous: SnapshotPayloadStored & { row_id: string } | null;
+}
+
+/** Delta for a single scalar metric. */
+export interface MetricDelta {
+  label: string;
+  latest: number | null;
+  previous: number | null;
+  /** Absolute difference: latest - previous. */
+  delta: number | null;
+  /** Fractional change ((latest - previous) / previous). Null if previous ≤ 0 or null. */
+  pct_delta: number | null;
+  direction: "up" | "down" | "flat" | "new";
+}
+
+/** Per-key delta for bucket-map dimensions (source, tier, etc.). */
+export interface DimensionDelta {
+  key: string;
+  latest: number;
+  previous: number;
+  delta: number;
+}
+
+/** Complete diff model between two snapshots. */
+export interface SnapshotDiff {
+  latest_captured_at: string;
+  previous_captured_at: string;
+  headline: MetricDelta[];
+  by_source_top_deltas: DimensionDelta[];
+  teaser_by_source_deltas: DimensionDelta[];
+  teaser_by_tier_deltas: DimensionDelta[];
+}
+
+function scalarDelta(
+  label: string,
+  latest: number | null,
+  previous: number | null,
+): MetricDelta {
+  if (latest === null && previous === null) {
+    return { label, latest, previous, delta: null, pct_delta: null, direction: "flat" };
+  }
+  if (previous === null) {
+    return { label, latest, previous, delta: null, pct_delta: null, direction: "new" };
+  }
+  const latestVal = latest ?? 0;
+  const delta = latestVal - previous;
+  const pct_delta = previous > 0 ? delta / previous : null;
+  const direction: MetricDelta["direction"] =
+    delta > 0 ? "up" : delta < 0 ? "down" : "flat";
+  return { label, latest: latestVal, previous, delta, pct_delta, direction };
+}
+
+function bucketDelta(
+  label: string,
+  latest: { total: number } | undefined,
+  previous: { total: number } | undefined,
+): MetricDelta {
+  return scalarDelta(label, latest?.total ?? 0, previous?.total ?? 0);
+}
+
+function dimensionDeltas(
+  latestMap: Record<string, { total: number }>,
+  previousMap: Record<string, { total: number }>,
+  topN = 5,
+): DimensionDelta[] {
+  const keys = Array.from(
+    new Set([...Object.keys(latestMap), ...Object.keys(previousMap)]),
+  );
+  return keys
+    .map((key) => ({
+      key,
+      latest: latestMap[key]?.total ?? 0,
+      previous: previousMap[key]?.total ?? 0,
+      delta: (latestMap[key]?.total ?? 0) - (previousMap[key]?.total ?? 0),
+    }))
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+    .slice(0, topN);
+}
+
+/**
+ * Compute a compact diff between two snapshot payloads.
+ * Both arguments must be non-null (caller ensures this).
+ */
+export function computeSnapshotDiff(
+  latest: SnapshotPayloadStored,
+  previous: SnapshotPayloadStored,
+): SnapshotDiff {
+  const ls = latest.summary;
+  const ps = previous.summary;
+
+  const headline: MetricDelta[] = [
+    scalarDelta("Total Events", ls.total_events, ps.total_events),
+    scalarDelta("Expand Rate", ls.derived.expand_rate, ps.derived.expand_rate),
+    scalarDelta(
+      "View-Setting Rate",
+      ls.derived.view_setting_click_rate,
+      ps.derived.view_setting_click_rate,
+    ),
+    scalarDelta(
+      "Teaser Click Rate",
+      ls.derived.upgrade_teaser_click_rate,
+      ps.derived.upgrade_teaser_click_rate,
+    ),
+    bucketDelta(
+      "Featured Impressions",
+      ls.derived.featured_impressions,
+      ps.derived.featured_impressions,
+    ),
+    bucketDelta(
+      "Featured Expands",
+      ls.derived.featured_expands,
+      ps.derived.featured_expands,
+    ),
+    bucketDelta(
+      "More-Section Engagement",
+      ls.derived.more_engagement,
+      ps.derived.more_engagement,
+    ),
+  ];
+
+  return {
+    latest_captured_at: latest.captured_at,
+    previous_captured_at: previous.captured_at,
+    headline,
+    by_source_top_deltas: dimensionDeltas(ls.by_source, ps.by_source),
+    teaser_by_source_deltas: dimensionDeltas(
+      ls.teaser_performance.views_by_dominant_source,
+      ps.teaser_performance.views_by_dominant_source,
+    ),
+    teaser_by_tier_deltas: dimensionDeltas(
+      ls.teaser_performance.views_by_tier,
+      ps.teaser_performance.views_by_tier,
+    ),
+  };
+}
+
+/**
+ * Fetch the latest and previous persisted snapshots from the DB.
+ * Returns null for either field when fewer than 2 snapshots exist.
+ */
+export async function getSnapshotPair(): Promise<SnapshotPair> {
+  const { getLatestTwoAnalyticsSnapshots } = await import("@/lib/db");
+  const rows = await getLatestTwoAnalyticsSnapshots();
+
+  function toPayload(
+    row: import("@/lib/db").AnalyticsSnapshotRow,
+  ): SnapshotPayloadStored & { row_id: string } {
+    const raw = row.snapshot as SnapshotPayloadStored;
+    return { ...raw, row_id: row.id };
+  }
+
+  return {
+    latest: rows[0] ? toPayload(rows[0]) : null,
+    previous: rows[1] ? toPayload(rows[1]) : null,
+  };
+}
+
 // ── Test helper — reset all state ───────────────────────────────────────────
 
 export function _resetForTesting(): void {

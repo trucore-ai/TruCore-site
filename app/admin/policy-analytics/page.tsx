@@ -1,4 +1,14 @@
-import { summarise, type PolicyAnalyticsSummary, getLatestSnapshotMeta } from "@/lib/server/policy-analytics-store";
+import React from "react";
+import {
+  summarise,
+  type PolicyAnalyticsSummary,
+  getLatestSnapshotMeta,
+  getSnapshotPair,
+  computeSnapshotDiff,
+  type SnapshotDiff,
+  type MetricDelta,
+  type DimensionDelta,
+} from "@/lib/server/policy-analytics-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -216,6 +226,163 @@ function EmptyState() {
   );
 }
 
+/* ── trend / diff panel ───────────────────────────────────────────── */
+
+function directionBadge(dir: MetricDelta["direction"]): React.ReactNode {
+  if (dir === "up") return <span className="text-emerald-400">▲</span>;
+  if (dir === "down") return <span className="text-red-400">▼</span>;
+  if (dir === "new") return <span className="text-sky-400">new</span>;
+  return <span className="text-slate-500">–</span>;
+}
+
+function fmtDelta(d: MetricDelta): string {
+  if (d.delta === null) return "—";
+  const sign = d.delta > 0 ? "+" : "";
+  const abs =
+    d.label.includes("Rate")
+      ? `${sign}${(d.delta * 100).toFixed(1)}pp`
+      : `${sign}${d.delta.toLocaleString("en-US")}`;
+  if (d.pct_delta !== null) {
+    const pctSign = d.pct_delta > 0 ? "+" : "";
+    return `${abs} (${pctSign}${(d.pct_delta * 100).toFixed(1)}%)`;
+  }
+  return abs;
+}
+
+function fmtVal(d: MetricDelta): string {
+  if (d.latest === null) return "—";
+  if (d.label.includes("Rate")) return pct(d.latest);
+  return num(d.latest);
+}
+
+function DeltaCard({ d }: { d: MetricDelta }) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+      <p className="text-xs text-slate-400 mb-1">{d.label}</p>
+      <p className="text-lg font-semibold tabular-nums">
+        {directionBadge(d.direction)}{" "}
+        {fmtVal(d)}
+      </p>
+      <p className="text-xs text-slate-500 mt-0.5 tabular-nums">{fmtDelta(d)}</p>
+    </div>
+  );
+}
+
+function DimensionDeltaTable({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: DimensionDelta[];
+}) {
+  if (rows.length === 0) {
+    return (
+      <div className="mb-4">
+        <h4 className="text-xs font-semibold text-slate-400 mb-1.5">{title}</h4>
+        <p className="text-xs text-slate-500 italic">No data yet.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="mb-4 overflow-x-auto">
+      <h4 className="text-xs font-semibold text-slate-400 mb-1.5">{title}</h4>
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-slate-500 border-b border-white/10">
+            <th className="text-left py-1.5 pr-4 font-medium">Key</th>
+            <th className="text-right py-1.5 px-3 font-medium">Latest</th>
+            <th className="text-right py-1.5 px-3 font-medium">Previous</th>
+            <th className="text-right py-1.5 pl-3 font-medium">Delta</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.key} className="border-b border-white/5 hover:bg-white/5">
+              <td className="py-1.5 pr-4 text-slate-300 font-mono">{r.key}</td>
+              <td className="py-1.5 px-3 text-right tabular-nums">{num(r.latest)}</td>
+              <td className="py-1.5 px-3 text-right tabular-nums text-slate-400">{num(r.previous)}</td>
+              <td
+                className={[
+                  "py-1.5 pl-3 text-right tabular-nums font-semibold",
+                  r.delta > 0
+                    ? "text-emerald-400"
+                    : r.delta < 0
+                      ? "text-red-400"
+                      : "text-slate-500",
+                ].join(" ")}
+              >
+                {r.delta > 0 ? "+" : ""}{num(r.delta)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TrendDiffPanel({ diff }: { diff: SnapshotDiff }) {
+  return (
+    <div
+      className="rounded-lg border border-violet-500/30 bg-violet-500/5 px-5 py-4 mb-6"
+      data-testid="trend-diff-panel"
+    >
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-sm font-semibold text-violet-200">
+          Trend Since Last Snapshot
+        </h2>
+        <div className="text-xs text-slate-500 tabular-nums text-right">
+          <span className="text-slate-400">Latest:</span>{" "}
+          <span className="font-mono">{fmtIso(diff.latest_captured_at)}</span>
+          {" "}UTC
+          <span className="mx-2 text-slate-600">·</span>
+          <span className="text-slate-400">Previous:</span>{" "}
+          <span className="font-mono">{fmtIso(diff.previous_captured_at)}</span>
+          {" "}UTC
+        </div>
+      </div>
+      <p className="text-xs text-slate-500 mb-4">
+        Aggregated-only. Deltas are latest snapshot minus previous snapshot.
+      </p>
+
+      {/* headline delta cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+        {diff.headline.map((d) => (
+          <DeltaCard key={d.label} d={d} />
+        ))}
+      </div>
+
+      {/* dimension tables */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <DimensionDeltaTable
+          title="By Source — top deltas (total events)"
+          rows={diff.by_source_top_deltas}
+        />
+        <DimensionDeltaTable
+          title="Teaser Views by Gated Source — top deltas"
+          rows={diff.teaser_by_source_deltas}
+        />
+        <DimensionDeltaTable
+          title="Teaser Views by Tier — top deltas"
+          rows={diff.teaser_by_tier_deltas}
+        />
+      </div>
+    </div>
+  );
+}
+
+function TrendDiffEmptyState() {
+  return (
+    <div
+      className="rounded border border-white/10 bg-white/5 px-4 py-3 text-xs text-slate-500 mb-6"
+      data-testid="trend-diff-empty"
+    >
+      <strong className="text-slate-400">Trend view unavailable.</strong>{" "}
+      Capture at least two snapshots to see a comparison.
+    </div>
+  );
+}
+
 /* ── page ─────────────────────────────────────────────────────────── */
 
 export default async function PolicyAnalyticsPage() {
@@ -224,8 +391,14 @@ export default async function PolicyAnalyticsPage() {
 
   // Fetch latest persisted snapshot metadata (null if none yet / DB unavailable).
   let snapshotMeta: { id: string; captured_at: string; summary_version: string } | null = null;
+  // Fetch pair for diff view
+  let diff: SnapshotDiff | null = null;
   try {
     snapshotMeta = await getLatestSnapshotMeta();
+    const pair = await getSnapshotPair();
+    if (pair.latest && pair.previous) {
+      diff = computeSnapshotDiff(pair.latest, pair.previous);
+    }
   } catch {
     // DB unavailable or not configured — degrade gracefully
   }
@@ -269,7 +442,7 @@ export default async function PolicyAnalyticsPage() {
       </div>
 
       {/* durable snapshot status */}
-      <div className="rounded border border-sky-500/30 bg-sky-500/10 px-4 py-2.5 text-xs text-sky-300/90 mb-6 flex items-center justify-between gap-4">
+      <div className="rounded border border-sky-500/30 bg-sky-500/10 px-4 py-2.5 text-xs text-sky-300/90 mb-4 flex items-center justify-between gap-4">
         <span>
           <strong>Durable snapshot:</strong>{" "}
           {snapshotMeta
@@ -284,6 +457,9 @@ export default async function PolicyAnalyticsPage() {
           Export snapshot ↗
         </a>
       </div>
+
+      {/* trend / diff panel */}
+      {diff ? <TrendDiffPanel diff={diff} /> : <TrendDiffEmptyState />}
 
       {isEmpty ? (
         <EmptyState />

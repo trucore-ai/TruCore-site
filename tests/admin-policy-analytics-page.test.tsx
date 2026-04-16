@@ -4,9 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockSummarise = vi.fn();
 const mockGetLatestSnapshotMeta = vi.fn();
+const mockGetSnapshotPair = vi.fn();
+const mockComputeSnapshotDiff = vi.fn();
 vi.mock("@/lib/server/policy-analytics-store", () => ({
   summarise: (...args: unknown[]) => mockSummarise(...args),
   getLatestSnapshotMeta: (...args: unknown[]) => mockGetLatestSnapshotMeta(...args),
+  getSnapshotPair: (...args: unknown[]) => mockGetSnapshotPair(...args),
+  computeSnapshotDiff: (...args: unknown[]) => mockComputeSnapshotDiff(...args),
 }));
 
 import PolicyAnalyticsPage from "@/app/admin/policy-analytics/page";
@@ -86,6 +90,9 @@ describe("PolicyAnalyticsPage", () => {
     vi.clearAllMocks();
     // Default: no persisted snapshot
     mockGetLatestSnapshotMeta.mockResolvedValue(null);
+    // Default: no snapshot pair (only one or zero snapshots)
+    mockGetSnapshotPair.mockResolvedValue({ latest: null, previous: null });
+    mockComputeSnapshotDiff.mockReturnValue(null);
   });
 
   it("renders headline metrics when data is present", async () => {
@@ -261,6 +268,91 @@ describe("PolicyAnalyticsPage", () => {
     expect(html).toContain("Gated-Source Teaser Performance");
     // No-data fallback text for the compare tables
     expect(html).toContain("No data yet.");
+  });
+
+  it("shows trend-diff empty state when only one snapshot exists", async () => {
+    mockSummarise.mockReturnValue(makeSummary());
+    mockGetSnapshotPair.mockResolvedValue({
+      latest: { captured_at: "2026-04-16T12:00:00.000Z", summary_version: "1", summary: makeSummary(), row_id: "r1" },
+      previous: null,
+    });
+    const node = await PolicyAnalyticsPage();
+    const html = renderToString(node);
+
+    expect(html).toContain("Trend view unavailable");
+    expect(html).toContain("at least two snapshots");
+    expect(html).not.toContain("Trend Since Last Snapshot");
+  });
+
+  it("shows trend-diff empty state when no snapshots exist", async () => {
+    mockSummarise.mockReturnValue(makeSummary());
+    mockGetSnapshotPair.mockResolvedValue({ latest: null, previous: null });
+    const node = await PolicyAnalyticsPage();
+    const html = renderToString(node);
+
+    expect(html).toContain("Trend view unavailable");
+  });
+
+  it("renders the trend diff panel when two snapshots are available", async () => {
+    mockSummarise.mockReturnValue(makeSummary());
+    const latestSnap = { captured_at: "2026-04-16T12:00:00.000Z", summary_version: "1", summary: makeSummary(), row_id: "r1" };
+    const prevSnap = { captured_at: "2026-04-15T12:00:00.000Z", summary_version: "1", summary: makeSummary(), row_id: "r0" };
+    mockGetSnapshotPair.mockResolvedValue({ latest: latestSnap, previous: prevSnap });
+    mockComputeSnapshotDiff.mockReturnValue({
+      latest_captured_at: latestSnap.captured_at,
+      previous_captured_at: prevSnap.captured_at,
+      headline: [
+        { label: "Total Events", latest: 100, previous: 80, delta: 20, pct_delta: 0.25, direction: "up" },
+        { label: "Expand Rate", latest: 0.4, previous: 0.35, delta: 0.05, pct_delta: null, direction: "up" },
+        { label: "View-Setting Rate", latest: 0.15, previous: 0.15, delta: 0, pct_delta: 0, direction: "flat" },
+        { label: "Teaser Click Rate", latest: 0.08, previous: 0.1, delta: -0.02, pct_delta: -0.2, direction: "down" },
+        { label: "Featured Impressions", latest: 40, previous: 30, delta: 10, pct_delta: 0.333, direction: "up" },
+        { label: "Featured Expands", latest: 15, previous: 10, delta: 5, pct_delta: 0.5, direction: "up" },
+        { label: "More-Section Engagement", latest: 20, previous: 18, delta: 2, pct_delta: 0.111, direction: "up" },
+      ],
+      by_source_top_deltas: [
+        { key: "Policy Intelligence", latest: 60, previous: 45, delta: 15 },
+      ],
+      teaser_by_source_deltas: [
+        { key: "Policy Intelligence", latest: 40, previous: 30, delta: 10 },
+      ],
+      teaser_by_tier_deltas: [
+        { key: "Pro", latest: 50, previous: 40, delta: 10 },
+      ],
+    });
+
+    const node = await PolicyAnalyticsPage();
+    const html = renderToString(node);
+
+    // Panel heading and timestamps
+    expect(html).toContain("Trend Since Last Snapshot");
+    expect(html).toContain("Apr 16");
+    expect(html).toContain("Apr 15");
+
+    // Headline delta cards
+    expect(html).toContain("Total Events");
+    expect(html).toContain("Expand Rate");
+    expect(html).toContain("Teaser Click Rate");
+
+    // Dimension tables
+    expect(html).toContain("By Source");
+    expect(html).toContain("Policy Intelligence");
+
+    // No trend-diff-empty element
+    expect(html).not.toContain("Trend view unavailable");
+  });
+
+  it("degrades gracefully when getSnapshotPair throws", async () => {
+    mockSummarise.mockReturnValue(makeSummary());
+    mockGetLatestSnapshotMeta.mockRejectedValue(new Error("DB unavailable"));
+    mockGetSnapshotPair.mockRejectedValue(new Error("DB unavailable"));
+    const node = await PolicyAnalyticsPage();
+    const html = renderToString(node);
+
+    // Page still renders
+    expect(html).toContain("Policy Analytics Summary");
+    // Shows the empty diff state since DB failed
+    expect(html).toContain("Trend view unavailable");
   });
 });
 

@@ -428,6 +428,25 @@ export async function getLatestAnalyticsSnapshot(): Promise<AnalyticsSnapshotRow
   return (rows[0] ?? null) as AnalyticsSnapshotRow | null;
 }
 
+/**
+ * Return the two most recently persisted analytics snapshot rows (latest first).
+ * Returns an empty array if no snapshots exist, a single-element array if only
+ * one snapshot exists.  Used to power the trend/diff comparison view.
+ */
+export async function getLatestTwoAnalyticsSnapshots(): Promise<AnalyticsSnapshotRow[]> {
+  await ensureAnalyticsSnapshotTable();
+  const sql = getSQL();
+
+  const rows = await sql`
+    SELECT id, created_at, summary_version, snapshot
+    FROM policy_analytics_snapshots
+    ORDER BY created_at DESC
+    LIMIT 2;
+  `;
+
+  return rows as AnalyticsSnapshotRow[];
+}
+
 export async function listPartnerKeysAndUsage(
   ownerEmail: string,
 ): Promise<PartnerKeyUsageRow[]> {
