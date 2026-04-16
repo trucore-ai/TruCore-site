@@ -1,0 +1,295 @@
+import { summarise, type PolicyAnalyticsSummary } from "@/lib/server/policy-analytics-store";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+/* ── tiny helpers ─────────────────────────────────────────────────── */
+
+interface BucketCounts {
+  total: number;
+  last_7d: number;
+  last_30d: number;
+}
+
+function pct(n: number | null): string {
+  if (n === null || n === undefined) return "—";
+  return `${(n * 100).toFixed(1)}%`;
+}
+
+function num(n: number): string {
+  return n.toLocaleString("en-US");
+}
+
+function fmtIso(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    timeZone: "UTC",
+  });
+}
+
+/* ── metric card ──────────────────────────────────────────────────── */
+
+function MetricCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+}) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3">
+      <p className="text-xs text-slate-400 mb-1">{label}</p>
+      <p className="text-xl font-semibold tabular-nums">{value}</p>
+      {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+/* ── bucket table ─────────────────────────────────────────────────── */
+
+function BucketTable({
+  title,
+  data,
+}: {
+  title: string;
+  data: Record<string, BucketCounts>;
+}) {
+  const keys = Object.keys(data).sort(
+    (a, b) => (data[b]?.total ?? 0) - (data[a]?.total ?? 0),
+  );
+  if (keys.length === 0) {
+    return (
+      <div className="mb-6">
+        <h3 className="text-sm font-semibold text-slate-300 mb-2">{title}</h3>
+        <p className="text-xs text-slate-500 italic">No data yet.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="mb-6 overflow-x-auto">
+      <h3 className="text-sm font-semibold text-slate-300 mb-2">{title}</h3>
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-slate-500 border-b border-white/10">
+            <th className="text-left py-1.5 pr-4 font-medium">Key</th>
+            <th className="text-right py-1.5 px-3 font-medium">Total</th>
+            <th className="text-right py-1.5 px-3 font-medium">7d</th>
+            <th className="text-right py-1.5 pl-3 font-medium">30d</th>
+          </tr>
+        </thead>
+        <tbody>
+          {keys.map((k) => (
+            <tr key={k} className="border-b border-white/5 hover:bg-white/5">
+              <td className="py-1.5 pr-4 text-slate-300 font-mono">{k}</td>
+              <td className="py-1.5 px-3 text-right tabular-nums">
+                {num(data[k].total)}
+              </td>
+              <td className="py-1.5 px-3 text-right tabular-nums text-slate-400">
+                {num(data[k].last_7d)}
+              </td>
+              <td className="py-1.5 pl-3 text-right tabular-nums text-slate-400">
+                {num(data[k].last_30d)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ── engagement section ───────────────────────────────────────────── */
+
+function EngagementRow({
+  label,
+  bucket,
+}: {
+  label: string;
+  bucket: BucketCounts;
+}) {
+  return (
+    <tr className="border-b border-white/5">
+      <td className="py-1.5 pr-4 text-slate-300 text-xs">{label}</td>
+      <td className="py-1.5 px-3 text-right tabular-nums text-xs">
+        {num(bucket.total)}
+      </td>
+      <td className="py-1.5 px-3 text-right tabular-nums text-xs text-slate-400">
+        {num(bucket.last_7d)}
+      </td>
+      <td className="py-1.5 pl-3 text-right tabular-nums text-xs text-slate-400">
+        {num(bucket.last_30d)}
+      </td>
+    </tr>
+  );
+}
+
+/* ── empty state ──────────────────────────────────────────────────── */
+
+function EmptyState() {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/5 p-8 text-center">
+      <p className="text-slate-400 text-sm mb-1">No analytics events recorded yet.</p>
+      <p className="text-slate-500 text-xs">
+        Events are collected when customers interact with policy recommendations.
+      </p>
+    </div>
+  );
+}
+
+/* ── page ─────────────────────────────────────────────────────────── */
+
+export default async function PolicyAnalyticsPage() {
+  const summary: PolicyAnalyticsSummary = summarise();
+  const isEmpty = summary.total_events === 0;
+
+  return (
+    <div className="min-h-screen bg-neutral-950 text-slate-100 p-6 md:p-10">
+      {/* header */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">
+          Policy Analytics Summary
+        </h1>
+        <div className="flex items-center gap-3">
+          <a
+            href="/admin/waitlist"
+            className="rounded bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/20 transition"
+          >
+            Waitlist
+          </a>
+          <a
+            href="/admin/audit"
+            className="rounded bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/20 transition"
+          >
+            Audit Log
+          </a>
+          <form method="POST" action="/admin/logout">
+            <button
+              type="submit"
+              className="rounded bg-white/10 border border-white/10 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/20 transition"
+            >
+              Logout
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* instance note */}
+      <div className="rounded border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs text-amber-300/90 mb-6">
+        <strong>Instance-local snapshot.</strong> Counts are in-memory for this
+        serverless instance only and may reset on deployment or cold start.
+        Not suitable for billing or compliance.
+      </div>
+
+      {isEmpty ? (
+        <EmptyState />
+      ) : (
+        <>
+          {/* headline metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+            <MetricCard
+              label="Total Events"
+              value={num(summary.total_events)}
+              sub={`since ${fmtIso(summary.instance_started_at)}`}
+            />
+            <MetricCard
+              label="Expand Rate"
+              value={pct(summary.derived.expand_rate)}
+              sub="expands / impressions"
+            />
+            <MetricCard
+              label="View-Setting Rate"
+              value={pct(summary.derived.view_setting_click_rate)}
+              sub="view-setting clicks / impressions"
+            />
+            <MetricCard
+              label="Teaser Click Rate"
+              value={pct(summary.derived.upgrade_teaser_click_rate)}
+              sub="teaser clicks / teaser views"
+            />
+          </div>
+
+          {/* featured + more engagement */}
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-300 mb-2">
+                Featured Engagement
+              </h3>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-slate-500 border-b border-white/10">
+                    <th className="text-left py-1.5 pr-4 font-medium">Metric</th>
+                    <th className="text-right py-1.5 px-3 font-medium">Total</th>
+                    <th className="text-right py-1.5 px-3 font-medium">7d</th>
+                    <th className="text-right py-1.5 pl-3 font-medium">30d</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <EngagementRow
+                    label="Impressions"
+                    bucket={summary.derived.featured_impressions}
+                  />
+                  <EngagementRow
+                    label="Expands"
+                    bucket={summary.derived.featured_expands}
+                  />
+                  <EngagementRow
+                    label="View-Setting Clicks"
+                    bucket={summary.derived.featured_view_setting_clicks}
+                  />
+                </tbody>
+              </table>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-slate-300 mb-2">
+                More-Suggestions Engagement
+              </h3>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-slate-500 border-b border-white/10">
+                    <th className="text-left py-1.5 pr-4 font-medium">Metric</th>
+                    <th className="text-right py-1.5 px-3 font-medium">Total</th>
+                    <th className="text-right py-1.5 px-3 font-medium">7d</th>
+                    <th className="text-right py-1.5 pl-3 font-medium">30d</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <EngagementRow
+                    label="All Events (more section)"
+                    bucket={summary.derived.more_engagement}
+                  />
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* aggregate tables */}
+          <BucketTable title="By Event Type" data={summary.by_event_type} />
+          <BucketTable title="By Source" data={summary.by_source} />
+          <BucketTable
+            title="By Display Section"
+            data={summary.by_display_section}
+          />
+          <BucketTable
+            title="Source × Section Cross-Tab"
+            data={summary.by_source_and_section}
+          />
+
+          {/* timestamp footer */}
+          <p className="text-xs text-slate-600 mt-6">
+            Generated {fmtIso(summary.generated_at)} UTC · Instance up since{" "}
+            {fmtIso(summary.instance_started_at)} UTC
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
