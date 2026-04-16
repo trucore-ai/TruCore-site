@@ -2862,10 +2862,10 @@ export default function CustomerPoliciesPage() {
                 >
                   <div>
                     <h2 className="text-sm font-medium text-slate-200">
-                      What&rsquo;s Shifted Recently
+                      Recent Policy Signals
                     </h2>
                     <p className="mt-1 text-[10px] text-slate-500">
-                      Directional cues from your last 7 days compared to your 30-day baseline.
+                      Directional cues from your last 7 days vs. your 30-day baseline.
                     </p>
                   </div>
                   <div className="space-y-2.5" data-testid="trend-signal-list">
@@ -2897,7 +2897,7 @@ export default function CustomerPoliciesPage() {
               );
             })()}
 
-            {/* Policy Recommendations */}
+            {/* Policy Recommendations — sources merged, deduped, sorted */}
             {(() => {
               const canHistory = isSourceAvailable("Customer history", planCode);
               const canMarket = isSourceAvailable("Market analysis", planCode);
@@ -3091,13 +3091,13 @@ export default function CustomerPoliciesPage() {
                           return (
                             <div
                               key={rec.id}
-                              className={`rounded-lg border ${isFeatured ? "border-red-500/30 bg-white/[0.03]" : `${styles.border} bg-white/[0.02]`} p-4 space-y-2`}
+                              className={`rounded-lg border ${isFeatured ? `${styles.border} bg-white/[0.03]` : `${styles.border} bg-white/[0.02]`} p-4 space-y-2`}
                               data-testid={`recommendation-${rec.id}`}
                               data-emphasis={displayMeta.emphasis}
                             >
                               <div className="flex items-center justify-between gap-2 flex-wrap">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-semibold text-slate-200">
+                                <div className="flex min-w-0 items-center gap-2">
+                                  <span className="text-xs font-semibold text-slate-200 truncate">
                                     {rec.title}
                                   </span>
                                   {isNewRec(rec.id) && (
@@ -3239,15 +3239,16 @@ export default function CustomerPoliciesPage() {
                                       className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-medium transition ${isFeatured ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20" : "border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"}`}
                                       data-testid={`apply-btn-${rec.id}`}
                                     >
-                                      Apply &rarr;
+                                      Apply
                                     </button>
                                   )}
-                                  {/* Applied success indicator + Undo action */}
+                                  {/* Applied success indicator + Undo action — grouped to prevent orphaned layout */}
                                   {applyResults[rec.id] === "success" && (
-                                    <div className="flex flex-wrap items-center gap-2">
+                                    <div className="inline-flex items-center gap-2">
                                       <span
                                         className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400"
                                         data-testid={`apply-success-${rec.id}`}
+                                        role="status"
                                       >
                                         &#10003; Applied
                                       </span>
@@ -3267,8 +3268,9 @@ export default function CustomerPoliciesPage() {
                                         <span
                                           className="text-[10px] text-red-400"
                                           data-testid={`undo-error-${rec.id}`}
+                                          role="alert"
                                         >
-                                          Could not undo. Edit the setting manually.
+                                          Could not undo — edit the setting manually.
                                         </span>
                                       )}
                                     </div>
@@ -3287,10 +3289,10 @@ export default function CustomerPoliciesPage() {
                                         });
                                         enterEditMode(rec.fieldKey);
                                       }}
-                                      className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-medium transition ${isFeatured ? "border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:text-red-200" : "border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"}`}
+                                      className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
                                       data-testid={`recommendation-action-${rec.id}`}
                                     >
-                                      View setting &rarr;
+                                      View setting
                                     </button>
                                   )}
                                 </div>
@@ -3367,7 +3369,7 @@ export default function CustomerPoliciesPage() {
                           </svg>
                           {showMoreSuggestions ? "Hide" : "Show"} {moreRecs.length} more suggestion{moreRecs.length !== 1 ? "s" : ""}
                         </button>
-                        <div className={`mt-3 space-y-1.5 ${showMoreSuggestions ? "" : "hidden"}`} data-testid="more-suggestions-list">
+                        <div className={`mt-3 space-y-2 ${showMoreSuggestions ? "" : "hidden"}`} data-testid="more-suggestions-list">
                             {moreRecs.map((rec, idx) => {
                               const styles = PRIORITY_STYLES[rec.priority];
                               const expandable = hasExpandableDetail(rec);
@@ -3430,7 +3432,7 @@ export default function CustomerPoliciesPage() {
                                       </span>
                                     </div>
                                   </div>
-                                  <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2">
+                                  <p className={`text-[10px] text-slate-500 leading-relaxed ${isExpanded ? "" : "line-clamp-2"}`}>
                                     {rec.explanation}
                                   </p>
                                   {expandable && (
@@ -3474,7 +3476,7 @@ export default function CustomerPoliciesPage() {
                                       >
                                         <path d="M6 4l4 4-4 4" />
                                       </svg>
-                                      Why this recommendation?
+                                      {isExpanded ? "Hide detail" : "Why this recommendation?"}
                                     </button>
                                   )}
                                   {isExpanded && (
@@ -3516,14 +3518,15 @@ export default function CustomerPoliciesPage() {
                                           className="inline-flex items-center gap-1 rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 text-[9px] font-medium text-emerald-400 transition hover:bg-emerald-500/10 hover:text-emerald-300"
                                           data-testid={`apply-btn-${rec.id}`}
                                         >
-                                          Apply &rarr;
+                                          Apply
                                         </button>
                                       )}
                                       {applyResults[rec.id] === "success" && (
-                                        <div className="flex flex-wrap items-center gap-1.5">
+                                        <div className="inline-flex items-center gap-1.5">
                                           <span
                                             className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-400"
                                             data-testid={`apply-success-${rec.id}`}
+                                            role="status"
                                           >
                                             &#10003; Applied
                                           </span>
@@ -3543,8 +3546,9 @@ export default function CustomerPoliciesPage() {
                                             <span
                                               className="text-[9px] text-red-400"
                                               data-testid={`undo-error-${rec.id}`}
+                                              role="alert"
                                             >
-                                              Could not undo. Edit manually.
+                                              Could not undo — edit manually.
                                             </span>
                                           )}
                                         </div>
@@ -3565,7 +3569,7 @@ export default function CustomerPoliciesPage() {
                                           className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[9px] font-medium text-slate-500 transition hover:bg-white/10 hover:text-slate-300"
                                           data-testid={`recommendation-action-${rec.id}`}
                                         >
-                                          View setting &rarr;
+                                          View setting
                                         </button>
                                       )}
                                     </div>
@@ -3622,10 +3626,7 @@ export default function CustomerPoliciesPage() {
                       </div>
                     )}
                   </div>
-                  <p className="text-[9px] text-slate-600 text-center">
-                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasPilRecs ? ", policy intelligence analysis of your transaction patterns" : ""}{hasBenchmarkRecs ? ", anonymized cohort benchmarks" : ""}{hasExternalRecs ? ", external infrastructure signals" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : ""}{!hasHistoryRecs && !hasMarketRecs && !hasPilRecs && !hasBenchmarkRecs && !hasExternalRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
-                  </p>
-                  {/* Upgrade teaser for gated recommendation sources */}
+                  {/* Upgrade teaser for gated recommendation sources — shown before the advisory disclaimer */}
                   {gatedSources.length > 0 && (() => {
                     const hasEnterpriseGated = gatedSources.includes("External context");
                     const hasAdvancedGated = gatedSources.includes("Cohort benchmark");
@@ -3718,6 +3719,9 @@ export default function CustomerPoliciesPage() {
                     </div>
                     );
                   })()}
+                  <p className="text-[9px] text-slate-600 text-center">
+                    These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasPilRecs ? ", policy intelligence analysis of your transaction patterns" : ""}{hasBenchmarkRecs ? ", anonymized cohort benchmarks" : ""}{hasExternalRecs ? ", external infrastructure signals" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : ""}{!hasHistoryRecs && !hasMarketRecs && !hasPilRecs && !hasBenchmarkRecs && !hasExternalRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
+                  </p>
                 </section>
               );
             })()}
@@ -4152,16 +4156,16 @@ export default function CustomerPoliciesPage() {
                 )}
 
                 {/* Sticky save bar */}
-                <div className="sticky bottom-4 z-10 rounded-xl border border-white/10 bg-neutral-900/95 backdrop-blur px-5 py-3 flex items-center justify-between shadow-lg shadow-black/30">
+                <div className="sticky bottom-4 z-10 rounded-xl border border-white/10 bg-neutral-900/95 backdrop-blur px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-lg shadow-black/30">
                   <div className="flex items-center gap-2">
                     {hasChanges && (
-                      <span className="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                      <span className="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse" aria-hidden="true" />
                     )}
                     <span className="text-[10px] text-slate-500">
                       {hasChanges ? "Unsaved changes" : "No changes"}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={cancelEdit}
                       disabled={saving}
