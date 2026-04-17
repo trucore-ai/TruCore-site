@@ -481,4 +481,178 @@ Navigate to `/admin/policy-analytics` (requires admin session). Displays:
 
 ---
 
+## 6. Week-1 Review Template
+
+> **Purpose:** Run this review at Day 7 post-launch. Capture the answers in a tracking issue or shared doc. The review should produce exactly one output: the first post-v1 priority decision.
+>
+> **Owner:** Product + Engineering on-call  
+> **Time box:** 60 minutes
+
+---
+
+### 6a. Rollout Status
+
+| Item | Answer |
+|---|---|
+| Stage reached by Day 7 | Stage 2 / Stage 3 / rolled back |
+| Any rollback events? | Yes / No — if yes, incident issue #\_\_\_ |
+| Rollback switch used? | Yes / No |
+| Any hotfixes deployed? | Yes / No — if yes, describe |
+| Current `POLICIES_ENABLED` state | `true` / `false` |
+
+---
+
+### 6b. Error and Watchpoint Summary
+
+Pull from Vercel function logs and `/admin/policy-analytics` for the Day 0–7 window.
+
+| Watchpoint | Observed rate / count | Threshold | Status |
+|---|---|---|---|
+| `updatePolicyOverrides` error rate | \_\_% | > 5% → action | OK / Investigate |
+| Apply error rate (`trackRecommendationApplyError`) | \_\_% | > 2% → action | OK / Investigate |
+| Undo error rate (`trackRecommendationUndoError`) | \_\_% | > 2% → action | OK / Investigate |
+| `localStorage` save/load errors | \_\_ count | Any sustained → investigate | OK / Investigate |
+| Analytics event pipeline gaps | \_\_ events | > 10 min gap during user traffic | OK / Investigate |
+
+**Notes / open items:**
+
+> _(free text — record any watchpoint anomalies, false alarms, or open investigations)_
+
+---
+
+### 6c. Teaser CTR Summary
+
+Pull from `/admin/policy-analytics` → Teaser Performance table.
+
+| Metric | Value |
+|---|---|
+| Total teaser impressions (Day 0–7) | \_\_ |
+| Total teaser clicks (`policy-teaser-click`) | \_\_ |
+| Overall teaser CTR | \_\_% |
+| Dominant source with highest CTR | Customer history / Market analysis / PIL / Cohort benchmark |
+| Dominant source with lowest CTR | \_\_ |
+| CTR by tier (Free → Pro CTA) | \_\_% |
+| CTR by tier (Pro → Advanced CTA) | \_\_% |
+
+**Assessment:**
+
+- [ ] CTR ≥ 0.5% → teaser copy and ranking are working at baseline
+- [ ] CTR < 0.5% → teaser copy or source ranking needs review (see decision matrix below)
+
+---
+
+### 6d. Apply and Undo Usage Summary
+
+Pull from Vercel Analytics → `policy_recommendation_apply_*` and `policy_recommendation_undo_*` events.
+
+| Metric | Value |
+|---|---|
+| Total apply clicks (`policy-rec-apply`) | \_\_ |
+| Total successful applies | \_\_ |
+| Total apply errors | \_\_ (\_\_%) |
+| Total undo clicks (`policy-rec-undo`) | \_\_ |
+| Most-applied recommendation class | `require_simulation_success` / `max_slippage_bps` |
+| Apply → undo reversal rate | \_\_% (high rate may signal UX confusion) |
+
+**Assessment:**
+
+- [ ] Apply volume is non-trivial (> 10 events in week 1) → the mechanism is discoverable
+- [ ] Reversal rate < 20% → applies are intentional, not accidental
+- [ ] Apply volume near zero → discoverability issue or recommendation relevance issue
+
+---
+
+### 6e. Recommendation Engagement Summary
+
+Pull from `/admin/policy-analytics` → Featured Engagement.
+
+| Metric | Value |
+|---|---|
+| Total impressions (`policy-rec-impression`) | \_\_ |
+| Total expands (`policy-rec-expand`) | \_\_ |
+| Expand rate (expands / impressions) | \_\_% |
+| Impression → apply conversion rate | \_\_% |
+| PIL `gated_count > 0` events seen? | Yes / No |
+| Cohort benchmark gated events seen? | Yes / No |
+| Signal refresh clicks (`policy-signal-refresh-click`) | \_\_ |
+
+**Assessment:**
+
+- [ ] Expand rate ≥ 5% → users are engaging with recommendation detail
+- [ ] Impression → apply conversion ≥ 0.5% → recommendations are actionable
+- [ ] PIL `gated_count > 0` detected → backend is delivering real PIL data (positive signal; note for roadmap)
+
+---
+
+### 6f. Trend Surface Visibility Notes
+
+| Metric | Value |
+|---|---|
+| Estimated % of active accounts seeing trend section | \_\_% |
+| Accounts with sparse data (section hidden) | \_\_% |
+| Any unexpected trend section absence for active accounts? | Yes / No |
+
+**Assessment:**
+
+- [ ] Trend visible for ≥ 50% of active accounts → sparse threshold is appropriate
+- [ ] Trend hidden for > 50% → consider lowering sparse threshold or adding a data-seeding step for new accounts (post-v1 task)
+
+---
+
+### 6g. Qualitative Signals
+
+Collect from support tickets, Slack feedback, internal test sessions, and any user interviews conducted in week 1.
+
+**What worked well (list specific feedback or observations):**
+
+> _(free text)_
+
+**What confused users or generated questions:**
+
+> _(free text — include specific phrasing if available)_
+
+**Any unexpected user behaviors:**
+
+> _(free text — e.g., users expecting fields not present, unexpected apply patterns, copy misunderstandings)_
+
+---
+
+### 6h. Next-Step Decision Matrix
+
+Use the week-1 data to pick the **single highest-value post-v1 priority**. Apply the first matching row.
+
+| If... | Then first post-v1 priority is... |
+|---|---|
+| Teaser CTR < 0.5% AND apply volume low | **Revisit teaser copy and recommendation ranking** — the surface is not driving engagement; improve copy, reorder cards, or adjust CTA tier targeting before expanding features |
+| Apply volume high (> 50 applies) AND apply → undo reversal > 20% | **Improve apply confirmation UX** — users are applying and immediately undoing; add pre-apply preview or clearer consequence framing before expanding applyable classes |
+| Apply volume high AND reversal rate low | **Expand applyable recommendation classes** — users are comfortable applying; add the next field class (e.g., `max_notional_usd` or `max_value_sol`) to the safe-apply set |
+| PIL `gated_count > 0` detected in analytics | **Prioritize PIL numeric recommendations** — backend is delivering real PIL data; wire the frontend to display model-driven numeric values and field-level diffs |
+| Expand rate ≥ 10% AND no PIL data yet | **Prioritize recommendation history view** — users are engaging deeply with detail; a history view (what did I apply last week?) is the next high-value surface |
+| Support / confusion signals high (> 5 tickets or questions about a specific concept) | **Improve explanation UX for the confusing concept** — copy, tooltip, or expanded inline guidance for the flagged field or feature before any new capability |
+| Trend surface hidden > 50% of accounts | **Review sparse data threshold or add onboarding data-seeding** — new accounts are not seeing trend signals; lower the threshold or seed initial receipt data |
+| No strong signal in any category | **Shared test fixture extraction** — the ~237-line boilerplate header duplication across 3 jsdom test files is the known housekeeping item; low risk, clear scope, unblocks future test work |
+
+**Decision recorded:**
+
+> Week-1 first post-v1 priority: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+>
+> Rationale: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+>
+> Decided by: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ on \_\_\_\_\_\_\_\_\_\_\_\_ (date)
+
+---
+
+### 6i. Review Checklist
+
+- [ ] All watchpoints in 6b reviewed; any open items have a tracking issue
+- [ ] Teaser CTR assessed (6c)
+- [ ] Apply/undo volume and reversal rate recorded (6d)
+- [ ] Recommendation engagement rate recorded (6e)
+- [ ] Trend surface visibility rate estimated (6f)
+- [ ] Qualitative feedback documented (6g)
+- [ ] Decision matrix applied; first post-v1 priority decided and recorded (6h)
+- [ ] Decision shared with the team (Slack / issue / doc)
+
+---
+
 *This document is the authoritative launch record for TruCore-site Policy System Premium v1.*
