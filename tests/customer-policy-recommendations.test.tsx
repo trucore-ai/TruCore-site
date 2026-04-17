@@ -1383,7 +1383,7 @@ describe("CustomerPoliciesPage", () => {
       expect(screen.getByTestId("recommendation-action-pil-reduce-slippage")).toBeTruthy();
     });
 
-    it("uses backend explanation as 'Why it matters' reasoning in the expanded panel", async () => {
+    it("uses PIL_WHY entry (not rec.explanation) as 'Why it matters' text in the expanded panel", async () => {
       mockFetchPolicy.mockResolvedValue(PRO_POLICY);
       mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
       render(<CustomerPoliciesPage />);
@@ -1396,13 +1396,13 @@ describe("CustomerPoliciesPage", () => {
       fireEvent.click(screen.getByTestId("recommendation-details-toggle-pil-high-friction"));
 
       const details = screen.getByTestId("recommendation-details-pil-high-friction");
-      // Backend explanation should be the why text
-      expect(details.textContent).toContain("Denial rate is 12/42");
-      // Static PIL_WHY placeholder must NOT appear
-      expect(details.textContent).not.toContain("A high denial rate means your policy may be blocking");
+      // PIL_WHY[HIGH_FRICTION] should appear — not the backend explanation which is already the card body
+      expect(details.textContent).toContain("A high denial rate means your policy may be blocking");
+      // rec.explanation must NOT be duplicated in the expanded panel
+      expect(details.textContent).not.toContain("Denial rate is 12/42");
     });
 
-    it("falls back to PIL_WHY placeholder when backend explanation is empty", async () => {
+    it("PIL_WHY is used as why-text regardless of whether backend explanation is populated", async () => {
       const PIL_EMPTY_EXPLANATION = {
         recommendations: [
           {
@@ -1430,7 +1430,7 @@ describe("CustomerPoliciesPage", () => {
 
       // High-confidence → featured → showInlineReason: true → why shown inline on card
       const card = screen.getByTestId("recommendation-pil-reduce-slippage");
-      // Fallback PIL_WHY text for REDUCE_SLIPPAGE should appear
+      // PIL_WHY[REDUCE_SLIPPAGE] should appear (not the empty rec.explanation)
       expect(card.textContent).toContain("Consistently high slippage wastes value");
     });
 
@@ -1478,6 +1478,90 @@ describe("CustomerPoliciesPage", () => {
       const badge = card.querySelector('[data-testid="recommendation-inline-confidence"]');
       expect(badge).toBeTruthy();
       expect(badge!.textContent).toBe("High confidence");
+    });
+
+    it("PIL evidence renders with 'Signal basis:' label when evidence is present", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByTestId("recommendation-details-toggle-pil-reduce-slippage"));
+
+      const details = screen.getByTestId("recommendation-details-pil-reduce-slippage");
+      expect(details.textContent).toContain("Signal basis:");
+      expect(details.textContent).toContain("avg_slippage=95bps");
+    });
+
+    it("PIL evidence block does not render when evidence is absent", async () => {
+      const PIL_NO_EVIDENCE = {
+        recommendations: [
+          {
+            id: "REDUCE_SLIPPAGE",
+            title: "Reduce slippage tolerance",
+            explanation: "Slippage is elevated.",
+            parameter: "max_slippage_bps",
+            confidence: "high",
+            evidence: "",
+          },
+        ],
+        record_count: 10,
+        confidence_summary: "high",
+        captured_at: Date.now() / 1000,
+        plan: "pro",
+      };
+
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_NO_EVIDENCE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByTestId("recommendation-details-toggle-pil-reduce-slippage"));
+
+      const details = screen.getByTestId("recommendation-details-pil-reduce-slippage");
+      expect(details.textContent).not.toContain("Signal basis:");
+    });
+
+    it("PIL why block is omitted rather than duplicated when rec.id has no PIL_WHY entry", async () => {
+      const PIL_UNKNOWN_ID = {
+        recommendations: [
+          {
+            id: "UNKNOWN_SIGNAL_XYZ",
+            title: "Unknown signal recommendation",
+            explanation: "Something unusual was detected.",
+            parameter: "max_notional_usd",
+            confidence: "medium",
+            evidence: "ratio=0.42",
+          },
+        ],
+        record_count: 5,
+        confidence_summary: "medium",
+        captured_at: Date.now() / 1000,
+        plan: "pro",
+      };
+
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_UNKNOWN_ID);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-unknown-signal-xyz")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByTestId("recommendation-details-toggle-pil-unknown-signal-xyz"));
+
+      const details = screen.getByTestId("recommendation-details-pil-unknown-signal-xyz");
+      // No PIL_WHY entry → why block must be omitted, not duplicate rec.explanation
+      expect(details.textContent).not.toContain("Why it matters:");
+      // But evidence should still show with its label
+      expect(details.textContent).toContain("Signal basis:");
+      expect(details.textContent).toContain("ratio=0.42");
     });
   });
 

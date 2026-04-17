@@ -1446,7 +1446,7 @@ function generatePilRecommendations(
       id: `pil-${rec.id.toLowerCase().replace(/_/g, "-")}`,
       title: rec.title,
       explanation: rec.explanation,
-      why: (rec.explanation || PIL_WHY[rec.id]) ?? "This recommendation is based on analysis of your recent transaction patterns.",
+      why: PIL_WHY[rec.id] ?? "",
       priority: PIL_PRIORITY_MAP[rec.confidence] ?? "low",
       source: "Policy Intelligence" as RecommendationSource,
       fieldKey,
@@ -3208,7 +3208,7 @@ export default function CustomerPoliciesPage() {
                                       {sourceFraming}
                                     </p>
                                   )}
-                                  {!displayMeta.showInlineReason && (
+                                  {!displayMeta.showInlineReason && rec.why && (
                                     <p className="text-[10px] text-slate-500 leading-relaxed">
                                       <span className="font-medium text-slate-400">Why it matters:</span>{" "}
                                       {rec.why}
@@ -3216,6 +3216,7 @@ export default function CustomerPoliciesPage() {
                                   )}
                                   {rec.evidence && (
                                     <p className="text-[9px] text-slate-600 leading-relaxed italic">
+                                      <span className="font-medium not-italic text-slate-500">Signal basis:</span>{" "}
                                       {rec.evidence}
                                     </p>
                                   )}
@@ -3489,12 +3490,15 @@ export default function CustomerPoliciesPage() {
                                           {sourceFraming}
                                         </p>
                                       )}
-                                      <p className="text-[10px] text-slate-500 leading-relaxed">
-                                        <span className="font-medium text-slate-400">Why it matters:</span>{" "}
-                                        {rec.why}
-                                      </p>
+                                      {rec.why && (
+                                        <p className="text-[10px] text-slate-500 leading-relaxed">
+                                          <span className="font-medium text-slate-400">Why it matters:</span>{" "}
+                                          {rec.why}
+                                        </p>
+                                      )}
                                       {rec.evidence && (
                                         <p className="text-[9px] text-slate-600 leading-relaxed italic">
+                                          <span className="font-medium not-italic text-slate-500">Signal basis:</span>{" "}
                                           {rec.evidence}
                                         </p>
                                       )}
