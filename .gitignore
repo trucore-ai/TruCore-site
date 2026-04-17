@@ -37,6 +37,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# .env.test is safe to commit — contains only NODE_OPTIONS, no secrets.
+# Vitest loads it automatically; it raises the worker heap cap to 6 GB,
+# which is required for the jsdom-heavy policy test files.
+!.env.test
 
 # vercel
 .vercel
