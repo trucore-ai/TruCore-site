@@ -43,8 +43,12 @@ import {
   getMarketConditionCue,
   loadRecSnapshot,
   saveRecSnapshot,
+  loadRecHistoryEntry,
+  saveRecHistoryEntry,
+  classifyRecChanges,
   TREND_STATUS_DOT,
   TREND_STATUS_TEXT,
+  type RecHistoryEntry,
 } from "@/lib/customer-policy-trend";
 
 // ---------------------------------------------------------------------------
@@ -1933,6 +1937,8 @@ export default function CustomerPoliciesPage() {
   const [showMoreSuggestions, setShowMoreSuggestions] = useState(false);
   // Previous recommendation IDs loaded from localStorage — enables "New" badges.
   const [prevRecSnapshot, setPrevRecSnapshot] = useState<Set<string>>(new Set());
+  // Previous recommendation entries (id + title + source) for the history panel.
+  const [prevRecHistory, setPrevRecHistory] = useState<RecHistoryEntry[]>([]);
   // Ref to avoid saving the same snapshot multiple times per render cycle.
   const snapshotSavedRef = useRef<string>("");
 
@@ -2091,6 +2097,8 @@ export default function CustomerPoliciesPage() {
     loadExternalContext();
     // Load the previous recommendation snapshot for "New" badge detection.
     setPrevRecSnapshot(loadRecSnapshot());
+    // Load the previous recommendation history for the "What changed" panel.
+    setPrevRecHistory(loadRecHistoryEntry());
   }, [router, loadPolicy, loadHistorySummary, loadHistorySummaryShort, loadMarketConditions, loadPilRecommendations, loadCohortBenchmarks, loadExternalContext]);
 
   // Initialize form values from current overrides when entering edit mode.
@@ -2956,6 +2964,11 @@ export default function CustomerPoliciesPage() {
               if (snapshotSavedRef.current !== currentIdSignature && allRecs.length > 0) {
                 snapshotSavedRef.current = currentIdSignature;
                 saveRecSnapshot(allRecs.map((r) => r.id));
+                // Also persist richer history entries (id + title + source) for
+                // the "What changed" panel on the next page load.
+                saveRecHistoryEntry(
+                  allRecs.map((r) => ({ id: r.id, title: r.title, source: r.source })),
+                );
               }
 
               // Compute the set of newly-appearing recommendation IDs.
@@ -2964,6 +2977,20 @@ export default function CustomerPoliciesPage() {
               const hasPriorSnapshot = prevRecSnapshot.size > 0;
               const isNewRec = (id: string): boolean =>
                 hasPriorSnapshot && !prevRecSnapshot.has(id);
+
+              // Classify recommendation changes for the history panel.
+              // resolvedEntries: were present last visit, no longer active now.
+              // newEntries: newly appeared since last visit.
+              const { newEntries: historyNewEntries, resolvedEntries: historyResolvedEntries } =
+                classifyRecChanges(
+                  allRecs.map((r) => ({ id: r.id, title: r.title, source: r.source })),
+                  prevRecHistory,
+                );
+              const hasHistoryChanges =
+                historyNewEntries.length > 0 || historyResolvedEntries.length > 0;
+              // Cap display to 3 resolved + 3 new for a compact panel.
+              const displayedResolved = historyResolvedEntries.slice(0, 3);
+              const displayedNew = historyNewEntries.slice(0, 3);
 
               // Split into display sections
               const topRecs = allRecs.filter((r) => classifyDisplaySection(r) === "top");
@@ -2988,7 +3015,7 @@ export default function CustomerPoliciesPage() {
                 gatedSources.push("External context");
               }
 
-              if (allRecs.length === 0 && gatedSources.length === 0) return null;
+              if (allRecs.length === 0 && gatedSources.length === 0 && !hasHistoryChanges) return null;
 
               // Analytics: aggregate context for events
               const uniqueSources = new Set(allRecs.map((r) => r.source));
@@ -3007,6 +3034,69 @@ export default function CustomerPoliciesPage() {
               const hasBenchmarkRecs = benchmarkRecs.length > 0;
               const hasExternalRecs = externalRecs.length > 0;
               return (
+                <>
+                {/* Recommendation History Panel — "What changed since your last review" */}
+                {hasHistoryChanges && (
+                  <section
+                    className="rounded-xl border border-white/10 bg-white/[0.02] p-5 space-y-3"
+                    data-testid="recommendation-history-panel"
+                  >
+                    <div>
+                      <h2 className="text-sm font-medium text-slate-200">
+                        What Changed Since Your Last Review
+                      </h2>
+                      <p className="mt-1 text-[10px] text-slate-500">
+                        {displayedResolved.length > 0 && displayedNew.length > 0
+                          ? `${historyResolvedEntries.length} resolved, ${historyNewEntries.length} new since your last visit.`
+                          : displayedResolved.length > 0
+                          ? `${historyResolvedEntries.length} recommendation${historyResolvedEntries.length !== 1 ? "s" : ""} resolved since your last visit.`
+                          : `${historyNewEntries.length} new recommendation${historyNewEntries.length !== 1 ? "s" : ""} since your last visit.`}
+                      </p>
+                    </div>
+                    <div className="space-y-2" data-testid="history-change-list">
+                      {displayedResolved.map((entry) => (
+                        <div
+                          key={entry.id}
+                          className="flex items-center gap-2"
+                          data-testid={`history-resolved-${entry.id}`}
+                        >
+                          <span className="shrink-0 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-1.5 py-0.5 text-[9px] font-medium text-slate-500">
+                            Resolved
+                          </span>
+                          <span className="text-[10px] text-slate-500 line-through leading-relaxed">
+                            {entry.title}
+                          </span>
+                        </div>
+                      ))}
+                      {displayedNew.map((entry) => (
+                        <div
+                          key={entry.id}
+                          className="flex items-center gap-2"
+                          data-testid={`history-new-${entry.id}`}
+                        >
+                          <span className="shrink-0 inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-medium text-emerald-400">
+                            New
+                          </span>
+                          <span className="text-[10px] text-slate-300 leading-relaxed">
+                            {entry.title}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    {(historyResolvedEntries.length > 3 || historyNewEntries.length > 3) && (
+                      <p className="text-[9px] text-slate-600">
+                        {(() => {
+                          const extra =
+                            (historyResolvedEntries.length > 3 ? historyResolvedEntries.length - 3 : 0) +
+                            (historyNewEntries.length > 3 ? historyNewEntries.length - 3 : 0);
+                          return `+${extra} more change${extra !== 1 ? "s" : ""} — see recommendations below.`;
+                        })()}
+                      </p>
+                    )}
+                  </section>
+                )}
+
+                {(allRecs.length > 0 || gatedSources.length > 0) && (
                 <section
                   className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-4"
                   data-testid="policy-recommendations"
@@ -3741,6 +3831,8 @@ export default function CustomerPoliciesPage() {
                     These recommendations are advisory. They are derived from your current policy configuration{hasHistoryRecs ? ", your own recent transaction history" : ""}{hasPilRecs ? ", policy intelligence analysis of your transaction patterns" : ""}{hasBenchmarkRecs ? ", anonymized cohort benchmarks" : ""}{hasExternalRecs ? ", external infrastructure signals" : ""}{hasMarketRecs ? ", and current execution infrastructure conditions" : ""}{!hasHistoryRecs && !hasMarketRecs && !hasPilRecs && !hasBenchmarkRecs && !hasExternalRecs ? ". They do not use live market data or cross-customer analysis" : ""}.
                   </p>
                 </section>
+                )}
+                </>
               );
             })()}
 

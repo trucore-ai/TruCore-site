@@ -241,3 +241,87 @@ export function saveRecSnapshot(ids: string[]): void {
     // Storage quota or availability issue — degrade gracefully.
   }
 }
+
+// ---------------------------------------------------------------------------
+// Recommendation history — lightweight per-session persistence for
+// "What changed since your last review" view
+// ---------------------------------------------------------------------------
+
+/**
+ * A compact record of a single recommendation from a previous page load.
+ * Stores only the minimum needed to render a customer-friendly history entry.
+ */
+export interface RecHistoryEntry {
+  id: string;
+  title: string;
+  source: string;
+}
+
+const REC_HISTORY_KEY = "atf_policy_rec_history";
+
+/**
+ * Load the recommendation history entries stored from the previous page load.
+ * Returns an empty array when there is no stored history or when called
+ * outside a browser context.
+ */
+export function loadRecHistoryEntry(): RecHistoryEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(REC_HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (e): e is RecHistoryEntry =>
+        typeof e === "object" &&
+        e !== null &&
+        typeof e.id === "string" &&
+        typeof e.title === "string" &&
+        typeof e.source === "string",
+    );
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Persist the current recommendation entries (id + title + source) so the
+ * history panel can show "What changed since your last review" on the next
+ * page load.
+ */
+export function saveRecHistoryEntry(entries: RecHistoryEntry[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(REC_HISTORY_KEY, JSON.stringify(entries));
+  } catch {
+    // Storage quota or availability issue — degrade gracefully.
+  }
+}
+
+/**
+ * Classify recommendations into customer-visible change categories by
+ * comparing the current recommendation set against the previous history entry.
+ *
+ * Returns:
+ *   newEntries    — IDs present now but absent from the previous entry
+ *   resolvedEntries — IDs present in the previous entry but absent now
+ *
+ * When prevEntries is empty (first visit or no stored history), both arrays
+ * are empty — the history panel is suppressed for first-time users.
+ *
+ * "Still active" entries are implicitly the intersection; they are not
+ * enumerated here (the recommendation cards themselves convey their presence).
+ */
+export function classifyRecChanges(
+  currentRecs: RecHistoryEntry[],
+  prevEntries: RecHistoryEntry[],
+): { newEntries: RecHistoryEntry[]; resolvedEntries: RecHistoryEntry[] } {
+  if (prevEntries.length === 0) {
+    return { newEntries: [], resolvedEntries: [] };
+  }
+  const currentIds = new Set(currentRecs.map((r) => r.id));
+  const prevIds = new Set(prevEntries.map((e) => e.id));
+  const newEntries = currentRecs.filter((r) => !prevIds.has(r.id));
+  const resolvedEntries = prevEntries.filter((e) => !currentIds.has(e.id));
+  return { newEntries, resolvedEntries };
+}
