@@ -61,6 +61,7 @@ function undoTitle(mutationKey: string): string {
   const titles: Record<string, string> = {
     require_simulation_success: "Undo will restore your previous simulation requirement setting.",
     max_slippage_bps: "Undo will restore your previous slippage cap.",
+    max_notional_usd: "Undo will restore your previous USD transaction limit.",
   };
   return titles[mutationKey] ?? "Undo will restore the previous setting.";
 }
@@ -1066,6 +1067,14 @@ function generateHistoryRecommendations(
     const maxStr = summary.max_notional_usd !== null
       ? `$${Math.round(summary.max_notional_usd).toLocaleString()}`
       : avgStr;
+    // Applyable only when we have peak data AND policy is strictly more than 2× the peak.
+    // Target = 2× highest historical transaction, floored at $1,000.
+    // The 2× condition guarantees target < policyMaxUsd (always tighter than current).
+    const limitApplyable =
+      summary.max_notional_usd !== null && policyMaxUsd > summary.max_notional_usd * 2;
+    const targetUsd = limitApplyable
+      ? Math.max(1000, Math.round(summary.max_notional_usd! * 2))
+      : null;
     recs.push({
       id: "history-limit-headroom",
       title: "Your USD limit has significant headroom",
@@ -1078,6 +1087,15 @@ function generateHistoryRecommendations(
       source: "Customer history",
       fieldKey: "max_notional_usd",
       evidence: `Based on ${summary.total_receipts} receipts over the last ${summary.period_days} days.`,
+      ...(limitApplyable && targetUsd !== null
+        ? {
+            applyable: true,
+            applyConfirmText:
+              `This will lower your USD transaction limit from $${policyMaxUsd.toLocaleString()} to $${targetUsd.toLocaleString()} ` +
+              `(2\u00d7 your highest recent transaction of ${maxStr}).`,
+            applyMutation: { key: "max_notional_usd", value: targetUsd },
+          }
+        : {}),
     });
   }
 
@@ -3208,7 +3226,7 @@ export default function CustomerPoliciesPage() {
                                       {sourceFraming}
                                     </p>
                                   )}
-                                  {!displayMeta.showInlineReason && rec.why && (
+                                  {!displayMeta.showInlineReason && (
                                     <p className="text-[10px] text-slate-500 leading-relaxed">
                                       <span className="font-medium text-slate-400">Why it matters:</span>{" "}
                                       {rec.why}
@@ -3216,7 +3234,6 @@ export default function CustomerPoliciesPage() {
                                   )}
                                   {rec.evidence && (
                                     <p className="text-[9px] text-slate-600 leading-relaxed italic">
-                                      <span className="font-medium not-italic text-slate-500">Signal basis:</span>{" "}
                                       {rec.evidence}
                                     </p>
                                   )}
@@ -3490,15 +3507,12 @@ export default function CustomerPoliciesPage() {
                                           {sourceFraming}
                                         </p>
                                       )}
-                                      {rec.why && (
-                                        <p className="text-[10px] text-slate-500 leading-relaxed">
-                                          <span className="font-medium text-slate-400">Why it matters:</span>{" "}
-                                          {rec.why}
-                                        </p>
-                                      )}
+                                      <p className="text-[10px] text-slate-500 leading-relaxed">
+                                        <span className="font-medium text-slate-400">Why it matters:</span>{" "}
+                                        {rec.why}
+                                      </p>
                                       {rec.evidence && (
                                         <p className="text-[9px] text-slate-600 leading-relaxed italic">
-                                          <span className="font-medium not-italic text-slate-500">Signal basis:</span>{" "}
                                           {rec.evidence}
                                         </p>
                                       )}

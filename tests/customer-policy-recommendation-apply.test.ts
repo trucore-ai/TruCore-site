@@ -215,6 +215,64 @@ function historySlippageHeadroomRec(
   };
 }
 
+/**
+ * Inline mirror of the history-limit-headroom rec logic from page.tsx.
+ * Must be kept in sync with generateHistoryRecommendations.
+ *
+ * Applyability condition: max_notional_usd !== null AND policyMaxUsd > max_notional_usd * 2.
+ * Target value: Math.max(1000, Math.round(max_notional_usd * 2))
+ * Trigger (rec appears): policyMaxUsd > avg_notional_usd * 5.
+ */
+function historyLimitHeadroomRec(
+  summary: ReceiptSummary,
+  effective: Record<string, unknown>,
+): PolicyRecommendation | null {
+  if (summary.total_receipts < 3) return null;
+  if (summary.avg_notional_usd === null) return null;
+
+  const policyMaxUsd = effective.max_notional_usd;
+  if (
+    typeof policyMaxUsd !== "number" ||
+    policyMaxUsd <= 0 ||
+    summary.avg_notional_usd <= 0 ||
+    policyMaxUsd <= summary.avg_notional_usd * 5
+  ) return null;
+
+  const avgStr = `$${Math.round(summary.avg_notional_usd).toLocaleString()}`;
+  const maxStr =
+    summary.max_notional_usd !== null
+      ? `$${Math.round(summary.max_notional_usd).toLocaleString()}`
+      : avgStr;
+
+  const limitApplyable =
+    summary.max_notional_usd !== null && policyMaxUsd > summary.max_notional_usd * 2;
+  const targetUsd = limitApplyable
+    ? Math.max(1000, Math.round(summary.max_notional_usd! * 2))
+    : null;
+
+  return {
+    id: "history-limit-headroom",
+    title: "Your USD limit has significant headroom",
+    explanation:
+      `Your recent transactions average ${avgStr} USD with a peak of ${maxStr}, ` +
+      `but your policy allows up to $${policyMaxUsd.toLocaleString()}.`,
+    why: "Tightening your limit closer to your actual usage reduces exposure if your agent is compromised.",
+    priority: "low",
+    source: "Customer history",
+    fieldKey: "max_notional_usd",
+    evidence: `Based on ${summary.total_receipts} receipts over the last ${summary.period_days} days.`,
+    ...(limitApplyable && targetUsd !== null
+      ? {
+          applyable: true,
+          applyConfirmText:
+            `This will lower your USD transaction limit from $${policyMaxUsd.toLocaleString()} to $${targetUsd.toLocaleString()} ` +
+            `(2× your highest recent transaction of ${maxStr}).`,
+          applyMutation: { key: "max_notional_usd", value: targetUsd },
+        }
+      : {}),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
@@ -458,20 +516,20 @@ describe("non-simulation recommendations are manual-only (no applyable flag)", (
    */
   const MANUAL_ONLY_IDS = [
     "tighten-slippage",
-    "review-usd-limit",
-    "review-sol-limit",
+    "review-usd-limit",    // no customer history → no deterministic target
+    "review-sol-limit",    // no SOL history in ReceiptSummary → no deterministic target
     "restrict-tokens",
     "fix-empty-allowlist",
     "populate-denylist",
     "add-program-restrictions",
     "customize-policy",
-    "history-limit-headroom",
-    "history-slippage-headroom",
+    // "history-limit-headroom" — removed: conditionally applyable since prompt #208
+    // "history-slippage-headroom" — removed: applyable since prompt #193
     "history-narrow-tokens",
     "history-narrow-programs",
     "history-recent-denials",
     "market-tighten-slippage",
-    "market-review-limits",
+    "market-review-limits",  // temporary market signal → no deterministic target
   ];
 
   it("none of the manual-only IDs are simulation-related", () => {
@@ -729,7 +787,15 @@ describe("undo scope is limited to simulation apply path", () => {
     const UNDO_SAFE_MUTATION_KEYS = new Set([
       "require_simulation_success",
       "max_slippage_bps",
+      "max_notional_usd",
     ]);
+    // Fixture: summary where avg=$5K, max=$20K, policy=$200K → applyable for limit headroom
+    const SUMMARY_LIMIT_APPLYABLE: ReceiptSummary = {
+      ...SUMMARY_WITH_FAILURES,
+      avg_notional_usd: 5000,
+      max_notional_usd: 20000,
+      simulation_failures: 0,
+    };
     const applyableRecs = [
       simulationRec(makeEffective({ require_simulation_success: false })),
       historySimulationFailuresRec(
@@ -743,6 +809,11 @@ describe("undo scope is limited to simulation apply path", () => {
       marketTxThrottledRec(
         MARKET_STRESSED_THROTTLED,
         makeEffective({ require_simulation_success: false }),
+      ),
+      // history-limit-headroom with applyable conditions met (avg=$5K, max=$20K, policy=$200K)
+      historyLimitHeadroomRec(
+        SUMMARY_LIMIT_APPLYABLE,
+        makeEffective({ max_notional_usd: 200000 }),
       ),
     ].filter((r): r is PolicyRecommendation => r !== null);
 
@@ -1005,5 +1076,302 @@ describe("unsupported slippage recommendations remain manual-only", () => {
   it("market-tighten-slippage requires stressed environment", () => {
     const rec = marketTightenSlippageRec(MARKET_DEGRADED, makeEffective({ max_slippage_bps: 300 }));
     expect(rec).toBeNull(); // degraded, not stressed
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Fixtures for history-limit-headroom tests
+// ---------------------------------------------------------------------------
+
+/**
+ * Summary: avg=$5,000, max=$20,000 — both fields populated.
+ * Policy at $200,000: triggers (>avg*5=25K) AND applyable (>max*2=40K).
+ * Target: max(1000, 20000*2) = 40000.
+ */
+const SUMMARY_HIGH_USD_HEADROOM: ReceiptSummary = {
+  period_days: 30,
+  total_receipts: 10,
+  decisions: { allow: 10, deny: 0 },
+  dry_run_count: 0,
+  intent_types: {},
+  denial_reasons: [],
+  recent_tokens: [],
+  recent_programs: [],
+  avg_notional_usd: 5000,
+  max_notional_usd: 20000,
+  avg_slippage_bps: 80,
+  simulation_failures: 0,
+  simulation_total: 10,
+};
+
+/** Policy $200,000 — 40× avg, 10× max → trigger fires AND applyable. Target = $40,000. */
+const EFF_USD_200K = makeEffective({ max_notional_usd: 200000 });
+
+// ---------------------------------------------------------------------------
+// Tests: history-limit-headroom recommendation (applyable — prompt #208)
+// ---------------------------------------------------------------------------
+
+describe("history-limit-headroom recommendation", () => {
+  it("is applyable when max_notional_usd is known and policy is > 2× max peak", () => {
+    const rec = historyLimitHeadroomRec(SUMMARY_HIGH_USD_HEADROOM, EFF_USD_200K);
+    expect(rec).not.toBeNull();
+    expect(rec!.applyable).toBe(true);
+  });
+
+  it("mutation key is max_notional_usd", () => {
+    const rec = historyLimitHeadroomRec(SUMMARY_HIGH_USD_HEADROOM, EFF_USD_200K);
+    expect(rec!.applyMutation?.key).toBe("max_notional_usd");
+  });
+
+  it("target value is 2× max_notional_usd, floored at 1000", () => {
+    const rec = historyLimitHeadroomRec(SUMMARY_HIGH_USD_HEADROOM, EFF_USD_200K);
+    // max=20000 → target = Math.max(1000, Math.round(20000 * 2)) = 40000
+    expect(rec!.applyMutation?.value).toBe(40000);
+  });
+
+  it("floor at 1000 applies when max_notional_usd is very small", () => {
+    // avg=$100, max=$300, policy=$600 → trigger: 600>100*5=500 ✓, applyable: 600>300*2=600? NO
+    // Need policy>max*2: avg=$100, max=$300, policy=$700 → 700>100*5=500 ✓ AND 700>300*2=600 ✓
+    // Target = max(1000, 300*2=600) = 1000 (floor)
+    const tinyMaxSummary: ReceiptSummary = {
+      ...SUMMARY_HIGH_USD_HEADROOM,
+      avg_notional_usd: 100,
+      max_notional_usd: 300,
+    };
+    const rec = historyLimitHeadroomRec(tinyMaxSummary, makeEffective({ max_notional_usd: 700 }));
+    expect(rec).not.toBeNull();
+    expect(rec!.applyMutation?.value).toBe(1000);
+  });
+
+  it("target value is strictly less than current policy limit", () => {
+    const rec = historyLimitHeadroomRec(SUMMARY_HIGH_USD_HEADROOM, EFF_USD_200K);
+    expect(rec!.applyMutation!.value as number).toBeLessThan(200000);
+  });
+
+  it("applyConfirmText mentions the current limit, target limit, and peak", () => {
+    const rec = historyLimitHeadroomRec(SUMMARY_HIGH_USD_HEADROOM, EFF_USD_200K);
+    const text = rec!.applyConfirmText ?? "";
+    expect(text).toContain("$200,000");  // from (current policy)
+    expect(text).toContain("$40,000");   // to (target)
+    expect(text).toContain("$20,000");   // max peak reference
+  });
+
+  it("has a non-empty applyConfirmText", () => {
+    const rec = historyLimitHeadroomRec(SUMMARY_HIGH_USD_HEADROOM, EFF_USD_200K);
+    expect((rec!.applyConfirmText ?? "").length).toBeGreaterThan(20);
+  });
+
+  it("is NOT applyable when max_notional_usd is null (no peak data)", () => {
+    const nullMaxSummary = {
+      ...SUMMARY_HIGH_USD_HEADROOM,
+      max_notional_usd: null,
+    } as unknown as ReceiptSummary;
+    // Trigger fires (policy>avg*5) but applyability requires non-null max
+    const rec = historyLimitHeadroomRec(nullMaxSummary, EFF_USD_200K);
+    expect(rec).not.toBeNull(); // rec still appears
+    expect(rec!.applyable).toBeUndefined(); // but not applyable
+    expect(rec!.applyMutation).toBeUndefined();
+  });
+
+  it("is NOT applyable when policy gap is insufficient (policy ≤ max * 2)", () => {
+    // avg=$5K, max=$20K, policy=$35K → trigger: 35K>5K*5=25K ✓ but 35K NOT > 20K*2=40K → not applyable
+    const rec = historyLimitHeadroomRec(
+      SUMMARY_HIGH_USD_HEADROOM,
+      makeEffective({ max_notional_usd: 35000 }),
+    );
+    expect(rec).not.toBeNull(); // rec still appears
+    expect(rec!.applyable).toBeUndefined();
+    expect(rec!.applyMutation).toBeUndefined();
+  });
+
+  it("is NOT applyable when policy exactly equals max * 2 (boundary)", () => {
+    // avg=$5K, max=$20K, policy=$40K → trigger: 40K>25K ✓ but 40K NOT > 40K (not strictly greater)
+    const rec = historyLimitHeadroomRec(
+      SUMMARY_HIGH_USD_HEADROOM,
+      makeEffective({ max_notional_usd: 40000 }),
+    );
+    expect(rec).not.toBeNull();
+    expect(rec!.applyable).toBeUndefined();
+  });
+
+  it("is NOT generated when trigger threshold is not met (policy ≤ avg * 5)", () => {
+    // avg=$5K, max=$20K, policy=$24K → 24K NOT > 5K*5=25K → no rec
+    const rec = historyLimitHeadroomRec(
+      SUMMARY_HIGH_USD_HEADROOM,
+      makeEffective({ max_notional_usd: 24000 }),
+    );
+    expect(rec).toBeNull();
+  });
+
+  it("is NOT generated when policy exactly equals avg * 5 (trigger boundary)", () => {
+    // avg=$5K → trigger requires strictly greater than 25K, so 25K gives null
+    const rec = historyLimitHeadroomRec(
+      SUMMARY_HIGH_USD_HEADROOM,
+      makeEffective({ max_notional_usd: 25000 }),
+    );
+    expect(rec).toBeNull();
+  });
+
+  it("is NOT generated with fewer than 3 receipts", () => {
+    const sparse: ReceiptSummary = { ...SUMMARY_HIGH_USD_HEADROOM, total_receipts: 2 };
+    const rec = historyLimitHeadroomRec(sparse, EFF_USD_200K);
+    expect(rec).toBeNull();
+  });
+
+  it("is NOT generated when avg_notional_usd is null", () => {
+    const nullAvg = {
+      ...SUMMARY_HIGH_USD_HEADROOM,
+      avg_notional_usd: null,
+    } as unknown as ReceiptSummary;
+    const rec = historyLimitHeadroomRec(nullAvg, EFF_USD_200K);
+    expect(rec).toBeNull();
+  });
+
+  it("has source: Customer history", () => {
+    const rec = historyLimitHeadroomRec(SUMMARY_HIGH_USD_HEADROOM, EFF_USD_200K);
+    expect(rec!.source).toBe("Customer history");
+  });
+
+  it("has fieldKey: max_notional_usd", () => {
+    const rec = historyLimitHeadroomRec(SUMMARY_HIGH_USD_HEADROOM, EFF_USD_200K);
+    expect(rec!.fieldKey).toBe("max_notional_usd");
+  });
+
+  it("undo can restore a prior explicit USD limit (hadKey=true)", () => {
+    const priorOverrides = { max_notional_usd: 200000, require_simulation_success: true };
+    const undoState = captureUndoState(priorOverrides, "max_notional_usd");
+    const postApplyOverrides = { ...priorOverrides, max_notional_usd: 40000 };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(restored.max_notional_usd).toBe(200000);
+    expect(restored.require_simulation_success).toBe(true); // unrelated key preserved
+  });
+
+  it("undo removes USD limit key if it was absent before apply (hadKey=false)", () => {
+    const priorOverrides: Record<string, unknown> = { require_simulation_success: true };
+    const undoState = captureUndoState(priorOverrides, "max_notional_usd");
+    const postApplyOverrides: Record<string, unknown> = {
+      ...priorOverrides,
+      max_notional_usd: 40000,
+    };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(Object.prototype.hasOwnProperty.call(restored, "max_notional_usd")).toBe(false);
+    expect(restored.require_simulation_success).toBe(true); // unrelated preserved
+  });
+
+  it("preserves unrelated override keys after USD limit apply undo", () => {
+    const priorOverrides = {
+      max_notional_usd: 200000,
+      max_slippage_bps: 150,
+      require_simulation_success: true,
+    };
+    const undoState = captureUndoState(priorOverrides, "max_notional_usd");
+    const postApplyOverrides = { ...priorOverrides, max_notional_usd: 40000 };
+    const restored = computeRestoredOverrides(postApplyOverrides, undoState);
+
+    expect(restored.max_slippage_bps).toBe(150);
+    expect(restored.require_simulation_success).toBe(true);
+    expect(Object.keys(restored).length).toBe(3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests: unsupported USD/SOL limit recommendations remain manual-only
+// ---------------------------------------------------------------------------
+
+describe("unsupported USD/SOL limit recommendations remain manual-only", () => {
+  /** Mirrors review-usd-limit from generatePolicyRecommendations. */
+  function reviewUsdLimitRec(effective: Record<string, unknown>): PolicyRecommendation | null {
+    const maxUsd = effective.max_notional_usd;
+    if (typeof maxUsd !== "number" || maxUsd <= 200_000) return null;
+    return {
+      id: "review-usd-limit",
+      title: "Review USD transaction limit",
+      explanation: `Your per-transaction limit is $${maxUsd.toLocaleString()} USD, which is well above the typical range.`,
+      why: "Extremely high limits increase exposure if an agent misbehaves.",
+      priority: "low",
+      source: "Policy analysis",
+      fieldKey: "max_notional_usd",
+    };
+  }
+
+  /** Mirrors review-sol-limit from generatePolicyRecommendations. */
+  function reviewSolLimitRec(effective: Record<string, unknown>): PolicyRecommendation | null {
+    const maxSol = effective.max_value_sol;
+    if (typeof maxSol !== "number" || maxSol <= 5_000) return null;
+    return {
+      id: "review-sol-limit",
+      title: "Review SOL transaction limit",
+      explanation: `Your per-transaction SOL limit is ${maxSol.toLocaleString()} SOL, which is above the typical range.`,
+      why: "High SOL limits increase exposure per transaction.",
+      priority: "low",
+      source: "Policy analysis",
+      fieldKey: "max_value_sol",
+    };
+  }
+
+  /** Mirrors market-review-limits from generateMarketRecommendations. */
+  function marketReviewLimitsRec(
+    market: MarketConditions,
+    effective: Record<string, unknown>,
+  ): PolicyRecommendation | null {
+    const isStressed = market.environment === "stressed";
+    const policyMaxUsd = effective.max_notional_usd;
+    if (!isStressed || typeof policyMaxUsd !== "number" || policyMaxUsd <= 50_000) return null;
+    return {
+      id: "market-review-limits",
+      title: "Review transaction limits — elevated execution risk",
+      explanation: `Your USD limit is $${policyMaxUsd.toLocaleString()}. During stressed conditions, large transactions carry higher execution risk.`,
+      why: "Temporarily lowering limits reduces exposure while infrastructure conditions are elevated.",
+      priority: "low",
+      source: "Market analysis",
+      fieldKey: "max_notional_usd",
+      evidence: market.summary,
+    };
+  }
+
+  it("review-usd-limit has no applyable flag (no deterministic target)", () => {
+    const rec = reviewUsdLimitRec(makeEffective({ max_notional_usd: 500000 }));
+    expect(rec).not.toBeNull();
+    expect(rec!.applyable).toBeUndefined();
+    expect(rec!.applyMutation).toBeUndefined();
+  });
+
+  it("review-sol-limit has no applyable flag (no SOL history in ReceiptSummary)", () => {
+    const rec = reviewSolLimitRec(makeEffective({ max_value_sol: 10000 }));
+    expect(rec).not.toBeNull();
+    expect(rec!.applyable).toBeUndefined();
+    expect(rec!.applyMutation).toBeUndefined();
+  });
+
+  it("market-review-limits has no applyable flag (temporary market signal, no target)", () => {
+    const rec = marketReviewLimitsRec(
+      { ...MARKET_STRESSED_THROTTLED, environment: "stressed" },
+      makeEffective({ max_notional_usd: 100000 }),
+    );
+    expect(rec).not.toBeNull();
+    expect(rec!.applyable).toBeUndefined();
+    expect(rec!.applyMutation).toBeUndefined();
+  });
+
+  it("history-limit-headroom is NOT applyable when max_notional_usd is null", () => {
+    const nullMaxSummary = {
+      ...SUMMARY_HIGH_USD_HEADROOM,
+      max_notional_usd: null,
+    } as unknown as ReceiptSummary;
+    const rec = historyLimitHeadroomRec(nullMaxSummary, EFF_USD_200K);
+    expect(rec).not.toBeNull(); // rec appears but is not applyable
+    expect(rec!.applyable).toBeUndefined();
+  });
+
+  it("history-limit-headroom is NOT applyable when policy gap is insufficient", () => {
+    // avg=$5K, max=$20K, policy=$35K → trigger fires but gap to max is too small
+    const rec = historyLimitHeadroomRec(
+      SUMMARY_HIGH_USD_HEADROOM,
+      makeEffective({ max_notional_usd: 35000 }),
+    );
+    expect(rec).not.toBeNull(); // rec appears but is not applyable
+    expect(rec!.applyable).toBeUndefined();
   });
 });
