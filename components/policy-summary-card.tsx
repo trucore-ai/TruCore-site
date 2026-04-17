@@ -6,6 +6,7 @@ import type { EffectivePolicyResponse } from "@/lib/customer-auth";
 type Props = {
   policy: EffectivePolicyResponse | null;
   loading?: boolean;
+  onRetry?: () => void;
 };
 
 function formatLimit(value: number): string {
@@ -13,7 +14,7 @@ function formatLimit(value: number): string {
   return value.toLocaleString();
 }
 
-export function PolicySummaryCard({ policy, loading }: Props) {
+export function PolicySummaryCard({ policy, loading, onRetry }: Props) {
   if (loading) {
     return (
       <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-3 animate-pulse">
@@ -26,20 +27,39 @@ export function PolicySummaryCard({ policy, loading }: Props) {
 
   if (!policy) {
     return (
-      <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-3">
-        <h2 className="text-sm font-medium text-slate-300">
-          Policy &amp; Protections
-        </h2>
+      <section
+        data-testid="policy-summary-unavailable"
+        className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-3"
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium text-slate-300">
+            Policy &amp; Protections
+          </h2>
+          <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400">
+            Unavailable
+          </span>
+        </div>
         <p className="text-xs text-slate-500">
-          Policy data is not available right now. Your transactions are
+          Policy details are not available right now. Your transactions are
           still protected by your plan&apos;s default enforcement rules.
         </p>
-        <Link
-          href="/customer/policies"
-          className="inline-block text-xs text-primary-400 hover:text-primary-300 transition"
-        >
-          View policy details &rarr;
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/customer/policies"
+            className="inline-block rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-white/10"
+          >
+            View Policies
+          </Link>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="inline-block text-xs text-primary-400 hover:text-primary-300 transition"
+            >
+              Try again
+            </button>
+          )}
+        </div>
       </section>
     );
   }
@@ -54,7 +74,10 @@ export function PolicySummaryCard({ policy, loading }: Props) {
   const effectiveDeniedMints = policy.effective?.denied_mints as string[] | undefined;
 
   return (
-    <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
+    <section
+      data-testid="policy-summary-card"
+      className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4"
+    >
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium text-slate-300">
           Policy &amp; Protections

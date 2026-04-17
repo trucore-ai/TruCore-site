@@ -71,6 +71,19 @@ export async function GET(req: NextRequest) {
           environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? "unknown",
         },
       });
+
+      // Normalise 404 from upstream into a well-formed error envelope so the
+      // client always receives a consistent {error, message} shape regardless
+      // of which backend version is deployed.
+      if (res.status === 404) {
+        return NextResponse.json(
+          {
+            error: "policy_not_available",
+            message: "Policy configuration is not available right now. Your transactions are still protected by your plan's default enforcement rules.",
+          },
+          { status: 503, headers: NO_STORE },
+        );
+      }
     }
 
     return new NextResponse(body, {

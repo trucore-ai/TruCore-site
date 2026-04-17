@@ -1295,7 +1295,16 @@ export async function fetchPolicy(): Promise<EffectivePolicyResponse> {
   }
 
   if (res.status >= 500) {
-    throw new ApiError("upstream_5xx", "Policy service is temporarily unavailable.");
+    // Parse body so we can surface the message when the proxy normalises a
+    // 404-not-found upstream into 503 with a well-formed error envelope.
+    let body503: Record<string, unknown> = {};
+    try { body503 = await res.json(); } catch { /* ignore */ }
+    const errCode = typeof body503.error === "string" ? body503.error : "upstream_5xx";
+    const errMsg =
+      typeof body503.message === "string"
+        ? body503.message
+        : "Policy service is temporarily unavailable. Your transactions remain protected by your plan's defaults.";
+    throw new ApiError(errCode, errMsg);
   }
 
   if (!res.ok) {

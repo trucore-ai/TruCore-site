@@ -65,6 +65,15 @@ describe("HeaderAuthActions", () => {
     );
   });
 
+  it("renders Policies link when logged in", () => {
+    mockIsLoggedIn.mockReturnValue(true);
+    render(<HeaderAuthActions />);
+
+    const policiesLink = screen.getByText("Policies");
+    expect(policiesLink).toBeInTheDocument();
+    expect(policiesLink.closest("a")).toHaveAttribute("href", "/customer/policies");
+  });
+
   it("renders nothing during SSR (isLoggedIn returns null)", () => {
     mockIsLoggedIn.mockReturnValue(null);
     const { container } = render(<HeaderAuthActions />);

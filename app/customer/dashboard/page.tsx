@@ -242,6 +242,7 @@ export default function CustomerDashboardPage() {
   // Policy data
   const [policyData, setPolicyData] = useState<EffectivePolicyResponse | null>(null);
   const [policyLoading, setPolicyLoading] = useState(true);
+  const [policyFailed, setPolicyFailed] = useState(false);
 
   // Verification
   const [emailVerified, setEmailVerified] = useState(true);
@@ -382,12 +383,15 @@ export default function CustomerDashboardPage() {
       });
 
     // Policy data (non-fatal)
-    fetchPolicy()
-      .then((p) => setPolicyData(p))
-      .catch(() => {
-        // Non-fatal – card will show graceful fallback
-      })
-      .finally(() => setPolicyLoading(false));
+    const loadPolicy = () => {
+      setPolicyLoading(true);
+      setPolicyFailed(false);
+      fetchPolicy()
+        .then((p) => { setPolicyData(p); setPolicyFailed(false); })
+        .catch(() => { setPolicyFailed(true); })
+        .finally(() => setPolicyLoading(false));
+    };
+    loadPolicy();
   }, [mergeBackendOnboardingStep, router]);
 
   // -----------------------------------------------------------------------
@@ -1729,7 +1733,18 @@ export default function CustomerDashboardPage() {
         )}
 
         {/* Policy & Protections */}
-        <PolicySummaryCard policy={policyData} loading={policyLoading} />
+        <PolicySummaryCard
+          policy={policyData}
+          loading={policyLoading}
+          onRetry={policyFailed ? () => {
+            setPolicyLoading(true);
+            setPolicyFailed(false);
+            fetchPolicy()
+              .then((p) => { setPolicyData(p); setPolicyFailed(false); })
+              .catch(() => { setPolicyFailed(true); })
+              .finally(() => setPolicyLoading(false));
+          } : undefined}
+        />
 
         {/* Quick Test Request */}
         <RunTestRequest apiKey={savedApiKey} />
