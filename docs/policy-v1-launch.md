@@ -167,6 +167,45 @@
 
 **Exit criteria:** All checklist items pass, no P0 issues found.
 
+#### Day 0 Launch Runbook
+
+Ordered steps for the engineer executing the production enable.
+
+**Pre-enable (T−30 min)**
+
+1. Confirm the latest Vercel deployment is live and the build passed (check Vercel deployment dashboard — zero TS errors, ≥ 213 pages).
+2. Verify all required env vars are set in the Vercel production environment:
+   - `NEXT_PUBLIC_*` plan-gating flags (all plan tiers)
+   - `ATF_OPS_KEY` (ops analytics endpoint auth)
+   - `CRON_SECRET` (daily snapshot cron auth)
+   - All policy API base URL vars (`fetchPolicy`, `updatePolicyOverrides`, `fetchReceiptSummary`, `fetchMarketConditions`, `fetchPilRecommendations`, `fetchCohortBenchmarks`, `fetchExternalContext`)
+3. Confirm the staging walk-through (Section 2b–2j) has been signed off — no P0 items outstanding.
+4. Force a Day 0 baseline snapshot to establish the "before" comparison point for the snapshot diff panel:
+
+   ```bash
+   curl -H "Authorization: Bearer $CRON_SECRET" \
+     https://<production-domain>/api/internal/policy-analytics-daily-snapshot
+   ```
+
+   Expected: `{ "ok": true, "skipped": false, ... }`. Confirm the snapshot appears in `/admin/policy-analytics` → "Durable snapshot" status row.
+
+**Enable (T±0)**
+
+5. Enable `/customer/policies` for the target cohort (feature flag toggle or Vercel env override, per your deployment process).
+6. Perform one authenticated load of the policy page in production to confirm it renders without console errors.
+7. Confirm the analytics sink receives at least one `policy-rec-impression` event within 5 minutes of the first user visit.
+
+**Post-enable checks (T+15 min and T+1 h)**
+
+8. Open `/admin/policy-analytics` → confirm headline metrics (Total Events) are non-zero.
+9. Check Vercel function logs, filter path `/api/customer/policy/overrides` — confirm error rate is below 1%.
+10. Confirm the daily cron is scheduled: Vercel dashboard → Project → Cron Jobs → `policy-analytics-daily-snapshot` shows next run.
+
+**Rollback signal check (T+1 h)**
+
+11. If `updatePolicyOverrides` 5xx rate exceeds 5% for 15 consecutive minutes: disable the route (revert the feature flag or redeploy the prior release tag). See Stage 2 rollback procedure below.
+12. If the analytics sink shows zero events after 30 minutes of confirmed user traffic: investigate the analytics event pipeline — not necessarily a code regression, could be a sink configuration issue.
+
 ---
 
 ### Stage 2 — Limited Rollout (Day 1–3)
@@ -191,6 +230,16 @@
 - API error rate on `updatePolicyOverrides` > 5% sustained over 15 minutes
 - Page renders blank / crash for > 1% of sessions
 - Analytics sink missing events for > 10 minutes (indicates event pipeline failure)
+
+#### Rollback Procedure
+
+If any rollback trigger fires:
+
+1. **Disable the route** — revert the feature flag or redeploy the prior release tag (do not skip this, even if investigation is ongoing).
+2. **Confirm the disable** — make one authenticated request to `/customer/policies`; it should redirect or return the expected fallback state for ineligible accounts.
+3. **Preserve evidence** — before any code change, export the current analytics state: `GET /api/internal/policy-analytics-snapshot` (Authorization: Bearer $CRON_SECRET) and save the response.
+4. **Open the incident** — create a tracking issue with: trigger observed, time of onset, first user affected (account ID if known), error payload, and snapshot export.
+5. **Do not hotfix under time pressure** — redeploy the last known-good build tag rather than patching forward unless the root cause is trivially obvious and the fix is a 1-line change.
 
 ---
 
@@ -283,6 +332,76 @@ The `/customer/policies` page for TruCore-site is a comprehensive, production-re
 | Engineering | — | Pending sign |
 | Product | — | Pending sign |
 | QA / Ops | — | Pending sign |
+
+---
+
+## 5. Monitoring Reference
+
+Use this section during the live rollout to locate and act on each watchpoint.
+
+### 5a. Watchpoint Inspection Map
+
+| Watchpoint | Alert threshold | Where to inspect | DRI |
+|---|---|---|---|
+| `updatePolicyOverrides` error rate | > 5% for 15 min → roll back | Vercel function logs → filter `/api/customer/policy/overrides`; count 5xx responses | Engineering |
+| Apply error rate (`trackRecommendationApplyError`) | > 2% | `/admin/policy-analytics` → Apply Events table → `apply_error` row | Engineering |
+| Undo error rate (`trackRecommendationUndoError`) | > 2% | `/admin/policy-analytics` → Apply Events table → `undo_error` row | Engineering |
+| Upgrade teaser click-through rate | < 0.5% after Day 7 → review copy | `/admin/policy-analytics` → Teaser Performance table → CTR column | Product |
+| Trend surface visibility | < 50% of active accounts hidden → review sparse threshold | `GET /api/ops/policy-analytics-summary` (x-ops-key header) | Engineering |
+| `localStorage` save/load errors | Non-zero count in browser error tracker | Browser error tracking sink; search `loadRecSnapshot` / `saveRecSnapshot` | Engineering |
+| PIL `gated_count` non-zero rate | Signals backend returning real PIL data (positive indicator) | `/admin/policy-analytics` → Source breakdown: PIL rows | Engineering |
+| Analytics event pipeline gap | Zero events for > 10 min during confirmed user traffic | Analytics sink → event stream; Vercel function logs | Engineering |
+| Recommendation impression → apply conversion | Baseline week 1; flag if < 0.5% in week 2+ | `/admin/policy-analytics` → Featured Engagement + Apply Events | Product |
+| Snapshot diff headline deltas spiking unexpectedly | Large apply/undo delta with no known launch event | `/admin/policy-analytics` → "Trend Since Last Snapshot" diff panel | Ops |
+
+### 5b. Ops API Quick Reference
+
+All routes below are internal-only and never customer-facing.
+
+**Aggregated analytics summary (in-memory, per-instance):**
+
+```bash
+GET /api/ops/policy-analytics-summary
+Header: x-ops-key: $ATF_OPS_KEY
+```
+
+Returns: aggregated impression, apply, undo, teaser, expand counts. No PII. Resets on cold start.
+
+**Force a manual snapshot (useful for Day 0 baseline or mid-rollout comparison):**
+
+```bash
+GET /api/internal/policy-analytics-daily-snapshot
+Header: Authorization: Bearer $CRON_SECRET
+```
+
+Returns: `{ ok: true, skipped: false, snapshot_id, captured_at }`. Skips if a snapshot was captured within the last 23 hours.
+
+**Export current in-memory summary as JSON (for archiving before deploy):**
+
+```bash
+GET /api/internal/policy-analytics-snapshot
+Header: Authorization: Bearer $CRON_SECRET
+```
+
+Returns: full `PolicyAnalyticsSummary` JSON. Safe to run at any time.
+
+**View snapshot diff and headline metrics (admin UI):**
+
+Navigate to `/admin/policy-analytics` (requires admin session). Displays:
+- Durable snapshot status and last capture timestamp
+- "Trend Since Last Snapshot" diff panel (requires ≥ 2 captured snapshots)
+- Headline metrics: Total Events, Expand Rate, Teaser CTR, View-Setting Rate
+- Teaser performance breakdown by dominant source and tier
+- Apply/undo event counts by recommendation class
+
+### 5c. Escalation Path
+
+| Severity | Trigger | Action |
+|---|---|---|
+| **P0 — Rollback now** | `updatePolicyOverrides` > 5% error rate for 15 min; blank page > 1% of sessions | Disable route → preserve evidence → open incident → redeploy prior tag |
+| **P1 — Investigate within 1 h** | Apply or undo error rate > 2%; analytics pipeline gap > 30 min | Open investigation thread; do not roll back unless escalates to P0 |
+| **P2 — Monitor, no immediate action** | Teaser CTR < 0.5% (first 7 days — not yet actionable); trend surface hidden > 50% accounts | Log in weekly review; schedule threshold tuning post-v1 if sustained |
+| **Positive signal** | PIL `gated_count` non-zero in source breakdown | Note in weekly review; indicates backend delivering real PIL data |
 
 ---
 

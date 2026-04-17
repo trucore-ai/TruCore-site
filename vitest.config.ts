@@ -24,12 +24,16 @@ export default defineConfig({
     // V8 cap of ~2 GB. Per Vitest 4 UserConfig type, top-level execArgv maps
     // to child_process.fork({ execArgv: [...] }) for every worker.
     execArgv: ["--max-old-space-size=6144"],
-    // Cap parallel workers at 2 so peak memory stays bounded (~12 GB max).
-    maxWorkers: 2,
+    // One fork at a time prevents concurrent memory pressure when the three
+    // jsdom-heavy policy files run alongside the rest of the 100+ file suite.
+    // With maxWorkers:2, those files race with other workers and the combined
+    // heap causes teardown timeouts. Sequential forks are slower but reliable.
+    maxWorkers: 1,
     // Allow slow jsdom environments up to 60 s per test before timeout.
     testTimeout: 60000,
-    // Give workers 30 s to flush teardown (file handles, async cleanup).
-    teardownTimeout: 30000,
+    // Give workers 60 s to flush teardown — matches testTimeout so a slow
+    // jsdom cleanup (large React mock tree) never races against the timer.
+    teardownTimeout: 60000,
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],

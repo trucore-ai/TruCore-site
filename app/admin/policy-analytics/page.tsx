@@ -468,6 +468,17 @@ export default async function PolicyAnalyticsPage() {
         &nbsp;·&nbsp; Manual capture still available above.
       </div>
 
+      {/* premium-v1 launch monitoring reference */}
+      <div
+        className="rounded border border-violet-500/20 bg-violet-500/5 px-4 py-2 text-xs text-violet-300/80 mb-6"
+        data-testid="launch-monitoring-banner"
+      >
+        <strong className="text-violet-200">Premium v1 launch monitoring.</strong>{" "}
+        Watchpoints, Day 0 runbook, rollback procedure, and escalation path →{" "}
+        <code className="font-mono text-violet-200">docs/policy-v1-launch.md</code>{" "}
+        (Section 5).
+      </div>
+
       {/* trend / diff panel */}
       {diff ? <TrendDiffPanel diff={diff} /> : <TrendDiffEmptyState />}
 
