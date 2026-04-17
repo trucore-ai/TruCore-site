@@ -1446,7 +1446,7 @@ function generatePilRecommendations(
       id: `pil-${rec.id.toLowerCase().replace(/_/g, "-")}`,
       title: rec.title,
       explanation: rec.explanation,
-      why: PIL_WHY[rec.id] ?? "This recommendation is based on analysis of your recent transaction patterns.",
+      why: (rec.explanation || PIL_WHY[rec.id]) ?? "This recommendation is based on analysis of your recent transaction patterns.",
       priority: PIL_PRIORITY_MAP[rec.confidence] ?? "low",
       source: "Policy Intelligence" as RecommendationSource,
       fieldKey,
@@ -3125,7 +3125,7 @@ export default function CustomerPoliciesPage() {
                                       className="inline-flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-2 py-0.5 text-[9px] font-medium leading-none text-slate-500"
                                       data-testid="recommendation-inline-confidence"
                                     >
-                                      {rec.confidence >= 0.7 ? "High" : rec.confidence >= 0.4 ? "Med" : "Low"} confidence
+                                      {rec.confidence >= 0.7 ? "High" : rec.confidence >= 0.4 ? "Medium" : "Low"} confidence
                                     </span>
                                   )}
                                   <span
@@ -3415,7 +3415,7 @@ export default function CustomerPoliciesPage() {
                                           className="inline-flex items-center gap-1 rounded-full bg-white/5 border border-white/10 px-1.5 py-0.5 text-[9px] font-medium leading-none text-slate-600"
                                           data-testid="recommendation-inline-confidence"
                                         >
-                                          {rec.confidence >= 0.7 ? "High" : rec.confidence >= 0.4 ? "Med" : "Low"} conf.
+                                          {rec.confidence >= 0.7 ? "High" : rec.confidence >= 0.4 ? "Medium" : "Low"} confidence
                                         </span>
                                       )}
                                       <span

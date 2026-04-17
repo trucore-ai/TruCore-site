@@ -1382,6 +1382,103 @@ describe("CustomerPoliciesPage", () => {
       // REDUCE_SLIPPAGE maps to max_slippage_bps → should have action button
       expect(screen.getByTestId("recommendation-action-pil-reduce-slippage")).toBeTruthy();
     });
+
+    it("uses backend explanation as 'Why it matters' reasoning in the expanded panel", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-high-friction")).toBeTruthy();
+      });
+
+      // HIGH_FRICTION is medium-confidence → showInlineReason: false → "Why it matters:" appears in expanded panel
+      fireEvent.click(screen.getByTestId("recommendation-details-toggle-pil-high-friction"));
+
+      const details = screen.getByTestId("recommendation-details-pil-high-friction");
+      // Backend explanation should be the why text
+      expect(details.textContent).toContain("Denial rate is 12/42");
+      // Static PIL_WHY placeholder must NOT appear
+      expect(details.textContent).not.toContain("A high denial rate means your policy may be blocking");
+    });
+
+    it("falls back to PIL_WHY placeholder when backend explanation is empty", async () => {
+      const PIL_EMPTY_EXPLANATION = {
+        recommendations: [
+          {
+            id: "REDUCE_SLIPPAGE",
+            title: "Reduce slippage tolerance",
+            explanation: "",
+            parameter: "max_slippage_bps",
+            confidence: "high",
+            evidence: "",
+          },
+        ],
+        record_count: 5,
+        confidence_summary: "high",
+        captured_at: Date.now() / 1000,
+        plan: "pro",
+      };
+
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_EMPTY_EXPLANATION);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      // High-confidence → featured → showInlineReason: true → why shown inline on card
+      const card = screen.getByTestId("recommendation-pil-reduce-slippage");
+      // Fallback PIL_WHY text for REDUCE_SLIPPAGE should appear
+      expect(card.textContent).toContain("Consistently high slippage wastes value");
+    });
+
+    it("uses backend rec.title as the card headline", async () => {
+      const PIL_DISTINCT_TITLE = {
+        recommendations: [
+          {
+            id: "REDUCE_SLIPPAGE",
+            title: "Tighten your slippage cap now",
+            explanation: "Slippage is elevated.",
+            parameter: "max_slippage_bps",
+            confidence: "high",
+            evidence: "avg=95bps",
+          },
+        ],
+        record_count: 10,
+        confidence_summary: "high",
+        captured_at: Date.now() / 1000,
+        plan: "pro",
+      };
+
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_DISTINCT_TITLE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      const card = screen.getByTestId("recommendation-pil-reduce-slippage");
+      expect(card.textContent).toContain("Tighten your slippage cap now");
+    });
+
+    it("confidence badge uses full friendly label text (High confidence / Medium confidence)", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      mockFetchPilRecommendations.mockResolvedValue(PIL_RESPONSE);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("recommendation-pil-reduce-slippage")).toBeTruthy();
+      });
+
+      // High-confidence card shows "High confidence", not "High conf." or "Med confidence"
+      const card = screen.getByTestId("recommendation-pil-reduce-slippage");
+      const badge = card.querySelector('[data-testid="recommendation-inline-confidence"]');
+      expect(badge).toBeTruthy();
+      expect(badge!.textContent).toBe("High confidence");
+    });
   });
 
   // -----------------------------------------------------------------------
