@@ -1992,6 +1992,13 @@ export default function CustomerPoliciesPage() {
     }
   }, []);
 
+  /** Retry policy load — resets loading/error state then re-runs loadPolicy. */
+  const retryPolicyLoad = useCallback(() => {
+    setLoading(true);
+    setError("");
+    loadPolicy();
+  }, [loadPolicy]);
+
   // Fetch receipt summary for history-aware recommendations (non-blocking).
   const loadHistorySummary = useCallback(async () => {
     try {
@@ -2482,47 +2489,40 @@ export default function CustomerPoliciesPage() {
           >
             &larr; Back to dashboard
           </Link>
-          <section
-            data-testid="policy-error-state"
-            className="rounded-xl border border-white/10 bg-white/[0.02] p-8 space-y-5"
-          >
-            <div className="space-y-2">
-              <h1 className="text-base font-semibold text-slate-200">
-                Policy details unavailable
-              </h1>
-              <p className="text-sm text-slate-400">
-                We weren&apos;t able to load your policy configuration right now.
-                Your transactions are still fully protected by your plan&apos;s
-                default enforcement rules — nothing has changed about how your
-                trades are evaluated or secured.
+          <section className="rounded-xl border border-white/10 bg-white/[0.02] p-8 space-y-5">
+            <div className="flex items-start gap-4">
+              <div className="mt-0.5 shrink-0 h-9 w-9 rounded-full border border-amber-500/30 bg-amber-500/10 flex items-center justify-center">
+                <span className="text-amber-400 text-sm font-bold">!</span>
+              </div>
+              <div className="space-y-1.5">
+                <h1 className="text-sm font-semibold text-slate-100">
+                  Policy data temporarily unavailable
+                </h1>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  {error}
+                </p>
+              </div>
+            </div>
+            <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3">
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Your transactions are still being evaluated against your plan&apos;s
+                default enforcement rules — protection is active while this view
+                is temporarily unavailable.
               </p>
             </div>
-
-            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
-              <p className="text-xs text-emerald-300">
-                <span className="font-medium">Protection is active.</span>{" "}
-                All transactions continue to be evaluated against your plan&apos;s
-                enforcement policy. No action is required.
-              </p>
-            </div>
-
-            {error && (
-              <p className="text-xs text-slate-600 font-mono">{error}</p>
-            )}
-
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
                 type="button"
-                onClick={() => { setError(""); setLoading(true); void loadPolicy(); }}
-                className="rounded-lg bg-primary-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-primary-500"
+                onClick={retryPolicyLoad}
+                className="rounded-lg bg-primary-500/15 border border-primary-400/30 px-4 py-2 text-xs font-medium text-primary-300 transition hover:bg-primary-500/25 hover:text-primary-200"
               >
                 Try again
               </button>
               <Link
                 href="/customer/dashboard"
-                className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-200 transition hover:bg-white/10"
+                className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/10 hover:text-slate-100"
               >
-                Back to dashboard
+                Return to dashboard
               </Link>
             </div>
           </section>

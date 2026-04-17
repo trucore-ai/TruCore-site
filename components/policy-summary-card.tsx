@@ -29,37 +29,50 @@ export function PolicySummaryCard({ policy, loading, onRetry }: Props) {
     return (
       <section
         data-testid="policy-summary-unavailable"
-        className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-3"
+        className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-slate-300">
             Policy &amp; Protections
           </h2>
           <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400">
-            Unavailable
+            Temporarily unavailable
           </span>
         </div>
-        <p className="text-xs text-slate-500">
-          Policy details are not available right now. Your transactions are
-          still protected by your plan&apos;s default enforcement rules.
+        <p className="text-xs text-slate-400 leading-relaxed">
+          Policy details could not be loaded. Your transactions are still
+          protected by your plan&apos;s default enforcement rules.
         </p>
-        <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="/customer/policies"
-            className="inline-block rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-white/10"
-          >
-            View Policies
-          </Link>
-          {onRetry && (
+        <div className="rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2">
+          <p className="text-[10px] text-slate-500">
+            Protection is active — defaults apply until policy data is available again.
+          </p>
+        </div>
+        {onRetry && (
+          <div className="flex flex-wrap items-center gap-3 pt-1">
             <button
               type="button"
               onClick={onRetry}
-              className="inline-block text-xs text-primary-400 hover:text-primary-300 transition"
+              className="rounded-lg bg-primary-500/15 border border-primary-400/30 px-3 py-1.5 text-xs font-medium text-primary-300 transition hover:bg-primary-500/25 hover:text-primary-200"
             >
               Try again
             </button>
-          )}
-        </div>
+            <Link
+              href="/customer/policies"
+              className="text-xs text-slate-400 hover:text-slate-200 transition"
+            >
+              Open policy view &rarr;
+            </Link>
+          </div>
+        )}
+        {!onRetry && (
+          <Link
+            href="/customer/policies"
+            className="inline-block rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-white/10"
+          >
+            Open policy view &rarr;
+          </Link>
+        )}
       </section>
     );
   }
@@ -85,6 +98,7 @@ export function PolicySummaryCard({ policy, loading, onRetry }: Props) {
         <Link
           href="/customer/policies"
           className="text-xs text-primary-400 hover:text-primary-300 transition"
+          aria-label="View full policy details"
         >
           View details &rarr;
         </Link>
@@ -136,6 +150,15 @@ export function PolicySummaryCard({ policy, loading, onRetry }: Props) {
         Transactions are evaluated against <span className="capitalize">{tier}</span>-tier
         enforcement rules before execution.
       </p>
+
+      <div className="pt-1 border-t border-white/5">
+        <Link
+          href="/customer/policies"
+          className="text-[11px] font-medium text-primary-400 hover:text-primary-300 transition"
+        >
+          Manage policy settings &rarr;
+        </Link>
+      </div>
     </section>
   );
 }
