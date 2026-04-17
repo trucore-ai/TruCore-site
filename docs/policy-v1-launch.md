@@ -175,6 +175,7 @@ Ordered steps for the engineer executing the production enable.
 
 1. Confirm the latest Vercel deployment is live and the build passed (check Vercel deployment dashboard — zero TS errors, ≥ 213 pages).
 2. Verify all required env vars are set in the Vercel production environment:
+   *(Values are in Vercel dashboard → Project → Settings → Environment Variables.)*
    - `NEXT_PUBLIC_*` plan-gating flags (all plan tiers)
    - `ATF_OPS_KEY` (ops analytics endpoint auth)
    - `CRON_SECRET` (daily snapshot cron auth)
@@ -183,6 +184,7 @@ Ordered steps for the engineer executing the production enable.
 4. Force a Day 0 baseline snapshot to establish the "before" comparison point for the snapshot diff panel:
 
    ```bash
+   # Replace <production-domain> with your actual Vercel production URL (e.g. trucore.xyz)
    curl -H "Authorization: Bearer $CRON_SECRET" \
      https://<production-domain>/api/internal/policy-analytics-daily-snapshot
    ```
@@ -344,8 +346,8 @@ Use this section during the live rollout to locate and act on each watchpoint.
 | Watchpoint | Alert threshold | Where to inspect | DRI |
 |---|---|---|---|
 | `updatePolicyOverrides` error rate | > 5% for 15 min → roll back | Vercel function logs → filter `/api/customer/policy/overrides`; count 5xx responses | Engineering |
-| Apply error rate (`trackRecommendationApplyError`) | > 2% | `/admin/policy-analytics` → Apply Events table → `apply_error` row | Engineering |
-| Undo error rate (`trackRecommendationUndoError`) | > 2% | `/admin/policy-analytics` → Apply Events table → `undo_error` row | Engineering |
+| Apply error rate (`trackRecommendationApplyError`) | > 2% | **Vercel Analytics dashboard** → filter `policy_recommendation_apply_error` events; compute rate vs `policy_recommendation_apply_click`. *(Apply/undo events go to Vercel Analytics only — they are not stored in the server-side analytics store and will not appear in `/admin/policy-analytics`.)* | Engineering |
+| Undo error rate (`trackRecommendationUndoError`) | > 2% | **Vercel Analytics dashboard** → filter `policy_recommendation_undo_error` events; compute rate vs `policy_recommendation_undo_click`. *(Same as above — Vercel Analytics only.)* | Engineering |
 | Upgrade teaser click-through rate | < 0.5% after Day 7 → review copy | `/admin/policy-analytics` → Teaser Performance table → CTR column | Product |
 | Trend surface visibility | < 50% of active accounts hidden → review sparse threshold | `GET /api/ops/policy-analytics-summary` (x-ops-key header) | Engineering |
 | `localStorage` save/load errors | Non-zero count in browser error tracker | Browser error tracking sink; search `loadRecSnapshot` / `saveRecSnapshot` | Engineering |
