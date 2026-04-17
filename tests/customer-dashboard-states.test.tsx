@@ -15,6 +15,7 @@ const mockFetchDashboard = vi.fn();
 const mockFetchActivation = vi.fn();
 const mockFetchReceipts = vi.fn();
 const mockFetchUpgradeRequests = vi.fn();
+const mockFetchPolicy = vi.fn();
 
 vi.mock("@/lib/customer-auth", () => {
   class ApiError extends Error {
@@ -41,7 +42,7 @@ vi.mock("@/lib/customer-auth", () => {
     requestVerificationEmail: vi.fn(),
     fetchUpgradeRequests: (...args: unknown[]) =>
       mockFetchUpgradeRequests(...args),
-    fetchPolicy: vi.fn().mockResolvedValue({}),
+    fetchPolicy: (...args: unknown[]) => mockFetchPolicy(...args),
     updatePolicyOverrides: vi.fn().mockResolvedValue({}),
     ApiError,
   };
@@ -104,6 +105,7 @@ beforeEach(() => {
   });
   mockFetchReceipts.mockResolvedValue({ receipts: [], count: 0 });
   mockFetchUpgradeRequests.mockResolvedValue({ requests: [] });
+  mockFetchPolicy.mockResolvedValue({});
 });
 
 describe("CustomerDashboardPage — empty state", () => {
