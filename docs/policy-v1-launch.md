@@ -173,40 +173,74 @@ Ordered steps for the engineer executing the production enable.
 
 **Pre-enable (T−30 min)**
 
-1. Confirm the latest Vercel deployment is live and the build passed (check Vercel deployment dashboard — zero TS errors, ≥ 213 pages).
+1. Confirm the latest Vercel deployment is live and the build passed (check Vercel dashboard → Deployments → latest entry shows ✓ Ready, zero TS errors, ≥ 213 pages).
+
 2. Verify all required env vars are set in the Vercel production environment:
-   *(Values are in Vercel dashboard → Project → Settings → Environment Variables.)*
-   - `NEXT_PUBLIC_*` plan-gating flags (all plan tiers)
-   - `ATF_OPS_KEY` (ops analytics endpoint auth)
-   - `CRON_SECRET` (daily snapshot cron auth)
-   - All policy API base URL vars (`fetchPolicy`, `updatePolicyOverrides`, `fetchReceiptSummary`, `fetchMarketConditions`, `fetchPilRecommendations`, `fetchCohortBenchmarks`, `fetchExternalContext`)
+   *(Vercel dashboard → Project → Settings → Environment Variables — filter by Environment: Production.)*
+
+   | Variable | Purpose | Where to obtain |
+   |---|---|---|
+   | `POLICIES_ENABLED` | Route gate for `/customer/policies` — must be `true` (or absent) to enable | Set manually in Vercel env |
+   | `NEXT_PUBLIC_*` plan-gating flags | Controls which recommendation sources are gated per tier | Set per plan config |
+   | `ATF_OPS_KEY` | Authenticates calls to `/api/internal/ops-policy-analytics-summary` | Ops secrets store |
+   | `CRON_SECRET` | Authenticates Vercel cron calls and manual snapshot triggers | Auto-set by Vercel; copy value from Vercel env for manual use |
+   | Policy API base URL vars | All API routes (`fetchPolicy`, `updatePolicyOverrides`, `fetchReceiptSummary`, `fetchMarketConditions`, `fetchPilRecommendations`, `fetchCohortBenchmarks`, `fetchExternalContext`) | Backend infra |
+
 3. Confirm the staging walk-through (Section 2b–2j) has been signed off — no P0 items outstanding.
-4. Force a Day 0 baseline snapshot to establish the "before" comparison point for the snapshot diff panel:
+
+4. **Export `CRON_SECRET` to your local shell for the Day-0 snapshot step:**
+   - Go to Vercel dashboard → Project → Settings → Environment Variables → search `CRON_SECRET` → click the eye icon to reveal → copy the value.
+   - In your shell:
+     ```bash
+     export CRON_SECRET=<paste-value-here>
+     # Verify it is set:
+     echo "CRON_SECRET is ${#CRON_SECRET} chars"
+     ```
+   - Do **not** commit this value. It is used only for the one-time snapshot call below.
+
+5. **Force the Day-0 baseline snapshot** to establish the pre-launch comparison point for the snapshot diff panel:
 
    ```bash
-   # Replace <production-domain> with your actual Vercel production URL (e.g. trucore.xyz)
-   curl -H "Authorization: Bearer $CRON_SECRET" \
+   # Replace <production-domain> with your Vercel production URL (e.g. www.trucore.xyz)
+   curl -sf \
+     -H "Authorization: Bearer $CRON_SECRET" \
      https://<production-domain>/api/internal/policy-analytics-daily-snapshot
    ```
 
-   Expected: `{ "ok": true, "skipped": false, ... }`. Confirm the snapshot appears in `/admin/policy-analytics` → "Durable snapshot" status row.
+   Expected response: `{ "ok": true, "skipped": false, "snapshotId": "<id>", ... }`
+
+   - If `skipped: true`: a snapshot was already captured within the last 23 hours; proceed — the guard means there is already a baseline.
+   - If you receive a 401: double-check your `CRON_SECRET` export matches the value in Vercel env exactly.
+   - Confirm the snapshot appears: open `/admin/policy-analytics` → "Durable snapshot" row shows a timestamp within the last 5 minutes.
+
+6. **Confirm Vercel Analytics access for on-call monitoring:**
+   - The engineer on point must have *Viewer* or higher access to the Vercel project (Vercel dashboard → Team → Members).
+   - Navigate to Vercel dashboard → Project → Analytics. Confirm the tab loads and shows data (it may be sparse before launch; that is expected).
+   - Key filters to bookmark for launch monitoring:
+     - **Path filter:** `/customer/policies` — tracks page load traffic.
+     - **Web Analytics custom events** (if Vercel Speed Insights or custom events are enabled): search `policy-rec-impression`, `policy-rec-apply`, `policy-rec-undo`, `policy-teaser-click`.
+   - If you do **not** have Vercel project access, request it from the team admin before launch. Without this access the apply/undo error-rate watchpoints in steps 8–9 below are unmonitored.
 
 **Enable (T±0)**
 
-5. Enable `/customer/policies` for the target cohort (feature flag toggle or Vercel env override, per your deployment process).
-6. Perform one authenticated load of the policy page in production to confirm it renders without console errors.
-7. Confirm the analytics sink receives at least one `policy-rec-impression` event within 5 minutes of the first user visit.
+7. **Enable the route:** In Vercel dashboard → Project → Settings → Environment Variables, confirm `POLICIES_ENABLED` is set to `true` (or is absent). If it was previously set to `false` from a prior rollback, change it to `true` and trigger a redeploy:
+   - Vercel dashboard → Deployments → latest successful deployment → ⋯ → Redeploy.
+   - Or push a no-op commit: `git commit --allow-empty -m "chore: trigger redeploy for policy enable"`.
+
+8. Perform one authenticated load of `/customer/policies` in production to confirm it renders without console errors (open browser devtools → Console tab before loading).
+
+9. Confirm the analytics sink receives at least one `policy-rec-impression` event within 5 minutes of the first user visit.
 
 **Post-enable checks (T+15 min and T+1 h)**
 
-8. Open `/admin/policy-analytics` → confirm headline metrics (Total Events) are non-zero.
-9. Check Vercel function logs, filter path `/api/customer/policy/overrides` — confirm error rate is below 1%.
-10. Confirm the daily cron is scheduled: Vercel dashboard → Project → Cron Jobs → `policy-analytics-daily-snapshot` shows next run.
+10. Open `/admin/policy-analytics` → confirm headline metrics (Total Events) are non-zero.
+11. Check Vercel function logs (Vercel dashboard → Project → Functions → filter by path `/api/customer/policy/overrides`) — confirm error rate is below 1%.
+12. Confirm the daily cron is scheduled: Vercel dashboard → Project → Cron Jobs → `policy-analytics-daily-snapshot` shows next run within 24 h.
 
 **Rollback signal check (T+1 h)**
 
-11. If `updatePolicyOverrides` 5xx rate exceeds 5% for 15 consecutive minutes: disable the route (revert the feature flag or redeploy the prior release tag). See Stage 2 rollback procedure below.
-12. If the analytics sink shows zero events after 30 minutes of confirmed user traffic: investigate the analytics event pipeline — not necessarily a code regression, could be a sink configuration issue.
+13. If `updatePolicyOverrides` 5xx rate exceeds 5% for 15 consecutive minutes: execute the rollback switch below immediately. Do not wait for a root-cause diagnosis.
+14. If the analytics sink shows zero events after 30 minutes of confirmed user traffic: investigate the analytics event pipeline — this is not necessarily a code regression (could be a Vercel Analytics sink configuration issue). Do not roll back on this signal alone unless page errors are also present.
 
 ---
 
@@ -233,15 +267,40 @@ Ordered steps for the engineer executing the production enable.
 - Page renders blank / crash for > 1% of sessions
 - Analytics sink missing events for > 10 minutes (indicates event pipeline failure)
 
+#### Rollback Switch
+
+> **Mechanism:** The `/customer/policies` route is gated by a `POLICIES_ENABLED` server-side environment variable, checked at request time in `app/customer/policies/layout.tsx`. Setting it to `"false"` causes the server to return a 404 for all requests to the route — no code change required.
+
+**To disable `/customer/policies` immediately:**
+
+1. Go to Vercel dashboard → Project → Settings → Environment Variables.
+2. Find or add `POLICIES_ENABLED`. Set the **Production** scope value to `false`.
+3. Trigger a redeploy:
+   - Option A (preferred): Vercel dashboard → Deployments → latest successful deployment → ⋯ → Redeploy.
+   - Option B: `git commit --allow-empty -m "ops: disable policy route" && git push origin main`.
+4. Once the deployment is live, verify: `curl -o /dev/null -s -w "%{http_code}" https://<production-domain>/customer/policies` should return `404`.
+5. Confirm with one browser load: the page should show the project's standard 404 UI (not a blank screen or error).
+
+**To re-enable after a rollback:**
+
+1. Set `POLICIES_ENABLED = true` in Vercel env (or delete the variable — absence defaults to enabled).
+2. Redeploy (same steps as above).
+3. Re-run Day-0 steps 8–14 of the runbook above to confirm the route is healthy.
+
 #### Rollback Procedure
 
 If any rollback trigger fires:
 
-1. **Disable the route** — revert the feature flag or redeploy the prior release tag (do not skip this, even if investigation is ongoing).
-2. **Confirm the disable** — make one authenticated request to `/customer/policies`; it should redirect or return the expected fallback state for ineligible accounts.
-3. **Preserve evidence** — before any code change, export the current analytics state: `GET /api/internal/policy-analytics-snapshot` (Authorization: Bearer $CRON_SECRET) and save the response.
-4. **Open the incident** — create a tracking issue with: trigger observed, time of onset, first user affected (account ID if known), error payload, and snapshot export.
-5. **Do not hotfix under time pressure** — redeploy the last known-good build tag rather than patching forward unless the root cause is trivially obvious and the fix is a 1-line change.
+1. **Execute the rollback switch** — follow the "Disable" steps above. Do not skip this, even if investigation is ongoing. The rollback switch is the first action regardless of root cause.
+2. **Confirm the disable** — `curl -o /dev/null -s -w "%{http_code}" https://<production-domain>/customer/policies` should return `404`. An authenticated session visiting the URL should see the standard 404 page.
+3. **Preserve evidence** — before any code change, export the current analytics state:
+   ```bash
+   curl -sf -H "Authorization: Bearer $CRON_SECRET" \
+     https://<production-domain>/api/internal/policy-analytics-snapshot \
+     -o incident-snapshot-$(date +%Y%m%d-%H%M%S).json
+   ```
+4. **Open the incident** — create a tracking issue with: trigger observed, time of onset, first user affected (account ID if known), error payload, and the incident snapshot filename.
+5. **Do not hotfix under time pressure** — once the route is disabled the blast radius is contained. Redeploy the last known-good build tag rather than patching forward unless the root cause is trivially obvious and the fix is a 1-line change.
 
 ---
 
