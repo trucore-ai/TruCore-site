@@ -5,11 +5,11 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 // Mocks — must be declared before importing the component
 // ---------------------------------------------------------------------------
 
-const mockPush = vi.fn();
-const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace }),
-}));
+const { mockPush, mockReplace } = vi.hoisted(() => ({ mockPush: vi.fn(), mockReplace: vi.fn() }));
+vi.mock("next/navigation", () => {
+  const stableRouter = { push: mockPush, replace: mockReplace };
+  return { useRouter: () => stableRouter };
+});
 
 const mockFetchDashboard = vi.fn();
 const mockFetchActivation = vi.fn();

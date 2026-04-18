@@ -5,11 +5,11 @@ import { render, screen, waitFor, fireEvent, act } from "@testing-library/react"
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockPush = vi.fn();
-const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace }),
-}));
+const { mockPush, mockReplace } = vi.hoisted(() => ({ mockPush: vi.fn(), mockReplace: vi.fn() }));
+vi.mock("next/navigation", () => {
+  const stableRouter = { push: mockPush, replace: mockReplace };
+  return { useRouter: () => stableRouter };
+});
 
 const mockFetchDashboard = vi.fn();
 const mockFetchActivation = vi.fn();
@@ -19,6 +19,7 @@ const mockFetchSampleIntent = vi.fn();
 const mockSimulateProtection = vi.fn();
 const mockExecuteSample = vi.fn();
 const mockMarkActivationStep = vi.fn();
+const mockFetchPolicy = vi.fn();
 
 vi.mock("@/lib/customer-auth", () => {
   class ApiError extends Error {
@@ -47,7 +48,7 @@ vi.mock("@/lib/customer-auth", () => {
     requestVerificationEmail: vi.fn(),
     fetchUpgradeRequests: (...args: unknown[]) =>
       mockFetchUpgradeRequests(...args),
-    fetchPolicy: vi.fn().mockResolvedValue({}),
+    fetchPolicy: (...args: unknown[]) => mockFetchPolicy(...args),
     updatePolicyOverrides: vi.fn().mockResolvedValue({}),
     ApiError,
   };
@@ -106,6 +107,7 @@ beforeEach(() => {
   });
   mockFetchReceipts.mockResolvedValue({ receipts: [], count: 0 });
   mockFetchUpgradeRequests.mockResolvedValue({ requests: [] });
+  mockFetchPolicy.mockResolvedValue({});
   mockMarkActivationStep.mockResolvedValue({
     onboarding_completed: false,
     steps_completed: [],

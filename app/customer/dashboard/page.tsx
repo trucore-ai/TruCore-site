@@ -260,6 +260,22 @@ export default function CustomerDashboardPage() {
     setObStep((prev) => (prev > backendStep ? prev : backendStep));
   }, []);
 
+  // Policy load — isolated in its own stable callback so it can run once on
+  // mount without being coupled to the main useEffect's router dependency.
+  const loadPolicy = useCallback(async () => {
+    setPolicyLoading(true);
+    setPolicyFailed(false);
+    try {
+      const p = await fetchPolicy();
+      setPolicyData(p);
+      setPolicyFailed(false);
+    } catch {
+      setPolicyFailed(true);
+    } finally {
+      setPolicyLoading(false);
+    }
+  }, []);
+
   // -----------------------------------------------------------------------
   // Initial load: dashboard + activation + receipts
   // -----------------------------------------------------------------------
@@ -382,17 +398,12 @@ export default function CustomerDashboardPage() {
         // Non-fatal
       });
 
-    // Policy data (non-fatal)
-    const loadPolicy = () => {
-      setPolicyLoading(true);
-      setPolicyFailed(false);
-      fetchPolicy()
-        .then((p) => { setPolicyData(p); setPolicyFailed(false); })
-        .catch(() => { setPolicyFailed(true); })
-        .finally(() => setPolicyLoading(false));
-    };
-    loadPolicy();
   }, [mergeBackendOnboardingStep, router]);
+
+  // Load policy data once on mount, decoupled from the router-dep effect.
+  useEffect(() => {
+    loadPolicy();
+  }, [loadPolicy]);
 
   // -----------------------------------------------------------------------
   // Copy helpers
@@ -480,7 +491,6 @@ export default function CustomerDashboardPage() {
           receiptId,
         )) as unknown as ActivationState;
         setActivation(act);
-        setReceiptCount((c) => c + 1);
       } catch {
         // Non-fatal
       }
@@ -510,7 +520,7 @@ export default function CustomerDashboardPage() {
           receiptId,
         )) as unknown as ActivationState;
         setActivation(act);
-        setReceiptCount((c) => c + 1);
+        if (receiptId) setReceiptCount((c) => c + 1);
       } catch {
         // Non-fatal
       }
@@ -1696,7 +1706,7 @@ export default function CustomerDashboardPage() {
                 href="/customer/receipts"
                 className="text-xs text-primary-400 hover:text-primary-300 transition"
               >
-                View protected trade receipts &rarr;
+              View all receipts &rarr;
               </Link>
             </div>
             <div className="flex items-center gap-6">
@@ -1736,14 +1746,7 @@ export default function CustomerDashboardPage() {
         <PolicySummaryCard
           policy={policyData}
           loading={policyLoading}
-          onRetry={policyFailed ? () => {
-            setPolicyLoading(true);
-            setPolicyFailed(false);
-            fetchPolicy()
-              .then((p) => { setPolicyData(p); setPolicyFailed(false); })
-              .catch(() => { setPolicyFailed(true); })
-              .finally(() => setPolicyLoading(false));
-          } : undefined}
+          onRetry={policyFailed ? loadPolicy : undefined}
         />
 
         {/* Quick Test Request */}
