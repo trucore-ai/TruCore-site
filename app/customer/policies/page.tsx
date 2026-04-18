@@ -2409,7 +2409,13 @@ export default function CustomerPoliciesPage() {
       }
 
       const raw = formValues[field.key]?.trim() ?? "";
-      if (raw === "") continue; // omit = revert to plan default
+      if (raw === "") {
+        // If this field had a stored override, send null to explicitly clear it.
+        if (Object.prototype.hasOwnProperty.call(currentOverrides, field.key)) {
+          newOverrides[field.key] = null;
+        }
+        continue;
+      }
 
       if (field.type === "boolean") {
         newOverrides[field.key] = raw === "true";
@@ -4161,19 +4167,51 @@ export default function CustomerPoliciesPage() {
                                 </div>
                               </div>
                               {field.type === "boolean" ? (
-                                <select
-                                  id={`override-${field.key}`}
-                                  value={formValues[field.key] ?? ""}
-                                  onChange={(e) =>
-                                    updateField(field.key, e.target.value)
-                                  }
-                                  disabled={saving}
-                                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 outline-none transition focus:border-amber-500/40 disabled:opacity-50"
-                                >
-                                  <option value="">Plan default</option>
-                                  <option value="true">Yes</option>
-                                  <option value="false">No</option>
-                                </select>
+                                <div className="space-y-1.5">
+                                  <select
+                                    id={`override-${field.key}`}
+                                    value={formValues[field.key] ?? ""}
+                                    onChange={(e) =>
+                                      updateField(field.key, e.target.value)
+                                    }
+                                    disabled={saving}
+                                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 outline-none transition focus:border-amber-500/40 disabled:opacity-50"
+                                  >
+                                    <option value="">Plan default</option>
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                  </select>
+                                  {overridesEnabled &&
+                                    Object.prototype.hasOwnProperty.call(
+                                      overrides,
+                                      field.key,
+                                    ) && (
+                                      <div className="flex items-center justify-between">
+                                        <p
+                                          className="text-[10px] text-slate-500"
+                                          data-testid={`override-status-${field.key}`}
+                                        >
+                                          {(formValues[field.key] ?? "") === ""
+                                            ? "Using plan default"
+                                            : "Custom override active"}
+                                        </p>
+                                        {(formValues[field.key] ?? "") !==
+                                          "" && (
+                                          <button
+                                            type="button"
+                                            disabled={saving}
+                                            onClick={() =>
+                                              updateField(field.key, "")
+                                            }
+                                            data-testid={`clear-override-${field.key}`}
+                                            className="text-[10px] text-amber-400 hover:text-amber-300 disabled:opacity-50 transition"
+                                          >
+                                            Clear override
+                                          </button>
+                                        )}
+                                      </div>
+                                    )}
+                                </div>
                               ) : field.type === "list" ? (
                                 <div className="space-y-2">
                                   <div className="flex flex-wrap gap-2">
