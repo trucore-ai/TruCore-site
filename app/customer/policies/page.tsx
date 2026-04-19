@@ -2899,7 +2899,7 @@ export default function CustomerPoliciesPage() {
               </span>
             </div>
             <p className="text-[10px] text-slate-500">
-              Policy overrides:{" "}
+              Policy Controls:{" "}
               {overridesEnabled ? (
                 <span className="text-emerald-400">Enabled</span>
               ) : (
@@ -2916,7 +2916,7 @@ export default function CustomerPoliciesPage() {
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4 flex items-center gap-3">
             <span className="text-emerald-400 text-sm">&#10003;</span>
             <p className="text-xs text-emerald-300">
-              Policy overrides saved successfully.
+              Policy Controls saved successfully.
             </p>
           </div>
         )}
@@ -2998,6 +2998,58 @@ export default function CustomerPoliciesPage() {
         {/* Effective policy (view mode) */}
         {!editing && (
           <>
+            <section
+              className="rounded-xl border border-amber-400/25 bg-amber-500/5 p-6 space-y-4"
+              data-testid="policy-controls-surface"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-medium text-slate-200">Policy Controls</h2>
+                  <p
+                    className="mt-1 text-[10px] text-slate-500"
+                    data-testid="policy-controls-helper"
+                  >
+                    Effective Policy shows what is enforced. Policy Controls are where you edit
+                    transaction limits and execution safety settings.
+                  </p>
+                </div>
+                {overridesEnabled ? (
+                  <button
+                    type="button"
+                    onClick={() => enterEditMode()}
+                    className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-medium text-amber-200 transition hover:bg-amber-500/20"
+                    data-testid="edit-policy-controls-cta"
+                  >
+                    Edit Policy Controls
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-medium text-slate-400">
+                    Pro or Enterprise required
+                  </span>
+                )}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2" data-testid="policy-controls-lever-list">
+                {[
+                  "Max transaction value (USD)",
+                  "Max transaction value (SOL)",
+                  "Max slippage",
+                  "Require simulation success",
+                ].map((lever) => (
+                  <div
+                    key={lever}
+                    className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2"
+                  >
+                    <p className="text-[11px] text-slate-300">{lever}</p>
+                    <p className="mt-0.5 text-[10px] text-slate-500">
+                      {overridesEnabled
+                        ? "Editable in Policy Controls"
+                        : "Premium control — visible, locked on current plan"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {/* Policy at a Glance — plain-English summary */}
             <section
               className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-4"
@@ -4206,7 +4258,14 @@ export default function CustomerPoliciesPage() {
               </h2>
               <p className="text-[10px] text-slate-500">
                 These are the merged values that the firewall enforces on every
-                transaction. Plan defaults are combined with any custom overrides.
+                transaction. Plan defaults are combined with any custom policy controls.
+              </p>
+              <p
+                className="text-[10px] text-slate-500"
+                data-testid="effective-policy-controls-hint"
+              >
+                To change transaction limits, slippage, or simulation requirements,
+                use Policy Controls above and save your policy controls.
               </p>
               {renderEffectiveSection("Transaction Limits", limitKeys, effective, overrides)}
               {renderEffectiveSection("Execution Safety", protectionKeys, effective, overrides)}
@@ -4230,7 +4289,14 @@ export default function CustomerPoliciesPage() {
             <h2 className="text-sm font-medium text-slate-200">Auto-Dynamic PIL Mode</h2>
             <p className="mt-1 text-[10px] text-slate-500">
               Opt-in adaptive tuning for the next transaction only. Same-market scoped,
-              bounded, explainable, and never written into durable policy defaults.
+              bounded, explainable, and never written into durable policy defaults.{" "}
+              <a
+                href="/docs/policies/auto-dynamic-pil"
+                className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
+                data-testid="adaptive-pil-docs-link"
+              >
+                How it works
+              </a>
             </p>
           </div>
 
@@ -4326,14 +4392,14 @@ export default function CustomerPoliciesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-medium text-slate-200">
-                  {editing ? "Configure Overrides" : "Custom Overrides"}
+                  {editing ? "Configure Policy Controls" : "Policy Controls"}
                 </h2>
                 <p className="mt-1 text-[10px] text-slate-500">
                   {editing
                     ? "Clear a field to revert to plan default. Changes are not saved until you confirm."
                     : hasOverrides
-                      ? "These values override your plan defaults."
-                      : "No custom overrides set."}
+                      ? "These values customize your plan defaults."
+                      : "No custom policy controls set."}
                 </p>
               </div>
               {!editing && (
@@ -4341,7 +4407,7 @@ export default function CustomerPoliciesPage() {
                   onClick={() => enterEditMode()}
                   className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-medium text-amber-200 transition hover:bg-amber-500/20"
                 >
-                  Edit Overrides
+                  Edit Policy Controls
                 </button>
               )}
             </div>
@@ -4773,7 +4839,7 @@ export default function CustomerPoliciesPage() {
                       disabled={saving}
                       className="rounded-lg bg-amber-600 px-5 py-2 text-xs font-semibold text-white transition hover:bg-amber-500 disabled:opacity-50"
                     >
-                      {saving ? "Saving…" : "Save Overrides"}
+                      {saving ? "Saving…" : "Save Policy Controls"}
                     </button>
                   </div>
                 </div>
@@ -4798,7 +4864,7 @@ export default function CustomerPoliciesPage() {
               </div>
             ) : (
               <p className="text-xs text-slate-500">
-                No custom overrides set. Click Edit Overrides to customize your
+                No custom policy controls set. Click Edit Policy Controls to customize your
                 policy.
               </p>
             )}
