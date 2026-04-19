@@ -1269,10 +1269,28 @@ export interface EffectivePolicyResponse {
   plan_limits: PolicyPlanLimits;
   overrides: Record<string, unknown>;
   effective: Record<string, unknown>;
+  adaptive_pil?: AdaptivePilStatus;
+}
+
+export type AutoDynamicPilMode = "off" | "recommend" | "auto_bounded";
+
+export interface AdaptivePilStatus {
+  mode: AutoDynamicPilMode;
+  eligible: boolean;
+  eligible_fields: string[];
+  scope: string;
+  bounded: boolean;
+  pending_overlays: number;
+  latest_event?: Record<string, unknown> | null;
 }
 
 export interface PolicyOverridesUpdateResponse {
   overrides: Record<string, unknown>;
+  message: string;
+}
+
+export interface AdaptiveModeUpdateResponse {
+  mode: AutoDynamicPilMode;
   message: string;
 }
 
@@ -1371,6 +1389,60 @@ export async function updatePolicyOverrides(
     let body: Record<string, unknown> = {};
     try { body = await res.json(); } catch { /* use default */ }
     const msg = typeof body.message === "string" ? body.message : "We couldn't update your policy overrides.";
+    throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
+  }
+
+  return res.json();
+}
+
+export async function updateAutoDynamicPilMode(
+  mode: AutoDynamicPilMode,
+): Promise<AdaptiveModeUpdateResponse> {
+  const token = getToken();
+  if (!token) throw new ApiError("unauthorized", "Not authenticated");
+
+  let res: Response;
+  try {
+    res = await fetch(`${POLICY_PROXY_BASE}/adaptive-mode`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ mode }),
+    });
+  } catch {
+    throw new ApiError("network_error", "We couldn't reach the policy service.");
+  }
+
+  if (res.status === 401) {
+    clearAuth();
+    throw new ApiError("unauthorized", "Your session has expired. Please sign in again.");
+  }
+
+  if (res.status === 403) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "This feature requires Pro or Enterprise.";
+    throw new ApiError("forbidden", msg);
+  }
+
+  if (res.status === 422) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const detail = typeof body.detail === "object" && body.detail !== null ? body.detail as Record<string, unknown> : body;
+    const msg = typeof detail.message === "string" ? detail.message : "Invalid adaptive mode.";
+    throw new ApiError("invalid_mode", msg);
+  }
+
+  if (res.status >= 500) {
+    throw new ApiError("upstream_5xx", "Policy service is temporarily unavailable.");
+  }
+
+  if (!res.ok) {
+    let body: Record<string, unknown> = {};
+    try { body = await res.json(); } catch { /* use default */ }
+    const msg = typeof body.message === "string" ? body.message : "We couldn't update adaptive mode.";
     throw new ApiError(typeof body.error === "string" ? body.error : "api_error", msg);
   }
 

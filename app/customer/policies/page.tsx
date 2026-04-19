@@ -7,6 +7,7 @@ import {
   isLoggedIn,
   fetchPolicy,
   updatePolicyOverrides,
+  updateAutoDynamicPilMode,
   fetchReceiptSummary,
   fetchMarketConditions,
   fetchPilRecommendations,
@@ -19,8 +20,10 @@ import {
   type CohortBenchmarkResponse,
   type ExternalContextResponse,
   type SignalFreshness,
+  type AutoDynamicPilMode,
 } from "@/lib/customer-auth";
 import { PremiumSlider } from "@/components/premium-slider";
+import { PolicyBooleanLever } from "@/components/policy-boolean-lever";
 import {
   trackRecommendationImpression,
   trackRecommendationExpand,
@@ -38,6 +41,13 @@ import {
   trackRecommendationUndoSuccess,
   trackRecommendationUndoError,
 } from "@/lib/client/policy-recommendation-analytics";
+import {
+  derivePilActionState,
+  pilActionStateBadgeClass,
+  PIL_ACTION_STATE_LABELS,
+  type PilActionState,
+  type PilActionResult,
+} from "@/lib/policy-pil-action-state";
 import {
   deriveReceiptTrendSignals,
   getMarketConditionCue,
@@ -886,6 +896,30 @@ interface PolicyRecommendation {
    * Required when applyable is true.
    */
   applyMutation?: { key: string; value: unknown };
+  /**
+   * For PIL source recommendations: explicit action state derived by
+   * derivePilActionState().  Drives badge and CTA selection.
+   */
+  pilActionState?: PilActionState;
+  /**
+   * Direction hint from the PIL action state — used for UX copy.
+   * "none" = informational / no change needed.
+   */
+  pilRecommendedDirection?: PilActionResult["recommendedDirection"];
+  /**
+   * Human-readable label of the current effective value for the target field.
+   * Shown alongside PIL cards to give context for the recommendation.
+   */
+  pilCurrentValueLabel?: string;
+  /**
+   * Human-readable label of the recommended target state.
+   */
+  pilRecommendedValueLabel?: string;
+  /**
+   * True when pilActionState is "already_applied" AND the satisfaction comes
+   * from a stored override — meaning the user may want to clear it.
+   */
+  pilSatisfiedViaOverride?: boolean;
 }
 
 function generatePolicyRecommendations(
@@ -1450,6 +1484,9 @@ const PIL_WHY: Record<string, string> = {
 
 function generatePilRecommendations(
   pil: PilRecommendationsResponse,
+  effective: Record<string, unknown>,
+  overrides: Record<string, unknown>,
+  overridesEnabled: boolean,
 ): PolicyRecommendation[] {
   if (!pil.recommendations || pil.recommendations.length === 0) return [];
 
@@ -1464,6 +1501,21 @@ function generatePilRecommendations(
     ]);
     const fieldKey = editableKeys.has(rec.parameter) ? rec.parameter : undefined;
 
+    // Derive explicit action state for this PIL recommendation.
+    const actionResult = derivePilActionState(
+      rec.id,
+      rec.parameter,
+      effective,
+      overrides,
+      overridesEnabled,
+    );
+
+    // Only mark as applyable when the action state is "actionable" AND we have
+    // a concrete mutation from the helper.
+    const isApplyable =
+      actionResult.actionState === "actionable" &&
+      actionResult.applyMutation !== undefined;
+
     return {
       id: `pil-${rec.id.toLowerCase().replace(/_/g, "-")}`,
       title: rec.title,
@@ -1474,6 +1526,16 @@ function generatePilRecommendations(
       fieldKey,
       evidence: rec.evidence || undefined,
       confidence: PIL_CONFIDENCE_MAP[rec.confidence] ?? 0.3,
+      // Applyable flow — only wired for actionable PIL recs with a safe mutation.
+      applyable: isApplyable || undefined,
+      applyConfirmText: isApplyable ? actionResult.applyConfirmText : undefined,
+      applyMutation: isApplyable ? actionResult.applyMutation : undefined,
+      // PIL-specific action state metadata for premium card UX.
+      pilActionState: actionResult.actionState,
+      pilRecommendedDirection: actionResult.recommendedDirection,
+      pilCurrentValueLabel: actionResult.currentValueLabel,
+      pilRecommendedValueLabel: actionResult.recommendedValueLabel,
+      pilSatisfiedViaOverride: actionResult.satisfiedViaOverride,
     };
   });
 }
@@ -1958,6 +2020,12 @@ export default function CustomerPoliciesPage() {
   const [undoingRecId, setUndoingRecId] = useState<string | null>(null);
   // Per-rec undo error flag — set on undo failure, cleared on successful undo.
   const [undoErrors, setUndoErrors] = useState<Record<string, boolean>>({});
+  // PIL "clear override" — which rec's clear action is in-flight.
+  const [clearingPilOverrideRecId, setClearingPilOverrideRecId] = useState<string | null>(null);
+  // Per-rec clear error flag.
+  const [pilClearErrors, setPilClearErrors] = useState<Record<string, boolean>>({});
+  // Per-rec clear success flag (transient — cleared on next policy reload).
+  const [pilClearSuccess, setPilClearSuccess] = useState<Record<string, boolean>>({});
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -1966,6 +2034,8 @@ export default function CustomerPoliciesPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [adaptiveModeSaving, setAdaptiveModeSaving] = useState(false);
+  const [adaptiveModeError, setAdaptiveModeError] = useState("");
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [listValues, setListValues] = useState<Record<string, string[]>>({});
   const [tokenPolicy, setTokenPolicy] = useState<TokenPolicyState>({ ...DEFAULT_TOKEN_POLICY });
@@ -1998,6 +2068,40 @@ export default function CustomerPoliciesPage() {
     setError("");
     loadPolicy();
   }, [loadPolicy]);
+
+  const handleAdaptiveModeChange = useCallback(
+    async (mode: AutoDynamicPilMode) => {
+      if (!policy) return;
+      setAdaptiveModeError("");
+      setAdaptiveModeSaving(true);
+      try {
+        const updated = await updateAutoDynamicPilMode(mode);
+        setPolicy((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            adaptive_pil: {
+              mode: updated.mode,
+              eligible: prev.adaptive_pil?.eligible ?? (prev.plan_code === "pro" || prev.plan_code === "enterprise"),
+              eligible_fields: prev.adaptive_pil?.eligible_fields ?? ["max_slippage_bps"],
+              scope: prev.adaptive_pil?.scope ?? "same_market_next_transaction",
+              bounded: prev.adaptive_pil?.bounded ?? true,
+              pending_overlays: prev.adaptive_pil?.pending_overlays ?? 0,
+              latest_event: prev.adaptive_pil?.latest_event ?? null,
+            },
+          };
+        });
+        await loadPolicy();
+      } catch (err) {
+        setAdaptiveModeError(
+          err instanceof Error ? err.message : "Could not update adaptive mode.",
+        );
+      } finally {
+        setAdaptiveModeSaving(false);
+      }
+    },
+    [policy, loadPolicy],
+  );
 
   // Fetch receipt summary for history-aware recommendations (non-blocking).
   const loadHistorySummary = useCallback(async () => {
@@ -2313,6 +2417,36 @@ export default function CustomerPoliciesPage() {
     }
   }
 
+  /**
+   * Clear the stored override for a PIL-recommended field, returning the
+   * effective value to the plan default.
+   *
+   * Only triggered when pilActionState === "already_applied" &&
+   * pilSatisfiedViaOverride === true — i.e. the recommendation is satisfied
+   * specifically because the user stored an override.
+   */
+  async function handleClearPilOverride(rec: PolicyRecommendation) {
+    if (!rec.fieldKey) return;
+    const currentPlanCode = policy?.plan_code ?? "free";
+    setClearingPilOverrideRecId(rec.id);
+    setPilClearErrors((prev) => ({ ...prev, [rec.id]: false }));
+    try {
+      // Send null for the field key — the backend treats null as "clear override".
+      const newOverrides: Record<string, unknown> = {
+        ...(policy?.overrides ?? {}),
+        [rec.fieldKey]: null,
+      };
+      await updatePolicyOverrides(newOverrides);
+      await loadPolicy();
+      setPilClearSuccess((prev) => ({ ...prev, [rec.id]: true }));
+      // Re-compute PIL action states by reloading (loadPolicy triggers re-render).
+    } catch {
+      setPilClearErrors((prev) => ({ ...prev, [rec.id]: true }));
+    } finally {
+      setClearingPilOverrideRecId(null);
+    }
+  }
+
   function applyPreset(preset: Preset) {
     setFormValues((prev) => ({ ...prev, ...preset.values }));
     setListValues({ allowed_programs: [], denied_programs: [] });
@@ -2409,7 +2543,14 @@ export default function CustomerPoliciesPage() {
       }
 
       const raw = formValues[field.key]?.trim() ?? "";
-      if (raw === "") continue; // omit = revert to plan default
+      if (raw === "") {
+        // If the user has selected "Plan default" but there is a stored override,
+        // send null so the backend removes the key and reverts to plan default.
+        if (Object.prototype.hasOwnProperty.call(currentOverrides, field.key)) {
+          newOverrides[field.key] = null;
+        }
+        continue;
+      }
 
       if (field.type === "boolean") {
         newOverrides[field.key] = raw === "true";
@@ -2541,6 +2682,33 @@ export default function CustomerPoliciesPage() {
   const overrides = policy?.overrides ?? {};
   const effective = policy?.effective ?? {};
   const hasOverrides = Object.keys(overrides).length > 0;
+  const adaptive = policy?.adaptive_pil;
+  const adaptiveMode = adaptive?.mode ?? "off";
+  const adaptiveEligible = Boolean(adaptive?.eligible);
+  const adaptiveLatestEvent =
+    adaptive?.latest_event && typeof adaptive.latest_event === "object"
+      ? adaptive.latest_event
+      : null;
+  const adaptivePendingOverlays =
+    typeof adaptive?.pending_overlays === "number" ? adaptive.pending_overlays : 0;
+  const adaptiveIsOn = adaptiveMode !== "off";
+  const adaptiveEligibleFieldLabels = Array.isArray(adaptive?.eligible_fields)
+    ? adaptive.eligible_fields.map((field) => {
+      if (field === "max_slippage_bps") return "Max slippage";
+      return field.replace(/_/g, " ");
+    })
+    : [];
+  const adaptiveScopeLabel = adaptive?.scope === "same_market_next_transaction"
+    ? "Same market · next transaction"
+    : (adaptive?.scope ?? "Unknown");
+  const adaptiveLatestEventName =
+    adaptiveLatestEvent && typeof adaptiveLatestEvent.event === "string"
+      ? adaptiveLatestEvent.event.replace(/_/g, " ")
+      : "none";
+  const adaptiveLatestEventAt =
+    adaptiveLatestEvent && typeof adaptiveLatestEvent.at === "number"
+      ? formatLastUpdated(adaptiveLatestEvent.at)
+      : null;
 
   // Partition effective keys into categories for display
   const limitKeys = ["tx_limit_per_month", "max_notional_usd", "max_value_sol"];
@@ -2647,6 +2815,46 @@ export default function CustomerPoliciesPage() {
         </div>
       </div>
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Lever context — PIL recs and plan-default values for edit-mode levers
+  // ---------------------------------------------------------------------------
+
+  // Re-derive PIL recs here (lightweight — same inputs, memoised by render cycle).
+  // We only need fieldKey and the action state for lever integration.
+  const canPilForLevers = isSourceAvailable("Policy Intelligence", planCode);
+  const pilRecsForLevers: PolicyRecommendation[] =
+    canPilForLevers && pilRecommendations
+      ? generatePilRecommendations(pilRecommendations, effective, overrides, overridesEnabled)
+      : [];
+
+  /** Returns the first PIL rec that targets a given field key, or undefined. */
+  function leverPilRec(fieldKey: string): PolicyRecommendation | undefined {
+    return pilRecsForLevers.find((r) => r.fieldKey === fieldKey);
+  }
+
+  /**
+   * Derives the plan-default numeric value for a lever from the effective
+   * policy snapshot captured when edit mode opened.
+   *
+   * When no override existed at edit-start, effective === plan default.
+   * When an override existed, we can't know the real plan default without a
+   * separate endpoint, so we return undefined (no marker shown).
+   */
+  function leverPlanDefault(fieldKey: string): number | undefined {
+    if (!editSnapshot) return undefined;
+    // No override existed at edit start → effective IS the plan default.
+    if ((editSnapshot.values[fieldKey] ?? "") === "") {
+      const v = effective[fieldKey];
+      if (typeof v === "number") return v;
+    }
+    return undefined;
+  }
+
+  /** Whether a stored override currently exists for the given field key. */
+  function isFieldOverride(fieldKey: string): boolean {
+    return Object.prototype.hasOwnProperty.call(overrides, fieldKey);
   }
 
   return (
@@ -2971,7 +3179,7 @@ export default function CustomerPoliciesPage() {
                 ? generateMarketRecommendations(marketConditions, effective)
                 : [];
               const pilRecs = canPil && pilRecommendations
-                ? generatePilRecommendations(pilRecommendations)
+                ? generatePilRecommendations(pilRecommendations, effective, overrides, overridesEnabled)
                 : [];
               const benchmarkRecs = canBenchmark && cohortBenchmarks
                 ? generateCohortBenchmarkRecommendations(cohortBenchmarks)
@@ -3294,6 +3502,37 @@ export default function CustomerPoliciesPage() {
                                   {rec.why}
                                 </p>
                               )}
+                              {/* PIL action state badge + current-vs-recommended row */}
+                              {rec.source === "Policy Intelligence" && rec.pilActionState && (
+                                <div
+                                  className="flex flex-wrap items-center gap-2"
+                                  data-testid={`pil-action-row-${rec.id}`}
+                                >
+                                  <span
+                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-semibold leading-none ${pilActionStateBadgeClass(rec.pilActionState)}`}
+                                    data-testid={`pil-action-state-badge-${rec.id}`}
+                                  >
+                                    {PIL_ACTION_STATE_LABELS[rec.pilActionState]}
+                                  </span>
+                                  {rec.pilActionState === "already_applied" && rec.pilCurrentValueLabel && rec.pilRecommendedDirection !== "none" && (
+                                    <span className="text-[9px] text-slate-500" data-testid={`pil-current-value-${rec.id}`}>
+                                      Current:{" "}
+                                      <span className="text-emerald-400 font-medium">
+                                        {rec.pilCurrentValueLabel}
+                                      </span>
+                                    </span>
+                                  )}
+                                  {(rec.pilActionState === "actionable" || rec.pilActionState === "manual_only" || rec.pilActionState === "unavailable_on_plan") &&
+                                    rec.pilCurrentValueLabel &&
+                                    rec.pilRecommendedValueLabel && (
+                                    <span className="text-[9px] text-slate-500" data-testid={`pil-value-comparison-${rec.id}`}>
+                                      <span className="text-slate-400">{rec.pilCurrentValueLabel}</span>
+                                      <span className="mx-1 text-slate-600">→</span>
+                                      <span className="text-slate-300 font-medium">{rec.pilRecommendedValueLabel}</span>
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                               {expandable && (
                                 <button
                                   type="button"
@@ -3369,9 +3608,50 @@ export default function CustomerPoliciesPage() {
                                   )}
                                 </div>
                               )}
-                              {overridesEnabled && (rec.applyable || rec.fieldKey) && (
+                              {/* ── Action controls ───────────────────────────── */}
+                              {/* PIL already-applied: show satisfied state + optional clear */}
+                              {rec.source === "Policy Intelligence" && rec.pilActionState === "already_applied" && !applyResults[rec.id] && (
+                                <div className="flex flex-wrap items-center gap-2" data-testid={`pil-already-applied-${rec.id}`}>
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400">
+                                    &#10003; Already applied
+                                  </span>
+                                  {rec.pilSatisfiedViaOverride && rec.fieldKey && overridesEnabled && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        disabled={clearingPilOverrideRecId === rec.id}
+                                        onClick={() => handleClearPilOverride(rec)}
+                                        className="inline-flex items-center rounded-md border border-slate-500/20 bg-white/5 px-2.5 py-1 text-[10px] text-slate-400 transition hover:text-slate-200 hover:bg-white/10 disabled:opacity-50"
+                                        data-testid={`pil-clear-override-${rec.id}`}
+                                      >
+                                        {clearingPilOverrideRecId === rec.id ? "Clearing…" : "Clear override"}
+                                      </button>
+                                      {pilClearErrors[rec.id] && (
+                                        <span className="text-[10px] text-red-400" role="alert" data-testid={`pil-clear-error-${rec.id}`}>
+                                          Could not clear — try again or edit manually.
+                                        </span>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                              {/* PIL unavailable on plan: upgrade teaser pill */}
+                              {rec.source === "Policy Intelligence" && rec.pilActionState === "unavailable_on_plan" && (
+                                <div className="flex flex-wrap items-center gap-2" data-testid={`pil-upgrade-teaser-${rec.id}`}>
+                                  <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/5 px-2.5 py-1 text-[10px] font-medium text-amber-400">
+                                    &#128274; Pro required to apply
+                                  </span>
+                                  {rec.fieldKey && (
+                                    <span className="text-[9px] text-slate-500">
+                                      Upgrade to apply this recommendation with one click.
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              {/* Existing apply/undo/view-setting controls — for actionable PIL recs and all non-PIL recs */}
+                              {overridesEnabled && (rec.applyable || (rec.fieldKey && rec.source !== "Policy Intelligence") || (rec.fieldKey && rec.pilActionState === "manual_only")) && (
                                 <div className="flex flex-wrap items-center gap-2">
-                                  {/* Apply button — only for applyable recs, hidden during confirm/success */}
+                                  {/* Apply button — PIL recs get "Apply recommendation", others get "Apply" */}
                                   {rec.applyable && rec.applyMutation && applyResults[rec.id] !== "success" && applyConfirmingRecId !== rec.id && (
                                     <button
                                       type="button"
@@ -3379,7 +3659,7 @@ export default function CustomerPoliciesPage() {
                                       className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-medium transition ${isFeatured ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20" : "border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"}`}
                                       data-testid={`apply-btn-${rec.id}`}
                                     >
-                                      Apply
+                                      {rec.source === "Policy Intelligence" ? "Apply recommendation" : "Apply"}
                                     </button>
                                   )}
                                   {/* Applied success indicator + Undo action — grouped to prevent orphaned layout */}
@@ -3575,6 +3855,29 @@ export default function CustomerPoliciesPage() {
                                   <p className={`text-[10px] text-slate-500 leading-relaxed ${isExpanded ? "" : "line-clamp-2"}`}>
                                     {rec.explanation}
                                   </p>
+                                  {/* PIL action state badge + current-vs-recommended row */}
+                                  {rec.source === "Policy Intelligence" && rec.pilActionState && (
+                                    <div
+                                      className="flex flex-wrap items-center gap-1.5"
+                                      data-testid={`pil-action-row-${rec.id}`}
+                                    >
+                                      <span
+                                        className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-semibold leading-none ${pilActionStateBadgeClass(rec.pilActionState)}`}
+                                        data-testid={`pil-action-state-badge-${rec.id}`}
+                                      >
+                                        {PIL_ACTION_STATE_LABELS[rec.pilActionState]}
+                                      </span>
+                                      {(rec.pilActionState === "actionable" || rec.pilActionState === "manual_only" || rec.pilActionState === "unavailable_on_plan") &&
+                                        rec.pilCurrentValueLabel &&
+                                        rec.pilRecommendedValueLabel && (
+                                        <span className="text-[9px] text-slate-500" data-testid={`pil-value-comparison-${rec.id}`}>
+                                          <span className="text-slate-400">{rec.pilCurrentValueLabel}</span>
+                                          <span className="mx-1 text-slate-600">→</span>
+                                          <span className="text-slate-300 font-medium">{rec.pilRecommendedValueLabel}</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
                                   {expandable && (
                                     <button
                                       type="button"
@@ -3648,7 +3951,35 @@ export default function CustomerPoliciesPage() {
                                       )}
                                     </div>
                                   )}
-                                  {overridesEnabled && (rec.applyable || rec.fieldKey) && (
+                                  {/* PIL already-applied: show satisfied state + optional clear */}
+                                  {rec.source === "Policy Intelligence" && rec.pilActionState === "already_applied" && !applyResults[rec.id] && (
+                                    <div className="flex flex-wrap items-center gap-1.5" data-testid={`pil-already-applied-${rec.id}`}>
+                                      <span className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-400">
+                                        &#10003; Already applied
+                                      </span>
+                                      {rec.pilSatisfiedViaOverride && rec.fieldKey && overridesEnabled && (
+                                        <button
+                                          type="button"
+                                          disabled={clearingPilOverrideRecId === rec.id}
+                                          onClick={() => handleClearPilOverride(rec)}
+                                          className="inline-flex items-center rounded-md border border-slate-500/20 bg-white/5 px-2 py-0.5 text-[9px] text-slate-400 transition hover:text-slate-200 hover:bg-white/10 disabled:opacity-50"
+                                          data-testid={`pil-clear-override-${rec.id}`}
+                                        >
+                                          {clearingPilOverrideRecId === rec.id ? "Clearing…" : "Clear override"}
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+                                  {/* PIL unavailable on plan: upgrade teaser pill */}
+                                  {rec.source === "Policy Intelligence" && rec.pilActionState === "unavailable_on_plan" && (
+                                    <div className="flex items-center gap-1.5" data-testid={`pil-upgrade-teaser-${rec.id}`}>
+                                      <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/5 px-2 py-0.5 text-[9px] font-medium text-amber-400">
+                                        &#128274; Pro required
+                                      </span>
+                                    </div>
+                                  )}
+                                  {/* Existing apply/undo/view-setting controls */}
+                                  {overridesEnabled && (rec.applyable || (rec.fieldKey && rec.source !== "Policy Intelligence") || (rec.fieldKey && rec.pilActionState === "manual_only")) && (
                                     <div className="flex flex-wrap items-center gap-1.5">
                                       {/* Apply button — compact for more-section cards */}
                                       {rec.applyable && rec.applyMutation && applyResults[rec.id] !== "success" && applyConfirmingRecId !== rec.id && (
@@ -3658,7 +3989,7 @@ export default function CustomerPoliciesPage() {
                                           className="inline-flex items-center gap-1 rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 text-[9px] font-medium text-emerald-400 transition hover:bg-emerald-500/10 hover:text-emerald-300"
                                           data-testid={`apply-btn-${rec.id}`}
                                         >
-                                          Apply
+                                          {rec.source === "Policy Intelligence" ? "Apply recommendation" : "Apply"}
                                         </button>
                                       )}
                                       {applyResults[rec.id] === "success" && (
@@ -3893,6 +4224,101 @@ export default function CustomerPoliciesPage() {
             </section>
           </>
         )}
+
+        <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
+          <div>
+            <h2 className="text-sm font-medium text-slate-200">Auto-Dynamic PIL Mode</h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              Opt-in adaptive tuning for the next transaction only. Same-market scoped,
+              bounded, explainable, and never written into durable policy defaults.
+            </p>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="adaptive-status-grid">
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Status</p>
+              <p className={`mt-1 text-[11px] font-medium ${adaptiveIsOn ? "text-emerald-300" : "text-slate-300"}`}>
+                {adaptiveIsOn ? "On" : "Off"}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Scope</p>
+              <p className="mt-1 text-[11px] text-slate-300">{adaptiveScopeLabel}</p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Bounded</p>
+              <p className={`mt-1 text-[11px] font-medium ${adaptive?.bounded ? "text-emerald-300" : "text-slate-300"}`}>
+                {adaptive?.bounded ? "Yes" : "No"}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Eligible fields</p>
+              <p className="mt-1 text-[11px] text-slate-300">
+                {adaptiveEligibleFieldLabels.length > 0
+                  ? adaptiveEligibleFieldLabels.join(", ")
+                  : "None"}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Pending next-trade overlays</p>
+              <p className={`mt-1 text-[11px] font-medium ${adaptivePendingOverlays > 0 ? "text-amber-200" : "text-slate-300"}`}>
+                {adaptivePendingOverlays}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Plan eligibility</p>
+              <p className={`mt-1 text-[11px] font-medium ${adaptiveEligible ? "text-emerald-300" : "text-slate-300"}`}>
+                {adaptiveEligible ? "Eligible" : "Pro or Enterprise required"}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-3">
+            {[
+              { id: "off", label: "Off", hint: "No adaptive policy changes." },
+              { id: "recommend", label: "Recommend", hint: "Surface bounded next-trade recommendations only." },
+              { id: "auto_bounded", label: "Auto (bounded)", hint: "Apply small bounded adjustments for the next transaction in the same market." },
+            ].map((mode) => {
+              const selected = adaptiveMode === mode.id;
+              return (
+                <button
+                  key={mode.id}
+                  type="button"
+                  disabled={!adaptiveEligible || adaptiveModeSaving}
+                  onClick={() => handleAdaptiveModeChange(mode.id as AutoDynamicPilMode)}
+                  className={`rounded-lg border p-3 text-left transition disabled:opacity-50 ${
+                    selected
+                      ? "border-amber-400/50 bg-amber-500/10"
+                      : "border-white/10 bg-white/[0.02] hover:bg-white/5"
+                  }`}
+                  data-testid={`adaptive-mode-${mode.id}`}
+                >
+                  <p className={`text-xs font-semibold ${selected ? "text-amber-200" : "text-slate-300"}`}>
+                    {mode.label}
+                  </p>
+                  <p className="mt-1 text-[10px] text-slate-500 leading-relaxed">{mode.hint}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          {!adaptiveEligible && (
+            <p className="text-[10px] text-amber-300">
+              Auto-dynamic mode is available on Pro and Enterprise plans.
+            </p>
+          )}
+
+          {adaptiveLatestEvent && (
+            <p className="text-[10px] text-slate-400" data-testid="adaptive-latest-event">
+              Latest adaptive event: {adaptiveLatestEventName}
+              {adaptiveLatestEventAt ? ` · ${adaptiveLatestEventAt}` : ""}
+            </p>
+          )}
+
+          {adaptiveModeError && (
+            <p className="text-[10px] text-red-300">{adaptiveModeError}</p>
+          )}
+        </section>
 
         {/* Overrides — editable or read-only */}
         {overridesEnabled ? (
@@ -4161,19 +4587,28 @@ export default function CustomerPoliciesPage() {
                                 </div>
                               </div>
                               {field.type === "boolean" ? (
-                                <select
-                                  id={`override-${field.key}`}
+                                <PolicyBooleanLever
+                                  fieldKey={field.key}
                                   value={formValues[field.key] ?? ""}
-                                  onChange={(e) =>
-                                    updateField(field.key, e.target.value)
-                                  }
+                                  onChange={(v) => updateField(field.key, v)}
                                   disabled={saving}
-                                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 outline-none transition focus:border-amber-500/40 disabled:opacity-50"
-                                >
-                                  <option value="">Plan default</option>
-                                  <option value="true">Yes</option>
-                                  <option value="false">No</option>
-                                </select>
+                                  overridesEnabled={overridesEnabled}
+                                  hasStoredOverride={isFieldOverride(field.key)}
+                                  pilTag={(() => {
+                                    const r = leverPilRec(field.key);
+                                    if (!r) return null;
+                                    if (r.pilActionState === "already_applied") return "Met";
+                                    if (r.pilActionState === "actionable") return "PIL recommends on";
+                                    return null;
+                                  })()}
+                                  planDefaultSub={
+                                    effective[field.key] === true
+                                      ? "Currently: required"
+                                      : effective[field.key] === false
+                                        ? "Currently: skipped"
+                                        : null
+                                  }
+                                />
                               ) : field.type === "list" ? (
                                 <div className="space-y-2">
                                   <div className="flex flex-wrap gap-2">
@@ -4257,19 +4692,37 @@ export default function CustomerPoliciesPage() {
                               ) : (
                                 <PremiumSlider
                                   id={`override-${field.key}`}
-                                  min={"min" in field ? field.min : 0}
-                                  max={"max" in field ? field.max : 100}
+                                  min={"min" in field ? (field.min as number) : 0}
+                                  max={"max" in field ? (field.max as number) : 100}
+                                  step={
+                                    field.key === "max_slippage_bps" ? 25 :
+                                    field.key === "max_notional_usd" ? 100 : 1
+                                  }
                                   placeholder={
                                     "placeholder" in field
-                                      ? field.placeholder
+                                      ? (field.placeholder as string | undefined)
                                       : undefined
                                   }
                                   value={formValues[field.key] ?? ""}
-                                  onChange={(v) =>
-                                    updateField(field.key, v)
-                                  }
+                                  onChange={(v) => updateField(field.key, v)}
                                   disabled={saving}
                                   formatDisplay={NUMERIC_FORMAT[field.key]}
+                                  planDefaultValue={leverPlanDefault(field.key)}
+                                  isOverride={isFieldOverride(field.key)}
+                                  onClearOverride={() => updateField(field.key, "")}
+                                  gated={!overridesEnabled}
+                                  pilContext={(() => {
+                                    const r = leverPilRec(field.key);
+                                    if (!r) return undefined;
+                                    const rawVal = r.pilRecommendedValueLabel ? Number(r.pilRecommendedValueLabel.replace(/[^0-9.]/g, "")) : undefined;
+                                    const numVal = rawVal !== undefined && !isNaN(rawVal) ? rawVal : undefined;
+                                    return {
+                                      value: numVal,
+                                      direction: r.pilRecommendedDirection as "lower" | "higher" | "none" | undefined,
+                                      satisfied: r.pilActionState === "already_applied",
+                                      label: r.pilRecommendedValueLabel,
+                                    };
+                                  })()}
                                 />
                               )}
                               <div className="flex items-center justify-between">
