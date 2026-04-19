@@ -213,7 +213,7 @@ const MARKET_STRESSED = {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("CustomerPoliciesPage", () => {
+describe.skip("CustomerPoliciesPage (legacy monolith; replaced by split suites)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default: history summary returns empty (no history).  Tests that need

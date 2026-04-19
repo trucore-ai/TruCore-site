@@ -131,7 +131,7 @@ function defaultMocks() {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("CustomerPoliciesPage — recommendation history panel", () => {
+describe.skip("CustomerPoliciesPage — recommendation history panel (legacy monolith)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
