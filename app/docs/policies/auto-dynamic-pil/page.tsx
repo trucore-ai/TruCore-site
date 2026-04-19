@@ -312,9 +312,17 @@ export default function DocsAutoDynamicPilPage() {
           If an adjustment was applied and you want to understand why, locate the corresponding
           receipt and inspect the{" "}
           <code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[13px] text-slate-300">
-            adaptive_pil_events
+            adaptive_pil
           </code>{" "}
-          field.
+          field, which contains{" "}
+          <code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[13px] text-slate-300">
+            applied_event
+          </code>
+          {" "}and{" "}
+          <code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[13px] text-slate-300">
+            recommendation_event
+          </code>
+          {" "}records for full auditability.
         </p>
       </section>
 

@@ -223,6 +223,23 @@ export const sections: DocsNavSection[] = [
     ],
   },
   {
+    title: "Policies",
+    items: [
+      {
+        title: "Policies Overview",
+        href: "/docs/policies",
+        description:
+          "Policy Intelligence and adaptive tuning for execution guardrails, limits, and allowlists.",
+      },
+      {
+        title: "Auto-Dynamic PIL",
+        href: "/docs/policies/auto-dynamic-pil",
+        description:
+          "Bounded adaptive tuning for the next transaction. Safety-constrained parameter recommendations that match market conditions.",
+      },
+    ],
+  },
+  {
     title: "CLI Deep Dives",
     items: [
       {
