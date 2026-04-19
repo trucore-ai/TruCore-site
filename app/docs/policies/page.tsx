@@ -52,9 +52,12 @@ export default function DocsPoliciesPage() {
 
       <section className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-accent-100">
-            <HeadingAnchor id="policy-concepts">Policy Concepts</HeadingAnchor>
-          </h2>
+          <HeadingAnchor
+            id="policy-concepts"
+            className="text-2xl font-bold tracking-tight text-accent-100"
+          >
+            Policy Concepts
+          </HeadingAnchor>
           <p className="mt-3 text-base leading-relaxed text-slate-300">
             Policies in TruCore ATF are declarative intent boundaries. They specify the
             conditions under which a trade is permitted, limits on cost and risk, and
@@ -63,9 +66,12 @@ export default function DocsPoliciesPage() {
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-accent-100">
-            <HeadingAnchor id="policy-intelligence">Policy Intelligence Layer</HeadingAnchor>
-          </h2>
+          <HeadingAnchor
+            id="policy-intelligence"
+            className="text-2xl font-bold tracking-tight text-accent-100"
+          >
+            Policy Intelligence Layer
+          </HeadingAnchor>
           <p className="mt-3 text-base leading-relaxed text-slate-300">
             The Policy Intelligence Layer (PIL) enhances policy enforcement with adaptive
             assistance. Rather than replacing your policy, PIL provides safety-constrained
@@ -83,9 +89,12 @@ export default function DocsPoliciesPage() {
       <div className="gradient-divider" aria-hidden="true" />
 
       <section className="space-y-6">
-        <h2 className="text-2xl font-bold tracking-tight text-accent-100">
-          <HeadingAnchor id="available-features">Available Features</HeadingAnchor>
-        </h2>
+        <HeadingAnchor
+          id="available-features"
+          className="text-2xl font-bold tracking-tight text-accent-100"
+        >
+          Available Features
+        </HeadingAnchor>
 
         <div className="space-y-4">
           <div className="rounded-lg border border-slate-700/50 bg-slate-900/40 p-5 transition-colors hover:border-slate-600/70">
@@ -110,9 +119,12 @@ export default function DocsPoliciesPage() {
       <div className="gradient-divider" aria-hidden="true" />
 
       <section className="space-y-4">
-        <h2 className="text-lg font-bold tracking-tight text-accent-100">
-          <HeadingAnchor id="next-steps">Next Steps</HeadingAnchor>
-        </h2>
+        <HeadingAnchor
+          id="next-steps"
+          className="text-lg font-bold tracking-tight text-accent-100"
+        >
+          Next Steps
+        </HeadingAnchor>
         <ul className="space-y-2 text-slate-300">
           <li>
             <Link

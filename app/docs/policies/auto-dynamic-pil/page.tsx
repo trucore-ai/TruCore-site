@@ -300,29 +300,38 @@ export default function DocsAutoDynamicPilPage() {
         <ul className="space-y-2 text-slate-300 list-disc pl-5">
           <li>
             <span className="font-semibold text-slate-100">Policy Controls status grid</span> —
-            shows the latest adaptive event name and timestamp directly on the Policy Controls page.
+            shows the latest adaptive event via the customer policy payload&apos;s
+            {" "}
+            <code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[13px] text-slate-300">
+              adaptive_pil.latest_event
+            </code>
+            {" "}
+            field.
           </li>
           <li>
             <span className="font-semibold text-slate-100">Receipt evidence</span> — each applied
-            overlay appends a structured event to the transaction receipt. The event includes the
-            field adjusted, the pre-overlay value, the applied value, and the PIL signal reason.
+            overlay appends adaptive PIL details to the transaction receipt.
           </li>
         </ul>
         <p className="text-sm text-slate-400">
           If an adjustment was applied and you want to understand why, locate the corresponding
-          receipt and inspect the{" "}
+          receipt and inspect the nested{" "}
           <code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[13px] text-slate-300">
             adaptive_pil
           </code>{" "}
-          field, which contains{" "}
+          object. It contains an{" "}
           <code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[13px] text-slate-300">
             applied_event
-          </code>
-          {" "}and{" "}
+          </code>{" "}
+          record when an overlay is consumed, a{" "}
           <code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[13px] text-slate-300">
             recommendation_event
-          </code>
-          {" "}records for full auditability.
+          </code>{" "}
+          record when a bounded recommendation is produced, and an{" "}
+          <code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[13px] text-slate-300">
+            overlay_used
+          </code>{" "}
+          boolean indicating whether a pending overlay was actually applied on that transaction.
         </p>
       </section>
 
