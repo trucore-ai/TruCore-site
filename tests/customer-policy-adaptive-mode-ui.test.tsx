@@ -144,4 +144,42 @@ describe("CustomerPoliciesPage — adaptive mode", () => {
       expect(mockUpdateAutoDynamicPilMode).toHaveBeenCalledWith("recommend");
     });
   });
+
+  it("renders the How it works docs link in the adaptive section", async () => {
+    mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+    render(<CustomerPoliciesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Auto-Dynamic PIL Mode/)).toBeTruthy();
+    });
+
+    const link = screen.getByTestId("adaptive-pil-docs-link");
+    expect(link).toBeTruthy();
+    expect(link.getAttribute("href")).toBe("/docs/policies/auto-dynamic-pil");
+    expect(link.textContent).toMatch(/How it works/i);
+  });
+
+  it("renders the docs link for free-tier users too", async () => {
+    mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+    render(<CustomerPoliciesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Auto-Dynamic PIL Mode/)).toBeTruthy();
+    });
+
+    const link = screen.getByTestId("adaptive-pil-docs-link");
+    expect(link).toBeTruthy();
+    expect(link.getAttribute("href")).toBe("/docs/policies/auto-dynamic-pil");
+  });
+
+  it("adaptive mode buttons are still rendered correctly after docs link addition", async () => {
+    mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+    render(<CustomerPoliciesPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("adaptive-mode-off")).toBeTruthy();
+      expect(screen.getByTestId("adaptive-mode-recommend")).toBeTruthy();
+      expect(screen.getByTestId("adaptive-mode-auto_bounded")).toBeTruthy();
+    });
+  });
 });
