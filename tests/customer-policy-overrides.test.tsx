@@ -1,8 +1,8 @@
 /**
  * CustomerPoliciesPage — core controls tests.
  * Covers: free/pro plan views, save overrides, max_value_sol, program list
- * editors, token policy editor, backend validation errors, effective policy
- * preview, policy simulation preview.
+ * editors, token policy editor, backend validation errors, and controls
+ * discoverability states.
  *
  * MEMORY NOTE: This file uses jsdom + React Testing Library and mounts
  * CustomerPoliciesPage (a large component) multiple times.  Each worker
@@ -325,6 +325,38 @@ describe("CustomerPoliciesPage", () => {
       // Action buttons
       expect(screen.getByText("Save Overrides")).toBeTruthy();
       expect(screen.getByText("Cancel")).toBeTruthy();
+    });
+
+    it("renders a clear Policy Controls section with edit CTA", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-controls-surface")).toBeTruthy();
+      });
+
+      expect(screen.getByText("Policy Controls")).toBeTruthy();
+      expect(screen.getByTestId("policy-controls-helper")).toBeTruthy();
+      expect(screen.getByTestId("edit-policy-controls-cta")).toBeTruthy();
+      expect(screen.getByText("Max transaction value (USD)")).toBeTruthy();
+      expect(screen.getByText("Max transaction value (SOL)")).toBeTruthy();
+      expect(screen.getByText("Max slippage")).toBeTruthy();
+    });
+
+    it("opens editable levers when Policy Controls CTA is clicked", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("edit-policy-controls-cta")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByTestId("edit-policy-controls-cta"));
+
+      expect(screen.getByLabelText("Max Slippage (bps)")).toBeTruthy();
+      expect(screen.getByLabelText("Max Transaction Value (USD)")).toBeTruthy();
+      expect(screen.getByLabelText("Max Value (SOL)")).toBeTruthy();
+      expect(screen.getByLabelText("Require Simulation Success")).toBeTruthy();
     });
 
     it("pre-populates form with current override values", async () => {
@@ -1024,228 +1056,19 @@ describe("CustomerPoliciesPage", () => {
     });
   });
 
-  // -----------------------------------------------------------------------
-  // Effective Policy Preview
-  // -----------------------------------------------------------------------
-
-  describe("effective policy preview", () => {
-    it("renders policy-at-a-glance section in view mode", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+  describe("policy controls discoverability on free plan", () => {
+    it("shows Policy Controls in gated read-only form", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
       render(<CustomerPoliciesPage />);
 
       await waitFor(() => {
-        expect(screen.getByText("Policy at a Glance")).toBeTruthy();
+        expect(screen.getByTestId("policy-controls-surface")).toBeTruthy();
       });
 
-      expect(screen.getByTestId("policy-preview")).toBeTruthy();
-      expect(screen.getByTestId("policy-rules")).toBeTruthy();
-    });
-
-    it("shows plain-English rule for transaction limits", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(/Transactions above \$25,000 USD will be denied/),
-        ).toBeTruthy();
-      });
-    });
-
-    it("shows plain-English rule for slippage", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Slippage is capped at 100 bps/)).toBeTruthy();
-      });
-    });
-
-    it("shows plain-English rule for simulation", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(
-          screen.getByText("Simulation must succeed before execution."),
-        ).toBeTruthy();
-      });
-    });
-
-    it("shows token policy explanation for allowlist", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_TOKEN_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(/2 approved tokens are permitted/),
-        ).toBeTruthy();
-      });
-    });
-
-    it("marks overridden rules with Override badge", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_OVERRIDES);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("policy-rules")).toBeTruthy();
-      });
-
-      // max_slippage_bps is overridden — check that its rule has "Override" badge
-      const rules = screen.getByTestId("policy-rules");
-      const overrideBadges = rules.querySelectorAll("span");
-      const overrideTexts = Array.from(overrideBadges).map((el) => el.textContent);
-      expect(overrideTexts.some((t) => t === "Override")).toBe(true);
-      expect(overrideTexts.some((t) => t === "Default")).toBe(true);
-    });
-
-    it("shows what-this-means outcomes section", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("policy-outcomes")).toBeTruthy();
-      });
-
-      expect(screen.getByText("What this means")).toBeTruthy();
-      expect(
-        screen.getByText("If simulation fails, execution will not proceed."),
-      ).toBeTruthy();
-    });
-
-    it("hides preview in edit mode", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Edit Overrides")).toBeTruthy();
-      });
-
-      fireEvent.click(screen.getByText("Edit Overrides"));
-
-      expect(screen.queryByTestId("policy-preview")).toBeNull();
-    });
-  });
-
-  // -----------------------------------------------------------------------
-  // Policy Simulation — example outcomes
-  // -----------------------------------------------------------------------
-
-  describe("policy simulation preview", () => {
-    it("renders simulation section in view mode", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("policy-simulation")).toBeTruthy();
-      });
-
-      expect(screen.getByText("How Your Policy Behaves")).toBeTruthy();
-      expect(screen.getByTestId("simulation-scenarios")).toBeTruthy();
-    });
-
-    it("generates denied scenario for exceeding USD limit", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Large USD transaction")).toBeTruthy();
-      });
-
-      expect(screen.getByText(/Exceeds your \$25,000 USD transaction limit/)).toBeTruthy();
-    });
-
-    it("generates allowed scenario for normal USD transaction", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Normal USD transaction")).toBeTruthy();
-      });
-
-      expect(screen.getByText(/Within your \$25,000 USD transaction limit/)).toBeTruthy();
-    });
-
-    it("generates denied scenario for high slippage", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText("High-slippage swap")).toBeTruthy();
-      });
-
-      expect(screen.getByText(/Slippage exceeds your 100 bps cap/)).toBeTruthy();
-    });
-
-    it("generates denied scenario for failed simulation", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Failed simulation")).toBeTruthy();
-      });
-
-      expect(screen.getByText(/requires simulation to succeed/)).toBeTruthy();
-    });
-
-    it("generates token policy scenarios for allowlist mode", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_TOKEN_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Approved token swap")).toBeTruthy();
-      });
-
-      expect(screen.getByText("Unlisted token swap")).toBeTruthy();
-      expect(screen.getByText(/on your approved token list/)).toBeTruthy();
-      expect(screen.getByText(/Only tokens on your allowlist are permitted/)).toBeTruthy();
-    });
-
-    it("generates program control scenarios for denied programs", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_PROGRAMS);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Blocked program call")).toBeTruthy();
-      });
-
-      expect(screen.getByText(/on your block list/)).toBeTruthy();
-    });
-
-    it("shows Allowed and Denied outcome badges", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByTestId("simulation-scenarios")).toBeTruthy();
-      });
-
-      const badges = screen.getAllByTestId("scenario-outcome");
-      const texts = badges.map((b) => b.textContent);
-      expect(texts.some((t) => t === "Allowed")).toBe(true);
-      expect(texts.some((t) => t === "Denied")).toBe(true);
-    });
-
-    it("hides simulation section in edit mode", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText("Edit Overrides")).toBeTruthy();
-      });
-
-      fireEvent.click(screen.getByText("Edit Overrides"));
-
-      expect(screen.queryByTestId("policy-simulation")).toBeNull();
-    });
-
-    it("shows disclaimer that scenarios are not live transactions", async () => {
-      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
-      render(<CustomerPoliciesPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/not live transactions/)).toBeTruthy();
-      });
+      expect(screen.getByText("Policy Controls")).toBeTruthy();
+      expect(screen.queryByTestId("edit-policy-controls-cta")).toBeNull();
+      expect(screen.getByText("Pro or Enterprise required")).toBeTruthy();
+      expect(screen.getAllByText("Premium control — visible, locked on current plan").length).toBeGreaterThan(0);
     });
   });
 
