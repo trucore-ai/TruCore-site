@@ -277,6 +277,7 @@ describe("CustomerPoliciesPage", () => {
         expect(screen.getByText("Not available on this plan")).toBeTruthy();
       });
     });
+
   });
 
   // -----------------------------------------------------------------------
@@ -362,6 +363,7 @@ describe("CustomerPoliciesPage", () => {
       expect(screen.queryByText("Save Overrides")).toBeNull();
       expect(mockUpdatePolicyOverrides).not.toHaveBeenCalled();
     });
+
   });
 
   // -----------------------------------------------------------------------

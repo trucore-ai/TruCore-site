@@ -7,6 +7,7 @@ import {
   isLoggedIn,
   fetchPolicy,
   updatePolicyOverrides,
+  updateAutoDynamicPilMode,
   fetchReceiptSummary,
   fetchMarketConditions,
   fetchPilRecommendations,
@@ -19,6 +20,7 @@ import {
   type CohortBenchmarkResponse,
   type ExternalContextResponse,
   type SignalFreshness,
+  type AutoDynamicPilMode,
 } from "@/lib/customer-auth";
 import { PremiumSlider } from "@/components/premium-slider";
 import { PolicyBooleanLever } from "@/components/policy-boolean-lever";
@@ -2032,6 +2034,8 @@ export default function CustomerPoliciesPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [adaptiveModeSaving, setAdaptiveModeSaving] = useState(false);
+  const [adaptiveModeError, setAdaptiveModeError] = useState("");
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [listValues, setListValues] = useState<Record<string, string[]>>({});
   const [tokenPolicy, setTokenPolicy] = useState<TokenPolicyState>({ ...DEFAULT_TOKEN_POLICY });
@@ -2064,6 +2068,40 @@ export default function CustomerPoliciesPage() {
     setError("");
     loadPolicy();
   }, [loadPolicy]);
+
+  const handleAdaptiveModeChange = useCallback(
+    async (mode: AutoDynamicPilMode) => {
+      if (!policy) return;
+      setAdaptiveModeError("");
+      setAdaptiveModeSaving(true);
+      try {
+        const updated = await updateAutoDynamicPilMode(mode);
+        setPolicy((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            adaptive_pil: {
+              mode: updated.mode,
+              eligible: prev.adaptive_pil?.eligible ?? (prev.plan_code === "pro" || prev.plan_code === "enterprise"),
+              eligible_fields: prev.adaptive_pil?.eligible_fields ?? ["max_slippage_bps"],
+              scope: prev.adaptive_pil?.scope ?? "same_market_next_transaction",
+              bounded: prev.adaptive_pil?.bounded ?? true,
+              pending_overlays: prev.adaptive_pil?.pending_overlays ?? 0,
+              latest_event: prev.adaptive_pil?.latest_event ?? null,
+            },
+          };
+        });
+        await loadPolicy();
+      } catch (err) {
+        setAdaptiveModeError(
+          err instanceof Error ? err.message : "Could not update adaptive mode.",
+        );
+      } finally {
+        setAdaptiveModeSaving(false);
+      }
+    },
+    [policy, loadPolicy],
+  );
 
   // Fetch receipt summary for history-aware recommendations (non-blocking).
   const loadHistorySummary = useCallback(async () => {
@@ -2644,6 +2682,33 @@ export default function CustomerPoliciesPage() {
   const overrides = policy?.overrides ?? {};
   const effective = policy?.effective ?? {};
   const hasOverrides = Object.keys(overrides).length > 0;
+  const adaptive = policy?.adaptive_pil;
+  const adaptiveMode = adaptive?.mode ?? "off";
+  const adaptiveEligible = Boolean(adaptive?.eligible);
+  const adaptiveLatestEvent =
+    adaptive?.latest_event && typeof adaptive.latest_event === "object"
+      ? adaptive.latest_event
+      : null;
+  const adaptivePendingOverlays =
+    typeof adaptive?.pending_overlays === "number" ? adaptive.pending_overlays : 0;
+  const adaptiveIsOn = adaptiveMode !== "off";
+  const adaptiveEligibleFieldLabels = Array.isArray(adaptive?.eligible_fields)
+    ? adaptive.eligible_fields.map((field) => {
+      if (field === "max_slippage_bps") return "Max slippage";
+      return field.replace(/_/g, " ");
+    })
+    : [];
+  const adaptiveScopeLabel = adaptive?.scope === "same_market_next_transaction"
+    ? "Same market · next transaction"
+    : (adaptive?.scope ?? "Unknown");
+  const adaptiveLatestEventName =
+    adaptiveLatestEvent && typeof adaptiveLatestEvent.event === "string"
+      ? adaptiveLatestEvent.event.replace(/_/g, " ")
+      : "none";
+  const adaptiveLatestEventAt =
+    adaptiveLatestEvent && typeof adaptiveLatestEvent.at === "number"
+      ? formatLastUpdated(adaptiveLatestEvent.at)
+      : null;
 
   // Partition effective keys into categories for display
   const limitKeys = ["tx_limit_per_month", "max_notional_usd", "max_value_sol"];
@@ -4159,6 +4224,101 @@ export default function CustomerPoliciesPage() {
             </section>
           </>
         )}
+
+        <section className="rounded-xl border border-white/10 bg-white/[0.02] p-6 space-y-4">
+          <div>
+            <h2 className="text-sm font-medium text-slate-200">Auto-Dynamic PIL Mode</h2>
+            <p className="mt-1 text-[10px] text-slate-500">
+              Opt-in adaptive tuning for the next transaction only. Same-market scoped,
+              bounded, explainable, and never written into durable policy defaults.
+            </p>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="adaptive-status-grid">
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Status</p>
+              <p className={`mt-1 text-[11px] font-medium ${adaptiveIsOn ? "text-emerald-300" : "text-slate-300"}`}>
+                {adaptiveIsOn ? "On" : "Off"}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Scope</p>
+              <p className="mt-1 text-[11px] text-slate-300">{adaptiveScopeLabel}</p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Bounded</p>
+              <p className={`mt-1 text-[11px] font-medium ${adaptive?.bounded ? "text-emerald-300" : "text-slate-300"}`}>
+                {adaptive?.bounded ? "Yes" : "No"}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Eligible fields</p>
+              <p className="mt-1 text-[11px] text-slate-300">
+                {adaptiveEligibleFieldLabels.length > 0
+                  ? adaptiveEligibleFieldLabels.join(", ")
+                  : "None"}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Pending next-trade overlays</p>
+              <p className={`mt-1 text-[11px] font-medium ${adaptivePendingOverlays > 0 ? "text-amber-200" : "text-slate-300"}`}>
+                {adaptivePendingOverlays}
+              </p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+              <p className="text-[9px] uppercase tracking-wide text-slate-500">Plan eligibility</p>
+              <p className={`mt-1 text-[11px] font-medium ${adaptiveEligible ? "text-emerald-300" : "text-slate-300"}`}>
+                {adaptiveEligible ? "Eligible" : "Pro or Enterprise required"}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-3">
+            {[
+              { id: "off", label: "Off", hint: "No adaptive policy changes." },
+              { id: "recommend", label: "Recommend", hint: "Surface bounded next-trade recommendations only." },
+              { id: "auto_bounded", label: "Auto (bounded)", hint: "Apply small bounded adjustments for the next transaction in the same market." },
+            ].map((mode) => {
+              const selected = adaptiveMode === mode.id;
+              return (
+                <button
+                  key={mode.id}
+                  type="button"
+                  disabled={!adaptiveEligible || adaptiveModeSaving}
+                  onClick={() => handleAdaptiveModeChange(mode.id as AutoDynamicPilMode)}
+                  className={`rounded-lg border p-3 text-left transition disabled:opacity-50 ${
+                    selected
+                      ? "border-amber-400/50 bg-amber-500/10"
+                      : "border-white/10 bg-white/[0.02] hover:bg-white/5"
+                  }`}
+                  data-testid={`adaptive-mode-${mode.id}`}
+                >
+                  <p className={`text-xs font-semibold ${selected ? "text-amber-200" : "text-slate-300"}`}>
+                    {mode.label}
+                  </p>
+                  <p className="mt-1 text-[10px] text-slate-500 leading-relaxed">{mode.hint}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          {!adaptiveEligible && (
+            <p className="text-[10px] text-amber-300">
+              Auto-dynamic mode is available on Pro and Enterprise plans.
+            </p>
+          )}
+
+          {adaptiveLatestEvent && (
+            <p className="text-[10px] text-slate-400" data-testid="adaptive-latest-event">
+              Latest adaptive event: {adaptiveLatestEventName}
+              {adaptiveLatestEventAt ? ` · ${adaptiveLatestEventAt}` : ""}
+            </p>
+          )}
+
+          {adaptiveModeError && (
+            <p className="text-[10px] text-red-300">{adaptiveModeError}</p>
+          )}
+        </section>
 
         {/* Overrides — editable or read-only */}
         {overridesEnabled ? (
