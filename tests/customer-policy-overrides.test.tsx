@@ -327,6 +327,38 @@ describe("CustomerPoliciesPage", () => {
       expect(screen.getByText("Cancel")).toBeTruthy();
     });
 
+    it("renders a clear Policy Controls section with edit CTA", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-controls-surface")).toBeTruthy();
+      });
+
+      expect(screen.getByText("Policy Controls")).toBeTruthy();
+      expect(screen.getByTestId("policy-controls-helper")).toBeTruthy();
+      expect(screen.getByTestId("edit-policy-controls-cta")).toBeTruthy();
+      expect(screen.getByText("Max transaction value (USD)")).toBeTruthy();
+      expect(screen.getByText("Max transaction value (SOL)")).toBeTruthy();
+      expect(screen.getByText("Max slippage")).toBeTruthy();
+    });
+
+    it("opens editable levers when Policy Controls CTA is clicked", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("edit-policy-controls-cta")).toBeTruthy();
+      });
+
+      fireEvent.click(screen.getByTestId("edit-policy-controls-cta"));
+
+      expect(screen.getByLabelText("Max Slippage (bps)")).toBeTruthy();
+      expect(screen.getByLabelText("Max Transaction Value (USD)")).toBeTruthy();
+      expect(screen.getByLabelText("Max Value (SOL)")).toBeTruthy();
+      expect(screen.getByLabelText("Require Simulation Success")).toBeTruthy();
+    });
+
     it("pre-populates form with current override values", async () => {
       mockFetchPolicy.mockResolvedValue(PRO_POLICY_WITH_OVERRIDES);
       render(<CustomerPoliciesPage />);
@@ -1041,6 +1073,17 @@ describe("CustomerPoliciesPage", () => {
       expect(screen.getByTestId("policy-rules")).toBeTruthy();
     });
 
+    it("renders helper copy that points users to Policy Controls", async () => {
+      mockFetchPolicy.mockResolvedValue(PRO_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("effective-policy-controls-hint")).toBeTruthy();
+      });
+
+      expect(screen.getByText(/use Policy Controls above and save your overrides/i)).toBeTruthy();
+    });
+
     it("shows plain-English rule for transaction limits", async () => {
       mockFetchPolicy.mockResolvedValue(PRO_POLICY);
       render(<CustomerPoliciesPage />);
@@ -1124,6 +1167,22 @@ describe("CustomerPoliciesPage", () => {
       fireEvent.click(screen.getByText("Edit Overrides"));
 
       expect(screen.queryByTestId("policy-preview")).toBeNull();
+    });
+  });
+
+  describe("policy controls discoverability on free plan", () => {
+    it("shows Policy Controls in gated read-only form", async () => {
+      mockFetchPolicy.mockResolvedValue(FREE_POLICY);
+      render(<CustomerPoliciesPage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("policy-controls-surface")).toBeTruthy();
+      });
+
+      expect(screen.getByText("Policy Controls")).toBeTruthy();
+      expect(screen.queryByTestId("edit-policy-controls-cta")).toBeNull();
+      expect(screen.getByText("Pro or Enterprise required")).toBeTruthy();
+      expect(screen.getAllByText("Premium control — visible, locked on current plan").length).toBeGreaterThan(0);
     });
   });
 

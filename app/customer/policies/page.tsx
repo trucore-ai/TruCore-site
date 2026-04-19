@@ -2998,6 +2998,58 @@ export default function CustomerPoliciesPage() {
         {/* Effective policy (view mode) */}
         {!editing && (
           <>
+            <section
+              className="rounded-xl border border-amber-400/25 bg-amber-500/5 p-6 space-y-4"
+              data-testid="policy-controls-surface"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-medium text-slate-200">Policy Controls</h2>
+                  <p
+                    className="mt-1 text-[10px] text-slate-500"
+                    data-testid="policy-controls-helper"
+                  >
+                    Effective Policy shows what is enforced. Policy Controls are where you edit
+                    transaction limits and execution safety settings.
+                  </p>
+                </div>
+                {overridesEnabled ? (
+                  <button
+                    type="button"
+                    onClick={() => enterEditMode()}
+                    className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-medium text-amber-200 transition hover:bg-amber-500/20"
+                    data-testid="edit-policy-controls-cta"
+                  >
+                    Edit Policy Controls
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-medium text-slate-400">
+                    Pro or Enterprise required
+                  </span>
+                )}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2" data-testid="policy-controls-lever-list">
+                {[
+                  "Max transaction value (USD)",
+                  "Max transaction value (SOL)",
+                  "Max slippage",
+                  "Require simulation success",
+                ].map((lever) => (
+                  <div
+                    key={lever}
+                    className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2"
+                  >
+                    <p className="text-[11px] text-slate-300">{lever}</p>
+                    <p className="mt-0.5 text-[10px] text-slate-500">
+                      {overridesEnabled
+                        ? "Editable in Policy Controls"
+                        : "Premium control — visible, locked on current plan"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {/* Policy at a Glance — plain-English summary */}
             <section
               className="rounded-xl border border-primary-400/20 bg-primary-500/5 p-6 space-y-4"
@@ -4207,6 +4259,13 @@ export default function CustomerPoliciesPage() {
               <p className="text-[10px] text-slate-500">
                 These are the merged values that the firewall enforces on every
                 transaction. Plan defaults are combined with any custom overrides.
+              </p>
+              <p
+                className="text-[10px] text-slate-500"
+                data-testid="effective-policy-controls-hint"
+              >
+                To change transaction limits, slippage, or simulation requirements,
+                use Policy Controls above and save your overrides.
               </p>
               {renderEffectiveSection("Transaction Limits", limitKeys, effective, overrides)}
               {renderEffectiveSection("Execution Safety", protectionKeys, effective, overrides)}
