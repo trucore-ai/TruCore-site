@@ -21,6 +21,7 @@ import {
   type SignalFreshness,
 } from "@/lib/customer-auth";
 import { PremiumSlider } from "@/components/premium-slider";
+import { PolicyBooleanLever } from "@/components/policy-boolean-lever";
 import {
   trackRecommendationImpression,
   trackRecommendationExpand,
@@ -39,6 +40,13 @@ import {
   trackRecommendationUndoError,
 } from "@/lib/client/policy-recommendation-analytics";
 import {
+  derivePilActionState,
+  pilActionStateBadgeClass,
+  PIL_ACTION_STATE_LABELS,
+  type PilActionState,
+  type PilActionResult,
+} from "@/lib/policy-pil-action-state";
+import {
   deriveReceiptTrendSignals,
   getMarketConditionCue,
   loadRecSnapshot,
@@ -50,13 +58,6 @@ import {
   TREND_STATUS_TEXT,
   type RecHistoryEntry,
 } from "@/lib/customer-policy-trend";
-import {
-  derivePilActionState,
-  pilActionStateBadgeClass,
-  PIL_ACTION_STATE_LABELS,
-  type PilActionState,
-  type PilActionResult,
-} from "@/lib/policy-pil-action-state";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -894,26 +895,27 @@ interface PolicyRecommendation {
    */
   applyMutation?: { key: string; value: unknown };
   /**
-   * PIL-specific action state, derived by derivePilActionState().  Drives
-   * badge and CTA selection on PIL recommendation cards.
+   * For PIL source recommendations: explicit action state derived by
+   * derivePilActionState().  Drives badge and CTA selection.
    */
   pilActionState?: PilActionState;
   /**
-   * Directional hint from the PIL helper — shown in current-vs-recommended row.
-   * "none" = satisfied / informational.
+   * Direction hint from the PIL action state — used for UX copy.
+   * "none" = informational / no change needed.
    */
   pilRecommendedDirection?: PilActionResult["recommendedDirection"];
   /**
-   * Human-readable label for the current effective value of the target field.
+   * Human-readable label of the current effective value for the target field.
+   * Shown alongside PIL cards to give context for the recommendation.
    */
   pilCurrentValueLabel?: string;
   /**
-   * Human-readable label for the recommended target.
+   * Human-readable label of the recommended target state.
    */
   pilRecommendedValueLabel?: string;
   /**
    * True when pilActionState is "already_applied" AND the satisfaction comes
-   * from a stored override (not the plan default).  Enables "Clear override".
+   * from a stored override — meaning the user may want to clear it.
    */
   pilSatisfiedViaOverride?: boolean;
 }
@@ -1497,6 +1499,7 @@ function generatePilRecommendations(
     ]);
     const fieldKey = editableKeys.has(rec.parameter) ? rec.parameter : undefined;
 
+    // Derive explicit action state for this PIL recommendation.
     const actionResult = derivePilActionState(
       rec.id,
       rec.parameter,
@@ -1504,6 +1507,12 @@ function generatePilRecommendations(
       overrides,
       overridesEnabled,
     );
+
+    // Only mark as applyable when the action state is "actionable" AND we have
+    // a concrete mutation from the helper.
+    const isApplyable =
+      actionResult.actionState === "actionable" &&
+      actionResult.applyMutation !== undefined;
 
     return {
       id: `pil-${rec.id.toLowerCase().replace(/_/g, "-")}`,
@@ -1515,14 +1524,16 @@ function generatePilRecommendations(
       fieldKey,
       evidence: rec.evidence || undefined,
       confidence: PIL_CONFIDENCE_MAP[rec.confidence] ?? 0.3,
+      // Applyable flow — only wired for actionable PIL recs with a safe mutation.
+      applyable: isApplyable || undefined,
+      applyConfirmText: isApplyable ? actionResult.applyConfirmText : undefined,
+      applyMutation: isApplyable ? actionResult.applyMutation : undefined,
+      // PIL-specific action state metadata for premium card UX.
       pilActionState: actionResult.actionState,
       pilRecommendedDirection: actionResult.recommendedDirection,
       pilCurrentValueLabel: actionResult.currentValueLabel,
       pilRecommendedValueLabel: actionResult.recommendedValueLabel,
       pilSatisfiedViaOverride: actionResult.satisfiedViaOverride,
-      applyable: actionResult.actionState === "actionable",
-      applyMutation: actionResult.applyMutation,
-      applyConfirmText: actionResult.applyConfirmText,
     };
   });
 }
@@ -2007,9 +2018,11 @@ export default function CustomerPoliciesPage() {
   const [undoingRecId, setUndoingRecId] = useState<string | null>(null);
   // Per-rec undo error flag — set on undo failure, cleared on successful undo.
   const [undoErrors, setUndoErrors] = useState<Record<string, boolean>>({});
-  /** PIL clear-override flow state */
+  // PIL "clear override" — which rec's clear action is in-flight.
   const [clearingPilOverrideRecId, setClearingPilOverrideRecId] = useState<string | null>(null);
+  // Per-rec clear error flag.
   const [pilClearErrors, setPilClearErrors] = useState<Record<string, boolean>>({});
+  // Per-rec clear success flag (transient — cleared on next policy reload).
   const [pilClearSuccess, setPilClearSuccess] = useState<Record<string, boolean>>({});
 
   // Edit state
@@ -2367,21 +2380,28 @@ export default function CustomerPoliciesPage() {
   }
 
   /**
-   * Clear a PIL-driven policy override by setting the field back to null.
+   * Clear the stored override for a PIL-recommended field, returning the
+   * effective value to the plan default.
+   *
    * Only triggered when pilActionState === "already_applied" &&
-   * pilSatisfiedViaOverride === true.
+   * pilSatisfiedViaOverride === true — i.e. the recommendation is satisfied
+   * specifically because the user stored an override.
    */
   async function handleClearPilOverride(rec: PolicyRecommendation) {
     if (!rec.fieldKey) return;
+    const currentPlanCode = policy?.plan_code ?? "free";
     setClearingPilOverrideRecId(rec.id);
+    setPilClearErrors((prev) => ({ ...prev, [rec.id]: false }));
     try {
-      const currentOverrides: Record<string, unknown> = { ...(policy?.overrides ?? {}) };
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [rec.fieldKey as keyof typeof currentOverrides]: _removed, ...rest } =
-        currentOverrides;
-      await updatePolicyOverrides(rest);
+      // Send null for the field key — the backend treats null as "clear override".
+      const newOverrides: Record<string, unknown> = {
+        ...(policy?.overrides ?? {}),
+        [rec.fieldKey]: null,
+      };
+      await updatePolicyOverrides(newOverrides);
       await loadPolicy();
       setPilClearSuccess((prev) => ({ ...prev, [rec.id]: true }));
+      // Re-compute PIL action states by reloading (loadPolicy triggers re-render).
     } catch {
       setPilClearErrors((prev) => ({ ...prev, [rec.id]: true }));
     } finally {
@@ -2485,7 +2505,14 @@ export default function CustomerPoliciesPage() {
       }
 
       const raw = formValues[field.key]?.trim() ?? "";
-      if (raw === "") continue; // omit = revert to plan default
+      if (raw === "") {
+        // If the user has selected "Plan default" but there is a stored override,
+        // send null so the backend removes the key and reverts to plan default.
+        if (Object.prototype.hasOwnProperty.call(currentOverrides, field.key)) {
+          newOverrides[field.key] = null;
+        }
+        continue;
+      }
 
       if (field.type === "boolean") {
         newOverrides[field.key] = raw === "true";
@@ -2723,6 +2750,46 @@ export default function CustomerPoliciesPage() {
         </div>
       </div>
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Lever context — PIL recs and plan-default values for edit-mode levers
+  // ---------------------------------------------------------------------------
+
+  // Re-derive PIL recs here (lightweight — same inputs, memoised by render cycle).
+  // We only need fieldKey and the action state for lever integration.
+  const canPilForLevers = isSourceAvailable("Policy Intelligence", planCode);
+  const pilRecsForLevers: PolicyRecommendation[] =
+    canPilForLevers && pilRecommendations
+      ? generatePilRecommendations(pilRecommendations, effective, overrides, overridesEnabled)
+      : [];
+
+  /** Returns the first PIL rec that targets a given field key, or undefined. */
+  function leverPilRec(fieldKey: string): PolicyRecommendation | undefined {
+    return pilRecsForLevers.find((r) => r.fieldKey === fieldKey);
+  }
+
+  /**
+   * Derives the plan-default numeric value for a lever from the effective
+   * policy snapshot captured when edit mode opened.
+   *
+   * When no override existed at edit-start, effective === plan default.
+   * When an override existed, we can't know the real plan default without a
+   * separate endpoint, so we return undefined (no marker shown).
+   */
+  function leverPlanDefault(fieldKey: string): number | undefined {
+    if (!editSnapshot) return undefined;
+    // No override existed at edit start → effective IS the plan default.
+    if ((editSnapshot.values[fieldKey] ?? "") === "") {
+      const v = effective[fieldKey];
+      if (typeof v === "number") return v;
+    }
+    return undefined;
+  }
+
+  /** Whether a stored override currently exists for the given field key. */
+  function isFieldOverride(fieldKey: string): boolean {
+    return Object.prototype.hasOwnProperty.call(overrides, fieldKey);
   }
 
   return (
@@ -3476,6 +3543,7 @@ export default function CustomerPoliciesPage() {
                                   )}
                                 </div>
                               )}
+                              {/* ── Action controls ───────────────────────────── */}
                               {/* PIL already-applied: show satisfied state + optional clear */}
                               {rec.source === "Policy Intelligence" && rec.pilActionState === "already_applied" && !applyResults[rec.id] && (
                                 <div className="flex flex-wrap items-center gap-2" data-testid={`pil-already-applied-${rec.id}`}>
@@ -3515,7 +3583,7 @@ export default function CustomerPoliciesPage() {
                                   )}
                                 </div>
                               )}
-                              {/* Existing apply/undo/view-setting controls */}
+                              {/* Existing apply/undo/view-setting controls — for actionable PIL recs and all non-PIL recs */}
                               {overridesEnabled && (rec.applyable || (rec.fieldKey && rec.source !== "Policy Intelligence") || (rec.fieldKey && rec.pilActionState === "manual_only")) && (
                                 <div className="flex flex-wrap items-center gap-2">
                                   {/* Apply button — PIL recs get "Apply recommendation", others get "Apply" */}
@@ -3529,7 +3597,7 @@ export default function CustomerPoliciesPage() {
                                       {rec.source === "Policy Intelligence" ? "Apply recommendation" : "Apply"}
                                     </button>
                                   )}
-                                  {/* Applied success indicator + Undo action */}
+                                  {/* Applied success indicator + Undo action — grouped to prevent orphaned layout */}
                                   {applyResults[rec.id] === "success" && (
                                     <div className="inline-flex items-center gap-2">
                                       <span
@@ -3818,7 +3886,7 @@ export default function CustomerPoliciesPage() {
                                       )}
                                     </div>
                                   )}
-                                  {/* PIL already-applied: satisfied state + optional clear */}
+                                  {/* PIL already-applied: show satisfied state + optional clear */}
                                   {rec.source === "Policy Intelligence" && rec.pilActionState === "already_applied" && !applyResults[rec.id] && (
                                     <div className="flex flex-wrap items-center gap-1.5" data-testid={`pil-already-applied-${rec.id}`}>
                                       <span className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-400">
@@ -3837,7 +3905,7 @@ export default function CustomerPoliciesPage() {
                                       )}
                                     </div>
                                   )}
-                                  {/* PIL unavailable on plan: upgrade teaser */}
+                                  {/* PIL unavailable on plan: upgrade teaser pill */}
                                   {rec.source === "Policy Intelligence" && rec.pilActionState === "unavailable_on_plan" && (
                                     <div className="flex items-center gap-1.5" data-testid={`pil-upgrade-teaser-${rec.id}`}>
                                       <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/5 px-2 py-0.5 text-[9px] font-medium text-amber-400">
@@ -3845,6 +3913,7 @@ export default function CustomerPoliciesPage() {
                                       </span>
                                     </div>
                                   )}
+                                  {/* Existing apply/undo/view-setting controls */}
                                   {overridesEnabled && (rec.applyable || (rec.fieldKey && rec.source !== "Policy Intelligence") || (rec.fieldKey && rec.pilActionState === "manual_only")) && (
                                     <div className="flex flex-wrap items-center gap-1.5">
                                       {/* Apply button — compact for more-section cards */}
@@ -4358,19 +4427,28 @@ export default function CustomerPoliciesPage() {
                                 </div>
                               </div>
                               {field.type === "boolean" ? (
-                                <select
-                                  id={`override-${field.key}`}
+                                <PolicyBooleanLever
+                                  fieldKey={field.key}
                                   value={formValues[field.key] ?? ""}
-                                  onChange={(e) =>
-                                    updateField(field.key, e.target.value)
-                                  }
+                                  onChange={(v) => updateField(field.key, v)}
                                   disabled={saving}
-                                  className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-slate-200 outline-none transition focus:border-amber-500/40 disabled:opacity-50"
-                                >
-                                  <option value="">Plan default</option>
-                                  <option value="true">Yes</option>
-                                  <option value="false">No</option>
-                                </select>
+                                  overridesEnabled={overridesEnabled}
+                                  hasStoredOverride={isFieldOverride(field.key)}
+                                  pilTag={(() => {
+                                    const r = leverPilRec(field.key);
+                                    if (!r) return null;
+                                    if (r.pilActionState === "already_applied") return "Met";
+                                    if (r.pilActionState === "actionable") return "PIL recommends on";
+                                    return null;
+                                  })()}
+                                  planDefaultSub={
+                                    effective[field.key] === true
+                                      ? "Currently: required"
+                                      : effective[field.key] === false
+                                        ? "Currently: skipped"
+                                        : null
+                                  }
+                                />
                               ) : field.type === "list" ? (
                                 <div className="space-y-2">
                                   <div className="flex flex-wrap gap-2">
@@ -4454,19 +4532,37 @@ export default function CustomerPoliciesPage() {
                               ) : (
                                 <PremiumSlider
                                   id={`override-${field.key}`}
-                                  min={"min" in field ? field.min : 0}
-                                  max={"max" in field ? field.max : 100}
+                                  min={"min" in field ? (field.min as number) : 0}
+                                  max={"max" in field ? (field.max as number) : 100}
+                                  step={
+                                    field.key === "max_slippage_bps" ? 25 :
+                                    field.key === "max_notional_usd" ? 100 : 1
+                                  }
                                   placeholder={
                                     "placeholder" in field
-                                      ? field.placeholder
+                                      ? (field.placeholder as string | undefined)
                                       : undefined
                                   }
                                   value={formValues[field.key] ?? ""}
-                                  onChange={(v) =>
-                                    updateField(field.key, v)
-                                  }
+                                  onChange={(v) => updateField(field.key, v)}
                                   disabled={saving}
                                   formatDisplay={NUMERIC_FORMAT[field.key]}
+                                  planDefaultValue={leverPlanDefault(field.key)}
+                                  isOverride={isFieldOverride(field.key)}
+                                  onClearOverride={() => updateField(field.key, "")}
+                                  gated={!overridesEnabled}
+                                  pilContext={(() => {
+                                    const r = leverPilRec(field.key);
+                                    if (!r) return undefined;
+                                    const rawVal = r.pilRecommendedValueLabel ? Number(r.pilRecommendedValueLabel.replace(/[^0-9.]/g, "")) : undefined;
+                                    const numVal = rawVal !== undefined && !isNaN(rawVal) ? rawVal : undefined;
+                                    return {
+                                      value: numVal,
+                                      direction: r.pilRecommendedDirection as "lower" | "higher" | "none" | undefined,
+                                      satisfied: r.pilActionState === "already_applied",
+                                      label: r.pilRecommendedValueLabel,
+                                    };
+                                  })()}
                                 />
                               )}
                               <div className="flex items-center justify-between">
