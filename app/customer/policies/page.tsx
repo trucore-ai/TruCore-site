@@ -50,6 +50,13 @@ import {
   TREND_STATUS_TEXT,
   type RecHistoryEntry,
 } from "@/lib/customer-policy-trend";
+import {
+  derivePilActionState,
+  pilActionStateBadgeClass,
+  PIL_ACTION_STATE_LABELS,
+  type PilActionState,
+  type PilActionResult,
+} from "@/lib/policy-pil-action-state";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -886,6 +893,29 @@ interface PolicyRecommendation {
    * Required when applyable is true.
    */
   applyMutation?: { key: string; value: unknown };
+  /**
+   * PIL-specific action state, derived by derivePilActionState().  Drives
+   * badge and CTA selection on PIL recommendation cards.
+   */
+  pilActionState?: PilActionState;
+  /**
+   * Directional hint from the PIL helper — shown in current-vs-recommended row.
+   * "none" = satisfied / informational.
+   */
+  pilRecommendedDirection?: PilActionResult["recommendedDirection"];
+  /**
+   * Human-readable label for the current effective value of the target field.
+   */
+  pilCurrentValueLabel?: string;
+  /**
+   * Human-readable label for the recommended target.
+   */
+  pilRecommendedValueLabel?: string;
+  /**
+   * True when pilActionState is "already_applied" AND the satisfaction comes
+   * from a stored override (not the plan default).  Enables "Clear override".
+   */
+  pilSatisfiedViaOverride?: boolean;
 }
 
 function generatePolicyRecommendations(
@@ -1450,6 +1480,9 @@ const PIL_WHY: Record<string, string> = {
 
 function generatePilRecommendations(
   pil: PilRecommendationsResponse,
+  effective: Record<string, unknown>,
+  overrides: Record<string, unknown>,
+  overridesEnabled: boolean,
 ): PolicyRecommendation[] {
   if (!pil.recommendations || pil.recommendations.length === 0) return [];
 
@@ -1464,6 +1497,14 @@ function generatePilRecommendations(
     ]);
     const fieldKey = editableKeys.has(rec.parameter) ? rec.parameter : undefined;
 
+    const actionResult = derivePilActionState(
+      rec.id,
+      rec.parameter,
+      effective,
+      overrides,
+      overridesEnabled,
+    );
+
     return {
       id: `pil-${rec.id.toLowerCase().replace(/_/g, "-")}`,
       title: rec.title,
@@ -1474,6 +1515,14 @@ function generatePilRecommendations(
       fieldKey,
       evidence: rec.evidence || undefined,
       confidence: PIL_CONFIDENCE_MAP[rec.confidence] ?? 0.3,
+      pilActionState: actionResult.actionState,
+      pilRecommendedDirection: actionResult.recommendedDirection,
+      pilCurrentValueLabel: actionResult.currentValueLabel,
+      pilRecommendedValueLabel: actionResult.recommendedValueLabel,
+      pilSatisfiedViaOverride: actionResult.satisfiedViaOverride,
+      applyable: actionResult.actionState === "actionable",
+      applyMutation: actionResult.applyMutation,
+      applyConfirmText: actionResult.applyConfirmText,
     };
   });
 }
@@ -1958,6 +2007,10 @@ export default function CustomerPoliciesPage() {
   const [undoingRecId, setUndoingRecId] = useState<string | null>(null);
   // Per-rec undo error flag — set on undo failure, cleared on successful undo.
   const [undoErrors, setUndoErrors] = useState<Record<string, boolean>>({});
+  /** PIL clear-override flow state */
+  const [clearingPilOverrideRecId, setClearingPilOverrideRecId] = useState<string | null>(null);
+  const [pilClearErrors, setPilClearErrors] = useState<Record<string, boolean>>({});
+  const [pilClearSuccess, setPilClearSuccess] = useState<Record<string, boolean>>({});
 
   // Edit state
   const listInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
@@ -2310,6 +2363,29 @@ export default function CustomerPoliciesPage() {
       });
     } finally {
       setUndoingRecId(null);
+    }
+  }
+
+  /**
+   * Clear a PIL-driven policy override by setting the field back to null.
+   * Only triggered when pilActionState === "already_applied" &&
+   * pilSatisfiedViaOverride === true.
+   */
+  async function handleClearPilOverride(rec: PolicyRecommendation) {
+    if (!rec.fieldKey) return;
+    setClearingPilOverrideRecId(rec.id);
+    try {
+      const currentOverrides: Record<string, unknown> = { ...(policy?.overrides ?? {}) };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [rec.fieldKey as keyof typeof currentOverrides]: _removed, ...rest } =
+        currentOverrides;
+      await updatePolicyOverrides(rest);
+      await loadPolicy();
+      setPilClearSuccess((prev) => ({ ...prev, [rec.id]: true }));
+    } catch {
+      setPilClearErrors((prev) => ({ ...prev, [rec.id]: true }));
+    } finally {
+      setClearingPilOverrideRecId(null);
     }
   }
 
@@ -2971,7 +3047,7 @@ export default function CustomerPoliciesPage() {
                 ? generateMarketRecommendations(marketConditions, effective)
                 : [];
               const pilRecs = canPil && pilRecommendations
-                ? generatePilRecommendations(pilRecommendations)
+                ? generatePilRecommendations(pilRecommendations, effective, overrides, overridesEnabled)
                 : [];
               const benchmarkRecs = canBenchmark && cohortBenchmarks
                 ? generateCohortBenchmarkRecommendations(cohortBenchmarks)
@@ -3294,6 +3370,37 @@ export default function CustomerPoliciesPage() {
                                   {rec.why}
                                 </p>
                               )}
+                              {/* PIL action state badge + current-vs-recommended row */}
+                              {rec.source === "Policy Intelligence" && rec.pilActionState && (
+                                <div
+                                  className="flex flex-wrap items-center gap-2"
+                                  data-testid={`pil-action-row-${rec.id}`}
+                                >
+                                  <span
+                                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-semibold leading-none ${pilActionStateBadgeClass(rec.pilActionState)}`}
+                                    data-testid={`pil-action-state-badge-${rec.id}`}
+                                  >
+                                    {PIL_ACTION_STATE_LABELS[rec.pilActionState]}
+                                  </span>
+                                  {rec.pilActionState === "already_applied" && rec.pilCurrentValueLabel && rec.pilRecommendedDirection !== "none" && (
+                                    <span className="text-[9px] text-slate-500" data-testid={`pil-current-value-${rec.id}`}>
+                                      Current:{" "}
+                                      <span className="text-emerald-400 font-medium">
+                                        {rec.pilCurrentValueLabel}
+                                      </span>
+                                    </span>
+                                  )}
+                                  {(rec.pilActionState === "actionable" || rec.pilActionState === "manual_only" || rec.pilActionState === "unavailable_on_plan") &&
+                                    rec.pilCurrentValueLabel &&
+                                    rec.pilRecommendedValueLabel && (
+                                    <span className="text-[9px] text-slate-500" data-testid={`pil-value-comparison-${rec.id}`}>
+                                      <span className="text-slate-400">{rec.pilCurrentValueLabel}</span>
+                                      <span className="mx-1 text-slate-600">→</span>
+                                      <span className="text-slate-300 font-medium">{rec.pilRecommendedValueLabel}</span>
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                               {expandable && (
                                 <button
                                   type="button"
@@ -3369,9 +3476,49 @@ export default function CustomerPoliciesPage() {
                                   )}
                                 </div>
                               )}
-                              {overridesEnabled && (rec.applyable || rec.fieldKey) && (
+                              {/* PIL already-applied: show satisfied state + optional clear */}
+                              {rec.source === "Policy Intelligence" && rec.pilActionState === "already_applied" && !applyResults[rec.id] && (
+                                <div className="flex flex-wrap items-center gap-2" data-testid={`pil-already-applied-${rec.id}`}>
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-400">
+                                    &#10003; Already applied
+                                  </span>
+                                  {rec.pilSatisfiedViaOverride && rec.fieldKey && overridesEnabled && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        disabled={clearingPilOverrideRecId === rec.id}
+                                        onClick={() => handleClearPilOverride(rec)}
+                                        className="inline-flex items-center rounded-md border border-slate-500/20 bg-white/5 px-2.5 py-1 text-[10px] text-slate-400 transition hover:text-slate-200 hover:bg-white/10 disabled:opacity-50"
+                                        data-testid={`pil-clear-override-${rec.id}`}
+                                      >
+                                        {clearingPilOverrideRecId === rec.id ? "Clearing…" : "Clear override"}
+                                      </button>
+                                      {pilClearErrors[rec.id] && (
+                                        <span className="text-[10px] text-red-400" role="alert" data-testid={`pil-clear-error-${rec.id}`}>
+                                          Could not clear — try again or edit manually.
+                                        </span>
+                                      )}
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                              {/* PIL unavailable on plan: upgrade teaser pill */}
+                              {rec.source === "Policy Intelligence" && rec.pilActionState === "unavailable_on_plan" && (
+                                <div className="flex flex-wrap items-center gap-2" data-testid={`pil-upgrade-teaser-${rec.id}`}>
+                                  <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/5 px-2.5 py-1 text-[10px] font-medium text-amber-400">
+                                    &#128274; Pro required to apply
+                                  </span>
+                                  {rec.fieldKey && (
+                                    <span className="text-[9px] text-slate-500">
+                                      Upgrade to apply this recommendation with one click.
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              {/* Existing apply/undo/view-setting controls */}
+                              {overridesEnabled && (rec.applyable || (rec.fieldKey && rec.source !== "Policy Intelligence") || (rec.fieldKey && rec.pilActionState === "manual_only")) && (
                                 <div className="flex flex-wrap items-center gap-2">
-                                  {/* Apply button — only for applyable recs, hidden during confirm/success */}
+                                  {/* Apply button — PIL recs get "Apply recommendation", others get "Apply" */}
                                   {rec.applyable && rec.applyMutation && applyResults[rec.id] !== "success" && applyConfirmingRecId !== rec.id && (
                                     <button
                                       type="button"
@@ -3379,10 +3526,10 @@ export default function CustomerPoliciesPage() {
                                       className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[10px] font-medium transition ${isFeatured ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20" : "border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"}`}
                                       data-testid={`apply-btn-${rec.id}`}
                                     >
-                                      Apply
+                                      {rec.source === "Policy Intelligence" ? "Apply recommendation" : "Apply"}
                                     </button>
                                   )}
-                                  {/* Applied success indicator + Undo action — grouped to prevent orphaned layout */}
+                                  {/* Applied success indicator + Undo action */}
                                   {applyResults[rec.id] === "success" && (
                                     <div className="inline-flex items-center gap-2">
                                       <span
@@ -3575,6 +3722,29 @@ export default function CustomerPoliciesPage() {
                                   <p className={`text-[10px] text-slate-500 leading-relaxed ${isExpanded ? "" : "line-clamp-2"}`}>
                                     {rec.explanation}
                                   </p>
+                                  {/* PIL action state badge + current-vs-recommended row */}
+                                  {rec.source === "Policy Intelligence" && rec.pilActionState && (
+                                    <div
+                                      className="flex flex-wrap items-center gap-1.5"
+                                      data-testid={`pil-action-row-${rec.id}`}
+                                    >
+                                      <span
+                                        className={`inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-semibold leading-none ${pilActionStateBadgeClass(rec.pilActionState)}`}
+                                        data-testid={`pil-action-state-badge-${rec.id}`}
+                                      >
+                                        {PIL_ACTION_STATE_LABELS[rec.pilActionState]}
+                                      </span>
+                                      {(rec.pilActionState === "actionable" || rec.pilActionState === "manual_only" || rec.pilActionState === "unavailable_on_plan") &&
+                                        rec.pilCurrentValueLabel &&
+                                        rec.pilRecommendedValueLabel && (
+                                        <span className="text-[9px] text-slate-500" data-testid={`pil-value-comparison-${rec.id}`}>
+                                          <span className="text-slate-400">{rec.pilCurrentValueLabel}</span>
+                                          <span className="mx-1 text-slate-600">→</span>
+                                          <span className="text-slate-300 font-medium">{rec.pilRecommendedValueLabel}</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
                                   {expandable && (
                                     <button
                                       type="button"
@@ -3648,7 +3818,34 @@ export default function CustomerPoliciesPage() {
                                       )}
                                     </div>
                                   )}
-                                  {overridesEnabled && (rec.applyable || rec.fieldKey) && (
+                                  {/* PIL already-applied: satisfied state + optional clear */}
+                                  {rec.source === "Policy Intelligence" && rec.pilActionState === "already_applied" && !applyResults[rec.id] && (
+                                    <div className="flex flex-wrap items-center gap-1.5" data-testid={`pil-already-applied-${rec.id}`}>
+                                      <span className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-400">
+                                        &#10003; Already applied
+                                      </span>
+                                      {rec.pilSatisfiedViaOverride && rec.fieldKey && overridesEnabled && (
+                                        <button
+                                          type="button"
+                                          disabled={clearingPilOverrideRecId === rec.id}
+                                          onClick={() => handleClearPilOverride(rec)}
+                                          className="inline-flex items-center rounded-md border border-slate-500/20 bg-white/5 px-2 py-0.5 text-[9px] text-slate-400 transition hover:text-slate-200 hover:bg-white/10 disabled:opacity-50"
+                                          data-testid={`pil-clear-override-${rec.id}`}
+                                        >
+                                          {clearingPilOverrideRecId === rec.id ? "Clearing…" : "Clear override"}
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+                                  {/* PIL unavailable on plan: upgrade teaser */}
+                                  {rec.source === "Policy Intelligence" && rec.pilActionState === "unavailable_on_plan" && (
+                                    <div className="flex items-center gap-1.5" data-testid={`pil-upgrade-teaser-${rec.id}`}>
+                                      <span className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/5 px-2 py-0.5 text-[9px] font-medium text-amber-400">
+                                        &#128274; Pro required
+                                      </span>
+                                    </div>
+                                  )}
+                                  {overridesEnabled && (rec.applyable || (rec.fieldKey && rec.source !== "Policy Intelligence") || (rec.fieldKey && rec.pilActionState === "manual_only")) && (
                                     <div className="flex flex-wrap items-center gap-1.5">
                                       {/* Apply button — compact for more-section cards */}
                                       {rec.applyable && rec.applyMutation && applyResults[rec.id] !== "success" && applyConfirmingRecId !== rec.id && (
@@ -3658,7 +3855,7 @@ export default function CustomerPoliciesPage() {
                                           className="inline-flex items-center gap-1 rounded-md border border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 text-[9px] font-medium text-emerald-400 transition hover:bg-emerald-500/10 hover:text-emerald-300"
                                           data-testid={`apply-btn-${rec.id}`}
                                         >
-                                          Apply
+                                          {rec.source === "Policy Intelligence" ? "Apply recommendation" : "Apply"}
                                         </button>
                                       )}
                                       {applyResults[rec.id] === "success" && (
