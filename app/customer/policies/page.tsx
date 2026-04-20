@@ -195,7 +195,7 @@ const TOKEN_MODES: {
     label: "Open",
     tagline: "Any token allowed",
     detail: "All tokens are permitted. No restrictions on which mints can appear in transactions.",
-    emptyNote: "No token lists needed — all mints are allowed.",
+    emptyNote: "No token lists needed. All mints are allowed.",
     strictness: "Permissive",
     strictnessColor: "text-orange-400",
   },
@@ -204,7 +204,7 @@ const TOKEN_MODES: {
     label: "Block Selected",
     tagline: "Block specific tokens",
     detail: "All tokens are allowed except those on your deny list. Add tokens you want to block.",
-    emptyNote: "No tokens blocked yet — effectively the same as Open mode. Add mints below to start blocking.",
+    emptyNote: "No tokens blocked yet, so this works the same as Open mode. Add mints below to start blocking.",
     strictness: "Moderate",
     strictnessColor: "text-amber-300",
   },
@@ -213,7 +213,7 @@ const TOKEN_MODES: {
     label: "Allow Selected Only",
     tagline: "Only approved tokens",
     detail: "Only tokens on your allow list are permitted. Everything else is blocked.",
-    emptyNote: "No tokens allowed yet — all transactions will be blocked. Add at least one mint to proceed.",
+    emptyNote: "No tokens allowed yet, so all transactions will be blocked. Add at least one mint to proceed.",
     strictness: "Restrictive",
     strictnessColor: "text-emerald-400",
   },
@@ -602,7 +602,7 @@ function generatePolicyRules(
       rules.push({
         text: allowed > 0
           ? `Only ${allowed} approved token${allowed !== 1 ? "s are" : " is"} permitted.`
-          : "Token allowlist is active but empty — all tokens are currently blocked.",
+          : "Token allowlist is active but empty, so all tokens are currently blocked.",
         source: isOverride("token_policy") ? "override" : "default",
         category: "tokens",
       });
@@ -610,7 +610,7 @@ function generatePolicyRules(
       rules.push({
         text: denied > 0
           ? `${denied} token${denied !== 1 ? "s are" : " is"} blocked. All others are permitted.`
-          : "Token blocklist is active but empty — no tokens are blocked.",
+          : "Token blocklist is active but empty, so no tokens are blocked.",
         source: isOverride("token_policy") ? "override" : "default",
         category: "tokens",
       });
@@ -1004,7 +1004,7 @@ function generatePolicyRecommendations(
         id: "restrict-tokens",
         title: "Restrict token access",
         explanation:
-          "Your token policy is set to unrestricted — any token mint is permitted in transactions.",
+          "Your token policy is set to unrestricted. Any token mint is permitted in transactions.",
         why: "Restricting token access to known, vetted mints reduces the risk of interacting with malicious or worthless tokens.",
         priority: "medium",
         source: "Default guidance",
@@ -1354,7 +1354,7 @@ function generateMarketRecommendations(
   ) {
     recs.push({
       id: "market-enable-simulation",
-      title: "Enable simulation — execution conditions are elevated",
+      title: "Enable simulation: execution conditions are elevated",
       explanation:
         `Current execution environment is ${market.environment}. ` +
         "Enabling simulation requirement helps catch failed transactions before they consume gas.",
@@ -1381,7 +1381,7 @@ function generateMarketRecommendations(
   ) {
     recs.push({
       id: "market-tighten-slippage",
-      title: "Consider tightening slippage — market conditions are stressed",
+      title: "Consider tightening slippage: market conditions are stressed",
       explanation:
         `Your slippage cap is ${policySlippage} bps. During stressed execution conditions, ` +
         "wider slippage tolerances increase the risk of unfavorable fills.",
@@ -1403,7 +1403,7 @@ function generateMarketRecommendations(
   ) {
     recs.push({
       id: "market-review-limits",
-      title: "Review transaction limits — elevated execution risk",
+      title: "Review transaction limits: elevated execution risk",
       explanation:
         `Your USD limit is $${policyMaxUsd.toLocaleString()}. During stressed conditions, ` +
         "large transactions carry higher execution risk.",
@@ -1477,7 +1477,7 @@ const PIL_WHY: Record<string, string> = {
   REVIEW_LATENCY:
     "Unstable execution latency can indicate infrastructure issues or overly aggressive timeout settings.",
   CONFIRMATION_BOTTLENECK:
-    "Slow confirmations may indicate network congestion. This is informational — not a policy change.",
+    "Slow confirmations may indicate network congestion. This is informational, not a policy change.",
   HEALTHY_CONFIRMATION:
     "Confirmation latency is within normal bounds. No action needed.",
   IMPROVE_EXECUTION:
@@ -1581,7 +1581,7 @@ function generateCohortBenchmarkRecommendations(
     id: `bench-${b.id.toLowerCase().replace(/_/g, "-")}`,
     title: b.title,
     explanation: b.explanation,
-    why: "This observation is derived from anonymized, aggregated data across similar configurations — no individual tenant data is used.",
+    why: "This observation is derived from anonymized, aggregated data across similar configurations. No individual tenant data is used.",
     priority: BENCHMARK_PRIORITY_MAP[b.confidence] ?? "low",
     source: "Cohort benchmark" as RecommendationSource,
     fieldKey: editableKeys.has(b.parameter) ? b.parameter : undefined,
@@ -1622,7 +1622,7 @@ function generateExternalContextRecommendations(
     id: `ext-${r.id.toLowerCase().replace(/_/g, "-")}`,
     title: r.title,
     explanation: r.explanation,
-    why: "This recommendation is based on real-time external infrastructure conditions — not your individual transactions or policy configuration.",
+    why: "This recommendation is based on real-time external infrastructure conditions, not your individual transactions or policy configuration.",
     priority: EXTERNAL_PRIORITY_MAP[r.confidence] ?? "medium",
     source: "External context" as RecommendationSource,
     fieldKey: editableKeys.has(r.parameter) ? r.parameter : undefined,
@@ -1750,7 +1750,7 @@ function teaserLeadText(
   if (n <= 3) {
     const desc = dominantSource && SOURCE_DESCRIPTIONS[dominantSource];
     return desc
-      ? `${n} intelligence sources — led by ${desc}`
+      ? `${n} intelligence sources, led by ${desc}`
       : `${n} intelligence sources`;
   }
   return `the full intelligence suite (${n} sources)`;
@@ -1786,7 +1786,7 @@ function getSourceDetailFraming(rec: PolicyRecommendation): string | null {
         ? "High-confidence intelligence signal based on analysis of your transaction patterns."
         : rec.confidence != null && rec.confidence >= 0.4
           ? "Moderate-confidence signal from policy intelligence analysis."
-          : "Low-confidence signal — consider as directional guidance.";
+          : "Low-confidence signal. Consider this as directional guidance.";
     case "Cohort benchmark":
       return "Derived from anonymized, aggregated data across similar configurations.";
     case "External context":
@@ -2657,7 +2657,7 @@ export default function CustomerPoliciesPage() {
             <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3">
               <p className="text-[11px] text-slate-400 leading-relaxed">
                 Your transactions are still being evaluated against your plan&apos;s
-                default enforcement rules — protection is active while this view
+                default enforcement rules. Protection is active while this view
                 is temporarily unavailable.
               </p>
             </div>
@@ -3033,7 +3033,7 @@ export default function CustomerPoliciesPage() {
                     <p className="mt-0.5 text-[10px] text-slate-500">
                       {overridesEnabled
                         ? "Editable in Policy Controls"
-                        : "Premium control — visible, locked on current plan"}
+                        : "Premium control, visible but locked on current plan"}
                     </p>
                   </div>
                 ))}
@@ -3371,7 +3371,7 @@ export default function CustomerPoliciesPage() {
                           const extra =
                             (historyResolvedEntries.length > 3 ? historyResolvedEntries.length - 3 : 0) +
                             (historyNewEntries.length > 3 ? historyNewEntries.length - 3 : 0);
-                          return `+${extra} more change${extra !== 1 ? "s" : ""} — see recommendations below.`;
+                          return `+${extra} more change${extra !== 1 ? "s" : ""}. See recommendations below.`;
                         })()}
                       </p>
                     )}
@@ -3670,7 +3670,7 @@ export default function CustomerPoliciesPage() {
                                       </button>
                                       {pilClearErrors[rec.id] && (
                                         <span className="text-[10px] text-red-400" role="alert" data-testid={`pil-clear-error-${rec.id}`}>
-                                          Could not clear — try again or edit manually.
+                                          Could not clear. Try again or edit manually.
                                         </span>
                                       )}
                                     </>
@@ -3732,7 +3732,7 @@ export default function CustomerPoliciesPage() {
                                           data-testid={`undo-error-${rec.id}`}
                                           role="alert"
                                         >
-                                          Could not undo — edit the setting manually.
+                                          Could not undo. Edit the setting manually.
                                         </span>
                                       )}
                                     </div>
@@ -4061,7 +4061,7 @@ export default function CustomerPoliciesPage() {
                                               data-testid={`undo-error-${rec.id}`}
                                               role="alert"
                                             >
-                                              Could not undo — edit manually.
+                                              Could not undo. Edit manually.
                                             </span>
                                           )}
                                         </div>
@@ -4207,7 +4207,7 @@ export default function CustomerPoliciesPage() {
                                     primary
                                   </span>
                                 )}
-                                {SOURCE_DESCRIPTIONS[src] ? ` — ${SOURCE_DESCRIPTIONS[src]}` : ""}
+                                {SOURCE_DESCRIPTIONS[src] ? `: ${SOURCE_DESCRIPTIONS[src]}` : ""}
                               </span>
                             </li>
                           ))}
@@ -4755,7 +4755,7 @@ export default function CustomerPoliciesPage() {
                                     {(listValues[field.key] ?? []).length ===
                                       0 && (
                                       <span className="text-[10px] text-slate-500 italic">
-                                        No entries — add program IDs below.
+                                        No entries yet. Add program IDs below.
                                       </span>
                                     )}
                                     {(listValues[field.key] ?? []).map(

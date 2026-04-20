@@ -44,7 +44,7 @@ export default function DocsAutoDynamicPilPage() {
         </h1>
         <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
           Premium adaptive policy assistance. Auto-Dynamic PIL can tune a bounded set of
-          execution parameters for the next transaction in the same market — deterministically,
+          execution parameters for the next transaction in the same market: deterministically,
           transparently, and without touching your durable policy defaults.
         </p>
       </header>
@@ -59,19 +59,19 @@ export default function DocsAutoDynamicPilPage() {
         </p>
         <ul className="space-y-2 text-slate-300 list-disc pl-5">
           <li>
-            <span className="font-semibold text-slate-100">Same-market scoped</span> — signals and
+            <span className="font-semibold text-slate-100">Same-market scoped</span>: signals and
             adjustments are specific to the market pair in the pending transaction.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Next-transaction only</span> — the
+            <span className="font-semibold text-slate-100">Next-transaction only</span>: the
             overlay expires after one use. It is not persisted.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Bounded and deterministic</span> — every
+            <span className="font-semibold text-slate-100">Bounded and deterministic</span>: every
             adjustment is capped by hard policy limits. The system does not guess freely.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Explainable</span> — each adjustment
+            <span className="font-semibold text-slate-100">Explainable</span>: each adjustment
             produces receipt evidence so you can inspect what was applied and why.
           </li>
         </ul>
@@ -104,7 +104,7 @@ export default function DocsAutoDynamicPilPage() {
                 <td className="px-4 py-3 font-semibold text-slate-200 whitespace-nowrap">Recommend</td>
                 <td className="px-4 py-3 text-slate-400">
                   PIL computes bounded recommendations and surfaces them in the Policy Controls UI.
-                  Nothing is applied automatically — you review and accept or dismiss each
+                  Nothing is applied automatically. You review and accept or dismiss each
                   suggestion.
                 </td>
               </tr>
@@ -134,7 +134,7 @@ export default function DocsAutoDynamicPilPage() {
             <code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[13px] text-slate-200">
               max_slippage_bps
             </code>{" "}
-            — the maximum tolerated slippage for a DEX swap, in basis points. PIL may propose a
+            the maximum tolerated slippage for a DEX swap, in basis points. PIL may propose a
             tighter or wider bound based on same-market volatility signals.
           </li>
         </ul>
@@ -152,21 +152,21 @@ export default function DocsAutoDynamicPilPage() {
         </p>
         <ul className="space-y-2 text-slate-300 list-disc pl-5">
           <li>
-            <span className="font-semibold text-slate-100">Rewrite trust boundaries</span> — it
+            <span className="font-semibold text-slate-100">Rewrite trust boundaries</span>: it
             cannot expand your DEX allowlist, modify your allowed protocols, or change spend limits
             beyond the pre-configured range.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Mutate allow or deny lists</span> — token
+            <span className="font-semibold text-slate-100">Mutate allow or deny lists</span>: token
             and program allow/deny lists are durable policy. PIL does not touch them.
           </li>
           <li>
             <span className="font-semibold text-slate-100">Override your explicit overrides</span>{" "}
-            — if you have manually set a value in Policy Controls, PIL will not silently supersede
+            : if you have manually set a value in Policy Controls, PIL will not silently supersede
             it beyond bounded deltas.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Persist changes</span> — no adaptive
+            <span className="font-semibold text-slate-100">Persist changes</span>: no adaptive
             adjustment is written into your durable policy. Every overlay is ephemeral.
           </li>
         </ul>
@@ -227,17 +227,17 @@ export default function DocsAutoDynamicPilPage() {
         </p>
         <ul className="space-y-3 text-slate-300">
           <li>
-            <span className="font-semibold text-slate-100">Bounded delta size</span> — each
+            <span className="font-semibold text-slate-100">Bounded delta size</span>: each
             eligible field has a maximum allowed change magnitude. PIL cannot push a value beyond
             that delta, regardless of market signals.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Hard caps</span> — absolute policy
+            <span className="font-semibold text-slate-100">Hard caps</span>: absolute policy
             ceilings enforced by ATF. An adaptive overlay can never result in a value that exceeds
             the configured hard cap for that field.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Same-market scope</span> — signals are
+            <span className="font-semibold text-slate-100">Same-market scope</span>: signals are
             scoped to the specific market pair. An adjustment for SOL/USDC does not influence
             ETH/USDC behavior.
           </li>
@@ -245,11 +245,11 @@ export default function DocsAutoDynamicPilPage() {
             <span className="font-semibold text-slate-100">
               Next-transaction TTL (time-to-live)
             </span>{" "}
-            — overlays expire after one transaction. They are not cumulative and do not carry
+            Overlays expire after one transaction. They are not cumulative and do not carry
             forward.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Explainability and receipts</span> —
+            <span className="font-semibold text-slate-100">Explainability and receipts</span>:
             every applied overlay generates a receipt event. You can inspect the pre-overlay value,
             the applied adjustment, and the reason at any time.
           </li>
@@ -299,11 +299,11 @@ export default function DocsAutoDynamicPilPage() {
         </p>
         <ul className="space-y-2 text-slate-300 list-disc pl-5">
           <li>
-            <span className="font-semibold text-slate-100">Policy Controls status grid</span> —
+            <span className="font-semibold text-slate-100">Policy Controls status grid</span>:
             shows the latest adaptive event name and timestamp directly on the Policy Controls page.
           </li>
           <li>
-            <span className="font-semibold text-slate-100">Receipt evidence</span> — each applied
+            <span className="font-semibold text-slate-100">Receipt evidence</span>: each applied
             overlay appends a structured event to the transaction receipt. The event includes the
             field adjusted, the pre-overlay value, the applied value, and the PIL signal reason.
           </li>

@@ -639,6 +639,9 @@ export default function CustomerDashboardPage() {
   const onboardingComplete =
     activation?.onboarding_completed || obStep >= 3;
 
+  // Sandbox card collapse state — collapsed by default for returning users
+  const [sandboxOpen, setSandboxOpen] = useState(false);
+
   // -----------------------------------------------------------------------
   // Error classifier — maps ApiError codes to user-friendly categories
   // -----------------------------------------------------------------------
@@ -843,7 +846,8 @@ export default function CustomerDashboardPage() {
           </div>
         )}
 
-        {/* First Protected Trade - Onboarding Flow (primary action) */}
+        {/* First Protected Trade - Onboarding Flow (prominent for new users only) */}
+        {!activation?.onboarding_completed && (
         <section
           data-testid="first-trade-section"
           className="rounded-xl border-2 border-accent-400/30 bg-accent-500/5 p-8 space-y-6"
@@ -1397,6 +1401,7 @@ export default function CustomerDashboardPage() {
             </div>
           </div>
         </section>
+        )}
 
         {/* API Key card */}
         {savedApiKey && (
@@ -1748,6 +1753,207 @@ export default function CustomerDashboardPage() {
           loading={policyLoading}
           onRetry={policyFailed ? loadPolicy : undefined}
         />
+
+        {/* Protected Trade Sandbox — demoted for returning users */}
+        {activation?.onboarding_completed && (
+          <section
+            data-testid="first-trade-section"
+            className="rounded-xl border border-white/10 bg-white/[0.02]"
+          >
+            <button
+              type="button"
+              data-testid="sandbox-toggle"
+              onClick={() => setSandboxOpen(!sandboxOpen)}
+              className="flex w-full items-center justify-between px-6 py-4 text-left"
+            >
+              <div className="space-y-0.5">
+                <h2 className="text-sm font-medium text-slate-300">
+                  Protected Trade Sandbox
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Run another sample trade through ATF protection.
+                </p>
+              </div>
+              <svg
+                className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${sandboxOpen ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {sandboxOpen && (
+              <div className="border-t border-white/5 p-8 space-y-6">
+                {/* Header - completion state */}
+                <div className="text-center space-y-2">
+                  <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20">
+                    <span className="text-xl">&#x2705;</span>
+                  </div>
+                  <h2 data-testid="trust-headline" className="text-xl font-semibold text-emerald-300">
+                    Protected trade completed successfully
+                  </h2>
+                  <p data-testid="trust-subline" className="text-sm text-slate-400">
+                    ATF evaluated, enforced, and recorded this transaction.
+                  </p>
+                </div>
+
+                {/* Step indicators */}
+                <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs">
+                  {(["Generate", "Simulate", "Execute", "Receipt"] as const).map(
+                    (label, i) => (
+                      <div key={label} className="flex items-center gap-2">
+                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300">
+                          {"\u2713"}
+                        </span>
+                        <span className="font-medium text-emerald-300">
+                          {label}
+                        </span>
+                        {i < 3 && (
+                          <span className="mx-1 text-slate-600">&rarr;</span>
+                        )}
+                      </div>
+                    ),
+                  )}
+                </div>
+
+                {/* Primary actions */}
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    onClick={() => {
+                      setObStep(0);
+                      setObIntent(null);
+                      setObDryRun(null);
+                      setObReceipt(null);
+                      setSandboxOpen(true);
+                    }}
+                    className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500"
+                  >
+                    Try another protected trade
+                  </button>
+                  <Link
+                    href="/customer/receipts"
+                    className="rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-slate-300 transition hover:bg-white/10"
+                  >
+                    View receipts
+                  </Link>
+                </div>
+
+                {/* Onboarding steps (re-rendered when user clicks "Try another") */}
+                {obStep === 0 && !obError && !quickTradeActive && !quickTradeError && (
+                  <div className="text-center space-y-4">
+                    <button
+                      data-testid="quick-trade-btn"
+                      onClick={runQuickTradeFlow}
+                      disabled={obLoading}
+                      className="rounded-lg bg-emerald-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-500 hover:shadow-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Run Protected Trade
+                    </button>
+                    <p className="text-xs text-slate-500">
+                      One click to run a sample trade through ATF.
+                    </p>
+                  </div>
+                )}
+
+                {/* Quick trade progress */}
+                {quickTradeActive && (
+                  <div data-testid="quick-trade-progress" className="space-y-4">
+                    <div className="flex items-center justify-center gap-4">
+                      {[
+                        { step: 1, label: "Preparing" },
+                        { step: 2, label: "Protecting" },
+                        { step: 3, label: "Executing" },
+                      ].map(({ step, label }) => {
+                        const isActive = quickTradeStep === step;
+                        const isComplete = quickTradeStep > step;
+                        return (
+                          <div key={step} className="flex items-center gap-2">
+                            <div
+                              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-all ${
+                                isComplete
+                                  ? "bg-emerald-500/20 text-emerald-300"
+                                  : isActive
+                                    ? "bg-accent-500/30 text-accent-200 ring-2 ring-accent-400/40 animate-pulse"
+                                    : "bg-white/5 text-slate-500"
+                              }`}
+                            >
+                              {isComplete ? "\u2713" : step}
+                            </div>
+                            <span className={`text-sm ${isActive ? "text-slate-200" : isComplete ? "text-emerald-300" : "text-slate-500"}`}>
+                              {label}
+                            </span>
+                            {step < 3 && <span className="text-slate-600">{"\u2192"}</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-center text-sm text-slate-400">
+                      {quickTradeStep === 1 && "Generating sample trade..."}
+                      {quickTradeStep === 2 && "Running protection check..."}
+                      {quickTradeStep === 3 && "Executing protected trade..."}
+                    </p>
+                  </div>
+                )}
+
+                {/* Error state */}
+                {obError && (() => {
+                  const classified = classifyError(obError);
+                  return (
+                    <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-4 text-sm text-red-300 space-y-3">
+                      <p>{classified.message}</p>
+                      <button
+                        onClick={() => {
+                          setObError("");
+                          if (obStep === 0) handleGenerateSample();
+                          else if (obStep === 1) handleSimulate();
+                          else if (obStep === 2) handleExecute();
+                        }}
+                        className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-200 transition hover:bg-white/10"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {/* Receipt result */}
+                {obStep >= 3 && obReceipt && (
+                  <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-medium text-emerald-300">
+                        &#x2705; Trade Receipt
+                      </h3>
+                      <button
+                        onClick={handleCopyReceipt}
+                        className="rounded-md border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300 transition hover:bg-white/10"
+                      >
+                        {receiptCopied ? "Copied!" : "Copy JSON"}
+                      </button>
+                    </div>
+                    <pre className="overflow-x-auto rounded-lg bg-neutral-900 p-3 text-xs text-slate-200 font-mono">
+                      {JSON.stringify(obReceipt, null, 2)}
+                    </pre>
+                  </div>
+                )}
+
+                {/* Links */}
+                <div className="text-center">
+                  <p className="text-xs text-slate-500">
+                    All transactions are policy-protected and verifiable.{" "}
+                    <Link
+                      href="/quickstart"
+                      className="text-slate-400 underline hover:text-slate-300"
+                    >
+                      Quickstart guide
+                    </Link>
+                  </p>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Quick Test Request */}
         <RunTestRequest apiKey={savedApiKey} />
