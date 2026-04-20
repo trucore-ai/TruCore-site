@@ -5,10 +5,35 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { sections } from "@/lib/docs-nav";
 
+const DOCS_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+
 export const metadata: Metadata = {
   title: "Documentation",
   description:
     "Technical documentation for TruCore ATF covering quickstart flows, policy model concepts, and permit semantics.",
+  openGraph: {
+    title: "Documentation - TruCore ATF",
+    description:
+      "Technical documentation for TruCore ATF covering quickstart flows, policy model concepts, and permit semantics.",
+    url: "https://trucore.xyz/docs",
+    siteName: "TruCore",
+    type: "website",
+    images: [
+      {
+        url: DOCS_SOCIAL_IMAGE_URL,
+        width: 1200,
+        height: 630,
+        alt: "TruCore docs social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Documentation - TruCore ATF",
+    description:
+      "Technical documentation for TruCore ATF covering quickstart flows, policy model concepts, and permit semantics.",
+    images: [DOCS_SOCIAL_IMAGE_URL],
+  },
 };
 
 const docsCards = sections

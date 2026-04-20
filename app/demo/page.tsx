@@ -4,15 +4,20 @@ import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 
+const DEMO_SOCIAL_IMAGE_URL = "https://trucore.xyz/demo/opengraph-image";
+
 export const metadata: Metadata = {
   title: "Demo Live",
   description: "Deterministic demo receipts stream with one-click verify links and preview anchor status.",
   openGraph: {
     title: "Demo Live",
     description: "Deterministic demo receipts stream with one-click verify links and preview anchor status.",
+    url: "https://trucore.xyz/demo",
+    siteName: "TruCore",
+    type: "website",
     images: [
       {
-        url: "/demo/opengraph-image",
+        url: DEMO_SOCIAL_IMAGE_URL,
         width: 1200,
         height: 630,
         alt: "Demo Live receipts stream preview",
@@ -23,7 +28,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Demo Live",
     description: "Deterministic demo receipts stream with one-click verify links and preview anchor status.",
-    images: ["/demo/opengraph-image"],
+    images: [DEMO_SOCIAL_IMAGE_URL],
   },
 };
 

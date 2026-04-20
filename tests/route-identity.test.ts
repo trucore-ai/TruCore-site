@@ -5,6 +5,12 @@ import { join } from "path";
 const homeSrc = readFileSync(join(__dirname, "..", "app", "page.tsx"), "utf-8");
 const atfSrc = readFileSync(join(__dirname, "..", "app", "atf", "page.tsx"), "utf-8");
 const agentSrc = readFileSync(join(__dirname, "..", "app", "agent", "page.tsx"), "utf-8");
+const docsSrc = readFileSync(join(__dirname, "..", "app", "docs", "page.tsx"), "utf-8");
+const verifyDemoLayoutSrc = readFileSync(join(__dirname, "..", "app", "verify-demo", "layout.tsx"), "utf-8");
+const buildersSrc = readFileSync(join(__dirname, "..", "app", "builders", "page.tsx"), "utf-8");
+const enterpriseSrc = readFileSync(join(__dirname, "..", "app", "enterprise", "page.tsx"), "utf-8");
+const pricingSrc = readFileSync(join(__dirname, "..", "app", "pricing", "page.tsx"), "utf-8");
+const demoSrc = readFileSync(join(__dirname, "..", "app", "demo", "page.tsx"), "utf-8");
 
 /**
  * Regression test: prevent the / and /atf route contents from being
@@ -63,5 +69,59 @@ describe("route identity", () => {
 
   it("/agent does not fall back to opengraph-image dynamic route", () => {
     expect(agentSrc).not.toContain("/opengraph-image");
+  });
+
+  it("/docs metadata pins explicit stable social image contract", () => {
+    expect(docsSrc).toContain('const DOCS_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image"');
+    expect(docsSrc).toContain('url: "https://trucore.xyz/docs"');
+    expect(docsSrc).toContain('siteName: "TruCore"');
+    expect(docsSrc).toContain('type: "website"');
+    expect(docsSrc).toContain('card: "summary_large_image"');
+    expect(docsSrc).toContain('images: [DOCS_SOCIAL_IMAGE_URL]');
+  });
+
+  it("/verify-demo metadata is defined at route layout with stable social image", () => {
+    expect(verifyDemoLayoutSrc).toContain('const VERIFY_DEMO_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image"');
+    expect(verifyDemoLayoutSrc).toContain('url: "https://trucore.xyz/verify-demo"');
+    expect(verifyDemoLayoutSrc).toContain('siteName: "TruCore"');
+    expect(verifyDemoLayoutSrc).toContain('type: "website"');
+    expect(verifyDemoLayoutSrc).toContain('card: "summary_large_image"');
+    expect(verifyDemoLayoutSrc).toContain('images: [VERIFY_DEMO_SOCIAL_IMAGE_URL]');
+  });
+
+  it("/builders metadata pins explicit stable social image contract", () => {
+    expect(buildersSrc).toContain('const BUILDERS_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image"');
+    expect(buildersSrc).toContain('url: "https://trucore.xyz/builders"');
+    expect(buildersSrc).toContain('siteName: "TruCore"');
+    expect(buildersSrc).toContain('type: "website"');
+    expect(buildersSrc).toContain('card: "summary_large_image"');
+    expect(buildersSrc).toContain('images: [BUILDERS_SOCIAL_IMAGE_URL]');
+  });
+
+  it("/enterprise metadata pins explicit stable social image contract", () => {
+    expect(enterpriseSrc).toContain('const ENTERPRISE_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image"');
+    expect(enterpriseSrc).toContain('url: "https://trucore.xyz/enterprise"');
+    expect(enterpriseSrc).toContain('siteName: "TruCore"');
+    expect(enterpriseSrc).toContain('type: "website"');
+    expect(enterpriseSrc).toContain('card: "summary_large_image"');
+    expect(enterpriseSrc).toContain('images: [ENTERPRISE_SOCIAL_IMAGE_URL]');
+  });
+
+  it("/pricing metadata pins explicit stable social image contract", () => {
+    expect(pricingSrc).toContain('const PRICING_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image"');
+    expect(pricingSrc).toContain('url: "https://trucore.xyz/pricing"');
+    expect(pricingSrc).toContain('siteName: "TruCore"');
+    expect(pricingSrc).toContain('type: "website"');
+    expect(pricingSrc).toContain('card: "summary_large_image"');
+    expect(pricingSrc).toContain('images: [PRICING_SOCIAL_IMAGE_URL]');
+  });
+
+  it("/demo keeps intentional route-specific image with explicit OG/Twitter contract", () => {
+    expect(demoSrc).toContain('const DEMO_SOCIAL_IMAGE_URL = "https://trucore.xyz/demo/opengraph-image"');
+    expect(demoSrc).toContain('url: "https://trucore.xyz/demo"');
+    expect(demoSrc).toContain('siteName: "TruCore"');
+    expect(demoSrc).toContain('type: "website"');
+    expect(demoSrc).toContain('card: "summary_large_image"');
+    expect(demoSrc).toContain('images: [DEMO_SOCIAL_IMAGE_URL]');
   });
 });
