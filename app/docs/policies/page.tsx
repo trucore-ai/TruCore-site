@@ -121,7 +121,7 @@ export default function DocsPoliciesPage() {
             >
               Learn the policy model primitives
             </Link>
-            {" — allowlists, limits, slippage bounds, and fail-closed checks."}
+            {": allowlists, limits, slippage bounds, and fail-closed checks."}
           </li>
           <li>
             <Link
@@ -130,7 +130,7 @@ export default function DocsPoliciesPage() {
             >
               See concrete policy examples
             </Link>
-            {" — copy-paste configurations for common use cases."}
+            {": ready-to-use configurations for common use cases."}
           </li>
           <li>
             <Link
@@ -139,7 +139,7 @@ export default function DocsPoliciesPage() {
             >
               Run the quickstart
             </Link>
-            {" — protect a swap intent with a policy in four steps."}
+            {": protect a swap intent with a policy in four steps."}
           </li>
         </ul>
       </section>
