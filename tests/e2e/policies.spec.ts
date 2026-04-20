@@ -75,10 +75,8 @@ test.describe("customer policies — free plan (read-only)", () => {
     // Overrides not available
     await expect(page.getByText("Not available on this plan")).toBeVisible();
 
-    // No Edit button should be present
-    await expect(
-      page.getByRole("button", { name: "Edit Overrides" }),
-    ).not.toBeVisible();
+    // No edit controls button should be present
+    await expect(page.getByTestId("edit-policy-controls-cta")).not.toBeVisible();
 
     // Footer upgrade hint
     await expect(
@@ -102,7 +100,7 @@ test.describe("customer policies — pro plan editing", () => {
     await injectCustomerAuth(page);
   });
 
-  test("pro user sees Edit Overrides button", async ({ page }) => {
+  test("pro user sees policy controls edit button", async ({ page }) => {
     await page.goto("/customer/policies");
 
     await expect(
@@ -120,27 +118,25 @@ test.describe("customer policies — pro plan editing", () => {
     ).toBeVisible();
 
     // Edit button present
-    await expect(
-      page.getByRole("button", { name: "Edit Overrides" }),
-    ).toBeVisible();
+    await expect(page.getByTestId("edit-policy-controls-cta")).toBeVisible();
   });
 
   test("pro user can enter edit mode", async ({ page }) => {
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     // Form fields should be visible
     await expect(page.getByLabel("Max Slippage (bps)")).toBeVisible();
     await expect(page.getByLabel("Max Transaction Value (USD)")).toBeVisible();
     await expect(page.getByLabel("Max Value (SOL)")).toBeVisible();
-    await expect(page.getByLabel("Require Simulation Success")).toBeVisible();
+    await expect(page.getByText("Require Simulation Success")).toBeVisible();
     await expect(page.getByLabel("Allowed Programs")).toBeVisible();
     await expect(page.getByLabel("Denied Programs")).toBeVisible();
 
     // Save and Cancel buttons should be visible
     await expect(
-      page.getByRole("button", { name: "Save Overrides" }),
+      page.getByRole("button", { name: "Save Policy Controls" }),
     ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Cancel" }),
@@ -153,7 +149,7 @@ test.describe("customer policies — pro plan editing", () => {
   test("pro user can edit numeric field and save", async ({ page }) => {
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     // Change max slippage
     const slippageInput = page.getByLabel("Max Slippage (bps)");
@@ -163,23 +159,21 @@ test.describe("customer policies — pro plan editing", () => {
     const solInput = page.getByLabel("Max Value (SOL)");
     await solInput.fill("500");
 
-    await page.getByRole("button", { name: "Save Overrides" }).click();
+    await page.getByRole("button", { name: "Save Policy Controls" }).click();
 
     // Should exit edit mode and show success banner
     await expect(
-      page.getByText("Policy overrides saved successfully"),
+      page.getByText("Policy Controls saved successfully."),
     ).toBeVisible();
 
     // Edit button should reappear (not in edit mode)
-    await expect(
-      page.getByRole("button", { name: "Edit Overrides" }),
-    ).toBeVisible();
+    await expect(page.getByTestId("edit-policy-controls-cta")).toBeVisible();
   });
 
   test("cancel exits edit mode without saving", async ({ page }) => {
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     // Change a value
     await page.getByLabel("Max Slippage (bps)").fill("999");
@@ -188,34 +182,32 @@ test.describe("customer policies — pro plan editing", () => {
     await page.getByRole("button", { name: "Cancel" }).click();
 
     // Should exit edit mode
-    await expect(
-      page.getByRole("button", { name: "Edit Overrides" }),
-    ).toBeVisible();
+    await expect(page.getByTestId("edit-policy-controls-cta")).toBeVisible();
 
     // No success banner
     await expect(
-      page.getByText("Policy overrides saved successfully"),
+      page.getByText("Policy Controls saved successfully."),
     ).not.toBeVisible();
 
     // Re-enter edit mode — value should be original (200), not 999
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
     await expect(page.getByLabel("Max Slippage (bps)")).toHaveValue("200");
   });
 
   test("successful save refreshes displayed state", async ({ page }) => {
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
     await page.getByLabel("Max Slippage (bps)").fill("100");
-    await page.getByRole("button", { name: "Save Overrides" }).click();
+    await page.getByRole("button", { name: "Save Policy Controls" }).click();
 
     await expect(
-      page.getByText("Policy overrides saved successfully"),
+      page.getByText("Policy Controls saved successfully."),
     ).toBeVisible();
 
     // The overrides section should now show the updated value
     // Re-enter edit mode to verify persisted value
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
     await expect(page.getByLabel("Max Slippage (bps)")).toHaveValue("100");
   });
 });
@@ -238,7 +230,7 @@ test.describe("customer policies — program list editors", () => {
   test("pre-populates program lists from existing overrides", async ({ page }) => {
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     // Existing allowed_programs entry should appear as a chip
     await expect(
@@ -254,7 +246,7 @@ test.describe("customer policies — program list editors", () => {
   test("add allowed_programs entry via Enter and save", async ({ page }) => {
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     // Type a new program ID into the allowed_programs input and press Enter
     const allowedInput = page.locator("#override-allowed_programs");
@@ -267,17 +259,17 @@ test.describe("customer policies — program list editors", () => {
     ).toBeVisible();
 
     // Save
-    await page.getByRole("button", { name: "Save Overrides" }).click();
+    await page.getByRole("button", { name: "Save Policy Controls" }).click();
 
     await expect(
-      page.getByText("Policy overrides saved successfully"),
+      page.getByText("Policy Controls saved successfully."),
     ).toBeVisible();
   });
 
   test("add allowed_programs entry via Add button", async ({ page }) => {
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     const allowedInput = page.locator("#override-allowed_programs");
     await allowedInput.fill("ViaButtonProgram1111111111111111");
@@ -295,7 +287,7 @@ test.describe("customer policies — program list editors", () => {
   test("remove denied_programs entry via x button", async ({ page }) => {
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     // The denied_programs entry should have a remove button
     const removeBtn = page.getByRole("button", {
@@ -310,10 +302,10 @@ test.describe("customer policies — program list editors", () => {
     ).not.toBeVisible();
 
     // Save
-    await page.getByRole("button", { name: "Save Overrides" }).click();
+    await page.getByRole("button", { name: "Save Policy Controls" }).click();
 
     await expect(
-      page.getByText("Policy overrides saved successfully"),
+      page.getByText("Policy Controls saved successfully."),
     ).toBeVisible();
   });
 });
@@ -348,9 +340,9 @@ test.describe("customer policies — validation error", () => {
   test("backend 422 validation error is surfaced to user", async ({ page }) => {
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
     await page.getByLabel("Max Slippage (bps)").fill("50");
-    await page.getByRole("button", { name: "Save Overrides" }).click();
+    await page.getByRole("button", { name: "Save Policy Controls" }).click();
 
     // Error banner should be displayed
     await expect(
@@ -359,7 +351,7 @@ test.describe("customer policies — validation error", () => {
 
     // Should still be in edit mode (not exited)
     await expect(
-      page.getByRole("button", { name: "Save Overrides" }),
+      page.getByRole("button", { name: "Save Policy Controls" }),
     ).toBeVisible();
   });
 });
@@ -382,7 +374,7 @@ test.describe("customer policies — token policy editor", () => {
     await mockPolicyRoutes(page, { plan: "pro" });
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     await expect(page.getByText("Token Access Policy")).toBeVisible();
     await expect(page.getByTestId("token-mode-unrestricted")).toBeVisible();
@@ -394,7 +386,7 @@ test.describe("customer policies — token policy editor", () => {
     await mockPolicyRoutes(page, { plan: "pro" });
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
     await page.getByTestId("token-mode-allowlist").click();
 
     await expect(page.getByText("Quick add popular tokens:")).toBeVisible();
@@ -406,7 +398,7 @@ test.describe("customer policies — token policy editor", () => {
     await mockPolicyRoutes(page, { plan: "pro" });
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
     await page.getByTestId("token-mode-allowlist").click();
     await page.getByRole("button", { name: "+ SOL" }).click();
 
@@ -420,7 +412,7 @@ test.describe("customer policies — token policy editor", () => {
     await mockPolicyRoutes(page, { plan: "pro_with_token_policy" });
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     // SOL and USDC chips should be present
     await expect(page.getByLabel("Remove SOL")).toBeVisible();
@@ -438,7 +430,7 @@ test.describe("customer policies — token policy editor", () => {
     await mockPolicyRoutes(page, { plan: "pro" });
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
     await page.getByTestId("token-mode-allowlist").click();
 
     const input = page.getByPlaceholder("Token symbol or mint address");
@@ -452,14 +444,14 @@ test.describe("customer policies — token policy editor", () => {
     await mockPolicyRoutes(page, { plan: "pro" });
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
     await page.getByTestId("token-mode-allowlist").click();
     await page.getByRole("button", { name: "+ USDC" }).click();
 
     // Capture the save request
     const [request] = await Promise.all([
       page.waitForRequest("**/api/customer/policy/overrides"),
-      page.getByRole("button", { name: "Save Overrides" }).click(),
+      page.getByRole("button", { name: "Save Policy Controls" }).click(),
     ]);
 
     const body = request.postDataJSON();
@@ -472,7 +464,7 @@ test.describe("customer policies — token policy editor", () => {
     await mockPolicyRoutes(page, { plan: "pro_with_token_policy" });
     await page.goto("/customer/policies");
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     // Allowlist mode should be selected
     const allowlistBtn = page.getByTestId("token-mode-allowlist");
@@ -529,7 +521,7 @@ test.describe("customer policies — effective policy preview", () => {
 
     await expect(page.getByTestId("policy-preview")).toBeVisible();
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     await expect(page.getByTestId("policy-preview")).not.toBeVisible();
   });
@@ -576,7 +568,7 @@ test.describe("customer policies — policy simulation", () => {
 
     await expect(page.getByTestId("policy-simulation")).toBeVisible();
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     await expect(page.getByTestId("policy-simulation")).not.toBeVisible();
   });
@@ -635,7 +627,7 @@ test.describe("customer policies — policy recommendations", () => {
 
     await expect(page.getByTestId("policy-recommendations")).toBeVisible();
 
-    await page.getByRole("button", { name: "Edit Overrides" }).click();
+    await page.getByTestId("edit-policy-controls-cta").click();
 
     await expect(page.getByTestId("policy-recommendations")).not.toBeVisible();
   });
@@ -966,7 +958,7 @@ test.describe("customer policies — recommendation action buttons", () => {
 
       // Edit mode elements should be visible
       await expect(page.getByRole("button", { name: "Cancel" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Save Overrides" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Save Policy Controls" })).toBeVisible();
     });
 
     test("'View setting' scrolls to and highlights the target field", async ({ page }) => {

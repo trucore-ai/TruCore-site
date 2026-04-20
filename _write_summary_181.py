@@ -51,7 +51,7 @@ Tune recommendation display using engagement insights
 5. Exact files changed:
    - app/customer/policies/page.tsx — display logic refinements
    - lib/server/policy-analytics-store.ts — added by_source_and_section cross-tab
-   - tests/customer-policy-overrides.test.tsx — 3 new analytics-informed display tests
+  - tests/customer-policy-overrides-plans.test.tsx — 3 new analytics-informed display tests
    - tests/policy-analytics-store.test.ts — 1 new by_source_and_section cross-tab test
 
 6. Test/build results:

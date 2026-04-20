@@ -61,9 +61,9 @@
 
 - [ ] `npm run build` passes with 0 TypeScript errors, 0 warnings-as-errors
 - [ ] Build produces ≥ 213 pages (policy page included)
-- [ ] `npx vitest run tests/customer-policy-overrides.test.tsx` — **48/48 pass**
-- [ ] `npx vitest run tests/customer-policy-recommendations.test.tsx` — **80/80 pass**
-- [ ] `npx vitest run tests/customer-policy-advanced.test.tsx` — **38/38 pass**
+- [ ] `npx vitest run tests/customer-policy-overrides-*.test.tsx` — split overrides suites pass
+- [ ] `npx vitest run tests/customer-policy-recommendations-*.test.tsx` — split recommendation suites pass
+- [ ] `npx vitest run tests/customer-policy-advanced-*.test.tsx` — split advanced suites pass
 - [ ] `npx vitest run tests/customer-policy-trend-surface.test.tsx` — **18/18 pass**
 - [ ] `npx vitest run tests/customer-policy-recommendation-apply.test.ts` — **66/66 pass**
 - [ ] Policy admin tests pass: `policy-analytics-daily-snapshot`, `policy-analytics-snapshot`, `policy-analytics-store`, `policy-recommendation-analytics`, `ops-policy-analytics-summary`, `admin-policy-analytics-page`, `policy-analytics-snapshot-diff`
