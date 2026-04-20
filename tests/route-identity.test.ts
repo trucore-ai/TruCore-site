@@ -28,6 +28,15 @@ describe("route identity", () => {
     expect(homeSrc).not.toContain('"ATF Developer Platform');
   });
 
+  it("/ metadata pins homepage social image contract", () => {
+    expect(homeSrc).toContain('const HOME_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image"');
+    expect(homeSrc).toContain('url: "https://trucore.xyz"');
+    expect(homeSrc).toContain('siteName: "TruCore"');
+    expect(homeSrc).toContain('type: "website"');
+    expect(homeSrc).toContain('card: "summary_large_image"');
+    expect(homeSrc).toContain('images: [HOME_SOCIAL_IMAGE_URL]');
+  });
+
   it("/atf metadata title references ATF Developer Platform", () => {
     expect(atfSrc).toContain("ATF Developer Platform");
   });

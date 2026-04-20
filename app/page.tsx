@@ -21,17 +21,22 @@ import { Tilt } from "@/components/ui/tilt";
 import { getAtfCliVersion } from "@/lib/version";
 import truCoreBanner from "@/images/TruCore-banner-new.png";
 
+const HOME_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+
 export const metadata: Metadata = {
   title: "TruCore | Policy-Enforced Protection for AI Agents",
   description:
     "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
   openGraph: {
+    url: "https://trucore.xyz",
+    siteName: "TruCore",
+    type: "website",
     title: "TruCore | Policy-Enforced Protection for AI Agents",
     description:
       "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
     images: [
       {
-        url: "/opengraph-image",
+        url: HOME_SOCIAL_IMAGE_URL,
         width: 1200,
         height: 630,
         alt: "TruCore home social preview",
@@ -43,7 +48,7 @@ export const metadata: Metadata = {
     title: "TruCore | Policy-Enforced Protection for AI Agents",
     description:
       "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
-    images: ["/opengraph-image"],
+    images: [HOME_SOCIAL_IMAGE_URL],
   },
 };
 
