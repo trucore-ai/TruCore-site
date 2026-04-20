@@ -49,6 +49,10 @@ import {
   type PilActionResult,
 } from "@/lib/policy-pil-action-state";
 import {
+  deriveAdaptiveStatusView,
+  type AdaptiveTone,
+} from "@/lib/policy-adaptive-status";
+import {
   deriveReceiptTrendSignals,
   getMarketConditionCue,
   loadRecSnapshot,
@@ -1309,6 +1313,12 @@ function formatLastUpdated(epochSeconds: number | null | undefined): string | nu
   if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
   return `${Math.floor(diffSec / 86400)}d ago`;
 }
+
+const ADAPTIVE_TONE_STYLES: Record<AdaptiveTone, string> = {
+  emerald: "border-emerald-500/20 bg-emerald-500/10 text-emerald-300",
+  amber: "border-amber-500/20 bg-amber-500/10 text-amber-200",
+  slate: "border-white/10 bg-white/5 text-slate-300",
+};
 
 // ---------------------------------------------------------------------------
 // Market-aware recommendations
@@ -2685,30 +2695,10 @@ export default function CustomerPoliciesPage() {
   const adaptive = policy?.adaptive_pil;
   const adaptiveMode = adaptive?.mode ?? "off";
   const adaptiveEligible = Boolean(adaptive?.eligible);
-  const adaptiveLatestEvent =
-    adaptive?.latest_event && typeof adaptive.latest_event === "object"
-      ? adaptive.latest_event
-      : null;
-  const adaptivePendingOverlays =
-    typeof adaptive?.pending_overlays === "number" ? adaptive.pending_overlays : 0;
-  const adaptiveIsOn = adaptiveMode !== "off";
-  const adaptiveEligibleFieldLabels = Array.isArray(adaptive?.eligible_fields)
-    ? adaptive.eligible_fields.map((field) => {
-      if (field === "max_slippage_bps") return "Max slippage";
-      return field.replace(/_/g, " ");
-    })
-    : [];
-  const adaptiveScopeLabel = adaptive?.scope === "same_market_next_transaction"
-    ? "Same market · next transaction"
-    : (adaptive?.scope ?? "Unknown");
-  const adaptiveLatestEventName =
-    adaptiveLatestEvent && typeof adaptiveLatestEvent.event === "string"
-      ? adaptiveLatestEvent.event.replace(/_/g, " ")
-      : "none";
-  const adaptiveLatestEventAt =
-    adaptiveLatestEvent && typeof adaptiveLatestEvent.at === "number"
-      ? formatLastUpdated(adaptiveLatestEvent.at)
-      : null;
+  const adaptiveStatus = deriveAdaptiveStatusView(adaptive);
+  const adaptiveLatestEventAt = adaptiveStatus.latestEvent
+    ? formatLastUpdated(adaptiveStatus.latestEvent.occurredAt)
+    : null;
 
   // Partition effective keys into categories for display
   const limitKeys = ["tx_limit_per_month", "max_notional_usd", "max_value_sol"];
@@ -4300,42 +4290,131 @@ export default function CustomerPoliciesPage() {
             </p>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" data-testid="adaptive-status-grid">
-            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
-              <p className="text-[9px] uppercase tracking-wide text-slate-500">Status</p>
-              <p className={`mt-1 text-[11px] font-medium ${adaptiveIsOn ? "text-emerald-300" : "text-slate-300"}`}>
-                {adaptiveIsOn ? "On" : "Off"}
-              </p>
+          <div
+            className="rounded-xl border border-white/10 bg-white/[0.015] p-4 space-y-4 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]"
+            data-testid="adaptive-activity-panel"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h3 className="text-xs font-semibold text-slate-200">Adaptive Status</h3>
+                <p className="mt-1 text-[10px] text-slate-500">
+                  Live mode, queued next-trade overlays, and the latest adaptive decision.
+                </p>
+              </div>
+              <span
+                className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold ${ADAPTIVE_TONE_STYLES[adaptiveStatus.modeTone]}`}
+                data-testid="adaptive-mode-badge"
+              >
+                {adaptiveStatus.modeLabel}
+              </span>
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
-              <p className="text-[9px] uppercase tracking-wide text-slate-500">Scope</p>
-              <p className="mt-1 text-[11px] text-slate-300">{adaptiveScopeLabel}</p>
+
+            <div className="flex flex-wrap gap-2" data-testid="adaptive-status-grid">
+              {[
+                { label: "Scope", value: adaptiveStatus.scopeLabel, tone: "slate" as const },
+                { label: "Bounded", value: adaptiveStatus.boundedLabel, tone: adaptiveStatus.boundedTone },
+                { label: "Eligibility", value: adaptiveStatus.eligibilityLabel, tone: adaptiveStatus.eligibilityTone },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-full border border-white/10 bg-white/[0.02] px-3 py-2"
+                >
+                  <p className="text-[9px] uppercase tracking-wide text-slate-500">{item.label}</p>
+                  <p className={`mt-1 text-[11px] font-medium ${item.tone === "emerald" ? "text-emerald-300" : item.tone === "amber" ? "text-amber-200" : "text-slate-300"}`}>
+                    {item.value}
+                  </p>
+                </div>
+              ))}
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
-              <p className="text-[9px] uppercase tracking-wide text-slate-500">Bounded</p>
-              <p className={`mt-1 text-[11px] font-medium ${adaptive?.bounded ? "text-emerald-300" : "text-slate-300"}`}>
-                {adaptive?.bounded ? "Yes" : "No"}
-              </p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
+
+            <div className="rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3" data-testid="adaptive-eligible-fields">
               <p className="text-[9px] uppercase tracking-wide text-slate-500">Eligible fields</p>
               <p className="mt-1 text-[11px] text-slate-300">
-                {adaptiveEligibleFieldLabels.length > 0
-                  ? adaptiveEligibleFieldLabels.join(", ")
-                  : "None"}
+                {adaptiveStatus.eligibleFieldLabels.length > 0
+                  ? adaptiveStatus.eligibleFieldLabels.join(", ")
+                  : "None exposed in the current plan payload."}
               </p>
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
-              <p className="text-[9px] uppercase tracking-wide text-slate-500">Pending next-trade overlays</p>
-              <p className={`mt-1 text-[11px] font-medium ${adaptivePendingOverlays > 0 ? "text-amber-200" : "text-slate-300"}`}>
-                {adaptivePendingOverlays}
+
+            <div
+              className="rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3"
+              data-testid="adaptive-pending-row"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-[10px] font-medium text-slate-200">{adaptiveStatus.pendingLabel}</p>
+                  <p className="mt-1 text-[10px] text-slate-500">{adaptiveStatus.pendingDetail}</p>
+                </div>
+                <span
+                  className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${ADAPTIVE_TONE_STYLES[adaptiveStatus.pendingTone]}`}
+                  data-testid="adaptive-pending-badge"
+                >
+                  {adaptiveStatus.pendingCount}
+                </span>
+              </div>
+              <p className="mt-3 text-[10px] text-slate-400" data-testid="adaptive-expectation">
+                Next transaction: {adaptiveStatus.expectation}
               </p>
             </div>
-            <div className="rounded-lg border border-white/10 bg-white/[0.01] px-3 py-2">
-              <p className="text-[9px] uppercase tracking-wide text-slate-500">Plan eligibility</p>
-              <p className={`mt-1 text-[11px] font-medium ${adaptiveEligible ? "text-emerald-300" : "text-slate-300"}`}>
-                {adaptiveEligible ? "Eligible" : "Pro or Enterprise required"}
-              </p>
+
+            <div className="rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3" data-testid="adaptive-latest-event-card">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-[10px] font-medium text-slate-200">Latest adaptive event</p>
+                  <p className="mt-1 text-[10px] text-slate-500">
+                    Most recent recommendation or overlay lifecycle event from the backend.
+                  </p>
+                </div>
+                {adaptiveStatus.latestEvent && (
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${ADAPTIVE_TONE_STYLES[adaptiveStatus.latestEvent.statusTone]}`}
+                    data-testid="adaptive-latest-event-status"
+                  >
+                    {adaptiveStatus.latestEvent.statusLabel}
+                  </span>
+                )}
+              </div>
+
+              {adaptiveStatus.latestEvent ? (
+                <div className="mt-3 space-y-2" data-testid="adaptive-latest-event">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-[11px] font-semibold text-slate-200">
+                      {adaptiveStatus.latestEvent.title}
+                    </p>
+                    {adaptiveLatestEventAt && (
+                      <span className="text-[10px] text-slate-500">{adaptiveLatestEventAt}</span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {adaptiveStatus.latestEvent.fieldLabel && (
+                      <span
+                        className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] text-slate-300"
+                        data-testid="adaptive-latest-event-field"
+                      >
+                        {adaptiveStatus.latestEvent.fieldLabel}
+                      </span>
+                    )}
+                    {adaptiveStatus.latestEvent.changeLabel && (
+                      <span
+                        className="inline-flex items-center rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-100"
+                        data-testid="adaptive-latest-event-change"
+                      >
+                        {adaptiveStatus.latestEvent.changeLabel}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] leading-relaxed text-slate-400">
+                    {adaptiveStatus.latestEvent.detail}
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-3 rounded-lg border border-dashed border-white/10 bg-white/[0.01] px-3 py-3" data-testid="adaptive-latest-event-empty">
+                  <p className="text-[11px] font-medium text-slate-300">No adaptive event yet</p>
+                  <p className="mt-1 text-[10px] leading-relaxed text-slate-500">
+                    Once the backend produces a recommendation or consumes a queued overlay, the latest activity will appear here.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -4371,13 +4450,6 @@ export default function CustomerPoliciesPage() {
           {!adaptiveEligible && (
             <p className="text-[10px] text-amber-300">
               Auto-dynamic mode is available on Pro and Enterprise plans.
-            </p>
-          )}
-
-          {adaptiveLatestEvent && (
-            <p className="text-[10px] text-slate-400" data-testid="adaptive-latest-event">
-              Latest adaptive event: {adaptiveLatestEventName}
-              {adaptiveLatestEventAt ? ` · ${adaptiveLatestEventAt}` : ""}
             </p>
           )}
 
@@ -4624,6 +4696,8 @@ export default function CustomerPoliciesPage() {
                             field.type === "number"
                               ? rangeGuidance(field.key, formValues[field.key] ?? "")
                               : null;
+                          const hasCurrentNumericOverride =
+                            field.type === "number" && (formValues[field.key] ?? "").trim() !== "";
                           const isDefault =
                             field.type === "list"
                               ? (listValues[field.key] ?? []).length === 0
@@ -4774,7 +4848,7 @@ export default function CustomerPoliciesPage() {
                                   disabled={saving}
                                   formatDisplay={NUMERIC_FORMAT[field.key]}
                                   planDefaultValue={leverPlanDefault(field.key)}
-                                  isOverride={isFieldOverride(field.key)}
+                                  isOverride={hasCurrentNumericOverride}
                                   onClearOverride={() => updateField(field.key, "")}
                                   gated={!overridesEnabled}
                                   pilContext={(() => {
