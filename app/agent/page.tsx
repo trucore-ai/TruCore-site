@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 
+const AGENT_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+
 export const metadata: Metadata = {
   title: "Agent Integration Guide",
   description:
@@ -12,6 +14,24 @@ export const metadata: Metadata = {
     title: "Agent Integration Guide - TruCore ATF",
     description:
       "Canonical agent integration guide for TruCore ATF. Hosted MCP flow, advisory tools, protect enforcement, and receipt verification for AI agent runtimes.",
+    url: "https://trucore.xyz/agent",
+    siteName: "TruCore",
+    type: "website",
+    images: [
+      {
+        url: AGENT_SOCIAL_IMAGE_URL,
+        width: 1200,
+        height: 630,
+        alt: "TruCore agent integration social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Agent Integration Guide - TruCore ATF",
+    description:
+      "Canonical agent integration guide for TruCore ATF. Hosted MCP flow, advisory tools, protect enforcement, and receipt verification for AI agent runtimes.",
+    images: [AGENT_SOCIAL_IMAGE_URL],
   },
 };
 

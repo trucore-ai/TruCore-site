@@ -4,6 +4,7 @@ import { join } from "path";
 
 const homeSrc = readFileSync(join(__dirname, "..", "app", "page.tsx"), "utf-8");
 const atfSrc = readFileSync(join(__dirname, "..", "app", "atf", "page.tsx"), "utf-8");
+const agentSrc = readFileSync(join(__dirname, "..", "app", "agent", "page.tsx"), "utf-8");
 
 /**
  * Regression test: prevent the / and /atf route contents from being
@@ -49,5 +50,18 @@ describe("route identity", () => {
   it("/atf page contains the CLI developer landing (doctor section)", () => {
     expect(atfSrc).toContain("Agent Transaction Firewall");
     expect(atfSrc).toContain('id="doctor"');
+  });
+
+  it("/agent metadata pins explicit social image contract", () => {
+    expect(agentSrc).toContain('const AGENT_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image"');
+    expect(agentSrc).toContain('url: "https://trucore.xyz/agent"');
+    expect(agentSrc).toContain('siteName: "TruCore"');
+    expect(agentSrc).toContain('type: "website"');
+    expect(agentSrc).toContain('card: "summary_large_image"');
+    expect(agentSrc).toContain('images: [AGENT_SOCIAL_IMAGE_URL]');
+  });
+
+  it("/agent does not fall back to opengraph-image dynamic route", () => {
+    expect(agentSrc).not.toContain("/opengraph-image");
   });
 });
