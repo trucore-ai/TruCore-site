@@ -5,6 +5,8 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { TrackedLink } from "@/components/tracked-link";
 
+const BUILDERS_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+
 export const metadata: Metadata = {
   title: "For Bot Builders - Get Started with ATF",
   description:
@@ -13,6 +15,24 @@ export const metadata: Metadata = {
     title: "For Bot Builders - Get Started with ATF",
     description:
       "Protect your trading bot or AI agent in minutes. Policy-enforced guardrails and verifiable receipts for autonomous finance on Solana.",
+    url: "https://trucore.xyz/builders",
+    siteName: "TruCore",
+    type: "website",
+    images: [
+      {
+        url: BUILDERS_SOCIAL_IMAGE_URL,
+        width: 1200,
+        height: 630,
+        alt: "TruCore builders social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "For Bot Builders - Get Started with ATF",
+    description:
+      "Protect your trading bot or AI agent in minutes. Policy-enforced guardrails and verifiable receipts for autonomous finance on Solana.",
+    images: [BUILDERS_SOCIAL_IMAGE_URL],
   },
 };
 

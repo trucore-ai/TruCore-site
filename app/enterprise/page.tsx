@@ -4,12 +4,37 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
 
+const ENTERPRISE_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+
 const lastUpdated = process.env.NEXT_PUBLIC_BUILD_DATE ?? "unknown";
 
 export const metadata: Metadata = {
   title: "Enterprise & Institutional Readiness",
   description:
     "Structured due-diligence overview for enterprise and institutional buyers evaluating TruCore ATF.",
+  openGraph: {
+    title: "Enterprise & Institutional Readiness",
+    description:
+      "Structured due-diligence overview for enterprise and institutional buyers evaluating TruCore ATF.",
+    url: "https://trucore.xyz/enterprise",
+    siteName: "TruCore",
+    type: "website",
+    images: [
+      {
+        url: ENTERPRISE_SOCIAL_IMAGE_URL,
+        width: 1200,
+        height: 630,
+        alt: "TruCore enterprise social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Enterprise & Institutional Readiness",
+    description:
+      "Structured due-diligence overview for enterprise and institutional buyers evaluating TruCore ATF.",
+    images: [ENTERPRISE_SOCIAL_IMAGE_URL],
+  },
 };
 
 export default function EnterprisePage() {

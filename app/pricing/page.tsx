@@ -5,10 +5,35 @@ import { Section } from "@/components/ui/section";
 import { getPublicFeatures, groupFeaturesByPlan } from "@/lib/feature-flags";
 import { PricingCards } from "@/components/pricing-cards";
 
+const PRICING_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+
 export const metadata: Metadata = {
   title: "Pricing",
   description:
     "TruCore ATF plans: Free, Pro, and Enterprise. Start free with generous limits. Upgrade when you need more capacity.",
+  openGraph: {
+    title: "Pricing - TruCore",
+    description:
+      "TruCore ATF plans: Free, Pro, and Enterprise. Start free with generous limits. Upgrade when you need more capacity.",
+    url: "https://trucore.xyz/pricing",
+    siteName: "TruCore",
+    type: "website",
+    images: [
+      {
+        url: PRICING_SOCIAL_IMAGE_URL,
+        width: 1200,
+        height: 630,
+        alt: "TruCore pricing social preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pricing - TruCore",
+    description:
+      "TruCore ATF plans: Free, Pro, and Enterprise. Start free with generous limits. Upgrade when you need more capacity.",
+    images: [PRICING_SOCIAL_IMAGE_URL],
+  },
 };
 
 // ---------------------------------------------------------------------------
