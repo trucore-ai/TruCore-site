@@ -11,6 +11,7 @@ const buildersSrc = readFileSync(join(__dirname, "..", "app", "builders", "page.
 const enterpriseSrc = readFileSync(join(__dirname, "..", "app", "enterprise", "page.tsx"), "utf-8");
 const pricingSrc = readFileSync(join(__dirname, "..", "app", "pricing", "page.tsx"), "utf-8");
 const demoSrc = readFileSync(join(__dirname, "..", "app", "demo", "page.tsx"), "utf-8");
+const rootOpenGraphImageSrc = readFileSync(join(__dirname, "..", "app", "opengraph-image.tsx"), "utf-8");
 
 /**
  * Regression test: prevent the / and /atf route contents from being
@@ -123,5 +124,15 @@ describe("route identity", () => {
     expect(demoSrc).toContain('type: "website"');
     expect(demoSrc).toContain('card: "summary_large_image"');
     expect(demoSrc).toContain('images: [DEMO_SOCIAL_IMAGE_URL]');
+  });
+
+  it("root opengraph image no longer uses legacy metrics card identity", () => {
+    expect(rootOpenGraphImageSrc).not.toContain("Live Infrastructure Metrics");
+    expect(rootOpenGraphImageSrc).not.toContain("fetchPublicMetrics");
+  });
+
+  it("root opengraph image uses branded homepage hero share copy", () => {
+    expect(rootOpenGraphImageSrc).toContain("Trustless infrastructure for autonomous finance.");
+    expect(rootOpenGraphImageSrc).toContain("Trustless controls with verifiable AI execution.");
   });
 });
