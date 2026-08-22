@@ -119,7 +119,7 @@ export default function Home() {
             name="MeshDNS"
             tagline="Service Registry for MCP Servers"
             description="Capability-based discovery for MCP servers. Register your server, query by capability, automatic health checks. Never hardcode an MCP URL again."
-            href="https://meshdns.onrender.com"
+            href="https://meshdns.trucore.xyz"
             status="live"
             cta="Try MeshDNS"
           />
