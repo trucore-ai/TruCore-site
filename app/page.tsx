@@ -16,6 +16,7 @@ import { MoatSignalStrip } from "@/components/moat-signal-strip";
 import { ProductionReadinessStrip } from "@/components/production-readiness-strip";
 import { LiveStatusStrip } from "@/components/home/live-status-strip";
 import { TrackedLink } from "@/components/tracked-link";
+import { ProductCard } from "@/components/product-card";
 import { PageViewTracker } from "@/components/page-view-tracker";
 import { Tilt } from "@/components/ui/tilt";
 import { getAtfCliVersion } from "@/lib/version";
@@ -24,30 +25,30 @@ import truCoreBanner from "@/images/TruCore-banner-new.png";
 const HOME_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
 
 export const metadata: Metadata = {
-  title: "TruCore | Policy-Enforced Protection for AI Agents",
+  title: "TruCore | AI Infrastructure for Autonomous Agents",
   description:
-    "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
+    "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for the agent economy.",
   openGraph: {
     url: "https://trucore.xyz",
     siteName: "TruCore",
     type: "website",
-    title: "TruCore | Policy-Enforced Protection for AI Agents",
+    title: "TruCore | AI Infrastructure for Autonomous Agents",
     description:
-      "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
+      "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
     images: [
       {
         url: HOME_SOCIAL_IMAGE_URL,
         width: 1200,
         height: 630,
-        alt: "TruCore home social preview",
+        alt: "TruCore — AI infrastructure for autonomous agents",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TruCore | Policy-Enforced Protection for AI Agents",
+    title: "TruCore | AI Infrastructure for Autonomous Agents",
     description:
-      "Protect every AI agent transaction with policy enforcement before execution. Every decision produces a cryptographic receipt. Built for Solana trading bots and AI agents.",
+      "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
     images: [HOME_SOCIAL_IMAGE_URL],
   },
 };
@@ -58,7 +59,7 @@ export default function Home() {
   return (
     <Container>
       <PageViewTracker page="home" />
-      {/* ── Hero ── */}
+      {/* ── TruCore Brand Hero ── */}
       <Section id="hero" className="fade-in-up pb-8 sm:pb-10">
         <div className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-neutral-950/40 p-8 shadow-elevated sm:p-12 lg:p-14">
           <div className="hero-legibility-overlay" aria-hidden="true" />
@@ -76,109 +77,89 @@ export default function Home() {
           />
           <div className="relative z-10 max-w-3xl">
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary-200">
-              For Solana AI agents and trading bots
+              Infrastructure for the Agent Economy
             </p>
-            <h1 className="mt-4 text-4xl font-bold tracking-tight text-accent-200 sm:text-6xl sm:pr-[352px] lg:text-7xl lg:pr-[436px]">
-              AI Capital Management for Safe Execution
+            <h1 className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl sm:pr-[352px] lg:pr-[436px]">
+              TruCore builds the backbone for autonomous AI agents
             </h1>
             <p className="mt-6 text-2xl font-semibold text-amber-200/90">
-              Policy enforced before execution. Verified receipt after every decision. Learn from outcomes to improve capital deployment over time.
+              From transaction firewalls to service discovery to agent wallets — the tools AI agents need to operate independently in production.
             </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
-              TruCore gives AI agent transactions a deterministic control layer. Define policy rules before execution, verify every decision with cryptographic receipts, and feed execution outcomes back into the intelligence loop so agents improve capital deployment under operator-gated control.
+              Every TruCore product is open source, MIT-licensed, and built for developers who want their agents to transact, discover, and pay without human intervention.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-slate-300/80">
-              No signup required. No wallet access. Built for traders, protocol teams, and agent builders.
+              Built for agent developers, protocol teams, and AI infrastructure builders.
             </p>
-
-            {/* CTAs */}
-            <div className="mt-10 flex flex-wrap items-center gap-5">
-              <TrackedLink
-                href="/try"
-                eventName="hero_try_atf_click"
-                trackName="cta_home_primary"
-                eventProps={{ location: "atf_hero" }}
-                className="inline-flex items-center justify-center rounded-xl px-8 py-4 text-xl font-semibold shadow-glow-accent transition-all bg-accent-500 text-neutral-950 hover:bg-accent-400 hover:shadow-lg"
-              >
-                Start Your First Protected Trade
-              </TrackedLink>
-              <TrackedLink
-                href="/verify-demo"
-                eventName="hero_receipts_click"
-                trackName="cta_home_secondary"
-                eventProps={{ location: "atf_hero" }}
-                className="inline-flex items-center justify-center rounded-xl border border-primary-300/40 bg-primary-500/15 px-7 py-4 text-xl font-semibold text-primary-100 transition-colors hover:bg-primary-500/25"
-              >
-                Verify a Receipt
-              </TrackedLink>
-            </div>
-
-            <p className="mt-6 text-base text-slate-300/80">
-              No signup or wallet required. See a real protected trade and cryptographic receipt.
-            </p>
-            <div className="mt-4 max-w-2xl rounded-lg border border-primary-300/20 bg-primary-500/[0.06] p-4">
-              <p className="text-sm font-semibold text-primary-100">What happens next:</p>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-300">
-                <li>You submit a transaction</li>
-                <li>ATF evaluates policy</li>
-                <li>You receive a decision and receipt</li>
-              </ul>
-              <p className="mt-3 text-sm text-slate-300">
-                You stay in control. You can start in safe mode with no real execution.
-              </p>
-            </div>
-
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-400">
-              <TrackedLink
-                href="/docs/5-minute-quickstart"
-                eventName="hero_quickstart_click"
-                eventProps={{ location: "atf_hero", target: "5_min_quickstart" }}
-                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-              >
-                5-min quickstart
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
-              <TrackedLink
-                href="/pricing"
-                eventName="hero_pricing_click"
-                eventProps={{ location: "atf_hero" }}
-                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-              >
-                Pricing
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
-              <TrackedLink
-                href="/receipts"
-                eventName="hero_receipts_click"
-                eventProps={{ location: "atf_hero" }}
-                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-              >
-                Receipts
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
-              <TrackedLink
-                href="/r/example"
-                eventName="hero_example_receipt_click"
-                eventProps={{ location: "atf_hero" }}
-                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-              >
-                Example Verified Receipt
-              </TrackedLink>
-              <span aria-hidden="true" className="text-white/20">/</span>
-              <TrackedLink
-                href="/agent-transaction-firewall"
-                eventName="category_definition_click"
-                eventProps={{ location: "atf_hero" }}
-                className="font-semibold text-primary-200 transition-colors hover:text-primary-100"
-              >
-                What is ATF?
-              </TrackedLink>
-            </div>
-
           </div>
         </div>
       </Section>
 
+      {/* ── Products ── */}
+      <Section className="fade-in-up fade-delay-1 pb-6 sm:pb-8">
+        <div className="mb-8 max-w-2xl">
+          <p className="section-label mb-3">Products</p>
+          <h2 className="text-4xl font-bold tracking-tight text-accent-300">
+            Open-source infrastructure for AI agents
+          </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            Every product is MIT-licensed. Self-host for free, or use our managed cloud when you need scale.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ProductCard
+            name="ATF"
+            tagline="Agent Transaction Firewall"
+            description="Policy-enforced guardrails for AI agent transactions. Deterministic receipts, permit-based authorization, and cryptographic verification. Built for Solana — swaps, lending, and perps."
+            href="/atf"
+            status="live"
+            cta="Explore ATF"
+          />
+          <ProductCard
+            name="MeshDNS"
+            tagline="Service Registry for MCP Servers"
+            description="Capability-based discovery for MCP servers. Register your server, query by capability, automatic health checks. Never hardcode an MCP URL again."
+            href="https://meshdns.onrender.com"
+            status="live"
+            cta="Try MeshDNS"
+          />
+          <ProductCard
+            name="x402Fuel"
+            tagline="Wallets for AI Agents"
+            description="Give every agent a USDC wallet with one API call. HTTP 402 native payment settlement on Base. Machine-readable receipts for every transaction."
+            href="/x402fuel"
+            status="coming-soon"
+            cta="Join waitlist"
+          />
+        </div>
+      </Section>
+
+      {/* ── Featured Product: ATF ── */}
+      <div id="atf-content" className="pt-4 sm:pt-8">
+        <Section className="pb-4 sm:pb-6">
+          <div className="flex items-center gap-4">
+            <div className="h-px flex-1 bg-gradient-to-r from-primary-300/40 to-transparent" />
+            <p className="shrink-0 text-sm font-semibold uppercase tracking-[0.14em] text-primary-300">
+              Featured Product
+            </p>
+            <div className="h-px flex-1 bg-gradient-to-l from-primary-300/40 to-transparent" />
+          </div>
+          <div className="mt-6 text-center">
+            <TrackedLink
+              href="/atf"
+              eventName="home_atf_feature_click"
+              eventProps={{ location: "home_atf_section_header" }}
+              className="inline-flex items-center gap-2 text-3xl font-bold tracking-tight text-accent-300 transition-colors hover:text-accent-200 sm:text-4xl"
+            >
+              Agent Transaction Firewall
+              <span aria-hidden="true" className="text-xl">→</span>
+            </TrackedLink>
+            <p className="mt-3 max-w-2xl mx-auto text-lg leading-relaxed text-slate-300">
+              Deterministic policy enforcement for AI agent transactions. Every decision produces a cryptographic receipt. Built for Solana trading bots and autonomous agents.
+            </p>
+          </div>
+        </Section>
+      </div>
 
       {/* ?? Proof Anchor: Why This Works ?? */}
       <div className="my-8 rounded-xl border border-primary-300/30 bg-primary-500/[0.06] px-6 py-8">
