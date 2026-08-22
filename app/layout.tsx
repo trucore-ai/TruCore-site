@@ -29,36 +29,35 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://trucore.xyz"),
   title: {
     default:
-      "TruCore - Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
+      "TruCore — AI Infrastructure for Autonomous Agents",
     template: "%s | TruCore",
   },
   description:
-    "Zero-trust transaction firewall for AI agents. Deterministic receipts, policy guardrails for swaps, lending, and perps. OpenClaw plugin and receipts-backed savings reports.",
+    "Open-source infrastructure for the agent economy. Transaction firewalls, service registries, and agent wallets — MIT-licensed, built for production.",
   keywords: [
     "TruCore",
     "Agent Transaction Firewall",
-    "tamper-evident receipts",
+    "ATF",
+    "MeshDNS",
+    "MCP service registry",
+    "x402Fuel",
+    "agent wallets",
+    "AI agent infrastructure",
     "autonomous finance",
-    "AI agent guardrails",
-    "OpenClaw plugin",
-    "AI trading bot safety",
-    "agent safety middleware",
-    "perps guardrails",
-    "autonomous trading bot",
-    "AI infrastructure",
-    "crypto infrastructure",
+    "tamper-evident receipts",
     "policy enforcement",
     "trustless",
     "Solana",
+    "open source",
   ],
   openGraph: {
     type: "website",
     url: "https://trucore.xyz",
     siteName: "TruCore",
     title:
-      "TruCore - Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
+      "TruCore — AI Infrastructure for Autonomous Agents",
     description:
-      "Zero-trust transaction firewall for AI agents. Policy guardrails for swaps, lending, and perps on Solana. OpenClaw plugin and receipts-backed savings reports.",
+      "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
     images: [
       {
         url: "/opengraph-image",
@@ -71,9 +70,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title:
-      "TruCore - Agent Transaction Firewall (ATF) | Guardrails for Autonomous Finance",
+      "TruCore — AI Infrastructure for Autonomous Agents",
     description:
-      "Zero-trust transaction firewall for AI agents. OpenClaw plugin, policy guardrails for swaps and perps, and receipts-backed savings reports.",
+      "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
     images: ["/opengraph-image"],
   },
   icons: {
@@ -108,25 +107,25 @@ export default function RootLayout({
         name: "TruCore",
         url: "https://trucore.xyz",
         sameAs: ["https://github.com/TruCore-AI", "https://x.com/TruCore_AI"],
+        description: "Open-source infrastructure for AI agents — transaction firewalls, service registries, and agent wallets.",
       },
       {
         "@type": "SoftwareApplication",
         name: "Agent Transaction Firewall (ATF)",
         applicationCategory: "SecurityApplication",
         operatingSystem: "Web",
-        description: "Permit-based enforcement layer for autonomous finance",
+        description: "Permit-based enforcement layer for autonomous finance on Solana.",
         url: "https://trucore.xyz/atf",
-        publisher: {
-          "@type": "Organization",
-          name: "TruCore",
-        },
+        publisher: { "@type": "Organization", name: "TruCore" },
       },
       {
-        "@type": "CreativeWork",
-        name: "ATF Demo Receipt Example",
-        description:
-          "Static demo-only receipt structure showing tamper-evident verification fields.",
-        url: "https://trucore.xyz/receipts",
+        "@type": "SoftwareApplication",
+        name: "MeshDNS",
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "Web",
+        description: "MCP-native service registry with capability discovery and health checks.",
+        url: "https://meshdns.onrender.com",
+        publisher: { "@type": "Organization", name: "TruCore" },
       },
     ],
   });
@@ -236,6 +235,20 @@ export default function RootLayout({
                   ATF
                 </Link>
                 <Link
+                  href="https://meshdns.onrender.com"
+                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  MeshDNS
+                </Link>
+                <Link
+                  href="/x402fuel"
+                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                >
+                  x402Fuel
+                </Link>
+                <Link
                   href="/receipts"
                   className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
@@ -290,7 +303,7 @@ export default function RootLayout({
                       <span className="text-3xl font-bold tracking-tight text-slate-100">TruCore</span>
                     </Link>
                     <p className="max-w-sm text-slate-300">
-                      Deterministic policy enforcement and tamper-evident receipts for autonomous finance.
+                      Open-source infrastructure for the agent economy. Transaction firewalls, service registries, and agent wallets.
                     </p>
                     <div className="flex flex-wrap items-center gap-5 text-slate-300">
                       <TrackedLink href="https://x.com/TruCore_AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-100" eventName="outbound_click" eventProps={{ target: "x", location: "footer" }}>
@@ -315,11 +328,12 @@ export default function RootLayout({
 
                   <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <div className="border-l border-white/10 pl-4">
-                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Product</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">Products</p>
                       <div className="mt-3 space-y-2">
                         <Link href="/atf" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF</Link>
-                        <Link href="/atf/primer" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF Primer</Link>
-                        <Link href="/atf/roadmap" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF Roadmap</Link>
+                        <Link href="https://meshdns.onrender.com" target="_blank" rel="noopener noreferrer" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">MeshDNS</Link>
+                        <Link href="/x402fuel" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">x402Fuel</Link>
+                        <Link href="/atf/roadmap" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Roadmap</Link>
                         <Link href="/enterprise" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Enterprise</Link>
                         <Link href="/pricing" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Pricing</Link>
                         <Link href="/builders" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">For Builders</Link>
