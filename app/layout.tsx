@@ -196,7 +196,7 @@ export default function RootLayout({
         {showAnalytics ? <Analytics /> : null}
         <HeroBackgroundPulses />
         <div className="relative z-10 flex min-h-screen flex-col">
-          <header className="site-header glass-surface sticky top-0 z-50 bg-neutral-900/45 backdrop-blur-md">
+          <header className="site-header sticky top-0 z-50 backdrop-blur-md">
             <HeaderScrollState />
             <div className="absolute right-4 top-0 z-20 flex h-full items-center sm:right-6 md:right-8">
               <HeaderAuthActions />

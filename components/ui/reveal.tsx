@@ -2,11 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-const MOTION_PREFERENCE_CHANGED_EVENT = "trucore:motion-preference-change";
-
-function isMotionReduced(): boolean {
-  return document.documentElement.dataset.reduceMotion === "true";
-}
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 interface RevealProps {
   children: ReactNode;
@@ -28,10 +24,10 @@ interface RevealProps {
  * the first time they enter the viewport. Uses IntersectionObserver:
  * no scroll listeners, no layout thrash.
  *
- * Honors the site motion-preference system:
- *  - html[data-reduce-motion="true"] → content renders instantly visible
- *  - prefers-reduced-motion media query → same (CSS fallback)
- *  - live toggle via trucore:motion-preference-change event
+ * Honors accessibility, not the site animation toggle: the toggle only
+ * gates background effects, while scroll reveals always run. Only the
+ * OS-level prefers-reduced-motion setting disables this animation
+ * (CSS fallback included for the no-JS path).
  */
 export function Reveal({ children, className = "", delay = 0, y = 24 }: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -42,18 +38,19 @@ export function Reveal({ children, className = "", delay = 0, y = 24 }: RevealPr
     const el = ref.current;
     if (!el) return;
 
+    const mq = window.matchMedia(REDUCED_MOTION_QUERY);
     const syncReduced = () => {
-      const r = isMotionReduced();
+      const r = mq.matches;
       setReduced(r);
       if (r) setVisible(true);
     };
 
     syncReduced();
 
-    window.addEventListener(MOTION_PREFERENCE_CHANGED_EVENT, syncReduced);
+    mq.addEventListener("change", syncReduced);
 
     let observer: IntersectionObserver | null = null;
-    if (!isMotionReduced()) {
+    if (!mq.matches) {
       observer = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
@@ -73,7 +70,7 @@ export function Reveal({ children, className = "", delay = 0, y = 24 }: RevealPr
 
     return () => {
       observer?.disconnect();
-      window.removeEventListener(MOTION_PREFERENCE_CHANGED_EVENT, syncReduced);
+      mq.removeEventListener("change", syncReduced);
     };
   }, []);
 
