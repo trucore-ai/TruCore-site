@@ -101,7 +101,7 @@ export default function MeshDNSDocs() {
             </tr>
             <tr>
               <td className="py-2 pr-4 font-mono text-xs text-primary-200">Health Check Pool</td>
-              <td className="py-2 text-slate-400">Background worker pool probes every registered health_url on a configurable interval. Tracks 30-day uptime history.</td>
+              <td className="py-2 text-slate-400">Background worker pool probes every registered health_url on a configurable interval — GET by default, or POST with an MCP initialize request for POST-only endpoints (auto-detected on 405). Tracks 30-day uptime history.</td>
             </tr>
             <tr>
               <td className="py-2 pr-4 font-mono text-xs text-primary-200">Resolution Engine</td>
@@ -144,6 +144,14 @@ $ curl -s "http://localhost:8080/v0/resolve?capability=weather"
 # → [{"name":"weather-agent","server_url":"https://weather.example.com",...}]`}
         </code>
       </pre>
+      <p className="text-slate-400">
+        <strong className="text-slate-200">POST-only endpoint?</strong> MCP
+        streamable-HTTP servers answer GET with 405. Add{" "}
+        <code>probe_method: POST</code> to the registration body to probe with
+        an MCP <code>initialize</code> request instead — or leave it out and
+        MeshDNS auto-detects: a 405 GET answer triggers a POST probe and
+        remembers the switch.
+      </p>
 
       <HeadingAnchor id="api-reference">
         API Reference
@@ -161,7 +169,7 @@ $ curl -s "http://localhost:8080/v0/resolve?capability=weather"
             <tr>
               <td className="py-2 pr-4 font-mono text-xs text-green-400">POST</td>
               <td className="py-2 pr-4 font-mono text-xs text-primary-200">/v0/servers</td>
-              <td className="py-2 text-slate-400">Register a new server. Returns <code>server_id</code> + <code>write_key</code>. Duplicate names → 409.</td>
+              <td className="py-2 text-slate-400">Register a new server. Returns <code>server_id</code> + <code>write_key</code>. Optional <code>probe_method</code> (GET | POST) for POST-only endpoints. Duplicate names → 409.</td>
             </tr>
             <tr>
               <td className="py-2 pr-4 font-mono text-xs text-blue-400">GET</td>
@@ -202,9 +210,13 @@ $ curl -s "http://localhost:8080/v0/resolve?capability=weather"
       </HeadingAnchor>
       <p>
         MeshDNS probes every registered server's <code>health_url</code> on a
-        configurable interval (default: 60s). A probe is a simple{" "}
-        <code>HTTP GET</code> with a 5-second timeout. Non-2xx responses and
-        timeouts both mark the server as DOWN.
+        configurable interval (default: 60s). A probe is an{" "}
+        <code>HTTP GET</code> by default, or an <code>HTTP POST</code> carrying
+        an MCP <code>initialize</code> request when{" "}
+        <code>probe_method: POST</code> is set — with a 5-second timeout either
+        way. Non-2xx responses and timeouts both mark the server as DOWN. If a
+        GET probe answers <code>405 Method Not Allowed</code>, MeshDNS retries
+        with the POST initialize probe and persists the switch automatically.
       </p>
       <ol className="my-4 space-y-3">
         <li>
@@ -217,7 +229,8 @@ $ curl -s "http://localhost:8080/v0/resolve?capability=weather"
         <li>
           <strong className="text-slate-200">Probe every 60s.</strong>{" "}
           <span className="text-slate-400">
-            Background goroutine pool sends HTTP GET requests. Configurable
+            Background goroutine pool sends GET probes (or POST initialize
+            probes for POST-only servers). Configurable
             via <code>MESHDNS_PROBE_INTERVAL</code> and{" "}
             <code>MESHDNS_PROBE_TIMEOUT</code> env vars.
           </span>
