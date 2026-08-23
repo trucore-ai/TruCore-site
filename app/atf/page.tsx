@@ -169,6 +169,15 @@ export default function ATFPage() {
             {/* ── Micro-nav ── */}
             <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-400">
               <TrackedLink
+                href="/docs"
+                eventName="hero_micronav_click"
+                eventProps={{ target: "docs_hub", location: "atf_hero" }}
+                className="transition-colors hover:text-primary-100"
+              >
+                Docs
+              </TrackedLink>
+              <span aria-hidden="true" className="text-white/20">/</span>
+              <TrackedLink
                 href="/docs/cli"
                 eventName="hero_micronav_click"
                 eventProps={{ target: "cli_docs", location: "atf_hero" }}

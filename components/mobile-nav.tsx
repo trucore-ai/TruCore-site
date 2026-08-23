@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { TrackedLink } from "@/components/tracked-link";
 
 const navLinks = [
-  { href: "/docs", label: "Docs", external: false },
   { href: "/atf", label: "ATF", external: false },
   { href: "https://meshdns.trucore.xyz", label: "MeshDNS", external: true },
   { href: "https://x402fuel.trucore.xyz", label: "x402Fuel", external: true },
