@@ -54,7 +54,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: "website",
-    url: "https://trucore.xyz",
+    url: "https://www.trucore.xyz",
     siteName: "TruCore",
     title:
       "TruCore — AI Infrastructure for Autonomous Agents",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
       "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
     images: [
       {
-        url: "/twitter-image?v=3",
+        url: "https://www.trucore.xyz/twitter-image?v=3",
         width: 1200,
         height: 630,
         alt: "TruCore — AI infrastructure for autonomous agents",
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
       "TruCore — AI Infrastructure for Autonomous Agents",
     description:
       "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
-    images: ["/twitter-image?v=3"],
+    images: ["https://www.trucore.xyz/twitter-image?v=3"],
   },
   icons: {
     icon: [
