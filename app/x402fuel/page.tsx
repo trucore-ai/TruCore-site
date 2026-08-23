@@ -16,10 +16,10 @@ export default function X402FuelPage() {
       {/* Hero */}
       <Section className="fade-in-up pt-12 sm:pt-16 pb-8 sm:pb-10">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-4 py-1.5">
-            <span className="block h-2 w-2 rounded-full bg-amber-400" />
-            <span className="text-sm font-semibold uppercase tracking-wider text-amber-400/80">
-              Coming Soon
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-green-400/30 bg-green-500/10 px-4 py-1.5">
+            <span className="block h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-sm font-semibold uppercase tracking-wider text-green-400/80">
+              Live on Base
             </span>
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
@@ -29,9 +29,28 @@ export default function X402FuelPage() {
             Wallets for AI agents
           </p>
           <p className="mt-6 max-w-2xl mx-auto text-xl leading-relaxed text-slate-200/90">
-            Every agent gets a USDC wallet with one API call. HTTP 402 native payment settlement on Base.
+            Every agent gets a USDC wallet with one command. HTTP 402 native payment settlement on Base.
             Your agent pays for compute, APIs, and services — no credit cards, no human in the loop.
+            MIT-licensed. Self-hosted. Your keys never leave your machine.
           </p>
+          <div className="mt-8 flex items-center justify-center gap-4">
+            <TrackedLink
+              href="https://github.com/trucore-ai/x402fuel"
+              eventName="x402fuel_github_click"
+              eventProps={{ location: "x402fuel_page_hero" }}
+              className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-8 py-4 text-xl font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
+            >
+              View on GitHub
+            </TrackedLink>
+            <TrackedLink
+              href="https://x402fuel.trucore.xyz"
+              eventName="x402fuel_live_click"
+              eventProps={{ location: "x402fuel_page_hero" }}
+              className="inline-flex items-center justify-center rounded-xl border border-accent-400/30 bg-accent-500/10 px-8 py-4 text-xl font-semibold text-accent-300 transition-colors hover:bg-accent-500/20"
+            >
+              Live Demo →
+            </TrackedLink>
+          </div>
         </div>
       </Section>
 
@@ -60,19 +79,22 @@ export default function X402FuelPage() {
         </div>
       </Section>
 
-      {/* Pricing preview */}
+      {/* Pricing */}
       <Section divider className="fade-in-up fade-delay-1">
         <div className="mb-8 max-w-2xl">
           <p className="section-label mb-3">Pricing</p>
           <h2 className="text-4xl font-bold tracking-tight text-accent-300">
-            Free to start. Pay as you grow.
+            MIT-licensed. Free forever.
           </h2>
+          <p className="mt-4 text-xl leading-[1.5] text-slate-200">
+            x402Fuel is open source under MIT. Self-host on your machine next to your agent — no fees, no limits, no cloud dependency. Keys stay local. Budgets are yours.
+          </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
           {[
-            { tier: "Free", price: "$0", desc: "Up to $500/mo volume. 1 wallet. Base only.", fee: "3% per txn" },
-            { tier: "Pro", price: "$19/mo", desc: "Up to $5K/mo. 5 wallets. Multi-chain.", fee: "2% per txn" },
-            { tier: "Business", price: "$99/mo", desc: "Up to $50K/mo. 25 wallets. Spending policies.", fee: "1% per txn" },
+            { tier: "Self-Hosted", price: "$0", desc: "Unlimited wallets. Unlimited volume. Base + any EVM chain. CLI + REST API + dashboard.", fee: "MIT License" },
+            { tier: "Managed Cloud", price: "Coming Q4", desc: "Multi-wallet dashboard, org budgets, remote kill switch, event webhooks. Hosted by TruCore.", fee: "Subscribe" },
+            { tier: "Enterprise", price: "Custom", desc: "Dedicated deployment, SLAs, priority support, custom integrations. For teams running agents at scale.", fee: "Contact us" },
           ].map((p) => (
             <Card key={p.tier}>
               <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">{p.tier}</p>
@@ -88,19 +110,34 @@ export default function X402FuelPage() {
       <Section className="fade-in-up fade-delay-2 pb-16 sm:pb-20">
         <div className="mx-auto max-w-xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-accent-300">
-            Be the first to know
+            Get started in 60 seconds
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-slate-200">
-            x402Fuel is in development. Join the waitlist for early access and launch updates.
+            One binary, no dependencies. Install and create your first agent wallet.
           </p>
-          <div className="mt-8">
+          <div className="mt-6 mx-auto max-w-lg rounded-xl bg-neutral-900/60 border border-white/10 p-4">
+            <code className="text-sm text-green-400">$ go install github.com/trucore-ai/x402fuel@latest</code>
+            <br />
+            <code className="text-sm text-green-400">$ x402fuel create --name my-agent</code>
+            <br />
+            <code className="text-sm text-green-400">$ x402fuel serve</code>
+          </div>
+          <div className="mt-8 flex items-center justify-center gap-4">
             <TrackedLink
-              href="/atf#waitlist"
-              eventName="x402fuel_waitlist_click"
-              eventProps={{ location: "x402fuel_page" }}
+              href="https://github.com/trucore-ai/x402fuel"
+              eventName="x402fuel_github_cta"
+              eventProps={{ location: "x402fuel_page_cta" }}
               className="inline-flex items-center justify-center rounded-xl bg-accent-500 px-8 py-4 text-xl font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
             >
-              Join Waitlist
+              GitHub →
+            </TrackedLink>
+            <TrackedLink
+              href="https://x402fuel.trucore.xyz"
+              eventName="x402fuel_demo_cta"
+              eventProps={{ location: "x402fuel_page_cta" }}
+              className="inline-flex items-center justify-center rounded-xl border border-accent-400/30 bg-accent-500/10 px-8 py-4 text-xl font-semibold text-accent-300 transition-colors hover:bg-accent-500/20"
+            >
+              Live Demo →
             </TrackedLink>
           </div>
         </div>

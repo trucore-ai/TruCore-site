@@ -135,10 +135,10 @@ export default function Home() {
           <ProductCard
             name="x402Fuel"
             tagline="Wallets for AI Agents"
-            description="Give every agent a USDC wallet with one API call. HTTP 402 native payment settlement on Base. Machine-readable receipts for every transaction."
-            href="/x402fuel"
-            status="coming-soon"
-            cta="Join waitlist"
+            description="Give every agent a USDC wallet with one command. HTTP 402 native payment settlement on Base. Non-custodial, MIT-licensed, self-hosted."
+            href="https://x402fuel.trucore.xyz"
+            status="live"
+            cta="Try x402Fuel"
           />
           </Reveal>
         </div>

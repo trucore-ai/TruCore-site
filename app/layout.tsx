@@ -128,6 +128,15 @@ export default function RootLayout({
         url: "https://meshdns.trucore.xyz",
         publisher: { "@type": "Organization", name: "TruCore" },
       },
+      {
+        "@type": "SoftwareApplication",
+        name: "x402Fuel",
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "Web",
+        description: "Non-custodial HTTP 402 wallet daemon for AI agents — USDC payments on Base.",
+        url: "https://x402fuel.trucore.xyz",
+        publisher: { "@type": "Organization", name: "TruCore" },
+      },
     ],
   });
 
