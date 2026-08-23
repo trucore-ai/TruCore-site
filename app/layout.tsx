@@ -62,10 +62,10 @@ export const metadata: Metadata = {
       "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
     images: [
       {
-        url: "/opengraph-image",
+        url: "/twitter-image?v=3",
         width: 1200,
         height: 630,
-        alt: "TruCore social preview",
+        alt: "TruCore — AI infrastructure for autonomous agents",
       },
     ],
   },
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
       "TruCore — AI Infrastructure for Autonomous Agents",
     description:
       "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
-    images: ["/opengraph-image"],
+    images: ["/twitter-image?v=3"],
   },
   icons: {
     icon: [

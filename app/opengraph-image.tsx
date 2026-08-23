@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { NextRequest } from "next/server";
 
 export const size = {
   width: 1200,
@@ -7,6 +8,16 @@ export const size = {
 
 export const contentType = "image/png";
 
+export async function GET(req: NextRequest) {
+  const response = OpenGraphImage();
+  // Override cache headers to force re-fetch by social crawlers
+  response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
+  response.headers.set("Pragma", "no-cache");
+  response.headers.set("Expires", "0");
+  return response;
+}
+
+// Keep the default export for Next.js static generation
 export default function OpenGraphImage() {
   return new ImageResponse(
     (
@@ -34,7 +45,6 @@ export default function OpenGraphImage() {
 
           {/* Top bar */}
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 48 }}>
-            {/* Logo mark */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg, #f08a1f 0%, #f5a623 100%)" }}>
               <div style={{ fontSize: 20, fontWeight: 800, color: "#0a1628" }}>T</div>
             </div>
@@ -42,7 +52,6 @@ export default function OpenGraphImage() {
               <div style={{ fontSize: 24, fontWeight: 700, color: "#eef8ff", letterSpacing: "0.04em" }}>TruCore</div>
               <div style={{ fontSize: 13, color: "#4a7a9b", fontWeight: 400, marginTop: 2 }}>AI Infrastructure</div>
             </div>
-            {/* Divider line */}
             <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(100,160,220,0.2) 0%, transparent 100%)", marginLeft: 24 }} />
           </div>
 
