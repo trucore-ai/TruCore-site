@@ -324,9 +324,26 @@ export const sections: DocsNavSection[] = [
           "Profile separation, receipts retention, and operational hygiene.",
       },
     ],
-  },
-  {
-    title: "Customer Guides",
+      },
+      {
+        title: "Products",
+        items: [
+          {
+            title: "x402Fuel",
+            href: "/docs/x402fuel",
+            description:
+              "Non-custodial HTTP 402 wallet daemon for AI agents — USDC on Base with budget enforcement.",
+          },
+          {
+            title: "MeshDNS",
+            href: "https://meshdns.trucore.xyz",
+            description:
+              "MCP-native service registry with capability discovery and health checks.",
+          },
+        ],
+      },
+      {
+        title: "Customer Guides",
     authenticated: true,
     items: [
       {
