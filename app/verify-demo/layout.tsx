@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-const VERIFY_DEMO_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+const VERIFY_DEMO_SOCIAL_IMAGE_URL = "https://www.trucore.xyz/social-preview.png";
 
 export const metadata: Metadata = {
   title: "Verify Demo",

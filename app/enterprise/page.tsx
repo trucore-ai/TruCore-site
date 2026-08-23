@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
 
-const ENTERPRISE_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+const ENTERPRISE_SOCIAL_IMAGE_URL = "https://www.trucore.xyz/social-preview.png";
 
 const lastUpdated = process.env.NEXT_PUBLIC_BUILD_DATE ?? "unknown";
 

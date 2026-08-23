@@ -5,7 +5,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { TrackedLink } from "@/components/tracked-link";
 
-const BUILDERS_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+const BUILDERS_SOCIAL_IMAGE_URL = "https://www.trucore.xyz/social-preview.png";
 
 export const metadata: Metadata = {
   title: "For Bot Builders - Get Started with ATF",

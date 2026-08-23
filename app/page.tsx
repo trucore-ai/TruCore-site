@@ -25,7 +25,7 @@ import { Tilt } from "@/components/ui/tilt";
 import { getAtfCliVersion } from "@/lib/version";
 import truCoreBanner from "@/images/TruCore-banner-new.png";
 
-const HOME_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+const HOME_SOCIAL_IMAGE_URL = "https://www.trucore.xyz/social-preview.png";
 
 export const metadata: Metadata = {
   title: "TruCore | AI Infrastructure for Autonomous Agents",

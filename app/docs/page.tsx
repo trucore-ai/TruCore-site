@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { sections } from "@/lib/docs-nav";
 
-const DOCS_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+const DOCS_SOCIAL_IMAGE_URL = "https://www.trucore.xyz/social-preview.png";
 
 export const metadata: Metadata = {
   title: "Documentation",

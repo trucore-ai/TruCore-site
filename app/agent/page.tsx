@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 
-const AGENT_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+const AGENT_SOCIAL_IMAGE_URL = "https://www.trucore.xyz/social-preview.png";
 
 export const metadata: Metadata = {
   title: "Agent Integration Guide",

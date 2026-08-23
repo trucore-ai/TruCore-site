@@ -5,7 +5,7 @@ import { Section } from "@/components/ui/section";
 import { getPublicFeatures, groupFeaturesByPlan } from "@/lib/feature-flags";
 import { PricingCards } from "@/components/pricing-cards";
 
-const PRICING_SOCIAL_IMAGE_URL = "https://trucore.xyz/twitter-image";
+const PRICING_SOCIAL_IMAGE_URL = "https://www.trucore.xyz/social-preview.png";
 
 export const metadata: Metadata = {
   title: "Pricing",
