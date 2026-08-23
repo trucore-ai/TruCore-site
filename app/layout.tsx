@@ -13,6 +13,7 @@ import { HeaderAuthActions } from "@/components/header-auth-actions";
 import { HeaderScrollState } from "@/components/header-scroll-state";
 import { SkipLink } from "@/components/skip-link";
 import { TrackedLink } from "@/components/tracked-link";
+import { MobileNav } from "@/components/mobile-nav";
 import { UTM_COOKIE_MAX_AGE, UTM_COOKIE_NAME, UTM_QUERY_KEYS } from "@/lib/utm";
 import "./globals.css";
 
@@ -269,6 +270,7 @@ export default function RootLayout({
                   Builders
                 </Link>
               </nav>
+              <MobileNav />
               </div>
             </Container>
             </div>

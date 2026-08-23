@@ -33,7 +33,7 @@ export default function X402FuelPage() {
             Your agent pays for compute, APIs, and services — no credit cards, no human in the loop.
             MIT-licensed. Self-hosted. Your keys never leave your machine.
           </p>
-          <div className="mt-8 flex items-center justify-center gap-4">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <TrackedLink
               href="https://github.com/trucore-ai/x402fuel"
               eventName="x402fuel_github_click"
@@ -122,7 +122,7 @@ export default function X402FuelPage() {
             <br />
             <code className="text-sm text-green-400">$ x402fuel serve</code>
           </div>
-          <div className="mt-8 flex items-center justify-center gap-4">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <TrackedLink
               href="https://github.com/trucore-ai/x402fuel"
               eventName="x402fuel_github_cta"
