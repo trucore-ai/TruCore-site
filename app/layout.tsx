@@ -196,8 +196,9 @@ export default function RootLayout({
         {showAnalytics ? <Analytics /> : null}
         <HeroBackgroundPulses />
         <div className="relative z-10 flex min-h-screen flex-col">
-          <header className="site-header sticky top-0 z-50 backdrop-blur-md">
+          <header className="site-header sticky top-0 z-50">
             <HeaderScrollState />
+            <div className="header-content relative">
             <div className="absolute right-4 top-0 z-20 flex h-full items-center sm:right-6 md:right-8">
               <HeaderAuthActions />
             </div>
@@ -251,18 +252,6 @@ export default function RootLayout({
                   x402Fuel
                 </Link>
                 <Link
-                  href="/receipts"
-                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Receipts
-                </Link>
-                <Link
-                  href="/pricing"
-                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Pricing
-                </Link>
-                <Link
                   href="/builders"
                   className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                 >
@@ -277,7 +266,7 @@ export default function RootLayout({
               </nav>
               </div>
             </Container>
-            <div className="gradient-divider absolute inset-x-0 bottom-0" aria-hidden="true" />
+            </div>
           </header>
 
           <main id="main" className="flex-1">

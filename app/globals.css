@@ -110,21 +110,25 @@ body {
 }
 
 /* ── Sticky Header Scroll States ──────────────────────────────
-   Header follows the scroll (sticky in layout). Mostly transparent
-   so page content shows through; gains a hint of depth on scroll. */
+   Header follows the scroll (sticky in layout). Background is 75%
+   transparent, fading to fully transparent at the lower edge so the
+   header melts into the page as you scroll. No blur. On scroll the
+   header content (logo, nav, buttons) dims to 75% opacity. */
 .site-header {
-  background-color: rgba(5, 10, 20, 0.12);
-  transition:
-    box-shadow 320ms ease,
-    background-color 320ms ease,
-    backdrop-filter 320ms ease;
+  background: linear-gradient(
+    to bottom,
+    rgba(5, 10, 20, 0.25) 0%,
+    rgba(5, 10, 20, 0.25) 55%,
+    rgba(5, 10, 20, 0) 100%
+  );
 }
 
-.site-header.is-scrolled {
-  background-color: rgba(5, 10, 20, 0.28);
-  box-shadow:
-    0 10px 30px -14px rgba(0, 0, 0, 0.5),
-    0 1px 0 rgba(255, 255, 255, 0.04) inset;
+.header-content {
+  transition: opacity 320ms ease;
+}
+
+.site-header.is-scrolled .header-content {
+  opacity: 0.75;
 }
 
 /* ── Shimmer Text (accent sweep across key headings) ────────── */
@@ -1152,8 +1156,7 @@ html[data-reduce-motion="true"] .bg-animation {
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .glass-panel,
-  .glass-surface,
-  .site-header {
+  .glass-surface {
     background: rgba(3, 12, 24, 0.9) !important;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
