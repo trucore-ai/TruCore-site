@@ -35,9 +35,18 @@ export default function OgPreviewImage() {
 
           {/* Top bar */}
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 48 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg, #f08a1f 0%, #f5a623 100%)" }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#0a1628" }}>T</div>
-            </div>
+            {/* TruCore logo mark — inline SVG */}
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <rect x="2" y="2" width="36" height="36" rx="10" fill="url(#logoGrad)" />
+              <defs>
+                <linearGradient id="logoGrad" x1="2" y1="2" x2="38" y2="38">
+                  <stop stopColor="#f08a1f" />
+                  <stop offset="1" stopColor="#f5a623" />
+                </linearGradient>
+              </defs>
+              {/* T shape matching TruCore brand */}
+              <path d="M10 12h20v4H22v12h-4V16H10V12z" fill="#0a1628" />
+            </svg>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ fontSize: 24, fontWeight: 700, color: "#eef8ff", letterSpacing: "0.04em" }}>TruCore</div>
               <div style={{ fontSize: 13, color: "#4a7a9b", fontWeight: 400, marginTop: 2 }}>Agentic Infrastructure</div>
