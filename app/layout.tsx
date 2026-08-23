@@ -255,24 +255,12 @@ export default function RootLayout({
                   MeshDNS
                 </Link>
                 <Link
-                  href="/docs/meshdns"
-                  className="rounded-md px-2.5 py-1.5 text-sm text-slate-400 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Docs
-                </Link>
-                <Link
                   href="https://x402fuel.trucore.xyz"
                   className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   x402Fuel
-                </Link>
-                <Link
-                  href="/docs/x402fuel"
-                  className="rounded-md px-2.5 py-1.5 text-sm text-slate-400 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Docs
                 </Link>
                 <Link
                   href="/builders"
