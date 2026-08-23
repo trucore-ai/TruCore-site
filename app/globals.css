@@ -110,15 +110,16 @@ body {
 }
 
 /* ── Sticky Header Scroll States ──────────────────────────────
-   Header follows the scroll (sticky in layout). Background is 75%
-   transparent, fading to fully transparent at the lower edge so the
-   header melts into the page as you scroll. No blur. On scroll the
-   header content (logo, nav, buttons) dims to 75% opacity. */
+   Header follows the scroll (sticky in layout). Solid background
+   (no see-through, no blur) that fades to transparent over the
+   lower edge so the header melts into the page while scrolling.
+   On scroll the header content (logo, nav, buttons) dims to 75%
+   opacity. */
 .site-header {
   background: linear-gradient(
     to bottom,
-    rgba(5, 10, 20, 0.25) 0%,
-    rgba(5, 10, 20, 0.25) 55%,
+    rgba(5, 10, 20, 1) 0%,
+    rgba(5, 10, 20, 1) 70%,
     rgba(5, 10, 20, 0) 100%
   );
 }

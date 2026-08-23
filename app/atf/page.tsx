@@ -221,6 +221,24 @@ export default function ATFPage() {
               >
                 Pricing
               </TrackedLink>
+              <span aria-hidden="true" className="text-white/20">/</span>
+              <TrackedLink
+                href="/customer/policies"
+                eventName="hero_micronav_click"
+                eventProps={{ target: "policies", location: "atf_hero" }}
+                className="transition-colors hover:text-primary-100"
+              >
+                Policies
+              </TrackedLink>
+              <span aria-hidden="true" className="text-white/20">/</span>
+              <TrackedLink
+                href="/try"
+                eventName="hero_micronav_click"
+                eventProps={{ target: "try_atf", location: "atf_hero" }}
+                className="transition-colors hover:text-primary-100"
+              >
+                Try ATF
+              </TrackedLink>
             </div>
           </div>
         </Card>

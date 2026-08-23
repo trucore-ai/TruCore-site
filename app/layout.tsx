@@ -257,12 +257,6 @@ export default function RootLayout({
                 >
                   Builders
                 </Link>
-                <Link
-                  href="/try"
-                  className="rounded-md bg-accent-500/15 px-2.5 py-1.5 font-semibold text-accent-300 transition-all duration-200 hover:bg-accent-500/25 hover:text-accent-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                >
-                  Try ATF
-                </Link>
               </nav>
               </div>
             </Container>
