@@ -17,6 +17,9 @@ import { ProductionReadinessStrip } from "@/components/production-readiness-stri
 import { LiveStatusStrip } from "@/components/home/live-status-strip";
 import { TrackedLink } from "@/components/tracked-link";
 import { ProductCard } from "@/components/product-card";
+import { Reveal } from "@/components/ui/reveal";
+import { TerminalDemo } from "@/components/terminal-demo";
+import { EnforcementPipeline } from "@/components/enforcement-pipeline";
 import { PageViewTracker } from "@/components/page-view-tracker";
 import { Tilt } from "@/components/ui/tilt";
 import { getAtfCliVersion } from "@/lib/version";
@@ -95,8 +98,9 @@ export default function Home() {
         </div>
       </Section>
 
-      {/* ── Products ── */}
-      <Section className="fade-in-up fade-delay-1 pb-6 sm:pb-8">
+      {/* ── Products ─ */}
+      <Reveal>
+      <Section className="pb-6 sm:pb-8">
         <div className="mb-8 max-w-2xl">
           <p className="section-label mb-3">Products</p>
           <h2 className="text-4xl font-bold tracking-tight text-accent-300">
@@ -107,6 +111,7 @@ export default function Home() {
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Reveal delay={0} className="h-full">
           <ProductCard
             name="ATF"
             tagline="Agent Transaction Firewall"
@@ -115,6 +120,8 @@ export default function Home() {
             status="live"
             cta="Explore ATF"
           />
+          </Reveal>
+          <Reveal delay={80} className="h-full">
           <ProductCard
             name="MeshDNS"
             tagline="Service Registry for MCP Servers"
@@ -123,6 +130,8 @@ export default function Home() {
             status="live"
             cta="Try MeshDNS"
           />
+          </Reveal>
+          <Reveal delay={160} className="h-full">
           <ProductCard
             name="x402Fuel"
             tagline="Wallets for AI Agents"
@@ -131,11 +140,14 @@ export default function Home() {
             status="coming-soon"
             cta="Join waitlist"
           />
+          </Reveal>
         </div>
       </Section>
+      </Reveal>
 
       {/* ── Featured Product: ATF ── */}
       <div id="atf-content" className="pt-4 sm:pt-8">
+        <Reveal>
         <Section className="pb-4 sm:pb-6">
           <div className="flex items-center gap-4">
             <div className="h-px flex-1 bg-gradient-to-r from-primary-300/40 to-transparent" />
@@ -159,6 +171,7 @@ export default function Home() {
             </p>
           </div>
         </Section>
+        </Reveal>
       </div>
 
       {/* ?? Proof Anchor: Why This Works ?? */}
@@ -182,7 +195,8 @@ export default function Home() {
       </div>
 
       {/* ── Golden Path: Try ATF in Four Commands ── */}
-      <Section divider className="fade-in-up fade-delay-1">
+      <Reveal>
+      <Section divider>
         <div className="mb-8 max-w-2xl">
           <p className="section-label mb-3">Golden Path</p>
           <h2 className="text-4xl font-bold tracking-tight text-accent-300">
@@ -192,22 +206,7 @@ export default function Home() {
             From first trade to verified receipt. No manual config needed.
           </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { step: "1", cmd: "atf trade", desc: "Run a protected trade. Demo mode works out of the box - no API key required." },
-            { step: "2", cmd: "atf setup", desc: "Connect your API key interactively. No .env editing needed." },
-            { step: "3", cmd: "atf doctor", desc: "Diagnose your environment. One command checks config, connectivity, and wallet." },
-            { step: "4", cmd: "atf verify", desc: "Verify and share a receipt. Human-readable share text and bot-friendly output." },
-          ].map((item) => (
-            <Tilt key={item.step} maxTilt={6}>
-              <Card className="h-full">
-                <p className="text-xs font-semibold uppercase tracking-wider text-primary-200">Step {item.step}</p>
-                <p className="mt-2 font-mono text-lg font-bold text-accent-300">{item.cmd}</p>
-                <p className="mt-2 text-base leading-[1.5] text-slate-200">{item.desc}</p>
-              </Card>
-            </Tilt>
-          ))}
-        </div>
+        <TerminalDemo />
         <div className="mt-6 max-w-3xl space-y-3 text-sm text-slate-400">
           <p>
             Open your terminal and install the CLI globally:
@@ -216,8 +215,8 @@ export default function Home() {
             npm install -g @trucore/atf@{getAtfCliVersion()}
           </pre>
           <p>
-            Then run each <code className="text-slate-300">atf</code> command above directly in your terminal.
-            No project setup required.
+            The demo runs each <code className="text-slate-300">atf</code> command live. Run them yourself in your
+            terminal. No project setup required.
           </p>
           <p>
             Each command produces operator-friendly terminal output and bot-ready JSON with{" "}
@@ -227,9 +226,11 @@ export default function Home() {
           </p>
         </div>
       </Section>
+      </Reveal>
 
       {/* ── What ATF Enforces ── */}
-      <Section divider className="fade-in-up fade-delay-1">
+      <Reveal>
+      <Section divider>
         <div className="mb-8 max-w-2xl">
           <p className="section-label mb-3">Enforcement Model</p>
           <h2 className="text-4xl font-bold tracking-tight text-accent-300">
@@ -252,9 +253,11 @@ export default function Home() {
           ))}
         </div>
       </Section>
+      </Reveal>
 
       {/* ── First Trade Activation ── */}
-      <Section divider className="fade-in-up fade-delay-1">
+      <Reveal>
+      <Section divider>
         <div className="mb-8 max-w-3xl">
           <p className="section-label mb-3">Activation</p>
           <h2 className="text-4xl font-bold tracking-tight text-accent-300">
@@ -286,10 +289,12 @@ export default function Home() {
           </TrackedLink>
         </div>
       </Section>
+      </Reveal>
 
 
       {/* ?? First Protected Trade: Step by Step ?? */}
-      <Section divider className="fade-in-up fade-delay-1">
+      <Reveal>
+      <Section divider>
         <div className="mb-8 max-w-2xl">
           <p className="section-label mb-3">How It Works</p>
           <h2 className="text-4xl font-bold tracking-tight text-accent-300">
@@ -299,30 +304,12 @@ export default function Home() {
             Every trade follows the same enforced path: policy evaluated, decision made, receipt generated, result verified.
           </p>
         </div>
-        <div className="space-y-3">
-          {[
-            { num: "1", title: "Submit", desc: "You submit a transaction. ATF receives it with your policy rules." },
-            { num: "2", title: "Evaluate", desc: "Every policy rule is checked: spend caps, protocols, slippage, TTL." },
-            { num: "3", title: "Decide", desc: "Policy decision is made deterministically. ALLOW or DENY." },
-            { num: "4", title: "Enforce", desc: "If ALLOW: transaction is executed. If DENY: blocked automatically." },
-            { num: "5", title: "Verify", desc: "Cryptographic receipt proves what happened. Anyone can verify it." },
-          ].map((item) => (
-            <div key={item.num} className="flex gap-4">
-              <div className="flex-shrink-0">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-accent-400 bg-accent-500/20">
-                  <span className="font-bold text-accent-300">{item.num}</span>
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-primary-100">{item.title}</h3>
-                <p className="mt-1 text-slate-300">{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <EnforcementPipeline />
       </Section>
+      </Reveal>
       {/* ── Policy Intelligence Layer ── */}
-      <Section divider className="fade-in-up fade-delay-1">
+      <Reveal>
+      <Section divider>
         <div className="mb-8 max-w-3xl">
           <p className="section-label mb-3">Intelligence</p>
           <h2 className="text-4xl font-bold tracking-tight text-accent-300">
@@ -366,15 +353,18 @@ export default function Home() {
           ))}
         </div>
       </Section>
+      </Reveal>
 
       {/* ── Category Positioning ── */}
-      <Section className="fade-in-up fade-delay-1">
+      <Reveal>
+      <Section>
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
+          <p className="shimmer-text text-3xl font-bold tracking-tight sm:text-4xl">
             Most systems execute transactions. TruCore systems learn from them.
           </p>
         </div>
       </Section>
+      </Reveal>
 
       {/* ── V1 Scope ── */}
       <EcosystemIntegrations />
@@ -386,7 +376,8 @@ export default function Home() {
       <AtfV1Scope />
 
       {/* ── Explore ── */}
-      <Section id="integrations" divider className="fade-in-up fade-delay-2">
+      <Reveal>
+      <Section id="integrations" divider>
         <div className="mb-8 max-w-2xl">
           <p className="section-label mb-3">Resources & Documentation</p>
           <h2 className="text-4xl font-bold tracking-tight text-accent-300">Explore</h2>
@@ -488,9 +479,11 @@ export default function Home() {
           ))}
         </div>
       </Section>
+      </Reveal>
 
       {/* ── Start Here - Conversion Path ── */}
-      <Section divider className="fade-in-up fade-delay-2">
+      <Reveal>
+      <Section divider>
         <div className="mx-auto max-w-3xl text-center">
           <p className="section-label mb-3">Get Started</p>
           <h2 className="text-3xl font-bold tracking-tight text-accent-300 sm:text-4xl">
@@ -528,6 +521,7 @@ export default function Home() {
           </div>
         </div>
       </Section>
+      </Reveal>
 
       {/* ── Why TruCore ── */}
       <div id="why-trucore">
@@ -544,7 +538,8 @@ export default function Home() {
 
       {/* ── Waitlist / Design Partner CTA ── */}
       <div id="waitlist">
-        <Section className="fade-in-up">
+        <Reveal>
+        <Section>
           <div className="mx-auto max-w-xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-accent-300">
               Join the Waitlist
@@ -559,6 +554,7 @@ export default function Home() {
             </Suspense>
           </div>
         </Section>
+        </Reveal>
         <AtfDesignPartnerCta />
       </div>
 
