@@ -7,12 +7,6 @@ export const size = {
 
 export const contentType = "image/png";
 
-const products = [
-  { name: "ATF", label: "Agent Transaction Firewall" },
-  { name: "x402Fuel", label: "HTTP 402 Wallet Daemon" },
-  { name: "MeshDNS", label: "MCP Service Registry" },
-];
-
 export default function OpenGraphImage() {
   return new ImageResponse(
     (
@@ -22,72 +16,101 @@ export default function OpenGraphImage() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          padding: "56px",
-          background: "linear-gradient(135deg, #0a1122 0%, #050a14 60%, #0d1a30 100%)",
-          color: "#eef8ff",
+          background: "linear-gradient(135deg, #050a14 0%, #0a1628 40%, #0d1f3c 70%, #0a1628 100%)",
           fontFamily: "Inter, system-ui, sans-serif",
+          position: "relative",
         }}
       >
-        {/* Top bar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: "0.06em" }}>TruCore</div>
-          <div style={{ fontSize: 18, color: "#4a7a9b", fontWeight: 400 }}>
-            AI Infrastructure
-          </div>
-        </div>
+        {/* Glow orbs */}
+        <div style={{ position: "absolute", top: -80, left: -80, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(240,138,31,0.15) 0%, transparent 70%)" }} />
+        <div style={{ position: "absolute", bottom: -120, right: -60, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(56,189,248,0.12) 0%, transparent 70%)" }} />
+        <div style={{ position: "absolute", top: 100, right: 200, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(240,138,31,0.08) 0%, transparent 70%)" }} />
 
-        {/* Hero headline */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 40 }}>
-          <div style={{ fontSize: 56, fontWeight: 700, lineHeight: 1.1 }}>
-            Trustless Infrastructure
-          </div>
-          <div style={{ fontSize: 56, fontWeight: 700, lineHeight: 1.1, color: "#f08a1f" }}>
-            for Autonomous Finance
-          </div>
-        </div>
+        {/* Subtle grid overlay */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(100,160,220,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(100,160,220,0.03) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
 
-        {/* Subtitle */}
-        <div style={{ display: "flex", marginTop: 20 }}>
-          <div style={{ fontSize: 26, color: "#a8d4f0", maxWidth: 800 }}>
-            Policy enforcement, agent payments, and service discovery — all verifiable, all trustless.
-          </div>
-        </div>
+        {/* Content layer */}
+        <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", padding: "56px", width: "100%", height: "100%" }}>
 
-        {/* Product cards */}
-        <div style={{ display: "flex", gap: 24, marginTop: 48 }}>
-          {products.map((p) => (
-            <div
-              key={p.name}
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-                padding: "20px 24px",
-                background: "rgba(20, 40, 70, 0.5)",
-                border: "1px solid rgba(100, 160, 220, 0.15)",
-                borderRadius: 12,
-              }}
-            >
-              <div style={{ display: "flex", fontSize: 20, fontWeight: 600, color: "#b8e3ff" }}>
-                {p.name}
-              </div>
-              <div style={{ display: "flex", fontSize: 15, color: "#88b8d8" }}>{p.label}</div>
+          {/* Top bar */}
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 48 }}>
+            {/* Logo mark */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, background: "linear-gradient(135deg, #f08a1f 0%, #f5a623 100%)" }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#0a1628" }}>T</div>
             </div>
-          ))}
-        </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <div style={{ fontSize: 24, fontWeight: 700, color: "#eef8ff", letterSpacing: "0.04em" }}>TruCore</div>
+              <div style={{ fontSize: 13, color: "#4a7a9b", fontWeight: 400, marginTop: 2 }}>AI Infrastructure</div>
+            </div>
+            {/* Divider line */}
+            <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(100,160,220,0.2) 0%, transparent 100%)", marginLeft: 24 }} />
+          </div>
 
-        {/* Footer spacer + footer */}
-        <div style={{ display: "flex", flex: 1 }} />
-        <div style={{ display: "flex" }}>
-          <span style={{ fontSize: 22, color: "#f08a1f", fontWeight: 500 }}>
-            trucore.xyz
-          </span>
+          {/* Main headline */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 900, marginBottom: 36 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
+              <div style={{ width: 32, height: 3, borderRadius: 2, background: "linear-gradient(90deg, #f08a1f, #f5a623)" }} />
+              <div style={{ fontSize: 16, fontWeight: 600, color: "#f08a1f", textTransform: "uppercase", letterSpacing: "0.15em" }}>Trustless Infrastructure</div>
+            </div>
+            <div style={{ fontSize: 56, fontWeight: 800, lineHeight: 1.08, color: "#ffffff", letterSpacing: "-0.02em" }}>
+              for Autonomous
+            </div>
+            <div style={{ fontSize: 56, fontWeight: 800, lineHeight: 1.08, background: "linear-gradient(135deg, #f08a1f 0%, #f5a623 50%, #fbbf24 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "-0.02em" }}>
+              Finance
+            </div>
+          </div>
+
+          {/* Tagline */}
+          <div style={{ display: "flex", marginBottom: 40, maxWidth: 750 }}>
+            <div style={{ fontSize: 22, color: "#88b8d8", lineHeight: 1.5 }}>
+              Policy enforcement, agent payments & service discovery — all verifiable, all trustless.
+            </div>
+          </div>
+
+          {/* Product fleet cards */}
+          <div style={{ display: "flex", gap: 20 }}>
+            {[
+              { name: "ATF", desc: "Agent Transaction Firewall", color: "#f08a1f", icon: "◆" },
+              { name: "x402Fuel", desc: "HTTP 402 Wallet Daemon", color: "#38bdf8", icon: "◇" },
+              { name: "MeshDNS", desc: "MCP Service Registry", color: "#a78bfa", icon: "○" },
+            ].map((p) => (
+              <div
+                key={p.name}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                  padding: "20px 22px",
+                  background: "rgba(15, 25, 45, 0.6)",
+                  border: `1px solid ${p.color}22`,
+                  borderRadius: 14,
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Top accent line */}
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${p.color}, transparent)` }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                  <div style={{ fontSize: 14, color: p.color, fontWeight: 700 }}>{p.icon}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#eef8ff" }}>{p.name}</div>
+                </div>
+                <div style={{ fontSize: 14, color: "#6b8fa8" }}>{p.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
+              <div style={{ fontSize: 14, color: "#4a7a9b" }}>All systems operational</div>
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 600, color: "#f08a1f" }}>trucore.xyz</div>
+          </div>
         </div>
       </div>
     ),
-    {
-      ...size,
-    },
+    { ...size },
   );
 }
