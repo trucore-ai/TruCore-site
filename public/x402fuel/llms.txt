@@ -1,0 +1,28 @@
+# x402Fuel
+
+> Non-custodial HTTP 402 wallet daemon for AI agents. Give your agent a USDC wallet on Base with one command. Keys never leave your machine. MIT-licensed. Self-hosted. Install: `go install github.com/trucore-ai/x402fuel@latest`
+
+## Install
+- [Install](https://github.com/trucore-ai/x402fuel#quick-start): `go install github.com/trucore-ai/x402fuel@latest` then `x402fuel create --name my-agent` then `x402fuel serve`.
+- [Binary Releases](https://github.com/trucore-ai/x402fuel/releases): Pre-built linux-amd64 binary if you don't have Go.
+
+## Commands
+- [Create Wallet](https://trucore.xyz/docs/x402fuel#cli-create): `x402fuel create --name <name>` — creates a Base USDC wallet with encrypted local keys.
+- [Start Daemon](https://trucore.xyz/docs/x402fuel#cli-serve): `x402fuel serve --port 8420` — starts proxy + REST API + dashboard on localhost.
+- [Pause](https://trucore.xyz/docs/x402fuel#cli-pause): `x402fuel pause` — global kill switch, blocks all new payments within 1 second.
+- [Status](https://trucore.xyz/docs/x402fuel#cli-status): `x402fuel status --json` — wallet balances, budget utilization, recent activity.
+
+## Documentation
+- [Full Docs](https://trucore.xyz/docs/x402fuel): Architecture, CLI reference, budget policy YAML, E2E payment flow, security model, FAQ.
+- [Budget Policy](https://trucore.xyz/docs/x402fuel#budget-policy): YAML config for max-per-txn, daily cap, per-service allowlist, kill switch. Path: `~/.x402fuel/config.yaml`.
+- [How Payment Works](https://trucore.xyz/docs/x402fuel#how-payment-works): Six-step E2E flow: agent requests → 402 response → policy check → EIP-3009 sign → retry with X-PAYMENT → settlement on Base.
+- [Security Model](https://trucore.xyz/docs/x402fuel#security-model): Keys never leave the machine. Budget enforced BEFORE signing. No custody. Kill switch in 1s. Zero key material in logs.
+
+## Configuration
+- [Config File](https://trucore.xyz/docs/x402fuel#budget-policy): `~/.x402fuel/config.yaml` — wallet address, max_per_txn_usdc, daily_cap_usdc, allowed_hosts list, kill_switch boolean, event_log path, telemetry boolean.
+- [Event Log](https://trucore.xyz/docs/x402fuel#event-log): JSONL at path configured in config.yaml. Every 402 encounter logged with host, amount, decision, outcome, tx_hash, latency_ms.
+
+## Optional
+- [GitHub](https://github.com/trucore-ai/x402fuel): Source code, issues, discussions.
+- [Live Demo](https://x402fuel.trucore.xyz): HTMX dashboard — balances, transaction history, budget controls.
+- [License](https://github.com/trucore-ai/x402fuel/blob/main/LICENSE): MIT.

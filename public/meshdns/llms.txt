@@ -1,0 +1,31 @@
+# MeshDNS
+
+> MCP-native service registry for AI agents. Never hardcode an MCP server again. Register capabilities, resolve by feature, automatic health checks. Install: `go install github.com/trucore-ai/meshdns/cmd/meshdns@latest`
+
+## Install
+- [Install](https://github.com/trucore-ai/meshdns#quickstart): `go install github.com/trucore-ai/meshdns/cmd/meshdns@latest` then `meshdns --port=:8080`.
+- [Binary Releases](https://github.com/trucore-ai/meshdns/releases): Pre-built linux-amd64 binary if you don't have Go.
+
+## API
+- [Register Server](https://trucore.xyz/docs/meshdns#api-reference): `POST /v0/servers` — register name, description, capabilities[], server_url, health_url, owner_contact. Returns server_id + write_key.
+- [Resolve Capability](https://trucore.xyz/docs/meshdns#api-reference): `GET /v0/resolve?capability=<name>` — returns UP servers ranked by 30-day uptime. DOWN servers never returned.
+- [List Servers](https://trucore.xyz/docs/meshdns#api-reference): `GET /v0/servers?status=active&query=&capability=&cursor=&limit=` — cursor-paginated listing with filters.
+- [Stats](https://trucore.xyz/docs/meshdns#api-reference): `GET /v0/stats` — active/total servers, up count, resolutions and probes in the last 24h.
+- [Export](https://trucore.xyz/docs/meshdns#api-reference): `GET /v0/export` — full registry JSON export. Open data, no auth required.
+- [Update Server](https://trucore.xyz/docs/meshdns#api-reference): `PUT /v0/servers/{id}` — update manifest with Authorization: Bearer write_key.
+- [Delist Server](https://trucore.xyz/docs/meshdns#api-reference): `DELETE /v0/servers/{id}` — soft-delete. Stops health probes. Requires write_key.
+
+## SDKs
+- [Python SDK](https://trucore.xyz/docs/meshdns#sdk-reference): `pip install meshdns-client`. `from meshdns_client import MeshDNSClient`. `client.resolve("capability")`.
+- [TypeScript SDK](https://trucore.xyz/docs/meshdns#sdk-reference): `npm i @meshdns/client`. `import { MeshDNSClient } from "@meshdns/client"`. `await client.resolve("capability")`.
+
+## Documentation
+- [Full Docs](https://trucore.xyz/docs/meshdns): Architecture, API reference (7 endpoints), health check model, SDK reference, configuration, security model, FAQ.
+- [How Health Checks Work](https://trucore.xyz/docs/meshdns#how-health-works): Probes every health_url every 60s (configurable). HTTP GET, 5s timeout. Non-2xx = DOWN. DOWN servers excluded from resolve results.
+- [Configuration](https://trucore.xyz/docs/meshdns#configuration): MESHDNS_PORT (:8080), MESHDNS_DB (meshdns.db), MESHDNS_PROBE_INTERVAL (60s), MESHDNS_PROBE_TIMEOUT (5s), MESHDNS_WORKERS (4).
+- [Security Model](https://trucore.xyz/docs/meshdns#security-model): Read paths public. Write paths require bearer tokens. Soft-delete. No PII. Full data export. Single binary, zero external deps.
+
+## Optional
+- [GitHub](https://github.com/trucore-ai/meshdns): Source code, issues, discussions.
+- [Live Registry](https://meshdns.trucore.xyz): Public registry — server counts, resolutions/24h, uptime data.
+- [License](https://github.com/trucore-ai/meshdns/blob/main/LICENSE): MIT.
