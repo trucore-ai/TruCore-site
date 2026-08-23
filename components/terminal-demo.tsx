@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const MOTION_PREFERENCE_CHANGED_EVENT = "trucore:motion-preference-change";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 /* ─── Transcript model ─── */
 
@@ -58,15 +58,17 @@ const TYPE_MS = 26;
 const LINE_MS = 95;
 
 function isMotionReduced(): boolean {
-  return document.documentElement.dataset.reduceMotion === "true";
+  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
 }
 
 /**
- * Live terminal demo. Types the ATF golden path (install, trade,
- * setup → doctor → verify) with realistic CLI output. Plays once when
+ * Live terminal demo - types the ATF golden path (install, trade,
+ * setup, doctor, verify) with realistic CLI output. Plays once when
  * scrolled into view, then holds the final VERIFIED state.
  *
- * Reduce-motion: renders the full transcript instantly.
+ * Always animates (site animation toggle only gates background
+ * effects); only the OS-level prefers-reduced-motion setting renders
+ * the full transcript instantly.
  */
 export function TerminalDemo() {
   const [lineIdx, setLineIdx] = useState(0);
@@ -83,9 +85,10 @@ export function TerminalDemo() {
     const el = bodyRef.current?.parentElement;
     if (!el) return;
 
-    const syncReduced = () => setReduced(isMotionReduced());
+    const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+    const syncReduced = () => setReduced(mq.matches);
     syncReduced();
-    window.addEventListener(MOTION_PREFERENCE_CHANGED_EVENT, syncReduced);
+    mq.addEventListener("change", syncReduced);
 
     const obs = new IntersectionObserver(
       (entries) => {
@@ -100,7 +103,7 @@ export function TerminalDemo() {
 
     return () => {
       obs.disconnect();
-      window.removeEventListener(MOTION_PREFERENCE_CHANGED_EVENT, syncReduced);
+      mq.removeEventListener("change", syncReduced);
     };
   }, []);
 

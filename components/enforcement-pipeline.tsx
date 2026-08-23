@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const MOTION_PREFERENCE_CHANGED_EVENT = "trucore:motion-preference-change";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 /* ─── Timeline ───
    Single phase counter drives the whole animation.
@@ -51,7 +51,7 @@ function captionFor(phase: number): string {
 }
 
 function isMotionReduced(): boolean {
-  return document.documentElement.dataset.reduceMotion === "true";
+  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
 }
 
 /* ─── Inline icons ─── */
@@ -172,7 +172,9 @@ function Connector({ packetPhase, phase }: { packetPhase: number; phase: number 
  * Cryptographic Receipt. A glowing packet travels stage to stage;
  * each stage lights up and runs its micro-animation on arrival.
  *
- * Loops continuously. Reduce-motion renders the completed state.
+ * Loops continuously. Always animates - the site animation toggle
+ * only gates background effects. Only the OS-level
+ * prefers-reduced-motion setting renders the completed state.
  */
 export function EnforcementPipeline() {
   const [phase, setPhase] = useState(0);
@@ -187,9 +189,10 @@ export function EnforcementPipeline() {
     const el = rootRef.current;
     if (!el) return;
 
-    const syncReduced = () => setReduced(isMotionReduced());
+    const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+    const syncReduced = () => setReduced(mq.matches);
     syncReduced();
-    window.addEventListener(MOTION_PREFERENCE_CHANGED_EVENT, syncReduced);
+    mq.addEventListener("change", syncReduced);
 
     const obs = new IntersectionObserver(
       (entries) => {
@@ -204,7 +207,7 @@ export function EnforcementPipeline() {
 
     return () => {
       obs.disconnect();
-      window.removeEventListener(MOTION_PREFERENCE_CHANGED_EVENT, syncReduced);
+      mq.removeEventListener("change", syncReduced);
     };
   }, []);
 
