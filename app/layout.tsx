@@ -255,8 +255,10 @@ export default function RootLayout({
                   MeshDNS
                 </Link>
                 <Link
-                  href="/x402fuel"
+                  href="https://x402fuel.trucore.xyz"
                   className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   x402Fuel
                 </Link>
@@ -326,7 +328,7 @@ export default function RootLayout({
                       <div className="mt-3 space-y-2">
                         <Link href="/atf" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF</Link>
                         <Link href="https://meshdns.trucore.xyz" target="_blank" rel="noopener noreferrer" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">MeshDNS</Link>
-                        <Link href="/x402fuel" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">x402Fuel</Link>
+                        <Link href="https://x402fuel.trucore.xyz" target="_blank" rel="noopener noreferrer" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">x402Fuel</Link>
                         <Link href="/atf/roadmap" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Roadmap</Link>
                         <Link href="/enterprise" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Enterprise</Link>
                         <Link href="/pricing" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Pricing</Link>
