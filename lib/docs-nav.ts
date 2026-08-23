@@ -336,7 +336,7 @@ export const sections: DocsNavSection[] = [
           },
           {
             title: "MeshDNS",
-            href: "https://meshdns.trucore.xyz",
+                        href: "/docs/meshdns",
             description:
               "MCP-native service registry with capability discovery and health checks.",
           },
