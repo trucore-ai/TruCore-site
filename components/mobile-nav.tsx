@@ -9,7 +9,6 @@ const navLinks = [
   { href: "/atf", label: "ATF", external: false },
   { href: "https://meshdns.trucore.xyz", label: "MeshDNS", external: true },
   { href: "https://x402fuel.trucore.xyz", label: "x402Fuel", external: true },
-  { href: "/builders", label: "Builders", external: false },
 ];
 
 export function MobileNav() {

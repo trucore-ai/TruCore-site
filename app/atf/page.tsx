@@ -248,6 +248,15 @@ export default function ATFPage() {
               >
                 Try ATF
               </TrackedLink>
+              <span aria-hidden="true" className="text-white/20">/</span>
+              <TrackedLink
+                href="/builders"
+                eventName="hero_micronav_click"
+                eventProps={{ target: "builders", location: "atf_hero" }}
+                className="transition-colors hover:text-primary-100"
+              >
+                Builders
+              </TrackedLink>
             </div>
           </div>
         </Card>
