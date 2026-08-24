@@ -340,6 +340,138 @@ const next = await client.resolveNext("weather");
         ))}
       </div>
 
+      <HeadingAnchor id="agent-skills">
+        <span className="inline-flex items-center gap-2">
+          <svg className="h-5 w-5 text-violet-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L10 6.477V16h2a1 1 0 110 2H8a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.616a1 1 0 01.894-1.79l1.599.8L10 4.323V3a1 1 0 011-1z" clipRule="evenodd" />
+          </svg>
+          Agent Skills
+        </span>
+      </HeadingAnchor>
+      <p>
+        MeshDNS ships with three Hermes Agent skills — pre-built AI knowledge packs
+        that agents load on-demand. Any <strong className="text-slate-200">human developer</strong> or <strong className="text-slate-200">AI agent</strong> using
+        Hermes can install and use these immediately.
+      </p>
+      <p className="text-sm text-slate-400">
+        Skills are the agent equivalent of npm packages — self-contained knowledge
+        modules with commands, patterns, and pitfalls. Agents load a skill and
+        instantly gain expertise in that domain, without training data or prompts.
+      </p>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        {/* Card 1: Quickstart */}
+        <div className="group relative overflow-hidden rounded-2xl border border-violet-500/[0.15] bg-gradient-to-b from-violet-950/30 to-neutral-950/80 p-6 transition-all duration-300 hover:border-violet-400/30 hover:from-violet-950/50">
+          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-violet-500/[0.08] blur-2xl group-hover:bg-violet-500/[0.15] transition-colors duration-500" aria-hidden="true" />
+          <div className="relative">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-lg" aria-hidden="true">⚡</span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-violet-300">Entry Point</p>
+                <p className="text-lg font-bold text-white">meshdns-quickstart</p>
+              </div>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              One-stop guide for agents and developers. What MeshDNS is, how to use it,
+              how to register servers, and the Lazy MCP pattern — all in one load.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {["discover", "register", "lazy-mcp", "cheat-sheet"].map((tag) => (
+                <span key={tag} className="rounded-full border border-violet-500/[0.15] bg-violet-500/[0.06] px-2 py-0.5 text-[10px] font-medium text-violet-300">{tag}</span>
+              ))}
+            </div>
+            <p className="mt-4 font-mono text-xs text-violet-400/70">
+              Agent loads: <code className="rounded bg-violet-500/[0.08] px-1.5 py-0.5 text-violet-300">skill_view(&apos;meshdns-quickstart&apos;)</code>
+            </p>
+          </div>
+        </div>
+
+        {/* Card 2: Full Docs */}
+        <div className="group relative overflow-hidden rounded-2xl border border-slate-700/[0.2] bg-gradient-to-b from-slate-800/30 to-neutral-950/80 p-6 transition-all duration-300 hover:border-slate-500/30 hover:from-slate-800/50">
+          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-slate-500/[0.06] blur-2xl group-hover:bg-slate-500/[0.12] transition-colors duration-500" aria-hidden="true" />
+          <div className="relative">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-500/15 text-lg" aria-hidden="true">📖</span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Reference</p>
+                <p className="text-lg font-bold text-white">meshdns</p>
+              </div>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              Complete API reference, architecture deep-dive, deployment patterns,
+              health check system internals, and production ops guide.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {["api-ref", "deploy", "health-checks", "architecture"].map((tag) => (
+                <span key={tag} className="rounded-full border border-slate-600/[0.2] bg-slate-500/[0.06] px-2 py-0.5 text-[10px] font-medium text-slate-400">{tag}</span>
+              ))}
+            </div>
+            <p className="mt-4 font-mono text-xs text-slate-500">
+              Agent loads: <code className="rounded bg-slate-500/[0.08] px-1.5 py-0.5 text-slate-400">skill_view(&apos;meshdns&apos;)</code>
+            </p>
+          </div>
+        </div>
+
+        {/* Card 3: Lazy MCP */}
+        <div className="group relative overflow-hidden rounded-2xl border border-cyan-500/[0.15] bg-gradient-to-b from-cyan-950/20 to-neutral-950/80 p-6 transition-all duration-300 hover:border-cyan-400/30 hover:from-cyan-950/40">
+          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-cyan-500/[0.06] blur-2xl group-hover:bg-cyan-500/[0.12] transition-colors duration-500" aria-hidden="true" />
+          <div className="relative">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 text-lg" aria-hidden="true">🔌</span>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-300">On-Demand</p>
+                <p className="text-lg font-bold text-white">meshdns-lazy-mcp</p>
+              </div>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+              On-the-fly MCP server discovery. Zero pre-configuration — resolve any
+              of 750+ servers at runtime, call tools, tear down. No restart needed.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {["zero-config", "750+ servers", "on-demand", "workflow"].map((tag) => (
+                <span key={tag} className="rounded-full border border-cyan-500/[0.15] bg-cyan-500/[0.06] px-2 py-0.5 text-[10px] font-medium text-cyan-300">{tag}</span>
+              ))}
+            </div>
+            <p className="mt-4 font-mono text-xs text-cyan-400/70">
+              Agent loads: <code className="rounded bg-cyan-500/[0.08] px-1.5 py-0.5 text-cyan-300">skill_view(&apos;meshdns-lazy-mcp&apos;)</code>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Getting Started CTA */}
+      <div className="mt-6 rounded-2xl border border-violet-500/[0.12] bg-gradient-to-r from-violet-950/40 via-neutral-950/60 to-cyan-950/20 p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-lg font-bold text-white">Ready to wire up your agent?</p>
+            <p className="mt-1 text-sm text-slate-400">
+              Install the skills in your Hermes profile and agents can discover 750+ MCP servers on demand — no config, no restart.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="https://github.com/trucore-ai/meshdns"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-violet-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-violet-400"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L10 6.477V16h2a1 1 0 110 2H8a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.616a1 1 0 01.894-1.79l1.599.8L10 4.323V3a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              GitHub & Skills
+            </a>
+            <a
+              href="https://meshdns.trucore.xyz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-neutral-900/60 px-5 py-2.5 text-sm font-semibold text-slate-200 transition-colors hover:border-white/[0.12]"
+            >
+              Live Registry →
+            </a>
+          </div>
+        </div>
+      </div>
+
       <HeadingAnchor id="faq">
         FAQ
       </HeadingAnchor>
