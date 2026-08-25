@@ -153,6 +153,46 @@ $ curl -s "http://localhost:8080/v0/resolve?capability=weather"
         remembers the switch.
       </p>
 
+      <HeadingAnchor id="cli">CLI Tool (meshdns-cli)</HeadingAnchor>
+      <p>
+        A single Go binary with <strong>zero dependencies</strong>. Every command
+        speaks both <code className="text-cyan-400">--json</code> for agents and
+        human-readable for developers. Errors include a{" "}
+        <code className="text-cyan-400">suggested_command</code> field — copy-paste
+        the fix directly.
+      </p>
+      <pre className="my-4 overflow-x-auto rounded-xl border border-white/[0.06] bg-neutral-950 p-4 text-sm">
+        <code className="text-green-400">
+          {`# Install alongside the server binary
+$ go install github.com/trucore-ai/meshdns/cmd/meshdns-cli@latest
+
+# Full surface discovery
+$ meshdns-cli --help
+
+# Live stats (human-readable)
+$ meshdns-cli stats
+  servers active:   3986
+  servers total:    3986
+  up count:         3914
+  resolutions 24h:  17
+  probes 24h:       697229
+
+# Resolve a capability (agent-friendly)
+$ meshdns-cli --json resolve weather
+  {"data":[{...}],"ok":true}
+
+# Health check — exit 0 if reachable
+$ meshdns-cli doctor
+  healthy`}
+        </code>
+      </pre>
+      <p>
+        Full command reference: register, list, resolve, stats, status,
+        capabilities, delist, doctor. All support{" "}
+        <code className="text-slate-300">--json</code> for machine-readable
+        .
+      </p>
+
       <HeadingAnchor id="api-reference">
         API Reference
       </HeadingAnchor>
