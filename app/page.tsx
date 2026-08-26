@@ -28,16 +28,16 @@ import truCoreBanner from "@/images/TruCore-banner-new.png";
 const HOME_SOCIAL_IMAGE_URL = "https://www.trucore.xyz/social-preview.png";
 
 export const metadata: Metadata = {
-  title: "TruCore | AI Infrastructure for Autonomous Agents",
+  title: "TruCore — AI Infrastructure for Autonomous Agents",
   description:
-    "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for the agent economy.",
+    "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
   openGraph: {
     url: "https://trucore.xyz",
     siteName: "TruCore",
     type: "website",
-    title: "TruCore | AI Infrastructure for Autonomous Agents",
+    title: "TruCore — AI Infrastructure for Autonomous Agents",
     description:
-      "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
+      "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
     images: [
       {
         url: HOME_SOCIAL_IMAGE_URL,
@@ -49,9 +49,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "TruCore | AI Infrastructure for Autonomous Agents",
+    title: "TruCore — AI Infrastructure for Autonomous Agents",
     description:
-      "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
+      "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
     images: [HOME_SOCIAL_IMAGE_URL],
   },
 };

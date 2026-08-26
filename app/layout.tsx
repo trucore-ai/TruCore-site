@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     template: "%s | TruCore",
   },
   description:
-    "Open-source infrastructure for the agent economy. Transaction firewalls, service registries, and agent wallets — MIT-licensed, built for production.",
+    "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
   keywords: [
     "TruCore",
     "Agent Transaction Firewall",
@@ -54,12 +54,12 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     type: "website",
-    url: "https://www.trucore.xyz",
+    url: "https://trucore.xyz",
     siteName: "TruCore",
     title:
       "TruCore — AI Infrastructure for Autonomous Agents",
     description:
-      "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
+      "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
     images: [
       {
         url: "https://www.trucore.xyz/social-preview.png",
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     title:
       "TruCore — AI Infrastructure for Autonomous Agents",
     description:
-      "Transaction firewalls, service registries, and agent wallets — open source infrastructure for the agent economy.",
+      "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
     images: ["https://www.trucore.xyz/social-preview.png"],
   },
   icons: {
