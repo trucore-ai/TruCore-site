@@ -8,7 +8,7 @@
 
 ## Products
 - [ATF](https://trucore.xyz/docs): Agent Transaction Firewall — policy-enforced guardrails for autonomous agent transactions. Solana-first. Install: `npm i -g @trucore/atf` then `atf trade`.
-- [ProvenGraph](https://provengraph.trucore.xyz): The provenance graph for the agent economy. Three product lines: **Trust** (server trust scores with outcome-weighted reputation), **Knowledge** (grounded, verifiable claims), and **Memory** (compliant episodic recall for agents). Install: `go install github.com/trucore-ai/meshdns/cmd/meshdns@latest`.
+- [ProvenGraph](https://provengraph.trucore.xyz): The provenance graph for the agent economy. Three product lines: **Trust** (server trust scores with outcome-weighted reputation), **Knowledge** (grounded, verifiable claims), and **Memory** (compliant episodic recall for agents). Install: `go install github.com/trucore-ai/provengraph/cmd/meshdns@latest`.
 
 ## Documentation
 - [ATF Docs](https://trucore.xyz/docs): Full documentation — CLI reference, policy model, receipt verification, getting started.

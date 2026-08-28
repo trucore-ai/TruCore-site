@@ -1,6 +1,6 @@
 # ProvenGraph
 
-> The provenance graph for the agent economy. Three product lines — Trust, Knowledge, Memory — sharing a single graph core. MIT-licensed, self-hosted, single binary. Install: `go install github.com/trucore-ai/meshdns/cmd/meshdns@latest`
+> The provenance graph for the agent economy. Three product lines — Trust, Knowledge, Memory — sharing a single graph core. MIT-licensed, self-hosted, single binary. Install: `go install github.com/trucore-ai/provengraph/cmd/meshdns@latest`
 
 ## Three Product Lines
 - **Trust** (live): Server trust scores with outcome-weighted reputation. Register, resolve, verify MCP servers. Never hardcode an MCP URL again.
@@ -8,8 +8,8 @@
 - **Memory** (planned): Compliant episodic memory for agents. Every memory entry carries provenance — who, when, under what policy. Scoped, auditable, expirable.
 
 ## Install
-- [Install](https://github.com/trucore-ai/meshdns#quickstart): `go install github.com/trucore-ai/meshdns/cmd/meshdns@latest` then `meshdns serve`.
-- [Binary Releases](https://github.com/trucore-ai/meshdns/releases): Pre-built linux-amd64 binary.
+- [Install](https://github.com/trucore-ai/provengraph#quickstart): `go install github.com/trucore-ai/provengraph/cmd/meshdns@latest` then `meshdns serve`.
+- [Binary Releases](https://github.com/trucore-ai/provengraph/releases): Pre-built linux-amd64 binary.
 
 ## API (Trust)
 - [Register Server](https://trucore.xyz/docs/provengraph#api-reference): `POST /v0/servers` — register name, capabilities, server_url, health_url. Returns server_id + write_key.
@@ -29,6 +29,6 @@
 - [Health Checks](https://trucore.xyz/docs/provengraph#how-health-works): Probes every 60s. GET default, POST MCP initialize for streamable-HTTP. 5s timeout.
 
 ## Optional
-- [GitHub](https://github.com/trucore-ai/meshdns): Source code, issues, discussions.
+- [GitHub](https://github.com/trucore-ai/provengraph): Source code, issues, discussions.
 - [Live Registry](https://provengraph.trucore.xyz): Public registry — server counts, trust scores, uptime data.
-- [License](https://github.com/trucore-ai/meshdns/blob/main/LICENSE): MIT.
+- [License](https://github.com/trucore-ai/provengraph/blob/main/LICENSE): MIT.

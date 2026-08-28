@@ -51,7 +51,7 @@ export default function ProvenGraphDocs() {
             Live Demo →
           </TrackedLink>
           <TrackedLink
-            href="https://github.com/trucore-ai/meshdns"
+            href="https://github.com/trucore-ai/provengraph"
             eventName="provengraph_docs_github"
             eventProps={{ location: "docs_provengraph_header" }}
             className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-neutral-900/60 px-5 py-2.5 text-sm font-semibold text-slate-200 transition-colors hover:border-white/[0.12]"
@@ -240,7 +240,7 @@ export default function ProvenGraphDocs() {
       <p>Install, start, register, resolve — 60 seconds:</p>
       <pre className="my-4 overflow-x-auto rounded-xl border border-white/[0.06] bg-neutral-950 p-4 text-sm">
         <code className="text-green-400">
-          {`$ go install github.com/trucore-ai/meshdns/cmd/meshdns@latest
+          {`$ go install github.com/trucore-ai/provengraph/cmd/meshdns@latest
 $ meshdns serve
   ProvenGraph Trust starting on :8080
 
@@ -493,7 +493,7 @@ const next = await client.resolveNext("weather");`}
           {
             title: "GitHub Repo",
             desc: "Source code, issue tracker, and discussions. MIT-licensed. One Go binary.",
-            href: "https://github.com/trucore-ai/meshdns",
+            href: "https://github.com/trucore-ai/provengraph",
           },
           {
             title: "Live Registry",
@@ -503,7 +503,7 @@ const next = await client.resolveNext("weather");`}
           {
             title: "LazyMCP",
             desc: "On-the-fly MCP server discovery. Zero pre-configuration — resolve any of 3,000+ servers at runtime.",
-            href: "https://github.com/trucore-ai/meshdns/tree/main/scripts/lazymcp.py",
+            href: "https://github.com/trucore-ai/provengraph/tree/main/scripts/lazymcp.py",
           },
         ].map((item) => (
           <Link
