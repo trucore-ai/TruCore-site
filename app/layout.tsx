@@ -35,15 +35,14 @@ export const metadata: Metadata = {
     template: "%s | TruCore",
   },
   description:
-    "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
+    "Open-source infrastructure for AI agents: transaction enforcement and trust-graph service discovery. MIT-licensed. Built for production.",
   keywords: [
     "TruCore",
     "Agent Transaction Firewall",
     "ATF",
-    "MeshDNS",
+    "ProvenGraph",
     "MCP service registry",
-    "x402Fuel",
-    "agent wallets",
+    "trust-graph registry",
     "AI agent infrastructure",
     "autonomous finance",
     "tamper-evident receipts",
@@ -59,7 +58,7 @@ export const metadata: Metadata = {
     title:
       "TruCore — AI Infrastructure for Autonomous Agents",
     description:
-      "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
+      "Open-source infrastructure for AI agents: transaction enforcement and trust-graph service discovery. MIT-licensed. Built for production.",
     images: [
       {
         url: "https://www.trucore.xyz/social-preview.png",
@@ -74,7 +73,7 @@ export const metadata: Metadata = {
     title:
       "TruCore — AI Infrastructure for Autonomous Agents",
     description:
-      "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
+      "Open-source infrastructure for AI agents: transaction enforcement and trust-graph service discovery. MIT-licensed. Built for production.",
     images: ["https://www.trucore.xyz/social-preview.png"],
   },
   icons: {
@@ -129,15 +128,7 @@ export default function RootLayout({
         url: "https://provengraph.trucore.xyz",
         publisher: { "@type": "Organization", name: "TruCore" },
       },
-      {
-        "@type": "SoftwareApplication",
-        name: "x402Fuel",
-        applicationCategory: "DeveloperApplication",
-        operatingSystem: "Web",
-        description: "Non-custodial HTTP 402 wallet daemon for AI agents — USDC payments on Base.",
-        url: "https://x402fuel.trucore.xyz",
-        publisher: { "@type": "Organization", name: "TruCore" },
-      },
+      
     ],
   });
 
@@ -249,14 +240,7 @@ export default function RootLayout({
                 >
                   ProvenGraph
                 </Link>
-                <Link
-                  href="https://x402fuel.trucore.xyz"
-                  className="rounded-md px-2.5 py-1.5 transition-all duration-200 hover:bg-white/[0.05] hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  x402Fuel
-                </Link>
+                
               </nav>
               <MobileNav />
               </div>
@@ -289,7 +273,7 @@ export default function RootLayout({
                       <span className="text-3xl font-bold tracking-tight text-slate-100">TruCore</span>
                     </Link>
                     <p className="max-w-sm text-slate-300">
-                      Open-source infrastructure for the agent economy. Transaction firewalls, service registries, and agent wallets.
+                      Open-source infrastructure for the agent economy. Transaction firewalls and trust-graph service registries.
                     </p>
                     <div className="flex flex-wrap items-center gap-5 text-slate-300">
                       <TrackedLink href="https://x.com/TruCore_AI" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-primary-100" eventName="outbound_click" eventProps={{ target: "x", location: "footer" }}>
@@ -318,7 +302,7 @@ export default function RootLayout({
                       <div className="mt-3 space-y-2">
                         <Link href="/atf" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ATF</Link>
                         <Link href="https://provengraph.trucore.xyz" target="_blank" rel="noopener noreferrer" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">ProvenGraph</Link>
-                        <Link href="https://x402fuel.trucore.xyz" target="_blank" rel="noopener noreferrer" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">x402Fuel</Link>
+                        
                         <Link href="/atf/roadmap" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Roadmap</Link>
                         <Link href="/enterprise" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Enterprise</Link>
                         <Link href="/pricing" className="block rounded-sm transition-colors hover:text-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Pricing</Link>

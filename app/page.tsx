@@ -30,14 +30,14 @@ const HOME_SOCIAL_IMAGE_URL = "https://www.trucore.xyz/social-preview.png";
 export const metadata: Metadata = {
   title: "TruCore — AI Infrastructure for Autonomous Agents",
   description:
-    "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
+    "Open-source infrastructure for AI agents: transaction enforcement and trust-graph service discovery. MIT-licensed. Built for production.",
   openGraph: {
     url: "https://trucore.xyz",
     siteName: "TruCore",
     type: "website",
     title: "TruCore — AI Infrastructure for Autonomous Agents",
     description:
-      "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
+      "Open-source infrastructure for AI agents: transaction enforcement and trust-graph service discovery. MIT-licensed. Built for production.",
     images: [
       {
         url: HOME_SOCIAL_IMAGE_URL,
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TruCore — AI Infrastructure for Autonomous Agents",
     description:
-      "Open-source infrastructure for AI agents: transaction enforcement, service discovery, and machine-native payments. MIT-licensed. Built for production.",
+      "Open-source infrastructure for AI agents: transaction enforcement and trust-graph service discovery. MIT-licensed. Built for production.",
     images: [HOME_SOCIAL_IMAGE_URL],
   },
 };
@@ -86,10 +86,10 @@ export default function Home() {
               TruCore builds the backbone for autonomous AI agents
             </h1>
             <p className="mt-6 text-2xl font-semibold text-amber-200/90">
-              From transaction firewalls to service discovery to agent wallets — the tools AI agents need to operate independently in production.
+              From transaction firewalls to trust-graph service discovery — the tools AI agents need to operate independently in production.
             </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
-              Every TruCore product is open source, MIT-licensed, and built for developers who want their agents to transact, discover, and pay without human intervention.
+              Every TruCore product is open source, MIT-licensed, and built for developers who want their agents to transact and discover without human intervention.
             </p>
             <p className="mt-3 text-sm leading-relaxed text-slate-300/80">
               Built for agent developers, protocol teams, and AI infrastructure builders.
@@ -110,7 +110,7 @@ export default function Home() {
             Every product is MIT-licensed. Self-host for free, or use our managed cloud when you need scale.
           </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
           <Reveal delay={0} className="h-full">
           <ProductCard
             name="ATF"
@@ -124,21 +124,11 @@ export default function Home() {
           <Reveal delay={80} className="h-full">
           <ProductCard
             name="ProvenGraph"
-            tagline="Trust-Graph Registry for MCP Servers"
-            description="Provenance-graph registry for MCP servers. Register, resolve by capability, automatic health checks. Trust scores over reliability, latency, and outcome-verified reputation."
+            tagline="The Provenance Graph for the Agent Economy"
+            description="Three product lines sharing one graph core: Trust (server verification with outcome-weighted reputation), Knowledge (grounded, verifiable claims), and Memory (compliant episodic recall for agents). MIT-licensed, self-hosted, single binary."
             href="https://provengraph.trucore.xyz"
             status="live"
             cta="Try ProvenGraph"
-          />
-          </Reveal>
-          <Reveal delay={160} className="h-full">
-          <ProductCard
-            name="x402Fuel"
-            tagline="Wallets for AI Agents"
-            description="Give every agent a USDC wallet with one command. HTTP 402 native payment settlement on Base. Non-custodial, MIT-licensed, self-hosted."
-            href="https://x402fuel.trucore.xyz"
-            status="live"
-            cta="Try x402Fuel"
           />
           </Reveal>
         </div>

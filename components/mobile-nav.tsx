@@ -8,7 +8,6 @@ import { TrackedLink } from "@/components/tracked-link";
 const navLinks = [
   { href: "/atf", label: "ATF", external: false },
   { href: "https://provengraph.trucore.xyz", label: "ProvenGraph", external: true },
-  { href: "https://x402fuel.trucore.xyz", label: "x402Fuel", external: true },
 ];
 
 export function MobileNav() {

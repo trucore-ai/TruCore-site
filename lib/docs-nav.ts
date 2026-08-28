@@ -326,22 +326,16 @@ export const sections: DocsNavSection[] = [
     ],
       },
       {
-        title: "Products",
-        items: [
-          {
-            title: "x402Fuel",
-            href: "/docs/x402fuel",
-            description:
-              "Non-custodial HTTP 402 wallet daemon for AI agents — USDC on Base with budget enforcement.",
-          },
-          {
-            title: "MeshDNS",
-                        href: "/docs/meshdns",
-            description:
-              "MCP-native service registry with capability discovery and health checks.",
-          },
-        ],
-      },
+              title: "Products",
+              items: [
+                {
+                  title: "ProvenGraph",
+                              href: "/docs/provengraph",
+                  description:
+                    "Provenance-graph core for the agent economy. Three product lines — Trust, Knowledge, Memory — sharing a single graph.",
+                },
+              ],
+            },
       {
         title: "Customer Guides",
     authenticated: true,

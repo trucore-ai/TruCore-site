@@ -1,6 +1,6 @@
 # TruCore
 
-> Open-source infrastructure for the agent economy. Transaction firewalls, service registries, and agent wallets — MIT-licensed, built for production. Every product ships as a single Go binary an AI agent can install and drive directly.
+> Open-source infrastructure for the agent economy. Transaction firewalls and trust-graph service registries — MIT-licensed, built for production. Every product ships as a single Go binary an AI agent can install and drive directly.
 
 ## Install
 - [TruCore Home](https://trucore.xyz): Main landing page with all products.
@@ -8,13 +8,11 @@
 
 ## Products
 - [ATF](https://trucore.xyz/docs): Agent Transaction Firewall — policy-enforced guardrails for autonomous agent transactions. Solana-first. Install: `npm i -g @trucore/atf` then `atf trade`.
-- [ProvenGraph](https://provengraph.trucore.xyz): MCP service registry with trust scoring. Agents ask "who can do X?" — ProvenGraph returns the best verified server. Install: `go install github.com/trucore-ai/meshdns/cmd/meshdns@latest`.
-- [x402Fuel](https://x402fuel.trucore.xyz): Non-custodial HTTP 402 wallet daemon. Give your agent a USDC wallet on Base. Install: `go install github.com/trucore-ai/x402fuel@latest`.
+- [ProvenGraph](https://provengraph.trucore.xyz): The provenance graph for the agent economy. Three product lines: **Trust** (server trust scores with outcome-weighted reputation), **Knowledge** (grounded, verifiable claims), and **Memory** (compliant episodic recall for agents). Install: `go install github.com/trucore-ai/meshdns/cmd/meshdns@latest`.
 
 ## Documentation
 - [ATF Docs](https://trucore.xyz/docs): Full documentation — CLI reference, policy model, receipt verification, getting started.
-- [MeshDNS Docs](https://trucore.xyz/docs/meshdns): Architecture, API reference, SDK quickstart (Python + TypeScript), health check model.
-- [x402Fuel Docs](https://trucore.xyz/docs/x402fuel): Architecture, CLI reference, budget policy config, E2E payment flow, security model.
+- [ProvenGraph Docs](https://trucore.xyz/docs/provengraph): Architecture, Trust/Knowledge/Memory product lines, API reference, SDK quickstart, trust scoring model.
 
 ## Optional
 - [Builders](https://trucore.xyz/builders): For developers building on TruCore infrastructure.

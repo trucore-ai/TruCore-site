@@ -20,6 +20,31 @@
       ],
       "destination": "https://www.trucore.xyz/:path*",
       "permanent": true
+    },
+    {
+      "source": "/docs/meshdns",
+      "destination": "/docs/provengraph",
+      "permanent": true
+    },
+    {
+      "source": "/docs/meshdns/:path*",
+      "destination": "/docs/provengraph/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/docs/x402fuel",
+      "destination": "/docs",
+      "permanent": true
+    },
+    {
+      "source": "/docs/x402fuel/:path*",
+      "destination": "/docs",
+      "permanent": true
+    },
+    {
+      "source": "/x402fuel",
+      "destination": "/",
+      "permanent": true
     }
   ]
 }

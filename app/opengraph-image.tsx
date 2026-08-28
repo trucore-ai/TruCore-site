@@ -80,8 +80,7 @@ export default function OpenGraphImage() {
           <div style={{ display: "flex", gap: 20 }}>
             {[
               { name: "ATF", desc: "Agent Transaction Firewall", color: "#f08a1f", icon: "◆" },
-              { name: "x402Fuel", desc: "HTTP 402 Wallet Daemon", color: "#38bdf8", icon: "◇" },
-              { name: "MeshDNS", desc: "MCP Service Registry", color: "#a78bfa", icon: "○" },
+              { name: "ProvenGraph", desc: "Trust · Knowledge · Memory", color: "#a78bfa", icon: "○" },
             ].map((p) => (
               <div
                 key={p.name}
