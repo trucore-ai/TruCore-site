@@ -43,7 +43,7 @@ export default function MeshDNSDocs() {
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <TrackedLink
-            href="https://meshdns.trucore.xyz"
+            href="https://provengraph.trucore.xyz"
             eventName="meshdns_docs_try"
             eventProps={{ location: "docs_meshdns_header" }}
             className="inline-flex items-center gap-2 rounded-xl bg-accent-500 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition-colors hover:bg-accent-400"
@@ -305,7 +305,7 @@ $ meshdns-cli doctor
         <code className="text-slate-300">
           {`from meshdns_client import MeshDNSClient
 
-client = MeshDNSClient("https://meshdns.trucore.xyz")
+client = MeshDNSClient("https://provengraph.trucore.xyz")
 
 # Resolve a capability
 servers = client.resolve("weather")
@@ -327,7 +327,7 @@ next_server = client.resolve_next("weather")
         <code className="text-slate-300">
           {`import { MeshDNSClient } from "@meshdns/client";
 
-const client = new MeshDNSClient("https://meshdns.trucore.xyz");
+const client = new MeshDNSClient("https://provengraph.trucore.xyz");
 
 // Resolve a capability
 const servers = await client.resolve("weather");
@@ -501,7 +501,7 @@ const next = await client.resolveNext("weather");
               GitHub & Skills
             </a>
             <a
-              href="https://meshdns.trucore.xyz"
+              href="https://provengraph.trucore.xyz"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-neutral-900/60 px-5 py-2.5 text-sm font-semibold text-slate-200 transition-colors hover:border-white/[0.12]"
@@ -529,7 +529,7 @@ const next = await client.resolveNext("weather");
         Yes. MeshDNS is a single Go binary — MIT-licensed, self-contained,
         zero external dependencies. Deploy behind Caddy or nginx with auto-TLS
         and you have a private registry in minutes. The public instance at{" "}
-        meshdns.trucore.xyz is a convenience, not a requirement.
+        provengraph.trucore.xyz is a convenience, not a requirement.
       </p>
 
       <h3 className="mt-6 text-lg font-semibold text-slate-200">What happens if MeshDNS goes down?</h3>
@@ -577,7 +577,7 @@ const next = await client.resolveNext("weather");
           {
             title: "Live Registry",
             desc: "See the public registry live — server counts, resolutions/24h, uptime data. All running on Render.",
-            href: "https://meshdns.trucore.xyz",
+            href: "https://provengraph.trucore.xyz",
           },
         ].map((item) => (
           <Link

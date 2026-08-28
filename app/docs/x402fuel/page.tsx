@@ -357,7 +357,7 @@ logging:
           {
             title: "MeshDNS",
             desc: "Discover x402-paywalled APIs by capability. Register your MCP servers and let agents find services they can pay for.",
-            href: "https://meshdns.trucore.xyz",
+            href: "https://provengraph.trucore.xyz",
           },
           {
             title: "ATF (Agent Transaction Firewall)",

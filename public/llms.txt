@@ -8,7 +8,7 @@
 
 ## Products
 - [ATF](https://trucore.xyz/docs): Agent Transaction Firewall — policy-enforced guardrails for autonomous agent transactions. Solana-first. Install: `npm i -g @trucore/atf` then `atf trade`.
-- [MeshDNS](https://meshdns.trucore.xyz): MCP service registry. Agents ask "who can do X?" — MeshDNS returns the best available server. Install: `go install github.com/trucore-ai/meshdns/cmd/meshdns@latest`.
+- [ProvenGraph](https://provengraph.trucore.xyz): MCP service registry with trust scoring. Agents ask "who can do X?" — ProvenGraph returns the best verified server. Install: `go install github.com/trucore-ai/meshdns/cmd/meshdns@latest`.
 - [x402Fuel](https://x402fuel.trucore.xyz): Non-custodial HTTP 402 wallet daemon. Give your agent a USDC wallet on Base. Install: `go install github.com/trucore-ai/x402fuel@latest`.
 
 ## Documentation

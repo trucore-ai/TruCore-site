@@ -123,12 +123,12 @@ export default function Home() {
           </Reveal>
           <Reveal delay={80} className="h-full">
           <ProductCard
-            name="MeshDNS"
-            tagline="Service Registry for MCP Servers"
-            description="Capability-based discovery for MCP servers. Register your server, query by capability, automatic health checks. Never hardcode an MCP URL again."
-            href="https://meshdns.trucore.xyz"
+            name="ProvenGraph"
+            tagline="Trust-Graph Registry for MCP Servers"
+            description="Provenance-graph registry for MCP servers. Register, resolve by capability, automatic health checks. Trust scores over reliability, latency, and outcome-verified reputation."
+            href="https://provengraph.trucore.xyz"
             status="live"
-            cta="Try MeshDNS"
+            cta="Try ProvenGraph"
           />
           </Reveal>
           <Reveal delay={160} className="h-full">

@@ -27,5 +27,5 @@
 
 ## Optional
 - [GitHub](https://github.com/trucore-ai/meshdns): Source code, issues, discussions.
-- [Live Registry](https://meshdns.trucore.xyz): Public registry — server counts, resolutions/24h, uptime data.
+- [Live Registry](https://provengraph.trucore.xyz): Public registry — server counts, resolutions/24h, uptime data.
 - [License](https://github.com/trucore-ai/meshdns/blob/main/LICENSE): MIT.
