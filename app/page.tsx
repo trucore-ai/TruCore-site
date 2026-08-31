@@ -86,7 +86,7 @@ export default function Home() {
               TruCore builds the backbone for autonomous AI agents
             </h1>
             <p className="mt-6 text-2xl font-semibold text-amber-200/90">
-              From transaction firewalls to trust-graph service discovery — the tools AI agents need to operate independently in production.
+              ProvenGraph helps an agent determine what to trust. TruCore ATF determines what that agent is authorized to do. Together they provide a trust and control layer between AI reasoning and real-world execution.
             </p>
             <p className="mt-4 max-w-2xl text-xl leading-[1.5] text-slate-200/90 sm:text-2xl">
               Every TruCore product is open source, MIT-licensed, and built for developers who want their agents to transact and discover without human intervention.
